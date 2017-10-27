@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"runtime"
 
 	"github.com/kirsle/doodle"
 )
@@ -19,8 +20,9 @@ func init() {
 }
 
 func main() {
+	runtime.LockOSThread()
 	flag.Parse()
 
 	app := doodle.New(debug)
-	_ = app
+	app.Run()
 }

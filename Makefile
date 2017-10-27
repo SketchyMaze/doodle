@@ -31,4 +31,4 @@ test:
 # `make clean` cleans everything up.
 .PHONY: clean
 clean:
-rm -rf bin dist
+	rm -rf bin dist
