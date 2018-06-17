@@ -1,5 +1,10 @@
 package level
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // Level is the container format for Doodle map drawings.
 type Level struct {
 	Version  int32  `json:"version"` // File format version spec.
@@ -26,6 +31,28 @@ type Pixel struct {
 	X       int32 `json:"x"`
 	Y       int32 `json:"y"`
 	Palette int32 `json:"p"`
+}
+
+// MarshalJSON serializes a Pixel compactly as a simple list.
+func (p Pixel) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(
+		`[%d, %d, %d]`,
+		p.X, p.Y, p.Palette,
+	)), nil
+}
+
+// UnmarshalJSON loads a Pixel from JSON again.
+func (p *Pixel) UnmarshalJSON(text []byte) error {
+	var triplet []int32
+	err := json.Unmarshal(text, &triplet)
+	if err != nil {
+		return err
+	}
+
+	p.X = triplet[0]
+	p.Y = triplet[1]
+	p.Palette = triplet[2]
+	return nil
 }
 
 // Palette are the unique pixel attributes that this map uses, and serves
