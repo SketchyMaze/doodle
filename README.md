@@ -20,3 +20,11 @@ As a rough idea of the milestones needed for this game to work:
 * [ ] Start implementing a platformer that uses the custom map format for its
   rendering and collision detection.
 * [ ] ???
+
+# Building
+
+Fedora dependencies:
+
+```bash
+$ sudo dnf install SDL2-devel SDL2_ttf-devel
+```

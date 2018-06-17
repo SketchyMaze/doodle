@@ -4,7 +4,7 @@ import (
 	"flag"
 	"runtime"
 
-	"github.com/kirsle/doodle"
+	"git.kirsle.net/apps/doodle"
 )
 
 // Build number is the git commit hash.
