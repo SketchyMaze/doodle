@@ -10,21 +10,25 @@ import (
 // State keeps track of event states.
 type State struct {
 	// Mouse buttons.
-	Button1 *BoolFrameState
-	Button2 *BoolFrameState
+	Button1 *BoolTick
+	Button2 *BoolTick
+
+	// Screenshot key.
+	ScreenshotKey *BoolTick
 
 	// Cursor positions.
-	CursorX *Int32FrameState
-	CursorY *Int32FrameState
+	CursorX *Int32Tick
+	CursorY *Int32Tick
 }
 
 // New creates a new event state manager.
 func New() *State {
 	return &State{
-		Button1: &BoolFrameState{},
-		Button2: &BoolFrameState{},
-		CursorX: &Int32FrameState{},
-		CursorY: &Int32FrameState{},
+		Button1:       &BoolTick{},
+		Button2:       &BoolTick{},
+		ScreenshotKey: &BoolTick{},
+		CursorX:       &Int32Tick{},
+		CursorY:       &Int32Tick{},
 	}
 }
 
@@ -96,6 +100,14 @@ func (s *State) Poll(ticks uint64) (*State, error) {
 			log.Debug("[%d ms] tick:%d Keyboard  type:%d  sym:%c  modifiers:%d  state:%d  repeat:%d\n",
 				t.Timestamp, ticks, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat,
 			)
+			if t.Repeat == 1 {
+				continue
+			}
+
+			switch t.Keysym.Scancode {
+			case sdl.SCANCODE_F12:
+				s.ScreenshotKey.Push(t.State == 1)
+			}
 		}
 	}
 

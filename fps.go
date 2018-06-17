@@ -27,7 +27,7 @@ func (d *Doodle) DrawDebugOverlay() {
 	}
 
 	text := fmt.Sprintf(
-		"FPS: %d (%dms)    (X,Y)=(%d,%d)  canvas=%d",
+		"FPS: %d (%dms)  (%d,%d)  size=%d  F12=screenshot",
 		fpsCurrent,
 		fpsSkipped,
 		d.events.CursorX.Now,
