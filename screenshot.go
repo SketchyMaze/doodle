@@ -4,10 +4,82 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"math"
+	"io/ioutil"
 	"os"
 	"time"
+
+	"git.kirsle.net/apps/doodle/draw"
+	"git.kirsle.net/apps/doodle/level"
 )
+
+// SaveLevel saves the level to disk.
+func (d *Doodle) SaveLevel() {
+	m := level.Level{
+		Version: 1,
+		Title:   "Alpha",
+		Author:  os.Getenv("USER"),
+		Width:   d.width,
+		Height:  d.height,
+		Palette: []level.Palette{
+			level.Palette{
+				Color: "#000000",
+				Solid: true,
+			},
+		},
+		Pixels: []level.Pixel{},
+	}
+
+	for pixel := range d.canvas {
+		for point := range draw.Line(pixel.x, pixel.y, pixel.dx, pixel.dy) {
+			m.Pixels = append(m.Pixels, level.Pixel{
+				X:       point.X,
+				Y:       point.Y,
+				Palette: 0,
+			})
+		}
+	}
+
+	json, err := m.ToJSON()
+	if err != nil {
+		log.Error("SaveLevel error: %s", err)
+		return
+	}
+
+	filename := fmt.Sprintf("./map-%s.json",
+		time.Now().Format("2006-01-02T15-04-05"),
+	)
+	err = ioutil.WriteFile(filename, json, 0644)
+	if err != nil {
+		log.Error("Create map file error: %s", err)
+		return
+	}
+}
+
+// LoadLevel loads a map from JSON.
+func (d *Doodle) LoadLevel(filename string) error {
+	log.Info("Loading level from file: %s", filename)
+	pixelHistory = []Pixel{}
+	d.canvas = Grid{}
+
+	m, err := level.LoadJSON(filename)
+	if err != nil {
+		return err
+	}
+
+	for _, point := range m.Pixels {
+		pixel := Pixel{
+			start: true,
+			x:     point.X,
+			y:     point.Y,
+			dx:    point.X,
+			dy:    point.Y,
+		}
+		pixelHistory = append(pixelHistory, pixel)
+		d.canvas[pixel] = nil
+	}
+
+	return nil
+}
 
 // Screenshot saves the level canvas to disk as a PNG image.
 func (d *Doodle) Screenshot() {
@@ -26,39 +98,23 @@ func (d *Doodle) Screenshot() {
 		if pixel.x == pixel.dx && pixel.y == pixel.dy {
 			screenshot.Set(int(pixel.x), int(pixel.y), image.Black)
 		} else {
-			// Draw a line. TODO: get this into its own function!
-			// https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-			var (
-				x1 = pixel.x
-				x2 = pixel.dx
-				y1 = pixel.y
-				y2 = pixel.dy
-			)
-			var (
-				dx = float64(x2 - x1)
-				dy = float64(y2 - y1)
-			)
-			var step float64
-			if math.Abs(dx) >= math.Abs(dy) {
-				step = math.Abs(dx)
-			} else {
-				step = math.Abs(dy)
-			}
-
-			dx = dx / step
-			dy = dy / step
-			x := float64(x1)
-			y := float64(y1)
-			for i := 0; i <= int(step); i++ {
-				screenshot.Set(int(x), int(y), image.Black)
-				x += dx
-				y += dy
+			for point := range draw.Line(pixel.x, pixel.y, pixel.dx, pixel.dy) {
+				screenshot.Set(int(point.X), int(point.Y), image.Black)
 			}
 		}
-
 	}
 
-	filename := fmt.Sprintf("screenshot-%s.png",
+	// Create the screenshot directory.
+	if _, err := os.Stat("./screenshots"); os.IsNotExist(err) {
+		log.Info("Creating directory: ./screenshots")
+		err = os.Mkdir("./screenshots", 0755)
+		if err != nil {
+			log.Error("Can't create ./screenshots: %s", err)
+			return
+		}
+	}
+
+	filename := fmt.Sprintf("./screenshots/screenshot-%s.png",
 		time.Now().Format("2006-01-02T15-04-05"),
 	)
 	fh, err := os.Create(filename)

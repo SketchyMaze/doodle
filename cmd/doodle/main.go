@@ -23,6 +23,15 @@ func main() {
 	runtime.LockOSThread()
 	flag.Parse()
 
+	args := flag.Args()
+	var filename string
+	if len(args) > 0 {
+		filename = args[0]
+	}
+
 	app := doodle.New(debug)
+	if filename != "" {
+		app.LoadLevel(filename)
+	}
 	app.Run()
 }

@@ -166,6 +166,7 @@ func (d *Doodle) Loop() error {
 	if ev.ScreenshotKey.Pressed() {
 		log.Info("Taking a screenshot")
 		d.Screenshot()
+		d.SaveLevel()
 	}
 
 	// Clear the canvas and fill it with white.
