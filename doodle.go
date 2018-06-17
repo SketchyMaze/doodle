@@ -28,6 +28,7 @@ type Doodle struct {
 
 	startTime time.Time
 	running   bool
+	ticks     uint64
 	events    *events.State
 	width     int32
 	height    int32
@@ -106,6 +107,7 @@ func (d *Doodle) Run() error {
 		// Draw a frame and log how long it took.
 		start := time.Now()
 		err = d.Loop()
+		d.ticks++
 		elapsed := time.Now().Sub(start)
 
 		tmp := elapsed / time.Millisecond
@@ -146,7 +148,7 @@ var pixelHistory []Pixel
 // Loop runs one loop of the game engine.
 func (d *Doodle) Loop() error {
 	// Poll for events.
-	ev, err := d.events.Poll()
+	ev, err := d.events.Poll(d.ticks)
 	if err != nil {
 		log.Error("event poll error: %s", err)
 		return err
@@ -166,6 +168,7 @@ func (d *Doodle) Loop() error {
 			dy:    ev.CursorY.Last,
 		}
 
+		// Append unique new pixels.
 		if len(pixelHistory) == 0 || pixelHistory[len(pixelHistory)-1] != pixel {
 			pixelHistory = append(pixelHistory, pixel)
 		}
