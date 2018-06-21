@@ -33,8 +33,7 @@ type Doodle struct {
 	width     int32
 	height    int32
 
-	nextSecond time.Time
-	canvas     Grid
+	scene Scene
 
 	window   *sdl.Window
 	renderer *sdl.Renderer
@@ -49,9 +48,6 @@ func New(debug bool) *Doodle {
 		running:   true,
 		width:     800,
 		height:    600,
-		canvas:    Grid{},
-
-		nextSecond: time.Now().Add(1 * time.Second),
 	}
 
 	if !debug {
@@ -102,13 +98,25 @@ func (d *Doodle) Run() error {
 	render.Renderer = renderer
 	defer renderer.Destroy()
 
+	// Set up the default scene.
+	if d.scene == nil {
+		d.Goto(&EditorScene{})
+	}
+
 	log.Info("Enter Main Loop")
 	for d.running {
 		d.ticks++
 
+		// Poll for events.
+		_, err := d.events.Poll(d.ticks)
+		if err != nil {
+			log.Error("event poll error: %s", err)
+			return err
+		}
+
 		// Draw a frame and log how long it took.
 		start := time.Now()
-		err = d.Loop()
+		err = d.scene.Loop(d)
 		if err != nil {
 			return err
 		}
@@ -131,6 +139,18 @@ func (d *Doodle) Run() error {
 	return nil
 }
 
+// LoadLevel loads a map from JSON into the EditorScene.
+func (d *Doodle) LoadLevel(filename string) error {
+	log.Info("Loading level from file: %s", filename)
+	scene := &EditorScene{}
+	err := scene.LoadLevel(filename)
+	if err != nil {
+		return err
+	}
+	d.Goto(scene)
+	return nil
+}
+
 // TODO: not a global
 type Pixel struct {
 	start bool
@@ -149,78 +169,3 @@ func (p Pixel) String() string {
 
 // Grid is a 2D grid of pixels in X,Y notation.
 type Grid map[Pixel]interface{}
-
-// TODO: a linked list instead of a slice
-var pixelHistory []Pixel
-
-// Loop runs one loop of the game engine.
-func (d *Doodle) Loop() error {
-	// Poll for events.
-	ev, err := d.events.Poll(d.ticks)
-	if err != nil {
-		log.Error("event poll error: %s", err)
-		return err
-	}
-
-	// Taking a screenshot?
-	if ev.ScreenshotKey.Pressed() {
-		log.Info("Taking a screenshot")
-		d.Screenshot()
-		d.SaveLevel()
-	}
-
-	// Clear the canvas and fill it with white.
-	d.renderer.SetDrawColor(255, 255, 255, 255)
-	d.renderer.Clear()
-
-	// Clicking? Log all the pixels while doing so.
-	if ev.Button1.Now {
-		pixel := Pixel{
-			start: ev.Button1.Pressed(),
-			x:     ev.CursorX.Now,
-			y:     ev.CursorY.Now,
-			dx:    ev.CursorX.Now,
-			dy:    ev.CursorY.Now,
-		}
-
-		// Append unique new pixels.
-		if len(pixelHistory) == 0 || pixelHistory[len(pixelHistory)-1] != pixel {
-			// If not a start pixel, make the delta coord the previous one.
-			if !pixel.start && len(pixelHistory) > 0 {
-				prev := pixelHistory[len(pixelHistory)-1]
-				pixel.dx = prev.x
-				pixel.dy = prev.y
-			}
-
-			pixelHistory = append(pixelHistory, pixel)
-
-			// Save in the pixel canvas map.
-			d.canvas[pixel] = nil
-		}
-	}
-
-	d.renderer.SetDrawColor(0, 0, 0, 255)
-	for i, pixel := range pixelHistory {
-		if !pixel.start && i > 0 {
-			prev := pixelHistory[i-1]
-			if prev.x == pixel.x && prev.y == pixel.y {
-				d.renderer.DrawPoint(pixel.x, pixel.y)
-			} else {
-				d.renderer.DrawLine(
-					pixel.x,
-					pixel.y,
-					prev.x,
-					prev.y,
-				)
-			}
-		}
-		d.renderer.DrawPoint(pixel.x, pixel.y)
-	}
-
-	// Draw the FPS.
-	d.DrawDebugOverlay()
-
-	d.renderer.Present()
-
-	return nil
-}
