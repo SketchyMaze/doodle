@@ -139,10 +139,22 @@ func (d *Doodle) Run() error {
 	return nil
 }
 
-// LoadLevel loads a map from JSON into the EditorScene.
-func (d *Doodle) LoadLevel(filename string) error {
+// EditLevel loads a map from JSON into the EditorScene.
+func (d *Doodle) EditLevel(filename string) error {
 	log.Info("Loading level from file: %s", filename)
 	scene := &EditorScene{}
+	err := scene.LoadLevel(filename)
+	if err != nil {
+		return err
+	}
+	d.Goto(scene)
+	return nil
+}
+
+// PlayLevel loads a map from JSON into the PlayScene.
+func (d *Doodle) PlayLevel(filename string) error {
+	log.Info("Loading level from file: %s", filename)
+	scene := &PlayScene{}
 	err := scene.LoadLevel(filename)
 	if err != nil {
 		return err

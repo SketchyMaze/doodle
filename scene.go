@@ -4,6 +4,7 @@ package doodle
 // scene at a time and that scene has control over the main loop, and its own
 // state information.
 type Scene interface {
+	Name() string
 	Setup(*Doodle) error
 	Loop(*Doodle) error
 }

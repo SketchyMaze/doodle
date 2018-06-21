@@ -15,6 +15,10 @@ type State struct {
 
 	// Screenshot key.
 	ScreenshotKey *BoolTick
+	Up            *BoolTick
+	Left          *BoolTick
+	Right         *BoolTick
+	Down          *BoolTick
 
 	// Cursor positions.
 	CursorX *Int32Tick
@@ -27,6 +31,10 @@ func New() *State {
 		Button1:       &BoolTick{},
 		Button2:       &BoolTick{},
 		ScreenshotKey: &BoolTick{},
+		Up:            &BoolTick{},
+		Left:          &BoolTick{},
+		Right:         &BoolTick{},
+		Down:          &BoolTick{},
 		CursorX:       &Int32Tick{},
 		CursorY:       &Int32Tick{},
 	}
@@ -107,6 +115,14 @@ func (s *State) Poll(ticks uint64) (*State, error) {
 			switch t.Keysym.Scancode {
 			case sdl.SCANCODE_F12:
 				s.ScreenshotKey.Push(t.State == 1)
+			case sdl.SCANCODE_UP:
+				s.Up.Push(t.State == 1)
+			case sdl.SCANCODE_LEFT:
+				s.Left.Push(t.State == 1)
+			case sdl.SCANCODE_RIGHT:
+				s.Right.Push(t.State == 1)
+			case sdl.SCANCODE_DOWN:
+				s.Down.Push(t.State == 1)
 			}
 		}
 	}

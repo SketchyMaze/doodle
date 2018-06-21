@@ -13,10 +13,12 @@ var Build string
 // Command line args
 var (
 	debug bool
+	edit  bool
 )
 
 func init() {
 	flag.BoolVar(&debug, "debug", false, "Debug mode")
+	flag.BoolVar(&edit, "edit", false, "Edit the map given on the command line. Default is to play the map.")
 }
 
 func main() {
@@ -31,7 +33,11 @@ func main() {
 
 	app := doodle.New(debug)
 	if filename != "" {
-		app.LoadLevel(filename)
+		if edit {
+			app.EditLevel(filename)
+		} else {
+			app.PlayLevel(filename)
+		}
 	}
 	app.Run()
 }

@@ -27,11 +27,12 @@ func (d *Doodle) DrawDebugOverlay() {
 	}
 
 	text := fmt.Sprintf(
-		"FPS: %d (%dms)  (%d,%d)  F12=screenshot",
+		"FPS: %d (%dms)  (%d,%d)  S:%s  F12=screenshot",
 		fpsCurrent,
 		fpsSkipped,
 		d.events.CursorX.Now,
 		d.events.CursorY.Now,
+		d.scene.Name(),
 	)
 	render.StrokedText(render.TextConfig{
 		Text:        text,

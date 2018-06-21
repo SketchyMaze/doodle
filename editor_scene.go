@@ -23,6 +23,11 @@ type EditorScene struct {
 	height int32
 }
 
+// Name of the scene.
+func (s *EditorScene) Name() string {
+	return "Edit"
+}
+
 // Setup the editor scene.
 func (e *EditorScene) Setup(d *Doodle) error {
 	if e.pixelHistory == nil {
