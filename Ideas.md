@@ -2,9 +2,63 @@
 
 ## Table of Contents
 
+* [Major Milestones](#major-milestones)
 * [File Formats](#file-formats)
 * [Text Console](#text-console)
 * [Doodads](#doodads)
+
+# Major Milestones
+
+The major milestones of the game are roughly:
+
+* [x] Prototype: make a simple SDL painting program that does nothing special.
+* [ ] Simple Platformer: be able to toggle between "edit mode" and "play mode"
+  and control a character who can walk around your level and bump into the
+  solid geometry you've drawn (no objects yet, just the basics here).
+* [ ] Add Doodads (buttons, doors, the player character themself, enemies, ...)
+  * Share a lot in common with map drawings, in that they're hand-drawn, will
+    share a similar file format.
+  * Available doodads can be dragged/dropped into maps.
+  * The player character should be a Doodad under the hood to keep it from
+    becoming too special (read: easier to make the game multiplayer in the
+    future by putting a "networked user" in control of a doodad instead of
+    the keyboard/mouse).
+* [ ] **Version 1:** Single Player Campaign and Editor. This is the minimum
+  feature set for a first public release of the game. Required features:
+  * The game should ship with a single-player "campaign mode" of pre-made maps
+    that link to one another in sequence. i.e. 100 levels that the player can
+    play through in a certain order.
+  * It must include the level editor feature so players can create and share
+    their own maps.
+  * Dev tools may be clunky to use at this stage; i.e. players creating custom
+    Doodads will need to use external tools outside the game (i.e. code editors
+    to program the JavaScript logic of the doodad), but everything should be
+    available and possible for modders to extend the game with custom features.
+  * Game should have a good mixture of doodads and features: doors, buttons,
+    switches, etc. and make a usable single player experience.
+  * World sizes might be limited in dimension.
+* [ ] **Version 2:** Multiplayer Collaborative World Builder. This is a
+  "pie in the sky" long-term vision for the game, to make it multiplayer,
+  hopefully addicting, and possibly slightly Minecraft-like. Some ideas:
+  * Players can self-host their own multiplayer servers to draw worlds with
+    friends.
+  * A new server would initialize as a blank white level with maybe a single
+    platform (a line) for players to spawn on.
+  * Gameplay is a mixture of players drawing the world and playing on it.
+    * i.e.: one player could be drawing himself a castle and, as he's drawing,
+      another player could be walking on the lines being laid down, etc.
+  * World size should be infinite.
+    * Version 1 can have limited world sizes as it will probably be easier,
+      but this should be opened up eventually.
+  * Besides creative mode, other game modes should be explored eventually...
+    * Automatically-spawning enemy doodads that you have to fight?
+    * Procedurally generated default maps? Having a blank white canvas is
+      sorta like Superflat worlds in Minecraft, whereas normal Minecraft worlds
+      come with randomly generated terrain to start from.
+    * Find a way to incorporate drawing into a survival mode game? i.e. instead
+      of a "Creative Mode" style, "unlimited ink to draw as much as you want,"
+      have some natural limiter where players have to spend time in Play Mode
+      to be able to change the map.
 
 # File Formats
 

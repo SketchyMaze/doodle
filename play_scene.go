@@ -92,8 +92,8 @@ func (s *PlayScene) PollEvents(ev *events.State) {
 }
 
 // LoadLevel loads a level from disk.
-func (e *PlayScene) LoadLevel(filename string) error {
-	e.canvas = Grid{}
+func (s *PlayScene) LoadLevel(filename string) error {
+	s.canvas = Grid{}
 
 	m, err := level.LoadJSON(filename)
 	if err != nil {
@@ -105,7 +105,7 @@ func (e *PlayScene) LoadLevel(filename string) error {
 			x: point.X,
 			y: point.Y,
 		}
-		e.canvas[pixel] = nil
+		s.canvas[pixel] = nil
 	}
 
 	return nil

@@ -29,27 +29,27 @@ func (s *EditorScene) Name() string {
 }
 
 // Setup the editor scene.
-func (e *EditorScene) Setup(d *Doodle) error {
-	if e.pixelHistory == nil {
-		e.pixelHistory = []Pixel{}
+func (s *EditorScene) Setup(d *Doodle) error {
+	if s.pixelHistory == nil {
+		s.pixelHistory = []Pixel{}
 	}
-	if e.canvas == nil {
-		e.canvas = Grid{}
+	if s.canvas == nil {
+		s.canvas = Grid{}
 	}
-	e.width = d.width // TODO: canvas width = copy the window size
-	e.height = d.height
+	s.width = d.width // TODO: canvas width = copy the window size
+	s.height = d.height
 	return nil
 }
 
 // Loop the editor scene.
-func (e *EditorScene) Loop(d *Doodle) error {
+func (s *EditorScene) Loop(d *Doodle) error {
 	ev := d.events
 
 	// Taking a screenshot?
 	if ev.ScreenshotKey.Pressed() {
 		log.Info("Taking a screenshot")
-		e.Screenshot()
-		e.SaveLevel()
+		s.Screenshot()
+		s.SaveLevel()
 	}
 
 	// Clear the canvas and fill it with white.
@@ -67,25 +67,25 @@ func (e *EditorScene) Loop(d *Doodle) error {
 		}
 
 		// Append unique new pixels.
-		if len(e.pixelHistory) == 0 || e.pixelHistory[len(e.pixelHistory)-1] != pixel {
+		if len(s.pixelHistory) == 0 || s.pixelHistory[len(s.pixelHistory)-1] != pixel {
 			// If not a start pixel, make the delta coord the previous one.
-			if !pixel.start && len(e.pixelHistory) > 0 {
-				prev := e.pixelHistory[len(e.pixelHistory)-1]
+			if !pixel.start && len(s.pixelHistory) > 0 {
+				prev := s.pixelHistory[len(s.pixelHistory)-1]
 				pixel.dx = prev.x
 				pixel.dy = prev.y
 			}
 
-			e.pixelHistory = append(e.pixelHistory, pixel)
+			s.pixelHistory = append(s.pixelHistory, pixel)
 
 			// Save in the pixel canvas map.
-			e.canvas[pixel] = nil
+			s.canvas[pixel] = nil
 		}
 	}
 
 	d.renderer.SetDrawColor(0, 0, 0, 255)
-	for i, pixel := range e.pixelHistory {
+	for i, pixel := range s.pixelHistory {
 		if !pixel.start && i > 0 {
-			prev := e.pixelHistory[i-1]
+			prev := s.pixelHistory[i-1]
 			if prev.x == pixel.x && prev.y == pixel.y {
 				d.renderer.DrawPoint(pixel.x, pixel.y)
 			} else {
@@ -109,9 +109,9 @@ func (e *EditorScene) Loop(d *Doodle) error {
 }
 
 // LoadLevel loads a level from disk.
-func (e *EditorScene) LoadLevel(filename string) error {
-	e.pixelHistory = []Pixel{}
-	e.canvas = Grid{}
+func (s *EditorScene) LoadLevel(filename string) error {
+	s.pixelHistory = []Pixel{}
+	s.canvas = Grid{}
 
 	m, err := level.LoadJSON(filename)
 	if err != nil {
@@ -126,21 +126,21 @@ func (e *EditorScene) LoadLevel(filename string) error {
 			dx:    point.X,
 			dy:    point.Y,
 		}
-		e.pixelHistory = append(e.pixelHistory, pixel)
-		e.canvas[pixel] = nil
+		s.pixelHistory = append(s.pixelHistory, pixel)
+		s.canvas[pixel] = nil
 	}
 
 	return nil
 }
 
 // SaveLevel saves the level to disk.
-func (e *EditorScene) SaveLevel() {
+func (s *EditorScene) SaveLevel() {
 	m := level.Level{
 		Version: 1,
 		Title:   "Alpha",
 		Author:  os.Getenv("USER"),
-		Width:   e.width,
-		Height:  e.height,
+		Width:   s.width,
+		Height:  s.height,
 		Palette: []level.Palette{
 			level.Palette{
 				Color: "#000000",
@@ -150,7 +150,7 @@ func (e *EditorScene) SaveLevel() {
 		Pixels: []level.Pixel{},
 	}
 
-	for pixel := range e.canvas {
+	for pixel := range s.canvas {
 		for point := range draw.Line(pixel.x, pixel.y, pixel.dx, pixel.dy) {
 			m.Pixels = append(m.Pixels, level.Pixel{
 				X:       point.X,
@@ -177,18 +177,18 @@ func (e *EditorScene) SaveLevel() {
 }
 
 // Screenshot saves the level canvas to disk as a PNG image.
-func (e *EditorScene) Screenshot() {
-	screenshot := image.NewRGBA(image.Rect(0, 0, int(e.width), int(e.height)))
+func (s *EditorScene) Screenshot() {
+	screenshot := image.NewRGBA(image.Rect(0, 0, int(s.width), int(s.height)))
 
 	// White-out the image.
-	for x := 0; x < int(e.width); x++ {
-		for y := 0; y < int(e.height); y++ {
+	for x := 0; x < int(s.width); x++ {
+		for y := 0; y < int(s.height); y++ {
 			screenshot.Set(x, y, image.White)
 		}
 	}
 
 	// Fill in the dots we drew.
-	for pixel := range e.canvas {
+	for pixel := range s.canvas {
 		// A line or a dot?
 		if pixel.x == pixel.dx && pixel.y == pixel.dy {
 			screenshot.Set(int(pixel.x), int(pixel.y), image.Black)
