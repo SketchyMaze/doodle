@@ -19,6 +19,7 @@ type EditorScene struct {
 	// History of all the pixels placed by the user.
 	pixelHistory []Pixel
 	canvas       Grid
+	filename     string // Last saved filename.
 
 	// Canvas size
 	width  int32
@@ -49,7 +50,6 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.ScreenshotKey.Pressed() {
 		log.Info("Taking a screenshot")
 		s.Screenshot()
-		s.SaveLevel()
 	}
 
 	// Clear the canvas and fill it with white.
@@ -81,6 +81,11 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 		}
 	}
 
+	return nil
+}
+
+// Draw the current frame.
+func (s *EditorScene) Draw(d *Doodle) error {
 	for i, pixel := range s.pixelHistory {
 		if !pixel.start && i > 0 {
 			prev := s.pixelHistory[i-1]
@@ -105,6 +110,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 // LoadLevel loads a level from disk.
 func (s *EditorScene) LoadLevel(filename string) error {
+	s.filename = filename
 	s.pixelHistory = []Pixel{}
 	s.canvas = Grid{}
 
@@ -129,7 +135,8 @@ func (s *EditorScene) LoadLevel(filename string) error {
 }
 
 // SaveLevel saves the level to disk.
-func (s *EditorScene) SaveLevel() {
+func (s *EditorScene) SaveLevel(filename string) {
+	s.filename = filename
 	m := level.Level{
 		Version: 1,
 		Title:   "Alpha",
@@ -161,9 +168,6 @@ func (s *EditorScene) SaveLevel() {
 		return
 	}
 
-	filename := fmt.Sprintf("./map-%s.json",
-		time.Now().Format("2006-01-02T15-04-05"),
-	)
 	err = ioutil.WriteFile(filename, json, 0644)
 	if err != nil {
 		log.Error("Create map file error: %s", err)

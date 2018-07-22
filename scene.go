@@ -8,7 +8,13 @@ import "git.kirsle.net/apps/doodle/events"
 type Scene interface {
 	Name() string
 	Setup(*Doodle) error
+
+	// Loop should update the scene's state but not draw anything.
 	Loop(*Doodle, *events.State) error
+
+	// Draw should use the scene's state to figure out what pixels need
+	// to draw to the screen.
+	Draw(*Doodle) error
 }
 
 // Goto a scene. First it unloads the current scene.

@@ -1,6 +1,8 @@
 // Package events manages mouse and keyboard SDL events for Doodle.
 package events
 
+import "strings"
+
 // State keeps track of event states.
 type State struct {
 	// Mouse buttons.
@@ -10,6 +12,9 @@ type State struct {
 	// Screenshot key.
 	ScreenshotKey *BoolTick
 	EscapeKey     *BoolTick
+	EnterKey      *BoolTick
+	ShiftActive   *BoolTick
+	KeyName       *StringTick
 	Up            *BoolTick
 	Left          *BoolTick
 	Right         *BoolTick
@@ -27,6 +32,9 @@ func New() *State {
 		Button2:       &BoolTick{},
 		ScreenshotKey: &BoolTick{},
 		EscapeKey:     &BoolTick{},
+		EnterKey:      &BoolTick{},
+		ShiftActive:   &BoolTick{},
+		KeyName:       &StringTick{},
 		Up:            &BoolTick{},
 		Left:          &BoolTick{},
 		Right:         &BoolTick{},
@@ -34,4 +42,44 @@ func New() *State {
 		CursorX:       &Int32Tick{},
 		CursorY:       &Int32Tick{},
 	}
+}
+
+// ReadKey returns the normalized key symbol being pressed,
+// taking the Shift key into account. QWERTY keyboard only, probably.
+func (ev *State) ReadKey() string {
+	if key := ev.KeyName.Read(); key != "" {
+		if ev.ShiftActive.Pressed() {
+			if symbol, ok := shiftMap[key]; ok {
+				return symbol
+			}
+			return strings.ToUpper(key)
+		}
+		return key
+	}
+	return ""
+}
+
+// shiftMap maps keys to their Shift versions.
+var shiftMap = map[string]string{
+	"`": "~",
+	"1": "!",
+	"2": "@",
+	"3": "#",
+	"4": "$",
+	"5": "%",
+	"6": "^",
+	"7": "&",
+	"8": "*",
+	"9": "(",
+	"0": ")",
+	"-": "_",
+	"=": "+",
+	"[": "{",
+	"]": "}",
+	`\`: "|",
+	";": ":",
+	`'`: `"`,
+	",": "<",
+	".": ">",
+	"/": "?",
 }

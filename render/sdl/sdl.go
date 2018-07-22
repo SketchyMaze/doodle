@@ -159,16 +159,23 @@ func (r *Renderer) Poll() (*events.State, error) {
 				)
 			}
 		case *sdl.KeyboardEvent:
-			log.Debug("[%d ms] tick:%d Keyboard  type:%d  sym:%c  modifiers:%d  state:%d  repeat:%d\n",
-				t.Timestamp, r.ticks, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat,
-			)
-			if t.Repeat == 1 {
-				continue
+			if DebugKeyEvents {
+				log.Debug("[%d ms] tick:%d Keyboard  type:%d  sym:%c  modifiers:%d  state:%d  repeat:%d\n",
+					t.Timestamp, r.ticks, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat,
+				)
 			}
 
 			switch t.Keysym.Scancode {
 			case sdl.SCANCODE_ESCAPE:
+				if t.Repeat == 1 {
+					continue
+				}
 				s.EscapeKey.Push(t.State == 1)
+			case sdl.SCANCODE_RETURN:
+				if t.Repeat == 1 {
+					continue
+				}
+				s.EnterKey.Push(t.State == 1)
 			case sdl.SCANCODE_F12:
 				s.ScreenshotKey.Push(t.State == 1)
 			case sdl.SCANCODE_UP:
@@ -179,6 +186,25 @@ func (r *Renderer) Poll() (*events.State, error) {
 				s.Right.Push(t.State == 1)
 			case sdl.SCANCODE_DOWN:
 				s.Down.Push(t.State == 1)
+			case sdl.SCANCODE_LSHIFT:
+			case sdl.SCANCODE_RSHIFT:
+				s.ShiftActive.Push(t.State == 1)
+				continue
+			case sdl.SCANCODE_LALT:
+			case sdl.SCANCODE_RALT:
+			case sdl.SCANCODE_LCTRL:
+			case sdl.SCANCODE_RCTRL:
+				continue
+			case sdl.SCANCODE_BACKSPACE:
+				// Make it a key event with "\b" as the sequence.
+				if t.State == 1 || t.Repeat == 1 {
+					s.KeyName.Push(`\b`)
+				}
+			default:
+				// Push the string value of the key.
+				if t.State == 1 {
+					s.KeyName.Push(string(t.Keysym.Sym))
+				}
 			}
 		}
 	}
@@ -186,8 +212,8 @@ func (r *Renderer) Poll() (*events.State, error) {
 	return s, nil
 }
 
-// Draw a single frame.
-func (r *Renderer) Draw() error {
+// Present the current frame.
+func (r *Renderer) Present() error {
 	r.renderer.Present()
 	return nil
 }

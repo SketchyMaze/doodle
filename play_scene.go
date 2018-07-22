@@ -42,9 +42,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	s.movePlayer(ev)
-
-	// Apply gravity.
-	return s.Draw(d)
+	return nil
 }
 
 // Draw the pixels on this frame.
@@ -57,7 +55,6 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	}
 
 	// Draw our hero.
-	log.Info("hero %s %+v", render.Magenta, render.Magenta)
 	d.Engine.DrawRect(render.Magenta, render.Rect{s.x, s.y, 16, 16})
 
 	return nil

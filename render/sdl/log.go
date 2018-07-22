@@ -8,6 +8,7 @@ var log *golog.Logger
 var (
 	DebugMouseEvents = false
 	DebugClickEvents = false
+	DebugKeyEvents   = false
 )
 
 func init() {

@@ -42,3 +42,16 @@ func (r *Renderer) DrawRect(color render.Color, rect render.Rect) {
 		H: rect.H,
 	})
 }
+
+// DrawBox draws a filled rectangle.
+func (r *Renderer) DrawBox(color render.Color, rect render.Rect) {
+	if color != r.lastColor {
+		r.renderer.SetDrawColor(color.Red, color.Green, color.Blue, color.Alpha)
+	}
+	r.renderer.FillRect(&sdl.Rect{
+		X: rect.X,
+		Y: rect.Y,
+		W: rect.W,
+		H: rect.H,
+	})
+}

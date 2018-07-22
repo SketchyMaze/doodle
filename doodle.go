@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/kirsle/golog"
 )
@@ -28,9 +27,11 @@ type Doodle struct {
 	startTime time.Time
 	running   bool
 	ticks     uint64
-	events    *events.State
 	width     int32
 	height    int32
+
+	// Command line shell options.
+	shell Shell
 
 	scene Scene
 }
@@ -41,11 +42,11 @@ func New(debug bool, engine render.Engine) *Doodle {
 		Debug:     debug,
 		Engine:    engine,
 		startTime: time.Now(),
-		events:    events.New(),
 		running:   true,
 		width:     800,
 		height:    600,
 	}
+	d.shell = NewShell(d)
 
 	if !debug {
 		log.Config.Level = golog.InfoLevel
@@ -68,6 +69,8 @@ func (d *Doodle) Run() error {
 
 	log.Info("Enter Main Loop")
 	for d.running {
+		d.Engine.Clear(render.White)
+
 		start := time.Now() // Record how long this frame took.
 		d.ticks++
 
@@ -79,24 +82,43 @@ func (d *Doodle) Run() error {
 			break
 		}
 
-		// Global event handlers.
-		if ev.EscapeKey.Pressed() {
-			log.Error("Escape key pressed, shutting down")
-			d.running = false
-			break
+		// Command line shell.
+		if d.shell.Open {
+
+		} else if ev.EnterKey.Read() {
+			log.Debug("Shell: opening shell")
+			d.shell.Open = true
+		} else {
+			// Global event handlers.
+			if ev.EscapeKey.Read() {
+				log.Error("Escape key pressed, shutting down")
+				d.running = false
+				break
+			}
+
+			// Run the scene's logic.
+			err = d.scene.Loop(d, ev)
+			if err != nil {
+				return err
+			}
 		}
 
-		// Run the scene's logic.
-		err = d.scene.Loop(d, ev)
+		// Draw the scene.
+		d.scene.Draw(d)
+
+		// Draw the shell.
+		err = d.shell.Draw(d, ev)
 		if err != nil {
-			return err
+			log.Error("shell error: %s", err)
+			d.running = false
+			break
 		}
 
 		// Draw the debug overlay over all scenes.
 		d.DrawDebugOverlay()
 
 		// Render the pixels to the screen.
-		err = d.Engine.Draw()
+		err = d.Engine.Present()
 		if err != nil {
 			log.Error("draw error: %s", err)
 			d.running = false
@@ -114,10 +136,20 @@ func (d *Doodle) Run() error {
 
 		// Track how long this frame took to measure FPS over time.
 		d.TrackFPS(delay)
+
+		// Consume any lingering key sym.
+		ev.KeyName.Read()
 	}
 
 	log.Warn("Main Loop Exited! Shutting down...")
 	return nil
+}
+
+// NewMap loads a new map in Edit Mode.
+func (d *Doodle) NewMap() {
+	log.Info("Starting a new map")
+	scene := &EditorScene{}
+	d.Goto(scene)
 }
 
 // EditLevel loads a map from JSON into the EditorScene.
@@ -144,7 +176,7 @@ func (d *Doodle) PlayLevel(filename string) error {
 	return nil
 }
 
-// TODO: not a global
+// Pixel TODO: not a global
 type Pixel struct {
 	start bool
 	x     int32

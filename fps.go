@@ -2,7 +2,6 @@ package doodle
 
 import (
 	"fmt"
-	"time"
 
 	"git.kirsle.net/apps/doodle/render"
 )
@@ -26,11 +25,9 @@ func (d *Doodle) DrawDebugOverlay() {
 	}
 
 	label := fmt.Sprintf(
-		"FPS: %d (%dms)  (%d,%d)  S:%s  F12=screenshot",
+		"FPS: %d (%dms)  S:%s  F12=screenshot",
 		fpsCurrent,
 		fpsSkipped,
-		d.events.CursorX.Now,
-		d.events.CursorY.Now,
 		d.scene.Name(),
 	)
 
@@ -42,11 +39,9 @@ func (d *Doodle) DrawDebugOverlay() {
 			Stroke: DebugTextStroke,
 			Shadow: DebugTextShadow,
 		},
-		render.Rect{
+		render.Point{
 			X: DebugTextPadding,
 			Y: DebugTextPadding,
-			W: d.width,
-			H: d.height,
 		},
 	)
 	if err != nil {
@@ -65,12 +60,12 @@ func (d *Doodle) TrackFPS(skipped uint32) {
 	}
 
 	if fpsLastTime < fpsCurrentTicks-fpsInterval {
-		log.Debug("Uptime: %s  FPS: %d   deltaTicks: %d   skipped: %dms",
-			time.Now().Sub(d.startTime),
-			fpsCurrent,
-			fpsCurrentTicks-fpsLastTime,
-			skipped,
-		)
+		// log.Debug("Uptime: %s  FPS: %d   deltaTicks: %d   skipped: %dms",
+		// 	time.Now().Sub(d.startTime),
+		// 	fpsCurrent,
+		// 	fpsCurrentTicks-fpsLastTime,
+		// 	skipped,
+		// )
 
 		fpsLastTime = fpsCurrentTicks
 		fpsCurrent = fpsFrames

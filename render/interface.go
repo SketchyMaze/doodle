@@ -15,15 +15,16 @@ type Engine interface {
 	Poll() (*events.State, error)
 	GetTicks() uint32
 
-	// Draw presents the current state to the screen.
-	Draw() error
+	// Present presents the current state to the screen.
+	Present() error
 
 	// Clear the full canvas and set this color.
 	Clear(Color)
 	DrawPoint(Color, Point)
 	DrawLine(Color, Point, Point)
 	DrawRect(Color, Rect)
-	DrawText(Text, Rect) error
+	DrawBox(Color, Rect)
+	DrawText(Text, Point) error
 
 	// Delay for a moment using the render engine's delay method,
 	// implemented by sdl.Delay(uint32)

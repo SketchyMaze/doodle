@@ -1,6 +1,9 @@
 package sdl
 
 import (
+	"strings"
+
+	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -23,8 +26,22 @@ func LoadFont(size int) (*ttf.Font, error) {
 	return font, nil
 }
 
+// Keysym returns the current key pressed, taking into account the Shift
+// key modifier.
+func (r *Renderer) Keysym(ev *events.State) string {
+	if key := ev.KeyName.Read(); key != "" {
+		if ev.ShiftActive.Pressed() {
+			if symbol, ok := shiftMap[key]; ok {
+				return symbol
+			}
+			return strings.ToUpper(key)
+		}
+	}
+	return ""
+}
+
 // DrawText draws text on the canvas.
-func (r *Renderer) DrawText(text render.Text, rect render.Rect) error {
+func (r *Renderer) DrawText(text render.Text, point render.Point) error {
 	var (
 		font    *ttf.Font
 		surface *sdl.Surface
@@ -48,8 +65,8 @@ func (r *Renderer) DrawText(text render.Text, rect render.Rect) error {
 		defer tex.Destroy()
 
 		tmp := &sdl.Rect{
-			X: rect.X + dx,
-			Y: rect.Y + dy,
+			X: point.X + dx,
+			Y: point.Y + dy,
 			W: surface.W,
 			H: surface.H,
 		}
@@ -78,4 +95,29 @@ func (r *Renderer) DrawText(text render.Text, rect render.Rect) error {
 	write(0, 0, ColorToSDL(text.Color))
 
 	return err
+}
+
+// shiftMap maps keys to their Shift versions.
+var shiftMap = map[string]string{
+	"`": "~",
+	"1": "!",
+	"2": "@",
+	"3": "#",
+	"4": "$",
+	"5": "%",
+	"6": "^",
+	"7": "&",
+	"8": "*",
+	"9": "(",
+	"0": ")",
+	"-": "_",
+	"=": "+",
+	"[": "{",
+	"]": "}",
+	`\`: "|",
+	";": ":",
+	`'`: `"`,
+	",": "<",
+	".": ">",
+	"/": "?",
 }
