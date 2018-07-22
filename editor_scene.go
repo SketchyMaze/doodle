@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/draw"
+	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // EditorScene manages the "Edit Level" game mode.
@@ -42,9 +44,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 }
 
 // Loop the editor scene.
-func (s *EditorScene) Loop(d *Doodle) error {
-	ev := d.events
-
+func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	// Taking a screenshot?
 	if ev.ScreenshotKey.Pressed() {
 		log.Info("Taking a screenshot")
@@ -53,8 +53,7 @@ func (s *EditorScene) Loop(d *Doodle) error {
 	}
 
 	// Clear the canvas and fill it with white.
-	d.renderer.SetDrawColor(255, 255, 255, 255)
-	d.renderer.Clear()
+	d.Engine.Clear(render.White)
 
 	// Clicking? Log all the pixels while doing so.
 	if ev.Button1.Now {
@@ -82,28 +81,24 @@ func (s *EditorScene) Loop(d *Doodle) error {
 		}
 	}
 
-	d.renderer.SetDrawColor(0, 0, 0, 255)
 	for i, pixel := range s.pixelHistory {
 		if !pixel.start && i > 0 {
 			prev := s.pixelHistory[i-1]
 			if prev.x == pixel.x && prev.y == pixel.y {
-				d.renderer.DrawPoint(pixel.x, pixel.y)
+				d.Engine.DrawPoint(
+					render.Black,
+					render.Point{pixel.x, pixel.y},
+				)
 			} else {
-				d.renderer.DrawLine(
-					pixel.x,
-					pixel.y,
-					prev.x,
-					prev.y,
+				d.Engine.DrawLine(
+					render.Black,
+					render.Point{pixel.x, pixel.y},
+					render.Point{prev.x, prev.y},
 				)
 			}
 		}
-		d.renderer.DrawPoint(pixel.x, pixel.y)
+		d.Engine.DrawPoint(render.Black, render.Point{pixel.x, pixel.y})
 	}
-
-	// Draw the FPS.
-	d.DrawDebugOverlay()
-
-	d.renderer.Present()
 
 	return nil
 }

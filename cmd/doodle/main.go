@@ -5,6 +5,7 @@ import (
 	"runtime"
 
 	"git.kirsle.net/apps/doodle"
+	"git.kirsle.net/apps/doodle/render/sdl"
 )
 
 // Build number is the git commit hash.
@@ -31,7 +32,14 @@ func main() {
 		filename = args[0]
 	}
 
-	app := doodle.New(debug)
+	// SDL engine.
+	engine := sdl.New(
+		"Doodle v"+doodle.Version,
+		800,
+		600,
+	)
+
+	app := doodle.New(debug, engine)
 	if filename != "" {
 		if edit {
 			app.EditLevel(filename)

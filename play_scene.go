@@ -3,7 +3,7 @@ package doodle
 import (
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
-	"github.com/veandco/go-sdl2/sdl"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // PlayScene manages the "Edit Level" game mode.
@@ -40,43 +40,31 @@ func (s *PlayScene) Setup(d *Doodle) error {
 }
 
 // Loop the editor scene.
-func (s *PlayScene) Loop(d *Doodle) error {
-	s.PollEvents(d.events)
+func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
+	s.movePlayer(ev)
 
 	// Apply gravity.
-
 	return s.Draw(d)
 }
 
 // Draw the pixels on this frame.
 func (s *PlayScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with white.
-	d.renderer.SetDrawColor(255, 255, 255, 255)
-	d.renderer.Clear()
+	d.Engine.Clear(render.White)
 
-	d.renderer.SetDrawColor(0, 0, 0, 255)
 	for pixel := range s.canvas {
-		d.renderer.DrawPoint(pixel.x, pixel.y)
+		d.Engine.DrawPoint(render.Black, render.Point{pixel.x, pixel.y})
 	}
 
 	// Draw our hero.
-	d.renderer.SetDrawColor(0, 0, 255, 255)
-	d.renderer.DrawRect(&sdl.Rect{
-		X: s.x,
-		Y: s.y,
-		W: 16,
-		H: 16,
-	})
-
-	// Draw the FPS.
-	d.DrawDebugOverlay()
-	d.renderer.Present()
+	log.Info("hero %s %+v", render.Magenta, render.Magenta)
+	d.Engine.DrawRect(render.Magenta, render.Rect{s.x, s.y, 16, 16})
 
 	return nil
 }
 
-// PollEvents checks the event state and updates variables.
-func (s *PlayScene) PollEvents(ev *events.State) {
+// movePlayer updates the player's X,Y coordinate based on key pressed.
+func (s *PlayScene) movePlayer(ev *events.State) {
 	if ev.Down.Now {
 		s.y += 4
 	}

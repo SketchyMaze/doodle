@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/render"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 // Frames to cache for FPS calculation.
@@ -26,7 +25,7 @@ func (d *Doodle) DrawDebugOverlay() {
 		return
 	}
 
-	text := fmt.Sprintf(
+	label := fmt.Sprintf(
 		"FPS: %d (%dms)  (%d,%d)  S:%s  F12=screenshot",
 		fpsCurrent,
 		fpsSkipped,
@@ -34,20 +33,31 @@ func (d *Doodle) DrawDebugOverlay() {
 		d.events.CursorY.Now,
 		d.scene.Name(),
 	)
-	render.StrokedText(render.TextConfig{
-		Text:        text,
-		Size:        DebugTextSize,
-		Color:       DebugTextColor,
-		StrokeColor: DebugTextOutline,
-		X:           DebugTextPadding,
-		Y:           DebugTextPadding,
-	})
+
+	err := d.Engine.DrawText(
+		render.Text{
+			Text:   label,
+			Size:   24,
+			Color:  DebugTextColor,
+			Stroke: DebugTextStroke,
+			Shadow: DebugTextShadow,
+		},
+		render.Rect{
+			X: DebugTextPadding,
+			Y: DebugTextPadding,
+			W: d.width,
+			H: d.height,
+		},
+	)
+	if err != nil {
+		log.Error("DrawDebugOverlay: text error: %s", err.Error())
+	}
 }
 
 // TrackFPS shows the current FPS once per second.
 func (d *Doodle) TrackFPS(skipped uint32) {
 	fpsFrames++
-	fpsCurrentTicks = sdl.GetTicks()
+	fpsCurrentTicks = d.Engine.GetTicks()
 
 	// Skip the first second.
 	if fpsCurrentTicks < fpsInterval {

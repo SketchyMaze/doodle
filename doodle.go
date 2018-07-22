@@ -7,8 +7,6 @@ import (
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/kirsle/golog"
-	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 const (
@@ -24,7 +22,8 @@ const (
 
 // Doodle is the game object.
 type Doodle struct {
-	Debug bool
+	Debug  bool
+	Engine render.Engine
 
 	startTime time.Time
 	running   bool
@@ -34,15 +33,13 @@ type Doodle struct {
 	height    int32
 
 	scene Scene
-
-	window   *sdl.Window
-	renderer *sdl.Renderer
 }
 
 // New initializes the game object.
-func New(debug bool) *Doodle {
+func New(debug bool, engine render.Engine) *Doodle {
 	d := &Doodle{
 		Debug:     debug,
+		Engine:    engine,
 		startTime: time.Now(),
 		events:    events.New(),
 		running:   true,
@@ -59,44 +56,10 @@ func New(debug bool) *Doodle {
 
 // Run initializes SDL and starts the main loop.
 func (d *Doodle) Run() error {
-	// Initialize SDL.
-	log.Info("Initializing SDL")
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+	// Set up the render engine.
+	if err := d.Engine.Setup(); err != nil {
 		return err
 	}
-	defer sdl.Quit()
-
-	// Initialize SDL_TTF.
-	log.Info("Initializing SDL_TTF")
-	if err := ttf.Init(); err != nil {
-		return err
-	}
-
-	// Create our window.
-	log.Info("Creating the Main Window")
-	window, err := sdl.CreateWindow(
-		"Doodle v"+Version,
-		sdl.WINDOWPOS_CENTERED,
-		sdl.WINDOWPOS_CENTERED,
-		d.width,
-		d.height,
-		sdl.WINDOW_SHOWN,
-	)
-	if err != nil {
-		return err
-	}
-	defer window.Destroy()
-	d.window = window
-
-	// Blank out the window in white.
-	log.Info("Creating the SDL Renderer")
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
-	if err != nil {
-		panic(err)
-	}
-	d.renderer = renderer
-	render.Renderer = renderer
-	defer renderer.Destroy()
 
 	// Set up the default scene.
 	if d.scene == nil {
@@ -105,31 +68,49 @@ func (d *Doodle) Run() error {
 
 	log.Info("Enter Main Loop")
 	for d.running {
+		start := time.Now() // Record how long this frame took.
 		d.ticks++
 
 		// Poll for events.
-		_, err := d.events.Poll(d.ticks)
+		ev, err := d.Engine.Poll()
 		if err != nil {
 			log.Error("event poll error: %s", err)
-			return err
+			d.running = false
+			break
 		}
 
-		// Draw a frame and log how long it took.
-		start := time.Now()
-		err = d.scene.Loop(d)
+		// Global event handlers.
+		if ev.EscapeKey.Pressed() {
+			log.Error("Escape key pressed, shutting down")
+			d.running = false
+			break
+		}
+
+		// Run the scene's logic.
+		err = d.scene.Loop(d, ev)
 		if err != nil {
 			return err
 		}
 
-		elapsed := time.Now().Sub(start)
+		// Draw the debug overlay over all scenes.
+		d.DrawDebugOverlay()
+
+		// Render the pixels to the screen.
+		err = d.Engine.Draw()
+		if err != nil {
+			log.Error("draw error: %s", err)
+			d.running = false
+			break
+		}
 
 		// Delay to maintain the target frames per second.
+		elapsed := time.Now().Sub(start)
 		tmp := elapsed / time.Millisecond
 		var delay uint32
 		if TargetFPS-int(tmp) > 0 { // make sure it won't roll under
 			delay = uint32(TargetFPS - int(tmp))
 		}
-		sdl.Delay(delay)
+		d.Engine.Delay(delay)
 
 		// Track how long this frame took to measure FPS over time.
 		d.TrackFPS(delay)
