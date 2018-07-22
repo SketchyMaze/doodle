@@ -30,6 +30,59 @@ Doodle is a drawing-based maze game written in Go.
 * If you receive a map with custom doodads, you can **install** the doodads
   into your copy of the game and use them in your own maps.
 
+# Keybindings
+
+Global Keybindings:
+
+```
+Escape
+  Close the developer console if open, without running any commands.
+  Exit the program otherwise.
+
+Enter
+  Open and close the developer console, and run commands while the console
+  is open.
+```
+
+In Play Mode:
+
+```
+Cursor Keys
+  Move the player around.
+```
+
+In Edit Mode:
+
+```
+F12
+  Take a screenshot (generate a PNG based on level data)
+```
+
+## Developer Console
+
+Press `Enter` at any time to open the developer console.
+
+Commands supported:
+
+```
+new
+  Create a new map in Edit Mode.
+
+save [filename.json]
+  Save the current map in Edit Mode. The filename is required if the map has
+  not been saved yet.
+
+edit [filename.json]
+  Open a map in Edit Mode.
+
+play [filename.json]
+  Open a map in Play Mode.
+
+exit
+quit
+  Close the developer console.
+```
+
 # Milestones
 
 As a rough idea of the milestones needed for this game to work:
@@ -51,6 +104,12 @@ As a rough idea of the milestones needed for this game to work:
   canvas into this custom file format.
 * [x] Make the program able to read this file format and reproduce the same
   pixels on the canvas.
+* [x] Abstract away SDL logic into a small corner so it can be replaced with
+  OpenGL or something later on.
+* [x] Implement a command line shell in-game to ease development before a user
+  interface is created.
+  * [ ] Add support for the shell to pop itself open and ask the user for
+    input prompts.
 
 ## Platformer
 

@@ -83,7 +83,6 @@ func (r *Renderer) Setup() error {
 		panic(err)
 	}
 	r.renderer = renderer
-	render.Renderer = renderer
 
 	return nil
 }
