@@ -7,11 +7,12 @@ import (
 
 // Level is the container format for Doodle map drawings.
 type Level struct {
-	Version  int32  `json:"version"` // File format version spec.
-	Title    string `json:"title"`
-	Author   string `json:"author"`
-	Password string `json:"passwd"`
-	Locked   bool   `json:"locked"`
+	Version     int32  `json:"version"`     // File format version spec.
+	GameVersion string `json:"gameVersion"` // Game version that created the level.
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+	Password    string `json:"passwd"`
+	Locked      bool   `json:"locked"`
 
 	// Level size.
 	Width  int32 `json:"w"`

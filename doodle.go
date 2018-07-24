@@ -1,7 +1,6 @@
 package doodle
 
 import (
-	"fmt"
 	"time"
 
 	"git.kirsle.net/apps/doodle/render"
@@ -167,30 +166,9 @@ func (d *Doodle) EditLevel(filename string) error {
 // PlayLevel loads a map from JSON into the PlayScene.
 func (d *Doodle) PlayLevel(filename string) error {
 	log.Info("Loading level from file: %s", filename)
-	scene := &PlayScene{}
-	err := scene.LoadLevel(filename)
-	if err != nil {
-		return err
+	scene := &PlayScene{
+		Filename: filename,
 	}
 	d.Goto(scene)
 	return nil
 }
-
-// Pixel TODO: not a global
-type Pixel struct {
-	start bool
-	x     int32
-	y     int32
-	dx    int32
-	dy    int32
-}
-
-func (p Pixel) String() string {
-	return fmt.Sprintf("(%d,%d) delta (%d,%d)",
-		p.x, p.y,
-		p.dx, p.dy,
-	)
-}
-
-// Grid is a 2D grid of pixels in X,Y notation.
-type Grid map[Pixel]interface{}

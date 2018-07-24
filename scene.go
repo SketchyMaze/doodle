@@ -8,6 +8,7 @@ import "git.kirsle.net/apps/doodle/events"
 type Scene interface {
 	Name() string
 	Setup(*Doodle) error
+	Destroy() error
 
 	// Loop should update the scene's state but not draw anything.
 	Loop(*Doodle, *events.State) error
@@ -19,7 +20,11 @@ type Scene interface {
 
 // Goto a scene. First it unloads the current scene.
 func (d *Doodle) Goto(scene Scene) error {
-	// d.scene.Destroy()
+	// Teardown existing scene.
+	if d.scene != nil {
+		d.scene.Destroy()
+	}
+
 	log.Info("Goto Scene")
 	d.scene = scene
 	return d.scene.Setup(d)

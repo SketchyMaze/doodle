@@ -16,9 +16,14 @@ import (
 
 // EditorScene manages the "Edit Level" game mode.
 type EditorScene struct {
+	// Configuration for the scene initializer.
+	OpenFile bool
+	Filename string
+	Canvas   render.Grid
+
 	// History of all the pixels placed by the user.
-	pixelHistory []Pixel
-	canvas       Grid
+	pixelHistory []render.Pixel
+	canvas       render.Grid
 	filename     string // Last saved filename.
 
 	// Canvas size
@@ -33,11 +38,32 @@ func (s *EditorScene) Name() string {
 
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
+	// Were we given configuration data?
+	if s.Filename != "" {
+		log.Debug("EditorScene: Set filename to %s", s.Filename)
+		s.filename = s.Filename
+		s.Filename = ""
+		if s.OpenFile {
+			log.Debug("EditorScene: Loading map from filename at %s", s.filename)
+			if err := s.LoadLevel(s.filename); err != nil {
+				return err
+			}
+		}
+	}
+	if s.Canvas != nil {
+		log.Debug("EditorScene: Received Canvas from caller")
+		s.canvas = s.Canvas
+		s.Canvas = nil
+	}
+
+	d.Flash("Editor Mode. Press 'P' to play this map.")
+
 	if s.pixelHistory == nil {
-		s.pixelHistory = []Pixel{}
+		s.pixelHistory = []render.Pixel{}
 	}
 	if s.canvas == nil {
-		s.canvas = Grid{}
+		log.Debug("EditorScene: Setting default canvas to an empty grid")
+		s.canvas = render.Grid{}
 	}
 	s.width = d.width // TODO: canvas width = copy the window size
 	s.height = d.height
@@ -52,31 +78,45 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 		s.Screenshot()
 	}
 
+	// Switching to Play Mode?
+	if ev.KeyName.Read() == "p" {
+		log.Info("Play Mode, Go!")
+		d.Goto(&PlayScene{
+			Canvas: s.canvas,
+		})
+		return nil
+	}
+
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
 
 	// Clicking? Log all the pixels while doing so.
 	if ev.Button1.Now {
-		pixel := Pixel{
-			start: ev.Button1.Pressed(),
-			x:     ev.CursorX.Now,
-			y:     ev.CursorY.Now,
-			dx:    ev.CursorX.Now,
-			dy:    ev.CursorY.Now,
+		log.Warn("Button1: %+v", ev.Button1)
+		pixel := render.Pixel{
+			Start: ev.Button1.Pressed(),
+			X:     ev.CursorX.Now,
+			Y:     ev.CursorY.Now,
+			DX:    ev.CursorX.Last,
+			DY:    ev.CursorY.Last,
+		}
+		if pixel.Start {
+			log.Warn("START PIXEL %+v", pixel)
 		}
 
 		// Append unique new pixels.
 		if len(s.pixelHistory) == 0 || s.pixelHistory[len(s.pixelHistory)-1] != pixel {
 			// If not a start pixel, make the delta coord the previous one.
-			if !pixel.start && len(s.pixelHistory) > 0 {
+			if !pixel.Start && len(s.pixelHistory) > 0 {
 				prev := s.pixelHistory[len(s.pixelHistory)-1]
-				pixel.dx = prev.x
-				pixel.dy = prev.y
+				pixel.DY = prev.Y
+				pixel.DX = prev.X
 			}
 
 			s.pixelHistory = append(s.pixelHistory, pixel)
 
 			// Save in the pixel canvas map.
+			fmt.Printf("%+v", pixel)
 			s.canvas[pixel] = nil
 		}
 	}
@@ -86,24 +126,26 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
-	for i, pixel := range s.pixelHistory {
-		if !pixel.start && i > 0 {
-			prev := s.pixelHistory[i-1]
-			if prev.x == pixel.x && prev.y == pixel.y {
-				d.Engine.DrawPoint(
-					render.Black,
-					render.Point{pixel.x, pixel.y},
-				)
-			} else {
-				d.Engine.DrawLine(
-					render.Black,
-					render.Point{pixel.x, pixel.y},
-					render.Point{prev.x, prev.y},
-				)
-			}
-		}
-		d.Engine.DrawPoint(render.Black, render.Point{pixel.x, pixel.y})
-	}
+	// for i, pixel := range s.pixelHistory {
+	// 	if !pixel.Start && i > 0 {
+	// 		prev := s.pixelHistory[i-1]
+	// 		if prev.X == pixel.X && prev.Y == pixel.Y {
+	// 			d.Engine.DrawPoint(
+	// 				render.Black,
+	// 				render.Point{pixel.X, pixel.Y},
+	// 			)
+	// 		} else {
+	// 			d.Engine.DrawLine(
+	// 				render.Black,
+	// 				render.Point{pixel.X, pixel.Y},
+	// 				render.Point{prev.X, prev.Y},
+	// 			)
+	// 		}
+	// 	}
+	// 	d.Engine.DrawPoint(render.Black, render.Point{pixel.X, pixel.Y})
+	// }
+
+	s.canvas.Draw(d.Engine)
 
 	return nil
 }
@@ -111,8 +153,8 @@ func (s *EditorScene) Draw(d *Doodle) error {
 // LoadLevel loads a level from disk.
 func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
-	s.pixelHistory = []Pixel{}
-	s.canvas = Grid{}
+	s.pixelHistory = []render.Pixel{}
+	s.canvas = render.Grid{}
 
 	m, err := level.LoadJSON(filename)
 	if err != nil {
@@ -120,12 +162,12 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	}
 
 	for _, point := range m.Pixels {
-		pixel := Pixel{
-			start: true,
-			x:     point.X,
-			y:     point.Y,
-			dx:    point.X,
-			dy:    point.Y,
+		pixel := render.Pixel{
+			Start: true,
+			X:     point.X,
+			Y:     point.Y,
+			DX:    point.X,
+			DY:    point.Y,
 		}
 		s.pixelHistory = append(s.pixelHistory, pixel)
 		s.canvas[pixel] = nil
@@ -153,12 +195,20 @@ func (s *EditorScene) SaveLevel(filename string) {
 	}
 
 	for pixel := range s.canvas {
-		for point := range draw.Line(pixel.x, pixel.y, pixel.dx, pixel.dy) {
+		if pixel.DX == 0 && pixel.DY == 0 {
 			m.Pixels = append(m.Pixels, level.Pixel{
-				X:       point.X,
-				Y:       point.Y,
+				X:       pixel.X,
+				Y:       pixel.Y,
 				Palette: 0,
 			})
+		} else {
+			for point := range render.IterLine(pixel.X, pixel.Y, pixel.DX, pixel.DY) {
+				m.Pixels = append(m.Pixels, level.Pixel{
+					X:       point.X,
+					Y:       point.Y,
+					Palette: 0,
+				})
+			}
 		}
 	}
 
@@ -189,10 +239,10 @@ func (s *EditorScene) Screenshot() {
 	// Fill in the dots we drew.
 	for pixel := range s.canvas {
 		// A line or a dot?
-		if pixel.x == pixel.dx && pixel.y == pixel.dy {
-			screenshot.Set(int(pixel.x), int(pixel.y), image.Black)
+		if pixel.DX == 0 && pixel.DY == 0 {
+			screenshot.Set(int(pixel.X), int(pixel.Y), image.Black)
 		} else {
-			for point := range draw.Line(pixel.x, pixel.y, pixel.dx, pixel.dy) {
+			for point := range draw.Line(pixel.X, pixel.Y, pixel.DX, pixel.DY) {
 				screenshot.Set(int(point.X), int(point.Y), image.Black)
 			}
 		}
@@ -222,4 +272,9 @@ func (s *EditorScene) Screenshot() {
 		log.Error(err.Error())
 		return
 	}
+}
+
+// Destroy the scene.
+func (s *EditorScene) Destroy() error {
+	return nil
 }

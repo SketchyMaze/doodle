@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"git.kirsle.net/apps/doodle/draw"
-	"git.kirsle.net/apps/doodle/types"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 func TestLine(t *testing.T) {
@@ -14,7 +14,7 @@ func TestLine(t *testing.T) {
 		X2     int32
 		Y1     int32
 		Y2     int32
-		Expect []types.Point
+		Expect []render.Point
 	}
 	toString := func(t task) string {
 		return fmt.Sprintf("Line<%d,%d -> %d,%d>",
@@ -29,7 +29,7 @@ func TestLine(t *testing.T) {
 			Y1: 0,
 			X2: 0,
 			Y2: 10,
-			Expect: []types.Point{
+			Expect: []render.Point{
 				{X: 0, Y: 0},
 				{X: 0, Y: 1},
 				{X: 0, Y: 2},
@@ -48,7 +48,7 @@ func TestLine(t *testing.T) {
 			Y1: 10,
 			X2: 15,
 			Y2: 15,
-			Expect: []types.Point{
+			Expect: []render.Point{
 				{X: 10, Y: 10},
 				{X: 11, Y: 11},
 				{X: 12, Y: 12},

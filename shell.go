@@ -2,12 +2,18 @@ package doodle
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 )
+
+// Flash a message to the user.
+func (d *Doodle) Flash(template string, v ...interface{}) {
+	d.shell.Write(fmt.Sprintf(template, v...))
+}
 
 // Shell implements the developer console in-game.
 type Shell struct {

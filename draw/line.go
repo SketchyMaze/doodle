@@ -3,13 +3,13 @@ package draw
 import (
 	"math"
 
-	"git.kirsle.net/apps/doodle/types"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // Line is a generator that returns the X,Y coordinates to draw a line.
 // https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-func Line(x1, y1, x2, y2 int32) chan types.Point {
-	generator := make(chan types.Point)
+func Line(x1, y1, x2, y2 int32) chan render.Point {
+	generator := make(chan render.Point)
 
 	go func() {
 		var (
@@ -28,7 +28,7 @@ func Line(x1, y1, x2, y2 int32) chan types.Point {
 		x := float64(x1)
 		y := float64(y1)
 		for i := 0; i <= int(step); i++ {
-			generator <- types.Point{
+			generator <- render.Point{
 				X: int32(x),
 				Y: int32(y),
 			}
