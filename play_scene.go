@@ -82,6 +82,9 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	// Draw our hero.
 	s.player.Draw(d.Engine)
 
+	// Draw out bounding boxes.
+	d.DrawCollisionBox(s.player)
+
 	return nil
 }
 
@@ -105,20 +108,20 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 	}
 
 	// Apply gravity.
-	delta.Y += gravity
+	// var onFloor bool
 
-	// Draw a ray and check for collision.
-	var lastOk = s.player.Position()
-	for point := range render.IterLine2(s.player.Position(), delta) {
-		s.player.MoveTo(point)
-		if _, ok := doodads.CollidesWithGrid(s.player, &s.canvas); ok {
-			s.player.MoveTo(lastOk)
-		} else {
-			lastOk = s.player.Position()
-		}
+	info, ok := doodads.CollidesWithGrid(s.player, &s.canvas, delta)
+	if ok {
+		// Collision happened with world.
+	}
+	delta = info.MoveTo
+
+	// Apply gravity if not grounded.
+	if !s.player.Grounded() {
+		delta.Y += gravity
 	}
 
-	s.player.MoveTo(lastOk)
+	s.player.MoveTo(delta)
 }
 
 // LoadLevel loads a level from disk.

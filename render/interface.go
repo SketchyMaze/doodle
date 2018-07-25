@@ -45,6 +45,16 @@ type Color struct {
 	Alpha uint8
 }
 
+// RGBA creates a new Color.
+func RGBA(r, g, b, a uint8) Color {
+	return Color{
+		Red:   r,
+		Green: g,
+		Blue:  b,
+		Alpha: a,
+	}
+}
+
 func (c Color) String() string {
 	return fmt.Sprintf(
 		"Color<#%02x%02x%02x>",
@@ -91,18 +101,24 @@ func (t Text) String() string {
 
 // Common color names.
 var (
-	Invisible = Color{}
-	White     = Color{255, 255, 255, 255}
-	Grey      = Color{153, 153, 153, 255}
-	Black     = Color{0, 0, 0, 255}
-	SkyBlue   = Color{0, 153, 255, 255}
-	Blue      = Color{0, 0, 255, 255}
-	Red       = Color{255, 0, 0, 255}
-	Green     = Color{0, 255, 0, 255}
-	Cyan      = Color{0, 255, 255, 255}
-	Yellow    = Color{255, 255, 0, 255}
-	Magenta   = Color{255, 0, 255, 255}
-	Pink      = Color{255, 153, 255, 255}
+	Invisible  = Color{}
+	White      = RGBA(255, 255, 255, 255)
+	Grey       = RGBA(153, 153, 153, 255)
+	Black      = RGBA(0, 0, 0, 255)
+	SkyBlue    = RGBA(0, 153, 255, 255)
+	Blue       = RGBA(0, 0, 255, 255)
+	DarkBlue   = RGBA(0, 0, 153, 255)
+	Red        = RGBA(255, 0, 0, 255)
+	DarkRed    = RGBA(153, 0, 0, 255)
+	Green      = RGBA(0, 255, 0, 255)
+	DarkGreen  = RGBA(0, 153, 0, 255)
+	Cyan       = RGBA(0, 255, 255, 255)
+	DarkCyan   = RGBA(0, 153, 153, 255)
+	Yellow     = RGBA(255, 255, 0, 255)
+	DarkYellow = RGBA(153, 153, 0, 255)
+	Magenta    = RGBA(255, 0, 255, 255)
+	Purple     = RGBA(153, 0, 153, 255)
+	Pink       = RGBA(255, 153, 255, 255)
 )
 
 // IterLine is a generator that returns the X,Y coordinates to draw a line.

@@ -25,7 +25,7 @@ func (r *Renderer) DrawPoint(color render.Color, point render.Point) {
 // DrawLine draws a line between two points.
 func (r *Renderer) DrawLine(color render.Color, a, b render.Point) {
 	if color != r.lastColor {
-		r.renderer.SetDrawColor(color.Red, color.Blue, color.Green, color.Alpha)
+		r.renderer.SetDrawColor(color.Red, color.Green, color.Blue, color.Alpha)
 	}
 	r.renderer.DrawLine(a.X, a.Y, b.X, b.Y)
 }

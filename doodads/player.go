@@ -12,6 +12,7 @@ type Player struct {
 	point    render.Point
 	velocity render.Point
 	size     render.Rect
+	grounded bool
 }
 
 // NewPlayer creates the special Player Character doodad.
@@ -22,8 +23,8 @@ func NewPlayer() *Player {
 			Y: 100,
 		},
 		size: render.Rect{
-			W: 16,
-			H: 16,
+			W: 32,
+			H: 32,
 		},
 	}
 }
@@ -59,9 +60,19 @@ func (p *Player) Size() render.Rect {
 	return p.size
 }
 
+// Grounded returns if the player is grounded.
+func (p *Player) Grounded() bool {
+	return p.grounded
+}
+
+// SetGrounded sets if the player is grounded.
+func (p *Player) SetGrounded(v bool) {
+	p.grounded = v
+}
+
 // Draw the player sprite.
 func (p *Player) Draw(e render.Engine) {
-	e.DrawRect(render.Magenta, render.Rect{
+	e.DrawBox(render.Color{255, 255, 153, 255}, render.Rect{
 		X: p.point.X,
 		Y: p.point.Y,
 		W: p.size.W,

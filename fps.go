@@ -3,6 +3,7 @@ package doodle
 import (
 	"fmt"
 
+	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/render"
 )
 
@@ -47,6 +48,19 @@ func (d *Doodle) DrawDebugOverlay() {
 	if err != nil {
 		log.Error("DrawDebugOverlay: text error: %s", err.Error())
 	}
+}
+
+// DrawCollisionBox draws the collision box around a Doodad.
+func (d *Doodle) DrawCollisionBox(actor doodads.Doodad) {
+	var (
+		rect = doodads.GetBoundingRect(actor)
+		box  = doodads.GetCollisionBox(rect)
+	)
+
+	d.Engine.DrawLine(render.DarkGreen, box.Top[0], box.Top[1])
+	d.Engine.DrawLine(render.DarkBlue, box.Bottom[0], box.Bottom[1])
+	d.Engine.DrawLine(render.DarkYellow, box.Left[0], box.Left[1])
+	d.Engine.DrawLine(render.Red, box.Right[0], box.Right[1])
 }
 
 // TrackFPS shows the current FPS once per second.
