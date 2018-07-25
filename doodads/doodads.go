@@ -1,8 +1,6 @@
 package doodads
 
 import (
-	"fmt"
-
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
 )
@@ -41,6 +39,14 @@ type Collide struct {
 	MoveTo      render.Point
 }
 
+// Reset a Collide struct flipping all the bools off, but keeping MoveTo.
+func (c *Collide) Reset() {
+	c.Top = false
+	c.Left = false
+	c.Right = false
+	c.Bottom = false
+}
+
 // CollisionBox holds all of the coordinate pairs to draw the collision box
 // around a doodad.
 type CollisionBox struct {
@@ -70,6 +76,14 @@ func CollidesWithGrid(d Doodad, grid *render.Grid, target render.Point) (*Collid
 		result = &Collide{
 			MoveTo: P,
 		}
+		ceiling   bool  // Has hit a ceiling?
+		capHeight int32 // Stop vertical movement thru a ceiling
+		capLeft   int32 // Stop movement thru a wall
+		capRight  int32
+		hitLeft   bool // Has hit an obstacle on the left
+		hitRight  bool // or right
+		hitFloor  bool
+		capFloor  int32
 	)
 
 	// Test all of the bounding boxes for a collision with level geometry.
@@ -85,7 +99,7 @@ func CollidesWithGrid(d Doodad, grid *render.Grid, target render.Point) (*Collid
 			d.SetGrounded(false)
 		}
 		if result.Top {
-			P.Y++
+			// Never seen it touch the top.
 		}
 		if result.Left {
 			P.X++
@@ -112,15 +126,14 @@ func CollidesWithGrid(d Doodad, grid *render.Grid, target render.Point) (*Collid
 	// Cap our horizontal movement if we're touching walls.
 	if (result.Left && target.X < P.X) || (result.Right && target.X > P.X) {
 		// If the step is short enough, try and jump up.
-		relPoint := P.Y + S.H
+		height := P.Y + S.H
 		if result.Left && target.X < P.X {
-			relPoint -= result.LeftPoint.Y
+			height -= result.LeftPoint.Y
 		} else {
-			relPoint -= result.RightPoint.Y
+			height -= result.RightPoint.Y
 		}
-		fmt.Printf("Touched a wall at %d pixels height (P=%s)\n", relPoint, P)
-		if S.H-relPoint > S.H-8 {
-			target.Y -= 12
+		if height <= 8 {
+			target.Y -= height
 			if target.X < P.X {
 				target.X-- // push along to the left
 			} else if target.X > P.X {
@@ -131,24 +144,70 @@ func CollidesWithGrid(d Doodad, grid *render.Grid, target render.Point) (*Collid
 		}
 	}
 
+	// Cap our vertical movement if we're touching ceilings.
+	if ceiling {
+		// The existing box intersects a ceiling, this will almost never
+		// happen because gravity will always pull you away at the last frame.
+		// But if we do somehow get here, may as well cap it where it's at.
+		capHeight = P.Y
+	}
+
 	// Trace a line from where we are to where we wanna go.
+	result.Reset()
 	result.MoveTo = P
 	for point := range render.IterLine2(P, target) {
-		if ok := result.ScanBoundingBox(render.Rect{
+		if has := result.ScanBoundingBox(render.Rect{
 			X: point.X,
 			Y: point.Y,
 			W: S.W,
 			H: S.H,
-		}, grid); ok {
-			if d.Grounded() {
-				if !result.Bottom {
-					d.SetGrounded(false)
+		}, grid); has {
+			if result.Bottom {
+				if !hitFloor {
+					hitFloor = true
+					capFloor = result.BottomPoint.Y - S.H
 				}
-			} else if result.Bottom {
 				d.SetGrounded(true)
 			}
+
+			if result.Top && !ceiling {
+				// This is a newly discovered ceiling.
+				ceiling = true
+				capHeight = result.TopPoint.Y
+			}
+
+			if result.Left && !hitLeft {
+				hitLeft = true
+				capLeft = result.LeftPoint.X
+			}
+			if result.Right && !hitRight {
+				hitRight = true
+				capRight = result.RightPoint.X - S.W
+			}
 		}
+
+		// So far so good, keep following the MoveTo to
+		// the last good point before a collision.
 		result.MoveTo = point
+
+	}
+
+	// If they hit the roof, cap them to the roof.
+	if ceiling && result.MoveTo.Y < capHeight {
+		result.Top = true
+		result.MoveTo.Y = capHeight
+	}
+	if hitFloor && result.MoveTo.Y > capFloor {
+		result.Bottom = true
+		result.MoveTo.Y = capFloor
+	}
+	if hitLeft {
+		result.Left = true
+		result.MoveTo.X = capLeft
+	}
+	if hitRight {
+		result.Right = true
+		result.MoveTo.X = capRight
 	}
 
 	return result, result.IsColliding()
@@ -159,7 +218,7 @@ func (c *Collide) IsColliding() bool {
 	return c.Top || c.Bottom || c.Left || c.Right
 }
 
-// GetCollisionBox computes the full pairs of points for the collision box
+// GetBoundingRect computes the full pairs of points for the collision box
 // around a doodad.
 func GetBoundingRect(d Doodad) render.Rect {
 	var (
@@ -199,21 +258,21 @@ func GetCollisionBox(box render.Rect) CollisionBox {
 		Left: []render.Point{
 			{
 				X: box.X,
-				Y: box.Y + 1,
+				Y: box.Y + box.H - 1,
 			},
 			{
 				X: box.X,
-				Y: box.Y + box.H - 1,
+				Y: box.Y + 1,
 			},
 		},
 		Right: []render.Point{
 			{
 				X: box.X + box.W,
-				Y: box.Y + 1,
+				Y: box.Y + box.H - 1,
 			},
 			{
 				X: box.X + box.W,
-				Y: box.Y + box.H - 1,
+				Y: box.Y + 1,
 			},
 		},
 	}

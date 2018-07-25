@@ -118,6 +118,8 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 
 	// Apply gravity if not grounded.
 	if !s.player.Grounded() {
+		// Gravity has to pipe through the collision checker, too, so it
+		// can't give us a cheated downward boost.
 		delta.Y += gravity
 	}
 

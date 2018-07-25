@@ -59,9 +59,13 @@ func (s *Shell) Close() {
 // Execute a command in the shell.
 func (s *Shell) Execute(input string) {
 	command := s.Parse(input)
-	err := command.Run(s.parent)
-	if err != nil {
-		s.Write(err.Error())
+	if command.Command == "clear" {
+		s.Output = []string{}
+	} else {
+		err := command.Run(s.parent)
+		if err != nil {
+			s.Write(err.Error())
+		}
 	}
 
 	if command.Raw != "" {
