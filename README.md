@@ -78,6 +78,12 @@ edit [filename.json]
 play [filename.json]
   Open a map in Play Mode.
 
+echo <text>
+  Flash a message to the console.
+
+clear
+  Clear the console output history.
+
 exit
 quit
   Close the developer console.
@@ -111,18 +117,39 @@ As a rough idea of the milestones needed for this game to work:
   * [ ] Add support for the shell to pop itself open and ask the user for
     input prompts.
 
-## Platformer
+## Alpha Platformer
 
-* [ ] Inflate the pixel history from the map file into a full lookup grid
+* [x] Inflate the pixel history from the map file into a full lookup grid
   of `(X,Y)` coordinates. This will be useful for collision detection.
-* [ ] Create a dummy player character sprite, probably just a
+* [x] Create a dummy player character sprite, probably just a
   `render.Circle()`. In **Play Mode** run collision checks and gravity on
   the player sprite.
-* [ ] Get basic movement and collision working. With a cleanup this can
+  * [x] Create the concept of the Doodad and make the player character
+    implement one.
+* [x] Get basic movement and collision working. With a cleanup this can
   make a workable **ALPHA RELEASE**
-* [ ] Wrap a Qt GUI around the SDL window to make the Edit Mode easier to
-  work with, with toolbars to select brushes and doodads and junk.
-* [ ] Work on support for solid vs. transparent, fire, etc. geometry.
+  * [x] Ability to move laterally along the ground.
+  * [x] Ability to walk up reasonable size slopes but be stopped when
+    running against a steeper wall.
+  * [x] Basic gravity
+
+## UI Overhaul
+
+* [x] Create a user interface toolkit which will be TREMENDOUSLY helpful
+  for the rest of this program.
+  * [x] Labels
+  * [ ] Buttons (text only is OK)
+    * [x] Buttons wrap their Label and dynamically compute their size based
+      on how wide the label will render, plus padding and border.
+    * [x] Border colors and widths and paddings are all configurable.
+    * [ ] Buttons should interact with the cursor and be hoverable and
+      clickable.
+  * [ ] UI Manager that will keep track of buttons to know when the mouse
+    is interacting with them.
+  * [ ] Frames
+  * [ ] Windows (fixed, non-draggable is OK)
+* [ ] Expand the Palette support in levels for solid vs. transparent, fire,
+  etc. with UI toolbar to choose palettes.
 * [ ] ???
 
 # Building

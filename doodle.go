@@ -114,7 +114,7 @@ func (d *Doodle) Run() error {
 		}
 
 		// Draw the debug overlay over all scenes.
-		d.DrawDebugOverlay()
+		// d.DrawDebugOverlay()
 
 		// Render the pixels to the screen.
 		err = d.Engine.Present()

@@ -26,6 +26,7 @@ type Engine interface {
 	DrawRect(Color, Rect)
 	DrawBox(Color, Rect)
 	DrawText(Text, Point) error
+	ComputeTextRect(Text) (Rect, error)
 
 	// Delay for a moment using the render engine's delay method,
 	// implemented by sdl.Delay(uint32)
@@ -66,6 +67,14 @@ func (c Color) String() string {
 type Point struct {
 	X int32
 	Y int32
+}
+
+// NewPoint makes a new Point at an X,Y coordinate.
+func NewPoint(x, y int32) Point {
+	return Point{
+		X: x,
+		Y: y,
+	}
 }
 
 func (p Point) String() string {

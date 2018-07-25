@@ -40,6 +40,31 @@ func (r *Renderer) Keysym(ev *events.State) string {
 	return ""
 }
 
+// ComputeTextRect computes and returns a Rect for how large the text would
+// appear if rendered.
+func (r *Renderer) ComputeTextRect(text render.Text) (render.Rect, error) {
+	var (
+		rect    render.Rect
+		font    *ttf.Font
+		surface *sdl.Surface
+		color   = ColorToSDL(text.Color)
+		err     error
+	)
+
+	if font, err = LoadFont(text.Size); err != nil {
+		return rect, err
+	}
+
+	if surface, err = font.RenderUTF8Blended(text.Text, color); err != nil {
+		return rect, err
+	}
+	defer surface.Free()
+
+	rect.W = surface.W
+	rect.H = surface.H
+	return rect, err
+}
+
 // DrawText draws text on the canvas.
 func (r *Renderer) DrawText(text render.Text, point render.Point) error {
 	var (
