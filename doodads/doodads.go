@@ -1,6 +1,7 @@
 package doodads
 
 import (
+	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
 )
 
@@ -57,7 +58,7 @@ func CollidesWithGrid(d Doodad, grid *render.Grid) (Collide, bool) {
 
 	// Bottom edge.
 	for point := range render.IterLine2(bottomLeft, bottomRight) {
-		if grid.Exists(render.Pixel{
+		if grid.Exists(level.Pixel{
 			X: point.X,
 			Y: point.Y,
 		}) {
@@ -71,7 +72,7 @@ func CollidesWithGrid(d Doodad, grid *render.Grid) (Collide, bool) {
 
 	// Top edge.
 	for point := range render.IterLine2(topLeft, topRight) {
-		if grid.Exists(render.Pixel{
+		if grid.Exists(level.Pixel{
 			X: point.X,
 			Y: point.Y,
 		}) {
@@ -84,7 +85,7 @@ func CollidesWithGrid(d Doodad, grid *render.Grid) (Collide, bool) {
 	}
 
 	for point := range render.IterLine2(topLeft, bottomLeft) {
-		if grid.Exists(render.Pixel{
+		if grid.Exists(level.Pixel{
 			X: point.X,
 			Y: point.Y,
 		}) {
@@ -97,7 +98,7 @@ func CollidesWithGrid(d Doodad, grid *render.Grid) (Collide, bool) {
 	}
 
 	for point := range render.IterLine2(topRight, bottomRight) {
-		if grid.Exists(render.Pixel{
+		if grid.Exists(level.Pixel{
 			X: point.X,
 			Y: point.Y,
 		}) {

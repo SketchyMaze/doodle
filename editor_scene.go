@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"git.kirsle.net/apps/doodle/draw"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
@@ -22,7 +21,8 @@ type EditorScene struct {
 	Canvas   render.Grid
 
 	// History of all the pixels placed by the user.
-	pixelHistory []render.Pixel
+	pixelHistory []level.Pixel
+	lastPixel    *level.Pixel // last pixel placed while mouse down and dragging
 	canvas       render.Grid
 	filename     string // Last saved filename.
 
@@ -59,7 +59,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
 	if s.pixelHistory == nil {
-		s.pixelHistory = []render.Pixel{}
+		s.pixelHistory = []level.Pixel{}
 	}
 	if s.canvas == nil {
 		log.Debug("EditorScene: Setting default canvas to an empty grid")
@@ -92,33 +92,37 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 	// Clicking? Log all the pixels while doing so.
 	if ev.Button1.Now {
-		log.Warn("Button1: %+v", ev.Button1)
-		pixel := render.Pixel{
-			Start: ev.Button1.Pressed(),
-			X:     ev.CursorX.Now,
-			Y:     ev.CursorY.Now,
-			DX:    ev.CursorX.Last,
-			DY:    ev.CursorY.Last,
-		}
-		if pixel.Start {
-			log.Warn("START PIXEL %+v", pixel)
+		// log.Warn("Button1: %+v", ev.Button1)
+		lastPixel := s.lastPixel
+		pixel := level.Pixel{
+			X: ev.CursorX.Now,
+			Y: ev.CursorY.Now,
 		}
 
 		// Append unique new pixels.
 		if len(s.pixelHistory) == 0 || s.pixelHistory[len(s.pixelHistory)-1] != pixel {
-			// If not a start pixel, make the delta coord the previous one.
-			if !pixel.Start && len(s.pixelHistory) > 0 {
-				prev := s.pixelHistory[len(s.pixelHistory)-1]
-				pixel.DY = prev.Y
-				pixel.DX = prev.X
+			if lastPixel != nil {
+				// Draw the pixels in between.
+				if *lastPixel != pixel {
+					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
+						dot := level.Pixel{
+							X:       point.X,
+							Y:       point.Y,
+							Palette: lastPixel.Palette,
+						}
+						s.canvas[dot] = nil
+					}
+				}
 			}
 
+			s.lastPixel = &pixel
 			s.pixelHistory = append(s.pixelHistory, pixel)
 
 			// Save in the pixel canvas map.
-			fmt.Printf("%+v", pixel)
 			s.canvas[pixel] = nil
 		}
+	} else {
+		s.lastPixel = nil
 	}
 
 	return nil
@@ -126,25 +130,6 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
-	// for i, pixel := range s.pixelHistory {
-	// 	if !pixel.Start && i > 0 {
-	// 		prev := s.pixelHistory[i-1]
-	// 		if prev.X == pixel.X && prev.Y == pixel.Y {
-	// 			d.Engine.DrawPoint(
-	// 				render.Black,
-	// 				render.Point{pixel.X, pixel.Y},
-	// 			)
-	// 		} else {
-	// 			d.Engine.DrawLine(
-	// 				render.Black,
-	// 				render.Point{pixel.X, pixel.Y},
-	// 				render.Point{prev.X, prev.Y},
-	// 			)
-	// 		}
-	// 	}
-	// 	d.Engine.DrawPoint(render.Black, render.Point{pixel.X, pixel.Y})
-	// }
-
 	s.canvas.Draw(d.Engine)
 
 	return nil
@@ -153,7 +138,7 @@ func (s *EditorScene) Draw(d *Doodle) error {
 // LoadLevel loads a level from disk.
 func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
-	s.pixelHistory = []render.Pixel{}
+	s.pixelHistory = []level.Pixel{}
 	s.canvas = render.Grid{}
 
 	m, err := level.LoadJSON(filename)
@@ -162,12 +147,9 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	}
 
 	for _, point := range m.Pixels {
-		pixel := render.Pixel{
-			Start: true,
-			X:     point.X,
-			Y:     point.Y,
-			DX:    point.X,
-			DY:    point.Y,
+		pixel := level.Pixel{
+			X: point.X,
+			Y: point.Y,
 		}
 		s.pixelHistory = append(s.pixelHistory, pixel)
 		s.canvas[pixel] = nil
@@ -195,21 +177,11 @@ func (s *EditorScene) SaveLevel(filename string) {
 	}
 
 	for pixel := range s.canvas {
-		if pixel.DX == 0 && pixel.DY == 0 {
-			m.Pixels = append(m.Pixels, level.Pixel{
-				X:       pixel.X,
-				Y:       pixel.Y,
-				Palette: 0,
-			})
-		} else {
-			for point := range render.IterLine(pixel.X, pixel.Y, pixel.DX, pixel.DY) {
-				m.Pixels = append(m.Pixels, level.Pixel{
-					X:       point.X,
-					Y:       point.Y,
-					Palette: 0,
-				})
-			}
-		}
+		m.Pixels = append(m.Pixels, level.Pixel{
+			X:       pixel.X,
+			Y:       pixel.Y,
+			Palette: 0,
+		})
 	}
 
 	json, err := m.ToJSON()
@@ -238,14 +210,7 @@ func (s *EditorScene) Screenshot() {
 
 	// Fill in the dots we drew.
 	for pixel := range s.canvas {
-		// A line or a dot?
-		if pixel.DX == 0 && pixel.DY == 0 {
-			screenshot.Set(int(pixel.X), int(pixel.Y), image.Black)
-		} else {
-			for point := range draw.Line(pixel.X, pixel.Y, pixel.DX, pixel.DY) {
-				screenshot.Set(int(point.X), int(point.Y), image.Black)
-			}
-		}
+		screenshot.Set(int(pixel.X), int(pixel.Y), image.Black)
 	}
 
 	// Create the screenshot directory.

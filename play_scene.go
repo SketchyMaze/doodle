@@ -131,7 +131,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 	}
 
 	for _, point := range m.Pixels {
-		pixel := render.Pixel{
+		pixel := level.Pixel{
 			X: point.X,
 			Y: point.Y,
 		}

@@ -141,6 +141,7 @@ func IterLine(x1, y1, x2, y2 int32) chan Point {
 	return generator
 }
 
+// IterLine2 works with two Points rather than four coordinates.
 func IterLine2(p1 Point, p2 Point) chan Point {
 	return IterLine(p1.X, p1.Y, p2.X, p2.Y)
 }
