@@ -3,6 +3,7 @@ package doodle
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // Command is a parsed shell command.
@@ -36,6 +37,13 @@ func (c Command) Run(d *Doodle) error {
 		return c.Quit()
 	case "help":
 		return c.Help(d)
+	case "eval":
+	case "$":
+		out, err := d.shell.js.Run(c.ArgsLiteral)
+		d.Flash("%+v", out)
+		return err
+	case "boolProp":
+		return c.BoolProp(d)
 	default:
 		return c.Default()
 	}
@@ -91,7 +99,7 @@ func (c Command) Help(d *Doodle) error {
 
 // Save the current map to disk.
 func (c Command) Save(d *Doodle) error {
-	if scene, ok := d.scene.(*EditorScene); ok {
+	if scene, ok := d.Scene.(*EditorScene); ok {
 		filename := ""
 		if len(c.Args) > 0 {
 			filename = c.Args[0]
@@ -136,6 +144,42 @@ func (c Command) Play(d *Doodle) error {
 
 // Quit the command line shell.
 func (c Command) Quit() error {
+	return nil
+}
+
+// BoolProp command sets available boolean variables.
+func (c Command) BoolProp(d *Doodle) error {
+	if len(c.Args) != 2 {
+		return errors.New("Usage: boolProp <name> <true or false>")
+	}
+
+	var (
+		name   = c.Args[0]
+		value  = c.Args[1]
+		truthy = value[0] == 't' || value[0] == 'T' || value[0] == '1'
+		ok     = true
+	)
+
+	switch name {
+	case "Debug":
+	case "D":
+		d.Debug = truthy
+	case "DebugOverlay":
+	case "DO":
+		DebugOverlay = truthy
+	case "DebugCollision":
+	case "DC":
+		DebugCollision = truthy
+	default:
+		ok = false
+	}
+
+	if ok {
+		d.Flash("Set boolProp %s=%s", name, strconv.FormatBool(truthy))
+	} else {
+		d.Flash("Unknown boolProp name %s", name)
+	}
+
 	return nil
 }
 

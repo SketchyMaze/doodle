@@ -139,17 +139,54 @@ As a rough idea of the milestones needed for this game to work:
   for the rest of this program.
   * [x] Labels
   * [ ] Buttons (text only is OK)
-    * [x] Buttons wrap their Label and dynamically compute their size based
-      on how wide the label will render, plus padding and border.
-    * [x] Border colors and widths and paddings are all configurable.
-    * [ ] Buttons should interact with the cursor and be hoverable and
-      clickable.
+      * [x] Buttons wrap their Label and dynamically compute their size based
+        on how wide the label will render, plus padding and border.
+      * [x] Border colors and widths and paddings are all configurable.
+      * [ ] Buttons should interact with the cursor and be hoverable and
+        clickable.
   * [ ] UI Manager that will keep track of buttons to know when the mouse
     is interacting with them.
   * [ ] Frames
+      * Like Buttons, can have border (raised, sunken or solid), padding and
+        background color.
+      * [ ] Should be able to size themselves dynamically based on child widgets.
   * [ ] Windows (fixed, non-draggable is OK)
-* [ ] Expand the Palette support in levels for solid vs. transparent, fire,
-  etc. with UI toolbar to choose palettes.
+      * [ ] Title bar with label
+      * [ ] Window body implements a Frame that contains child widgets.
+      * [ ] Window can resize itself dynamically based on the Frame.
+* [ ] Create a "Main Menu" scene with buttons to enter a new Edit Mode,
+  play an existing map from disk, etc.
+* [ ] Add user interface Frames or Windows to the Edit Mode.
+  * [ ] A toolbar of buttons (New, Save, Open, Play) can be drawn at the top
+    before the UI toolkit gains a proper MenuBar widget.
+  * [ ] Expand the Palette support in levels for solid vs. transparent, fire,
+    etc. with UI toolbar to choose palettes.
+
+Lesser important UI features that can come at any later time:
+
+* [ ] MenuBar widget with drop-down menu support.
+* [ ] Checkbox and Radiobox widgets.
+* [ ] Text Entry widgets (in the meantime use the Developer Shell to prompt for
+  text input questions)
+
+## Doodad Editor
+
+* [ ] The Edit Mode should support creating drawings for Doodads.
+  * [ ] It should know whether you're drawing a Map or a Doodad as some
+    behaviors may need to be different between the two.
+  * [ ] Compress the coordinates down toward `(0,0)` when saving a Doodad,
+    by finding the toppest, leftest point and making that `(0,0)` and adjusting
+    the rest accordingly. This will help trim down Doodads into the smallest
+    possible space for easy collision detection.
+  * [ ] Add a UX to edit multiple frames for a Doodad.
+  * [ ] Edit Mode should be able to fully save the drawings and frames, and an
+    external CLI tool can install the JavaScript into them.
+  * [ ] Possible UX to toggle Doodad options, like its collision rules and
+    whether the Doodad is continued to be "mobile" (i.e. doors and buttons won't
+    move, but items and enemies may be able to; and non-mobile Doodads don't
+    need to collision check against level geometry).
+* [ ] Edit Mode should have a Doodad Palette (Frame or Window) to drag
+  Doodads into the map.
 * [ ] ???
 
 # Building

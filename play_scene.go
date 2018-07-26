@@ -21,7 +21,7 @@ type PlayScene struct {
 	height int32
 
 	// Player character
-	player doodads.Doodad
+	Player doodads.Doodad
 }
 
 // Name of the scene.
@@ -42,7 +42,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.Filename = ""
 	}
 
-	s.player = doodads.NewPlayer()
+	s.Player = doodads.NewPlayer()
 
 	if s.canvas == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
@@ -80,17 +80,17 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	s.canvas.Draw(d.Engine)
 
 	// Draw our hero.
-	s.player.Draw(d.Engine)
+	s.Player.Draw(d.Engine)
 
 	// Draw out bounding boxes.
-	d.DrawCollisionBox(s.player)
+	d.DrawCollisionBox(s.Player)
 
 	return nil
 }
 
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *events.State) {
-	delta := s.player.Position()
+	delta := s.Player.Position()
 	var playerSpeed int32 = 8
 	var gravity int32 = 2
 
@@ -110,20 +110,20 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 	// Apply gravity.
 	// var onFloor bool
 
-	info, ok := doodads.CollidesWithGrid(s.player, &s.canvas, delta)
+	info, ok := doodads.CollidesWithGrid(s.Player, &s.canvas, delta)
 	if ok {
 		// Collision happened with world.
 	}
 	delta = info.MoveTo
 
 	// Apply gravity if not grounded.
-	if !s.player.Grounded() {
+	if !s.Player.Grounded() {
 		// Gravity has to pipe through the collision checker, too, so it
 		// can't give us a cheated downward boost.
 		delta.Y += gravity
 	}
 
-	s.player.MoveTo(delta)
+	s.Player.MoveTo(delta)
 }
 
 // LoadLevel loads a level from disk.

@@ -90,7 +90,7 @@ func (w *Button) Present(e render.Engine) {
 	e.DrawBox(w.Background, box)
 
 	// Draw the text label inside.
-	w.Label.SetPoint(render.Point{
+	w.Label.MoveTo(render.Point{
 		X: P.X + w.Padding + w.Border + w.Outline,
 		Y: P.Y + w.Padding + w.Border + w.Outline,
 	})

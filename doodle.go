@@ -32,7 +32,7 @@ type Doodle struct {
 	// Command line shell options.
 	shell Shell
 
-	scene Scene
+	Scene Scene
 }
 
 // New initializes the game object.
@@ -62,8 +62,8 @@ func (d *Doodle) Run() error {
 	}
 
 	// Set up the default scene.
-	if d.scene == nil {
-		d.Goto(&EditorScene{})
+	if d.Scene == nil {
+		d.Goto(&MainScene{})
 	}
 
 	log.Info("Enter Main Loop")
@@ -96,14 +96,14 @@ func (d *Doodle) Run() error {
 			}
 
 			// Run the scene's logic.
-			err = d.scene.Loop(d, ev)
+			err = d.Scene.Loop(d, ev)
 			if err != nil {
 				return err
 			}
 		}
 
 		// Draw the scene.
-		d.scene.Draw(d)
+		d.Scene.Draw(d)
 
 		// Draw the shell.
 		err = d.shell.Draw(d, ev)
@@ -114,7 +114,7 @@ func (d *Doodle) Run() error {
 		}
 
 		// Draw the debug overlay over all scenes.
-		// d.DrawDebugOverlay()
+		d.DrawDebugOverlay()
 
 		// Render the pixels to the screen.
 		err = d.Engine.Present()

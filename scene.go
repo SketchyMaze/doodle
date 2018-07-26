@@ -21,11 +21,11 @@ type Scene interface {
 // Goto a scene. First it unloads the current scene.
 func (d *Doodle) Goto(scene Scene) error {
 	// Teardown existing scene.
-	if d.scene != nil {
-		d.scene.Destroy()
+	if d.Scene != nil {
+		d.Scene.Destroy()
 	}
 
-	log.Info("Goto Scene")
-	d.scene = scene
-	return d.scene.Setup(d)
+	log.Info("Goto Scene: %s", scene.Name())
+	d.Scene = scene
+	return d.Scene.Setup(d)
 }

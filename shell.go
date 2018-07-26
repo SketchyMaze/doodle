@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
+	"github.com/robertkrimen/otto"
 )
 
 // Flash a message to the user.
@@ -17,16 +18,26 @@ func (d *Doodle) Flash(template string, v ...interface{}) {
 
 // Shell implements the developer console in-game.
 type Shell struct {
-	parent     *Doodle
-	Open       bool
-	Prompt     string
-	Text       string
-	History    []string
-	Output     []string
-	Flashes    []Flash
-	Cursor     string
+	parent *Doodle
+
+	Open    bool
+	Prompt  string
+	Text    string
+	History []string
+	Output  []string
+	Flashes []Flash
+
+	// Blinky cursor variables.
+	cursor     byte   // cursor symbol
 	cursorFlip uint64 // ticks until cursor flip
 	cursorRate uint64
+
+	// Paging through history variables.
+	historyPaging bool
+	historyIndex  int
+
+	// JavaScript shell interpreter.
+	js *otto.Otto
 }
 
 // Flash holds a message to flash on screen.
@@ -37,15 +48,32 @@ type Flash struct {
 
 // NewShell initializes the shell helper (the "Shellper").
 func NewShell(d *Doodle) Shell {
-	return Shell{
+	s := Shell{
 		parent:     d,
 		History:    []string{},
 		Output:     []string{},
 		Flashes:    []Flash{},
 		Prompt:     ">",
-		Cursor:     "_",
+		cursor:     '_',
 		cursorRate: balance.ShellCursorBlinkRate,
+		js:         otto.New(),
 	}
+
+	// Make the Doodle instance available to the shell.
+	bindings := map[string]interface{}{
+		"d":     d,
+		"log":   log,
+		"RGBA":  render.RGBA,
+		"Point": render.NewPoint,
+	}
+	for name, v := range bindings {
+		err := s.js.Set(name, v)
+		if err != nil {
+			log.Error("Failed to make `%s` available to JS shell: %s", name, err)
+		}
+	}
+
+	return s
 }
 
 // Close the shell, resetting its internal state.
@@ -54,11 +82,18 @@ func (s *Shell) Close() {
 	s.Open = false
 	s.Prompt = ">"
 	s.Text = ""
+	s.historyPaging = false
+	s.historyIndex = 0
 }
 
 // Execute a command in the shell.
 func (s *Shell) Execute(input string) {
 	command := s.Parse(input)
+	if command.Raw != "" {
+		s.Output = append(s.Output, s.Prompt+command.Raw)
+		s.History = append(s.History, command.Raw)
+	}
+
 	if command.Command == "clear" {
 		s.Output = []string{}
 	} else {
@@ -66,10 +101,6 @@ func (s *Shell) Execute(input string) {
 		if err != nil {
 			s.Write(err.Error())
 		}
-	}
-
-	if command.Raw != "" {
-		s.History = append(s.History, command.Raw)
 	}
 
 	// Reset the text buffer in the shell.
@@ -149,6 +180,32 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		s.Execute(s.Text)
 		s.Close()
 		return nil
+	} else if (ev.Up.Now || ev.Down.Now) && len(s.History) > 0 {
+		// Paging through history.
+		if !s.historyPaging {
+			s.historyPaging = true
+			s.historyIndex = len(s.History)
+		}
+
+		// Consume the inputs and make convenient variables.
+		ev.Down.Read()
+		isUp := ev.Up.Read()
+
+		// Scroll through the input history.
+		if isUp {
+			s.historyIndex--
+			if s.historyIndex < 0 {
+				s.historyIndex = 0
+			}
+		} else {
+			s.historyIndex++
+			if s.historyIndex >= len(s.History) {
+				s.historyIndex = len(s.History) - 1
+			}
+		}
+
+		s.Text = s.History[s.historyIndex]
+
 	}
 
 	// Compute the line height we can draw.
@@ -159,10 +216,10 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		// Cursor flip?
 		if d.ticks > s.cursorFlip {
 			s.cursorFlip = d.ticks + s.cursorRate
-			if s.Cursor == "" {
-				s.Cursor = "_"
+			if s.cursor == ' ' {
+				s.cursor = '_'
 			} else {
-				s.Cursor = ""
+				s.cursor = ' '
 			}
 		}
 
@@ -215,7 +272,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		// Draw the command prompt.
 		d.Engine.DrawText(
 			render.Text{
-				Text:  s.Prompt + s.Text + s.Cursor,
+				Text:  s.Prompt + s.Text + string(s.cursor),
 				Size:  balance.ShellFontSize,
 				Color: balance.ShellForegroundColor,
 			},

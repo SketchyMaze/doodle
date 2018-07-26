@@ -11,7 +11,6 @@ import (
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
-	"git.kirsle.net/apps/doodle/ui"
 )
 
 // EditorScene manages the "Edit Level" game mode.
@@ -132,59 +131,6 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
 	s.canvas.Draw(d.Engine)
-
-	label := ui.NewLabel(render.Text{
-		Text:   "Hello UI toolkit!",
-		Size:   26,
-		Color:  render.Pink,
-		Stroke: render.SkyBlue,
-		Shadow: render.Black,
-	})
-	label.SetPoint(render.NewPoint(128, 128))
-	label.Compute(d.Engine)
-	log.Info("Label rect: %+v", label.Size())
-	log.Info("Label at: %s", label.Point())
-	label.Present(d.Engine)
-
-	button := ui.NewButton(*ui.NewLabel(render.Text{
-		Text:  "Hello",
-		Size:  14,
-		Color: render.Black,
-	}))
-	button.SetPoint(render.NewPoint(200, 200))
-	button.Present(d.Engine)
-
-	// Point and size of that button
-	point := button.Point()
-	size := button.Size()
-
-	button2 := ui.NewButton(*ui.NewLabel(render.Text{
-		Text:  "World!",
-		Size:  14,
-		Color: render.Blue,
-	}))
-	button2.SetPoint(render.Point{
-		X: point.X + size.W,
-		Y: point.Y,
-	})
-	button2.Present(d.Engine)
-
-	button.SetText("Buttons that don't click yet")
-	button.SetPoint(render.NewPoint(250, 300))
-	button.Label.Text.Size = 24
-	button.Border = 8
-	button.Outline = 4
-	button.Present(d.Engine)
-
-	button2.SetText("Multiple colors, too")
-	button2.Label.Text.Color = render.White
-	button2.Background = render.RGBA(0, 153, 255, 255)
-	button2.HighlightColor = render.RGBA(100, 200, 255, 255)
-	button2.ShadowColor = render.RGBA(0, 100, 153, 255)
-	button2.SetPoint(render.NewPoint(10, 300))
-	button2.Present(d.Engine)
-
-	_ = label
 
 	return nil
 }

@@ -10,6 +10,13 @@ import (
 // Frames to cache for FPS calculation.
 const maxSamples = 100
 
+// Debug mode options, these can be enabled in the dev console
+// like: boolProp DebugOverlay true
+var (
+	DebugOverlay   = true
+	DebugCollision = true
+)
+
 var (
 	fpsCurrentTicks uint32 // current time we get sdl.GetTicks()
 	fpsLastTime     uint32 // last time we printed the fpsCurrentTicks
@@ -21,7 +28,7 @@ var (
 
 // DrawDebugOverlay draws the debug FPS text on the SDL canvas.
 func (d *Doodle) DrawDebugOverlay() {
-	if !d.Debug {
+	if !d.Debug || !DebugOverlay {
 		return
 	}
 
@@ -29,7 +36,7 @@ func (d *Doodle) DrawDebugOverlay() {
 		"FPS: %d (%dms)  S:%s  F12=screenshot",
 		fpsCurrent,
 		fpsSkipped,
-		d.scene.Name(),
+		d.Scene.Name(),
 	)
 
 	err := d.Engine.DrawText(
@@ -52,6 +59,10 @@ func (d *Doodle) DrawDebugOverlay() {
 
 // DrawCollisionBox draws the collision box around a Doodad.
 func (d *Doodle) DrawCollisionBox(actor doodads.Doodad) {
+	if !d.Debug || !DebugCollision {
+		return
+	}
+
 	var (
 		rect = doodads.GetBoundingRect(actor)
 		box  = doodads.GetCollisionBox(rect)
@@ -74,13 +85,6 @@ func (d *Doodle) TrackFPS(skipped uint32) {
 	}
 
 	if fpsLastTime < fpsCurrentTicks-fpsInterval {
-		// log.Debug("Uptime: %s  FPS: %d   deltaTicks: %d   skipped: %dms",
-		// 	time.Now().Sub(d.startTime),
-		// 	fpsCurrent,
-		// 	fpsCurrentTicks-fpsLastTime,
-		// 	skipped,
-		// )
-
 		fpsLastTime = fpsCurrentTicks
 		fpsCurrent = fpsFrames
 		fpsFrames = 0

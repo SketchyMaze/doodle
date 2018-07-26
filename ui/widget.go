@@ -9,7 +9,8 @@ type Widget interface {
 	SetWidth(int32)  // Set
 	SetHeight(int32) // Set
 	Point() render.Point
-	SetPoint(render.Point)
+	MoveTo(render.Point)
+	MoveBy(render.Point)
 	Size() render.Rect // Return the Width and Height of the widget.
 	Resize(render.Rect)
 
@@ -35,9 +36,15 @@ func (w *BaseWidget) Point() render.Point {
 	return w.point
 }
 
-// SetPoint updates the X,Y position of the widget relative to the window.
-func (w *BaseWidget) SetPoint(v render.Point) {
+// MoveTo updates the X,Y position to the new point.
+func (w *BaseWidget) MoveTo(v render.Point) {
 	w.point = v
+}
+
+// MoveBy adds the X,Y values to the widget's current position.
+func (w *BaseWidget) MoveBy(v render.Point) {
+	w.point.X += v.X
+	w.point.Y += v.Y
 }
 
 // Size returns the box with W and H attributes containing the size of the
