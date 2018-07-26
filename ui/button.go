@@ -18,11 +18,15 @@ type Button struct {
 	HighlightColor render.Color
 	ShadowColor    render.Color
 	OutlineColor   render.Color
+
+	// Private options.
+	hovering bool
+	clicked  bool
 }
 
 // NewButton creates a new Button.
 func NewButton(label Label) *Button {
-	return &Button{
+	w := &Button{
 		Label:   label,
 		Padding: 4, // TODO magic number
 		Border:  2,
@@ -34,6 +38,22 @@ func NewButton(label Label) *Button {
 		ShadowColor:    theme.ButtonShadowColor,
 		OutlineColor:   theme.ButtonOutlineColor,
 	}
+
+	w.Handle("MouseOver", func(p render.Point) {
+		w.hovering = true
+	})
+	w.Handle("MouseOut", func(p render.Point) {
+		w.hovering = false
+	})
+
+	w.Handle("MouseDown", func(p render.Point) {
+		w.clicked = true
+	})
+	w.Handle("MouseUp", func(p render.Point) {
+		w.clicked = false
+	})
+
+	return w
 }
 
 // SetText quickly changes the text of the label.
@@ -74,7 +94,11 @@ func (w *Button) Present(e render.Engine) {
 	})
 
 	// Highlight on the top left edge.
-	e.DrawBox(w.HighlightColor, box)
+	color := w.HighlightColor
+	if w.clicked {
+		color = w.ShadowColor
+	}
+	e.DrawBox(color, box)
 	box.W = S.W
 
 	// Shadow on the bottom right edge.
@@ -82,12 +106,20 @@ func (w *Button) Present(e render.Engine) {
 	box.Y += w.Border
 	box.W -= w.Border
 	box.H -= w.Border
-	e.DrawBox(w.ShadowColor, box)
+	color = w.ShadowColor
+	if w.clicked {
+		color = w.HighlightColor
+	}
+	e.DrawBox(color, box)
 
 	// Background color of the button.
 	box.W -= w.Border
 	box.H -= w.Border
-	e.DrawBox(w.Background, box)
+	if w.hovering {
+		e.DrawBox(render.Yellow, box)
+	} else {
+		e.DrawBox(w.Background, box)
+	}
 
 	// Draw the text label inside.
 	w.Label.MoveTo(render.Point{

@@ -124,12 +124,10 @@ func (r *Renderer) Poll() (*events.State, error) {
 			// Is a mouse button pressed down?
 			if t.Button == 1 {
 				var eventName string
-				if DebugClickEvents {
-					if t.State == 1 && s.Button1.Now == false {
-						eventName = "DOWN"
-					} else if t.State == 0 && s.Button1.Now == true {
-						eventName = "UP"
-					}
+				if t.State == 1 && s.Button1.Now == false {
+					eventName = "DOWN"
+				} else if t.State == 0 && s.Button1.Now == true {
+					eventName = "UP"
 				}
 
 				if eventName != "" {
