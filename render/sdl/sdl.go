@@ -131,17 +131,7 @@ func (r *Renderer) Poll() (*events.State, error) {
 				}
 
 				if eventName != "" {
-					log.Debug("tick:%d  Mouse Button1 %s BEFORE: %+v",
-						r.ticks,
-						eventName,
-						s.Button1,
-					)
 					s.Button1.Push(eventName == "DOWN")
-					log.Debug("tick:%d  Mouse Button1 %s AFTER: %+v",
-						r.ticks,
-						eventName,
-						s.Button1,
-					)
 
 					// Return the event immediately.
 					return s, nil

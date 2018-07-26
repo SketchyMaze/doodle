@@ -63,6 +63,32 @@ func (c Color) String() string {
 	)
 }
 
+// Add a relative color value to the color.
+func (c Color) Add(r, g, b, a int32) Color {
+	var (
+		R = int32(c.Red) + r
+		G = int32(c.Green) + g
+		B = int32(c.Blue) + b
+		A = int32(c.Alpha) + a
+	)
+
+	cap8 := func(v int32) uint8 {
+		if v > 255 {
+			v = 255
+		} else if v < 0 {
+			v = 0
+		}
+		return uint8(v)
+	}
+
+	return Color{
+		Red:   cap8(R),
+		Green: cap8(G),
+		Blue:  cap8(B),
+		Alpha: cap8(A),
+	}
+}
+
 // Point holds an X,Y coordinate value.
 type Point struct {
 	X int32
