@@ -89,6 +89,16 @@ func (c Color) Add(r, g, b, a int32) Color {
 	}
 }
 
+// Lighten a color value.
+func (c Color) Lighten(v int32) Color {
+	return c.Add(v, v, v, 0)
+}
+
+// Darken a color value.
+func (c Color) Darken(v int32) Color {
+	return c.Add(-v, -v, -v, 0)
+}
+
 // Point holds an X,Y coordinate value.
 type Point struct {
 	X int32

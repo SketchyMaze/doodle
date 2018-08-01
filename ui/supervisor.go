@@ -84,7 +84,8 @@ func (s *Supervisor) Present(e render.Engine) {
 	defer s.lock.RUnlock()
 
 	for _, w := range s.widgets {
-		w.Present(e)
+		// w.Present(e)
+		_ = w
 	}
 }
 

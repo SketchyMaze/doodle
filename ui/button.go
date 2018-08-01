@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui/theme"
 )
@@ -21,12 +23,14 @@ func NewButton(label Label) *Button {
 		Label: label,
 	}
 
-	w.SetPadding(4)
-	w.SetBorderSize(2)
-	w.SetBorderStyle(BorderRaised)
-	w.SetOutlineSize(1)
-	w.SetOutlineColor(theme.ButtonOutlineColor)
-	w.SetBackground(theme.ButtonBackgroundColor)
+	w.Configure(Config{
+		Padding:      4,
+		BorderSize:   2,
+		BorderStyle:  BorderRaised,
+		OutlineSize:  1,
+		OutlineColor: theme.ButtonOutlineColor,
+		Background:   theme.ButtonBackgroundColor,
+	})
 
 	w.Handle("MouseOver", func(p render.Point) {
 		w.hovering = true
@@ -44,6 +48,10 @@ func NewButton(label Label) *Button {
 	w.Handle("MouseUp", func(p render.Point) {
 		w.clicked = false
 		w.SetBorderStyle(BorderRaised)
+	})
+
+	w.IDFunc(func() string {
+		return fmt.Sprintf("Button<%s>", w.Label.Text.Text)
 	})
 
 	return w

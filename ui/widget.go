@@ -2,6 +2,7 @@ package ui
 
 import (
 	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/ui/theme"
 )
 
 // BorderStyle options for widget.SetBorderStyle()
@@ -16,10 +17,14 @@ const (
 
 // Widget is a user interface element.
 type Widget interface {
+	ID() string           // Get the widget's string ID.
+	IDFunc(func() string) // Set a function that returns the widget's ID.
+	String() string
 	Point() render.Point
 	MoveTo(render.Point)
 	MoveBy(render.Point)
 	Size() render.Rect // Return the Width and Height of the widget.
+	FixedSize() bool   // Return whether the size is fixed (true) or automatic (false)
 	Resize(render.Rect)
 
 	Handle(string, func(render.Point))
@@ -56,9 +61,34 @@ type Widget interface {
 	Present(render.Engine)
 }
 
+// Config holds common base widget configs for quick configuration.
+type Config struct {
+	// Size management. If you provide a non-zero value for Width and Height,
+	// the widget will be resized and the "fixedSize" flag is set, meaning it
+	// will not re-compute its size dynamically. To set the size while also
+	// keeping the auto-resize property, pass AutoResize=true too. This is
+	// mainly used internally when widgets are calculating their automatic sizes.
+	AutoResize   bool
+	Width        int32
+	Height       int32
+	Padding      int32
+	PadX         int32
+	PadY         int32
+	Background   render.Color
+	Foreground   render.Color
+	BorderSize   int32
+	BorderStyle  BorderStyle
+	BorderColor  render.Color
+	OutlineSize  int32
+	OutlineColor render.Color
+}
+
 // BaseWidget holds common functionality for all widgets, such as managing
 // their widths and heights.
 type BaseWidget struct {
+	id           string
+	idFunc       func() string
+	fixedSize    bool
 	width        int32
 	height       int32
 	point        render.Point
@@ -71,6 +101,66 @@ type BaseWidget struct {
 	outlineColor render.Color
 	outlineSize  int32
 	handlers     map[string][]func(render.Point)
+}
+
+// SetID sets a string name for your widget, helpful for debugging purposes.
+func (w *BaseWidget) SetID(id string) {
+	w.id = id
+}
+
+// ID returns the ID that the widget calls itself by.
+func (w *BaseWidget) ID() string {
+	if w.idFunc == nil {
+		w.IDFunc(func() string {
+			return "Widget<Untitled>"
+		})
+	}
+	return w.idFunc()
+}
+
+// IDFunc sets an ID function.
+func (w *BaseWidget) IDFunc(fn func() string) {
+	w.idFunc = fn
+}
+
+func (w *BaseWidget) String() string {
+	return w.ID()
+}
+
+// Configure the base widget with all the common properties at once. Any
+// property left as the zero value will not update the widget.
+func (w *BaseWidget) Configure(c Config) {
+	if c.Width != 0 && c.Height != 0 {
+		w.fixedSize = !c.AutoResize
+		w.width = c.Width
+		w.height = c.Height
+	}
+
+	if c.Padding != 0 {
+		w.padding = c.Padding
+	}
+	if c.Background != render.Invisible {
+		w.background = c.Background
+	}
+	if c.Foreground != render.Invisible {
+		w.foreground = c.Foreground
+	}
+	if c.BorderColor != render.Invisible {
+		w.borderColor = c.BorderColor
+	}
+	if c.OutlineColor != render.Invisible {
+		w.outlineColor = c.OutlineColor
+	}
+
+	if c.BorderSize != 0 {
+		w.borderSize = c.BorderSize
+	}
+	if c.BorderStyle != BorderSolid {
+		w.borderStyle = c.BorderStyle
+	}
+	if c.OutlineSize != 0 {
+		w.outlineSize = c.OutlineSize
+	}
 }
 
 // Point returns the X,Y position of the widget on the window.
@@ -98,8 +188,21 @@ func (w *BaseWidget) Size() render.Rect {
 	}
 }
 
+// FixedSize returns whether the widget's size has been hard-coded by the user
+// (true) or if it automatically resizes based on its contents (false).
+func (w *BaseWidget) FixedSize() bool {
+	return w.fixedSize
+}
+
 // Resize sets the size of the widget to the .W and .H attributes of a rect.
 func (w *BaseWidget) Resize(v render.Rect) {
+	w.fixedSize = true
+	w.width = v.W
+	w.height = v.H
+}
+
+// resizeAuto sets the size of the widget but doesn't set the fixedSize flag.
+func (w *BaseWidget) resizeAuto(v render.Rect) {
 	w.width = v.W
 	w.height = v.H
 }
@@ -121,8 +224,8 @@ func (w *BaseWidget) DrawBox(e render.Engine) {
 		outline     = w.OutlineSize()
 		border      = w.BorderSize()
 		borderColor = w.BorderColor()
-		highlight   = borderColor.Add(20, 20, 20, 0)
-		shadow      = borderColor.Add(-20, -20, -20, 0)
+		highlight   = borderColor.Lighten(theme.BorderColorOffset)
+		shadow      = borderColor.Darken(theme.BorderColorOffset)
 		color       render.Color
 		box         = render.Rect{
 			X: P.X,
@@ -132,46 +235,67 @@ func (w *BaseWidget) DrawBox(e render.Engine) {
 		}
 	)
 
+	if borderColor == render.Invisible {
+		borderColor = render.Red
+	}
+
 	// Draw the outline layer as the full size of the widget.
-	e.DrawBox(w.OutlineColor(), render.Rect{
-		X: P.X - outline,
-		Y: P.Y - outline,
-		W: S.W + (outline * 2),
-		H: S.H + (outline * 2),
-	})
+	if outline > 0 && w.OutlineColor() != render.Invisible {
+		e.DrawBox(w.OutlineColor(), render.Rect{
+			X: P.X,
+			Y: P.Y,
+			W: S.W,
+			H: S.H,
+		})
+	}
+	box.X += outline
+	box.Y += outline
+	box.W -= outline * 2
+	box.H -= outline * 2
 
 	// Highlight on the top left edge.
-	if w.BorderStyle() == BorderRaised {
-		color = highlight
-	} else if w.BorderStyle() == BorderSunken {
-		color = shadow
-	} else {
-		color = borderColor
+	if border > 0 {
+		if w.BorderStyle() == BorderRaised {
+			color = highlight
+		} else if w.BorderStyle() == BorderSunken {
+			color = shadow
+		} else {
+			color = borderColor
+		}
+		e.DrawBox(color, box)
 	}
-	e.DrawBox(color, box)
-	box.W = S.W
 
 	// Shadow on the bottom right edge.
 	box.X += border
 	box.Y += border
 	box.W -= border
 	box.H -= border
-	if w.BorderStyle() == BorderRaised {
-		color = shadow
-	} else if w.BorderStyle() == BorderSunken {
-		color = highlight
-	} else {
-		color = borderColor
+	if w.BorderSize() > 0 {
+		if w.BorderStyle() == BorderRaised {
+			color = shadow
+		} else if w.BorderStyle() == BorderSunken {
+			color = highlight
+		} else {
+			color = borderColor
+		}
+		e.DrawBox(color, box)
 	}
-	e.DrawBox(color.Add(-20, -20, -20, 0), box)
 
 	// Background color of the button.
 	box.W -= border
 	box.H -= border
-	// if w.hovering {
-	// 	e.DrawBox(render.Yellow, box)
-	// } else {
-	e.DrawBox(color, box)
+	if w.Background() != render.Invisible {
+		e.DrawBox(w.Background(), box)
+	}
+
+	// log.Info("Widget %s background color: %s", w, w.Background())
+
+	// XXX: color effective area
+	// box.X += w.Padding()
+	// box.Y += w.Padding()
+	// box.W -= w.Padding() * 2
+	// box.H -= w.Padding() * 2
+	// e.DrawBox(render.RGBA(0, 255, 255, 153), box)
 }
 
 // Padding returns the padding width.

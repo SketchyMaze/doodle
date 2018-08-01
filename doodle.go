@@ -63,7 +63,8 @@ func (d *Doodle) Run() error {
 
 	// Set up the default scene.
 	if d.Scene == nil {
-		d.Goto(&MainScene{})
+		d.Goto(&GUITestScene{})
+		// d.Goto(&MainScene{})
 	}
 
 	log.Info("Enter Main Loop")
