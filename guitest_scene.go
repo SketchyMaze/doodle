@@ -144,6 +144,20 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Anchor:  ui.NW,
 		Padding: 2,
 	})
+
+	cb := ui.NewCheckbox("Overlay",
+		&DebugOverlay,
+		ui.NewLabel(render.Text{
+			Text:  "Toggle Debug Overlay",
+			Size:  14,
+			Color: render.Black,
+		}),
+	)
+	frame.Pack(cb, ui.Pack{
+		Anchor:  ui.NW,
+		Padding: 4,
+	})
+	cb.Supervise(s.Supervisor)
 	frame.Pack(ui.NewLabel(render.Text{
 		Text:  "Like Tk!",
 		Size:  16,
