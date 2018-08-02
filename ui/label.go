@@ -31,10 +31,14 @@ func NewLabel(t render.Text) *Label {
 // Compute the size of the label widget.
 func (w *Label) Compute(e render.Engine) {
 	rect, _ := e.ComputeTextRect(w.Text)
-	w.Resize(render.Rect{
-		W: rect.W + w.Padding(),
-		H: rect.H + w.Padding(),
-	})
+
+	if !w.FixedSize() {
+		w.resizeAuto(render.Rect{
+			W: rect.W + w.Padding(),
+			H: rect.H + w.Padding(),
+		})
+	}
+
 	w.MoveTo(render.Point{
 		X: rect.X + w.BoxThickness(1),
 		Y: rect.Y + w.BoxThickness(1),

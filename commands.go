@@ -37,6 +37,12 @@ func (c Command) Run(d *Doodle) error {
 		return c.Quit()
 	case "help":
 		return c.Help(d)
+	case "reload":
+		d.Goto(d.Scene)
+		return nil
+	case "guitest":
+		d.Goto(&GUITestScene{})
+		return nil
 	case "eval":
 	case "$":
 		out, err := d.shell.js.Run(c.ArgsLiteral)

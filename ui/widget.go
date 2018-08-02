@@ -10,6 +10,7 @@ type BorderStyle string
 
 // Styles for a widget border.
 const (
+	BorderNone   BorderStyle = ""
 	BorderSolid  BorderStyle = "solid"
 	BorderRaised             = "raised"
 	BorderSunken             = "sunken"
@@ -26,6 +27,7 @@ type Widget interface {
 	Size() render.Rect // Return the Width and Height of the widget.
 	FixedSize() bool   // Return whether the size is fixed (true) or automatic (false)
 	Resize(render.Rect)
+	ResizeBy(render.Rect)
 
 	Handle(string, func(render.Point))
 	Event(string, render.Point) // called internally to trigger an event
@@ -130,10 +132,14 @@ func (w *BaseWidget) String() string {
 // Configure the base widget with all the common properties at once. Any
 // property left as the zero value will not update the widget.
 func (w *BaseWidget) Configure(c Config) {
-	if c.Width != 0 && c.Height != 0 {
+	if c.Width != 0 || c.Height != 0 {
 		w.fixedSize = !c.AutoResize
-		w.width = c.Width
-		w.height = c.Height
+		if c.Width != 0 {
+			w.width = c.Width
+		}
+		if c.Height != 0 {
+			w.height = c.Height
+		}
 	}
 
 	if c.Padding != 0 {
@@ -155,7 +161,7 @@ func (w *BaseWidget) Configure(c Config) {
 	if c.BorderSize != 0 {
 		w.borderSize = c.BorderSize
 	}
-	if c.BorderStyle != BorderSolid {
+	if c.BorderStyle != BorderNone {
 		w.borderStyle = c.BorderStyle
 	}
 	if c.OutlineSize != 0 {
@@ -199,6 +205,13 @@ func (w *BaseWidget) Resize(v render.Rect) {
 	w.fixedSize = true
 	w.width = v.W
 	w.height = v.H
+}
+
+// ResizeBy resizes by a relative amount.
+func (w *BaseWidget) ResizeBy(v render.Rect) {
+	w.fixedSize = true
+	w.width += v.W
+	w.height += v.H
 }
 
 // resizeAuto sets the size of the widget but doesn't set the fixedSize flag.

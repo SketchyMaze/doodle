@@ -65,6 +65,7 @@ func NewShell(d *Doodle) Shell {
 		"log":   log,
 		"RGBA":  render.RGBA,
 		"Point": render.NewPoint,
+		"Rect":  render.NewRect,
 	}
 	for name, v := range bindings {
 		err := s.js.Set(name, v)

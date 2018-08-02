@@ -125,10 +125,33 @@ type Rect struct {
 	H int32
 }
 
+// NewRect creates a rectangle of size `width` and `height`. The X,Y values
+// are initialized to zero.
+func NewRect(width, height int32) Rect {
+	return Rect{
+		W: width,
+		H: height,
+	}
+}
+
 func (r Rect) String() string {
 	return fmt.Sprintf("Rect<%d,%d,%d,%d>",
 		r.X, r.Y, r.W, r.H,
 	)
+}
+
+// Bigger returns if the given rect is larger than the current one.
+func (r Rect) Bigger(other Rect) bool {
+	// TODO: don't know why this is !
+	return !(other.X < r.X || // Lefter
+		other.Y < r.Y || // Higher
+		other.W > r.W || // Wider
+		other.H > r.H) // Taller
+}
+
+// IsZero returns if the Rect is uninitialized.
+func (r Rect) IsZero() bool {
+	return r.X == 0 && r.Y == 0 && r.W == 0 && r.H == 0
 }
 
 // Text holds information for drawing text.

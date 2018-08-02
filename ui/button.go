@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/render"
@@ -10,7 +11,7 @@ import (
 // Button is a clickable button.
 type Button struct {
 	BaseWidget
-	Label Label
+	child Widget
 
 	// Private options.
 	hovering bool
@@ -18,10 +19,13 @@ type Button struct {
 }
 
 // NewButton creates a new Button.
-func NewButton(label Label) *Button {
+func NewButton(name string, child Widget) *Button {
 	w := &Button{
-		Label: label,
+		child: child,
 	}
+	w.IDFunc(func() string {
+		return fmt.Sprintf("Button<%s>", name)
+	})
 
 	w.Configure(Config{
 		Padding:      4,
@@ -50,33 +54,40 @@ func NewButton(label Label) *Button {
 		w.SetBorderStyle(BorderRaised)
 	})
 
-	w.IDFunc(func() string {
-		return fmt.Sprintf("Button<%s>", w.Label.Text.Text)
-	})
-
 	return w
-}
-
-// SetText quickly changes the text of the label.
-func (w *Button) SetText(text string) {
-	w.Label.Text.Text = text
 }
 
 // Compute the size of the button.
 func (w *Button) Compute(e render.Engine) {
 	// Compute the size of the inner widget first.
-	w.Label.Compute(e)
-	size := w.Label.Size()
-	w.Resize(render.Rect{
-		W: size.W + w.BoxThickness(2),
-		H: size.H + w.BoxThickness(2),
-	})
+	w.child.Compute(e)
+
+	// Auto-resize only if we haven't been given a fixed size.
+	if !w.FixedSize() {
+		size := w.child.Size()
+		w.Resize(render.Rect{
+			W: size.W + w.BoxThickness(2),
+			H: size.H + w.BoxThickness(2),
+		})
+	}
+}
+
+// SetText conveniently sets the button text, for Label children only.
+func (w *Button) SetText(text string) error {
+	if label, ok := w.child.(*Label); ok {
+		label.Text.Text = text
+	}
+	return errors.New("child is not a Label widget")
 }
 
 // Present the button.
 func (w *Button) Present(e render.Engine) {
 	w.Compute(e)
-	P := w.Point()
+	var (
+		P         = w.Point()
+		S         = w.Size()
+		ChildSize = w.child.Size()
+	)
 
 	// Draw the widget's border and everything.
 	w.DrawBox(e)
@@ -87,10 +98,20 @@ func (w *Button) Present(e render.Engine) {
 		clickOffset++
 	}
 
-	// Draw the text label inside.
-	w.Label.MoveTo(render.Point{
+	// Where to place the child widget.
+	moveTo := render.Point{
 		X: P.X + w.BoxThickness(1) + clickOffset,
 		Y: P.Y + w.BoxThickness(1) + clickOffset,
-	})
-	w.Label.Present(e)
+	}
+
+	// If we're bigger than we need to be, center the child widget.
+	if S.Bigger(ChildSize) {
+		moveTo.X = P.X + (S.W / 2) - (ChildSize.W / 2)
+	}
+	_ = S
+	_ = ChildSize
+
+	// Draw the text label inside.
+	w.child.MoveTo(moveTo)
+	w.child.Present(e)
 }

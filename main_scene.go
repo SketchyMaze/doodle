@@ -21,7 +21,7 @@ func (s *MainScene) Name() string {
 func (s *MainScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
 
-	frame := ui.NewFrame()
+	frame := ui.NewFrame("frame")
 	s.frame = frame
 	s.frame.Configure(ui.Config{
 		// Width:       400,
@@ -32,7 +32,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		BorderColor: render.Blue,
 	})
 
-	button1 := ui.NewButton(*ui.NewLabel(render.Text{
+	button1 := ui.NewButton("Button1", ui.NewLabel(render.Text{
 		Text:  "New Map",
 		Size:  14,
 		Color: render.Black,
@@ -46,7 +46,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		d.NewMap()
 	})
 
-	button2 := ui.NewButton(*ui.NewLabel(render.Text{
+	button2 := ui.NewButton("Button2", ui.NewLabel(render.Text{
 		Text:  "New Map",
 		Size:  14,
 		Color: render.Black,

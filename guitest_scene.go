@@ -1,6 +1,8 @@
 package doodle
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
@@ -9,8 +11,10 @@ import (
 // GUITestScene implements the main menu of Doodle.
 type GUITestScene struct {
 	Supervisor *ui.Supervisor
-	frame      *ui.Frame
-	window     *ui.Frame
+
+	// Private widgets.
+	Frame  *ui.Frame
+	Window *ui.Frame
 }
 
 // Name of the scene.
@@ -22,64 +26,151 @@ func (s *GUITestScene) Name() string {
 func (s *GUITestScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
 
-	window := ui.NewFrame()
-	s.window = window
+	window := ui.NewFrame("window")
+	s.Window = window
 	window.Configure(ui.Config{
-		Width:       400,
-		Height:      400,
+		Width:       750,
+		Height:      450,
 		Background:  render.Grey,
 		BorderStyle: ui.BorderRaised,
 		BorderSize:  2,
 	})
 
+	// Title Bar
 	titleBar := ui.NewLabel(render.Text{
-		Text:   "Alert",
+		Text:   "Widget Toolkit",
 		Size:   12,
 		Color:  render.White,
-		Stroke: render.Black,
+		Stroke: render.DarkBlue,
 	})
 	titleBar.Configure(ui.Config{
-		Background:   render.Blue,
-		OutlineSize:  1,
-		OutlineColor: render.Black,
+		Background: render.Blue,
 	})
 	window.Pack(titleBar, ui.Pack{
 		Anchor: ui.N,
-		FillX:  true,
+		Fill:   true,
 	})
 
-	msgFrame := ui.NewFrame()
-	msgFrame.Configure(ui.Config{
+	// Window Body
+	body := ui.NewFrame("Window Body")
+	body.Configure(ui.Config{
+		Background: render.Yellow,
+	})
+	window.Pack(body, ui.Pack{
+		Anchor: ui.N,
+		Expand: true,
+	})
+
+	// Left Frame
+	leftFrame := ui.NewFrame("Left Frame")
+	leftFrame.Configure(ui.Config{
 		Background:  render.Grey,
-		BorderStyle: ui.BorderRaised,
-		BorderSize:  1,
+		BorderStyle: ui.BorderSolid,
+		BorderSize:  4,
+		Width:       100,
 	})
-	window.Pack(msgFrame, ui.Pack{
-		Anchor:  ui.N,
-		Fill:    true,
-		Padding: 4,
-	})
-
-	btnFrame := ui.NewFrame()
-	btnFrame.Configure(ui.Config{
-		Background: render.DarkRed,
-	})
-	window.Pack(btnFrame, ui.Pack{
-		Anchor:  ui.N,
-		Padding: 4,
+	body.Pack(leftFrame, ui.Pack{
+		Anchor: ui.W,
+		FillY:  true,
 	})
 
-	msg := ui.NewLabel(render.Text{
+	// Some left frame buttons.
+	for _, label := range []string{"New", "Edit", "Play", "Help"} {
+		btn := ui.NewButton("dummy "+label, ui.NewLabel(render.Text{
+			Text:  label,
+			Size:  12,
+			Color: render.Black,
+		}))
+		s.Supervisor.Add(btn)
+		leftFrame.Pack(btn, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+			PadY:   2,
+		})
+	}
+
+	// Main Frame
+	frame := ui.NewFrame("Main Frame")
+	frame.Configure(ui.Config{
+		Background: render.White,
+		BorderSize: 0,
+	})
+	body.Pack(frame, ui.Pack{
+		Anchor: ui.W,
+		Expand: true,
+	})
+
+	// Right Frame
+	rightFrame := ui.NewFrame("Right Frame")
+	rightFrame.Configure(ui.Config{
+		Background:  render.SkyBlue,
+		BorderStyle: ui.BorderSunken,
+		BorderSize:  2,
+		Width:       80,
+	})
+	body.Pack(rightFrame, ui.Pack{
+		Anchor: ui.W,
+		Fill:   true,
+	})
+
+	// A grid of buttons.
+	for row := 0; row < 3; row++ {
+		rowFrame := ui.NewFrame(fmt.Sprintf("Row%d", row))
+		for col := 0; col < 3; col++ {
+			btn := ui.NewButton("X",
+				ui.NewFrame(fmt.Sprintf("Col%d", col)),
+			)
+			btn.Configure(ui.Config{
+				Height:      20,
+				BorderStyle: ui.BorderRaised,
+			})
+			rowFrame.Pack(btn, ui.Pack{
+				Anchor: ui.W,
+				Expand: true,
+			})
+			s.Supervisor.Add(btn)
+		}
+		rightFrame.Pack(rowFrame, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+		})
+	}
+
+	frame.Pack(ui.NewLabel(render.Text{
 		Text:  "Hello World!",
 		Size:  14,
 		Color: render.Black,
-	})
-	msgFrame.Pack(msg, ui.Pack{
+	}), ui.Pack{
 		Anchor:  ui.NW,
 		Padding: 2,
 	})
+	frame.Pack(ui.NewLabel(render.Text{
+		Text:  "Like Tk!",
+		Size:  16,
+		Color: render.Red,
+	}), ui.Pack{
+		Anchor:  ui.SE,
+		Padding: 8,
+	})
+	frame.Pack(ui.NewLabel(render.Text{
+		Text:  "Frame widget for pack layouts",
+		Size:  14,
+		Color: render.Blue,
+	}), ui.Pack{
+		Anchor:  ui.SE,
+		Padding: 8,
+	})
 
-	button1 := ui.NewButton(*ui.NewLabel(render.Text{
+	// Buttom Frame
+	btnFrame := ui.NewFrame("btnFrame")
+	btnFrame.Configure(ui.Config{
+		Background: render.Grey,
+	})
+	window.Pack(btnFrame, ui.Pack{
+		Anchor: ui.N,
+	})
+
+	button1 := ui.NewButton("Button1", ui.NewLabel(render.Text{
 		Text:  "New Map",
 		Size:  14,
 		Color: render.Black,
@@ -91,7 +182,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 
 	log.Info("Button1 bg: %s", button1.Background())
 
-	button2 := ui.NewButton(*ui.NewLabel(render.Text{
+	button2 := ui.NewButton("Button2", ui.NewLabel(render.Text{
 		Text:  "New Map",
 		Size:  14,
 		Color: render.Black,
@@ -102,12 +193,10 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 	btnFrame.Pack(button1, ui.Pack{
 		Anchor:  align,
 		Padding: 20,
-		Fill:    true,
 	})
 	btnFrame.Pack(button2, ui.Pack{
 		Anchor:  align,
 		Padding: 20,
-		Fill:    true,
 	})
 
 	s.Supervisor.Add(button1)
@@ -141,14 +230,16 @@ func (s *GUITestScene) Draw(d *Doodle) error {
 	})
 	label.Present(d.Engine)
 
-	s.window.Compute(d.Engine)
-	s.window.MoveTo(render.Point{
-		X: (d.width / 2) - (s.window.Size().W / 2),
+	s.Window.Compute(d.Engine)
+	s.Window.MoveTo(render.Point{
+		X: (d.width / 2) - (s.Window.Size().W / 2),
 		Y: 100,
 	})
-	s.window.Present(d.Engine)
+	s.Window.Present(d.Engine)
 
 	s.Supervisor.Present(d.Engine)
+
+	// os.Exit(1)
 
 	return nil
 }
