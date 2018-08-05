@@ -20,6 +20,7 @@ type Supervisor struct {
 // NewSupervisor creates a supervisor.
 func NewSupervisor() *Supervisor {
 	return &Supervisor{
+		widgets:  []Widget{},
 		hovering: map[int]interface{}{},
 		clicked:  map[int]interface{}{},
 	}
@@ -84,8 +85,7 @@ func (s *Supervisor) Present(e render.Engine) {
 	defer s.lock.RUnlock()
 
 	for _, w := range s.widgets {
-		// w.Present(e)
-		_ = w
+		w.Present(e, w.Point())
 	}
 }
 

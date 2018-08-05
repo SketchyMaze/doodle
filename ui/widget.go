@@ -24,8 +24,9 @@ type Widget interface {
 	Point() render.Point
 	MoveTo(render.Point)
 	MoveBy(render.Point)
-	Size() render.Rect // Return the Width and Height of the widget.
-	FixedSize() bool   // Return whether the size is fixed (true) or automatic (false)
+	Size() render.Rect    // Return the Width and Height of the widget.
+	FixedSize() bool      // Return whether the size is fixed (true) or automatic (false)
+	BoxSize() render.Rect // Return the full size including the border and outline.
 	Resize(render.Rect)
 	ResizeBy(render.Rect)
 
@@ -34,11 +35,11 @@ type Widget interface {
 
 	// Thickness of the padding + border + outline.
 	BoxThickness(multiplier int32) int32
-	DrawBox(render.Engine)
+	DrawBox(render.Engine, render.Point)
 
 	// Widget configuration getters.
-	Padding() int32               // Padding
-	SetPadding(int32)             //
+	Margin() int32                // Margin away from other widgets
+	SetMargin(int32)              //
 	Background() render.Color     // Background color
 	SetBackground(render.Color)   //
 	Foreground() render.Color     // Foreground color
@@ -60,7 +61,7 @@ type Widget interface {
 	Compute(render.Engine)
 
 	// Render the final widget onto the drawing engine.
-	Present(render.Engine)
+	Present(render.Engine, render.Point)
 }
 
 // Config holds common base widget configs for quick configuration.
@@ -73,9 +74,9 @@ type Config struct {
 	AutoResize   bool
 	Width        int32
 	Height       int32
-	Padding      int32
-	PadX         int32
-	PadY         int32
+	Margin       int32
+	MarginX      int32
+	MarginY      int32
 	Background   render.Color
 	Foreground   render.Color
 	BorderSize   int32
@@ -94,7 +95,7 @@ type BaseWidget struct {
 	width        int32
 	height       int32
 	point        render.Point
-	padding      int32
+	margin       int32
 	background   render.Color
 	foreground   render.Color
 	borderStyle  BorderStyle
@@ -142,8 +143,8 @@ func (w *BaseWidget) Configure(c Config) {
 		}
 	}
 
-	if c.Padding != 0 {
-		w.padding = c.Padding
+	if c.Margin != 0 {
+		w.margin = c.Margin
 	}
 	if c.Background != render.Invisible {
 		w.background = c.Background
@@ -194,6 +195,15 @@ func (w *BaseWidget) Size() render.Rect {
 	}
 }
 
+// BoxSize returns the full rendered size of the widget including its box
+// thickness (border, padding and outline).
+func (w *BaseWidget) BoxSize() render.Rect {
+	return render.Rect{
+		W: w.width + w.BoxThickness(2),
+		H: w.height + w.BoxThickness(2),
+	}
+}
+
 // FixedSize returns whether the widget's size has been hard-coded by the user
 // (true) or if it automatically resizes based on its contents (false).
 func (w *BaseWidget) FixedSize() bool {
@@ -226,13 +236,12 @@ func (w *BaseWidget) BoxThickness(m int32) int32 {
 	if m == 0 {
 		m = 1
 	}
-	return (w.Padding() * m) + (w.BorderSize() * m) + (w.OutlineSize() * m)
+	return (w.Margin() * m) + (w.BorderSize() * m) + (w.OutlineSize() * m)
 }
 
 // DrawBox draws the border and outline.
-func (w *BaseWidget) DrawBox(e render.Engine) {
+func (w *BaseWidget) DrawBox(e render.Engine, P render.Point) {
 	var (
-		P           = w.Point()
 		S           = w.Size()
 		outline     = w.OutlineSize()
 		border      = w.BorderSize()
@@ -300,25 +309,16 @@ func (w *BaseWidget) DrawBox(e render.Engine) {
 	if w.Background() != render.Invisible {
 		e.DrawBox(w.Background(), box)
 	}
-
-	// log.Info("Widget %s background color: %s", w, w.Background())
-
-	// XXX: color effective area
-	// box.X += w.Padding()
-	// box.Y += w.Padding()
-	// box.W -= w.Padding() * 2
-	// box.H -= w.Padding() * 2
-	// e.DrawBox(render.RGBA(0, 255, 255, 153), box)
 }
 
-// Padding returns the padding width.
-func (w *BaseWidget) Padding() int32 {
-	return w.padding
+// Margin returns the margin width.
+func (w *BaseWidget) Margin() int32 {
+	return w.margin
 }
 
-// SetPadding sets the padding width.
-func (w *BaseWidget) SetPadding(v int32) {
-	w.padding = v
+// SetMargin sets the margin width.
+func (w *BaseWidget) SetMargin(v int32) {
+	w.margin = v
 }
 
 // Background returns the background color.

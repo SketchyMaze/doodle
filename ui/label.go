@@ -9,33 +9,48 @@ import (
 // Label is a simple text label widget.
 type Label struct {
 	BaseWidget
+
+	// Configurable fields for the constructor.
+	Text         string
+	TextVariable *string
+	Font         render.Text
+
 	width  int32
 	height int32
-	Text   render.Text
 }
 
 // NewLabel creates a new label.
-func NewLabel(t render.Text) *Label {
+func NewLabel(c Label) *Label {
 	w := &Label{
-		Text: t,
+		Text:         c.Text,
+		TextVariable: c.TextVariable,
+		Font:         c.Font,
 	}
-	w.Configure(Config{
-		Padding: 4,
-	})
 	w.IDFunc(func() string {
-		return fmt.Sprintf("Label<%s>", w.Text.Text)
+		return fmt.Sprintf("Label<%s>", w.text().Text)
 	})
 	return w
 }
 
+// text returns the label's displayed text, coming from the TextVariable if
+// available or else the Text attribute instead.
+func (w *Label) text() render.Text {
+	if w.TextVariable != nil {
+		w.Font.Text = *w.TextVariable
+		return w.Font
+	}
+	w.Font.Text = w.Text
+	return w.Font
+}
+
 // Compute the size of the label widget.
 func (w *Label) Compute(e render.Engine) {
-	rect, _ := e.ComputeTextRect(w.Text)
+	rect, _ := e.ComputeTextRect(w.text())
 
 	if !w.FixedSize() {
 		w.resizeAuto(render.Rect{
-			W: rect.W + w.Padding(),
-			H: rect.H + w.Padding(),
+			W: rect.W + (w.Font.Padding * 2),
+			H: rect.H + (w.Font.Padding * 2),
 		})
 	}
 
@@ -46,14 +61,12 @@ func (w *Label) Compute(e render.Engine) {
 }
 
 // Present the label widget.
-func (w *Label) Present(e render.Engine) {
-	var (
-		P      = w.Point()
-		border = w.BoxThickness(1)
-	)
-	w.DrawBox(e)
-	e.DrawText(w.Text, render.Point{
-		X: P.X + border,
-		Y: P.Y + border,
+func (w *Label) Present(e render.Engine, P render.Point) {
+	border := w.BoxThickness(1)
+
+	w.DrawBox(e, P)
+	e.DrawText(w.text(), render.Point{
+		X: P.X + border + w.Font.Padding,
+		Y: P.Y + border + w.Font.Padding,
 	})
 }

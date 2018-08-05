@@ -1,6 +1,7 @@
 package doodle
 
 import (
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
@@ -23,51 +24,29 @@ func (s *MainScene) Setup(d *Doodle) error {
 
 	frame := ui.NewFrame("frame")
 	s.frame = frame
-	s.frame.Configure(ui.Config{
-		// Width:       400,
-		// Height:      200,
-		Background:  render.Purple,
-		BorderStyle: ui.BorderSolid,
-		BorderSize:  1,
-		BorderColor: render.Blue,
-	})
 
-	button1 := ui.NewButton("Button1", ui.NewLabel(render.Text{
-		Text:  "New Map",
-		Size:  14,
-		Color: render.Black,
+	button1 := ui.NewButton("Button1", ui.NewLabel(ui.Label{
+		Text: "New Map",
+		Font: balance.StatusFont,
 	}))
-	// button1.Compute(d.Engine)
-	// button1.MoveTo(render.Point{
-	// 	X: (d.width / 2) - (button1.Size().W / 2),
-	// 	Y: 200,
-	// })
 	button1.Handle("Click", func(p render.Point) {
 		d.NewMap()
 	})
 
-	button2 := ui.NewButton("Button2", ui.NewLabel(render.Text{
-		Text:  "New Map",
-		Size:  14,
-		Color: render.Black,
+	button2 := ui.NewButton("Button2", ui.NewLabel(ui.Label{
+		Text: "New Map",
+		Font: balance.StatusFont,
 	}))
 	button2.SetText("Load Map")
-	// button2.Compute(d.Engine)
-	// button2.MoveTo(render.Point{
-	// 	X: (d.width / 2) - (button2.Size().W / 2),
-	// 	Y: 260,
-	// })
 
-	var align = ui.E
 	frame.Pack(button1, ui.Pack{
-		Anchor:  align,
-		Padding: 12,
-		Fill:    true,
+		Anchor: ui.N,
+		Fill:   true,
 	})
 	frame.Pack(button2, ui.Pack{
-		Anchor:  align,
-		Padding: 12,
-		Fill:    true,
+		Anchor: ui.N,
+		PadY:   12,
+		Fill:   true,
 	})
 
 	s.Supervisor.Add(button1)
@@ -87,28 +66,28 @@ func (s *MainScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
 
-	label := ui.NewLabel(render.Text{
-		Text:   "Doodle v" + Version,
-		Size:   26,
-		Color:  render.Pink,
-		Stroke: render.SkyBlue,
-		Shadow: render.Black,
+	label := ui.NewLabel(ui.Label{
+		Text: "Doodle v" + Version,
+		Font: render.Text{
+			Size:   26,
+			Color:  render.Pink,
+			Stroke: render.SkyBlue,
+			Shadow: render.Black,
+		},
 	})
 	label.Compute(d.Engine)
 	label.MoveTo(render.Point{
 		X: (d.width / 2) - (label.Size().W / 2),
 		Y: 120,
 	})
-	label.Present(d.Engine)
+	label.Present(d.Engine, label.Point())
 
 	s.frame.Compute(d.Engine)
 	s.frame.MoveTo(render.Point{
 		X: (d.width / 2) - (s.frame.Size().W / 2),
 		Y: 200,
 	})
-	s.frame.Present(d.Engine)
-
-	s.Supervisor.Present(d.Engine)
+	s.frame.Present(d.Engine, s.frame.Point())
 
 	return nil
 }

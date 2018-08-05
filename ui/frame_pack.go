@@ -5,7 +5,7 @@ import "git.kirsle.net/apps/doodle/render"
 // computePacked processes all the Pack layout widgets in the Frame.
 func (w *Frame) computePacked(e render.Engine) {
 	var (
-		frameSize = w.Size()
+		frameSize = w.BoxSize()
 
 		// maxWidth and maxHeight are always the computed minimum dimensions
 		// that the Frame must be to contain all of its children. If the Frame
@@ -37,7 +37,7 @@ func (w *Frame) computePacked(e render.Engine) {
 			yDirection = -1 - w.BoxThickness(2) // parent + child BoxThickness(1) = 2
 		} else if anchor == E {
 			x = frameSize.W
-			xDirection = -1 - w.BoxThickness(2)
+			xDirection = -1 // - w.BoxThickness(2)
 		}
 
 		for _, packedWidget := range w.packs[anchor] {
@@ -46,7 +46,7 @@ func (w *Frame) computePacked(e render.Engine) {
 			child.Compute(e)
 			var (
 				// point = child.Point()
-				size  = child.Size()
+				size  = child.BoxSize()
 				yStep = y * yDirection
 				xStep = x * xDirection
 			)
@@ -65,10 +65,7 @@ func (w *Frame) computePacked(e render.Engine) {
 				x -= size.W + (pack.PadX * 2)
 			}
 
-			child.MoveTo(render.Point{
-				X: x + pack.PadX,
-				Y: y + pack.PadY,
-			})
+			child.MoveTo(render.NewPoint(x, y))
 
 			if anchor.IsNorth() {
 				y += size.H + (pack.PadY * 2)
@@ -90,8 +87,8 @@ func (w *Frame) computePacked(e render.Engine) {
 	if len(expanded) > 0 && !frameSize.IsZero() && frameSize.Bigger(computedSize) {
 		// Divy up the size available.
 		growBy := render.Rect{
-			W: ((frameSize.W - computedSize.W) / int32(len(expanded))) - w.BoxThickness(2),
-			H: ((frameSize.H - computedSize.H) / int32(len(expanded))) - w.BoxThickness(2),
+			W: ((frameSize.W - computedSize.W) / int32(len(expanded))), // - w.BoxThickness(2),
+			H: ((frameSize.H - computedSize.H) / int32(len(expanded))), // - w.BoxThickness(2),
 		}
 		for _, pw := range expanded {
 			pw.widget.ResizeBy(growBy)
@@ -102,10 +99,22 @@ func (w *Frame) computePacked(e render.Engine) {
 	// If we're not using a fixed Frame size, use the dynamically computed one.
 	if !w.FixedSize() {
 		frameSize = render.NewRect(maxWidth, maxHeight)
+	} else {
+		// If either of the sizes were left zero, use the dynamically computed one.
+		if frameSize.W == 0 {
+			frameSize.W = maxWidth
+		}
+		if frameSize.H == 0 {
+			frameSize.H = maxHeight
+		}
 	}
 
 	// Rescan all the widgets in this anchor to re-center them
 	// in their space.
+	innerFrameSize := render.NewRect(
+		frameSize.W-w.BoxThickness(2),
+		frameSize.H-w.BoxThickness(2),
+	)
 	for _, pw := range visited {
 		var (
 			child   = pw.widget
@@ -117,38 +126,42 @@ func (w *Frame) computePacked(e render.Engine) {
 			moved   bool
 		)
 
+		if w.String() == "Frame<Row0; 3 widgets>" {
+			log.Debug("%s>%s: pack.FillX=%d  resize=%s  innerFrameSize=%s", w, child, pack.FillX, resize, innerFrameSize)
+		}
+
 		if pack.Anchor.IsNorth() || pack.Anchor.IsSouth() {
-			if pack.FillX && resize.W < frameSize.W {
-				resize.W = frameSize.W - w.BoxThickness(2)
+			if pack.FillX && resize.W < innerFrameSize.W {
+				resize.W = innerFrameSize.W - w.BoxThickness(2)
 				resized = true
 			}
-			if resize.W < frameSize.W-w.BoxThickness(4) {
+			if resize.W < innerFrameSize.W-w.BoxThickness(4) {
 				if pack.Anchor.IsCenter() {
-					point.X = (frameSize.W / 2) - (resize.W / 2)
+					point.X = (innerFrameSize.W / 2) - (resize.W / 2)
 				} else if pack.Anchor.IsWest() {
 					point.X = pack.PadX
 				} else if pack.Anchor.IsEast() {
-					point.X = frameSize.W - resize.W - pack.PadX
+					point.X = innerFrameSize.W - resize.W - pack.PadX
 				}
 
 				moved = true
 			}
 		} else if pack.Anchor.IsWest() || pack.Anchor.IsEast() {
-			if pack.FillY && resize.H < frameSize.H {
-				resize.H = frameSize.H - w.BoxThickness(2) // BoxThickness(2) for parent + child
+			if pack.FillY && resize.H < innerFrameSize.H {
+				resize.H = innerFrameSize.H - w.BoxThickness(2) // BoxThickness(2) for parent + child
 				// point.Y -= (w.BoxThickness(4) + child.BoxThickness(2))
 				moved = true
 				resized = true
 			}
 
 			// Vertically align the widgets.
-			if resize.H < frameSize.H {
+			if resize.H < innerFrameSize.H {
 				if pack.Anchor.IsMiddle() {
-					point.Y = (frameSize.H / 2) - (resize.H / 2)
+					point.Y = (innerFrameSize.H / 2) - (resize.H / 2) - w.BoxThickness(1)
 				} else if pack.Anchor.IsNorth() {
 					point.Y = pack.PadY - w.BoxThickness(4)
 				} else if pack.Anchor.IsSouth() {
-					point.Y = frameSize.H - resize.H - pack.PadY
+					point.Y = innerFrameSize.H - resize.H - pack.PadY
 				}
 				moved = true
 			}
@@ -157,6 +170,7 @@ func (w *Frame) computePacked(e render.Engine) {
 		}
 
 		if resized && size != resize {
+			// log.Debug("%s/%s: resize to: %s", w, child, resize)
 			child.Resize(resize)
 			child.Compute(e)
 		}
@@ -165,9 +179,12 @@ func (w *Frame) computePacked(e render.Engine) {
 		}
 	}
 
-	if !w.FixedSize() {
-		w.Resize(frameSize)
-	}
+	// if !w.FixedSize() {
+	w.Resize(render.NewRect(
+		frameSize.W-w.BoxThickness(2),
+		frameSize.H-w.BoxThickness(2),
+	))
+	// }
 }
 
 // Pack provides configuration fields for Frame.Pack().

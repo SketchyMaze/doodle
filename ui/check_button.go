@@ -32,7 +32,6 @@ func NewCheckButton(name string, boolVar *bool, child Widget) *CheckButton {
 	}
 
 	w.Configure(Config{
-		Padding:      4,
 		BorderSize:   2,
 		BorderStyle:  borderStyle,
 		OutlineSize:  1,

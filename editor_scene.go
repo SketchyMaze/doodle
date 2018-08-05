@@ -20,6 +20,8 @@ type EditorScene struct {
 	Filename string
 	Canvas   render.Grid
 
+	UI *EditorUI
+
 	// History of all the pixels placed by the user.
 	pixelHistory []level.Pixel
 	lastPixel    *level.Pixel // last pixel placed while mouse down and dragging
@@ -56,6 +58,8 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		s.Canvas = nil
 	}
 
+	s.UI = NewEditorUI(d)
+
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
 	if s.pixelHistory == nil {
@@ -72,6 +76,8 @@ func (s *EditorScene) Setup(d *Doodle) error {
 
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
+	s.UI.Loop(ev)
+
 	// Taking a screenshot?
 	if ev.ScreenshotKey.Pressed() {
 		log.Info("Taking a screenshot")
@@ -131,6 +137,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
 	s.canvas.Draw(d.Engine)
+	s.UI.Present(d.Engine)
 
 	return nil
 }

@@ -28,7 +28,6 @@ func NewButton(name string, child Widget) *Button {
 	})
 
 	w.Configure(Config{
-		Padding:      4,
 		BorderSize:   2,
 		BorderStyle:  BorderRaised,
 		OutlineSize:  1,
@@ -75,22 +74,21 @@ func (w *Button) Compute(e render.Engine) {
 // SetText conveniently sets the button text, for Label children only.
 func (w *Button) SetText(text string) error {
 	if label, ok := w.child.(*Label); ok {
-		label.Text.Text = text
+		label.Text = text
 	}
 	return errors.New("child is not a Label widget")
 }
 
 // Present the button.
-func (w *Button) Present(e render.Engine) {
+func (w *Button) Present(e render.Engine, P render.Point) {
 	w.Compute(e)
 	var (
-		P         = w.Point()
 		S         = w.Size()
 		ChildSize = w.child.Size()
 	)
 
 	// Draw the widget's border and everything.
-	w.DrawBox(e)
+	w.DrawBox(e, P)
 
 	// Offset further if we are currently sunken.
 	var clickOffset int32
@@ -112,6 +110,5 @@ func (w *Button) Present(e render.Engine) {
 	_ = ChildSize
 
 	// Draw the text label inside.
-	w.child.MoveTo(moveTo)
-	w.child.Present(e)
+	w.child.Present(e, moveTo)
 }

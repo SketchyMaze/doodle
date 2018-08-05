@@ -156,11 +156,12 @@ func (r Rect) IsZero() bool {
 
 // Text holds information for drawing text.
 type Text struct {
-	Text   string
-	Size   int
-	Color  Color
-	Stroke Color // Stroke color (if not zero)
-	Shadow Color // Drop shadow color (if not zero)
+	Text    string
+	Size    int
+	Color   Color
+	Padding int32
+	Stroke  Color // Stroke color (if not zero)
+	Shadow  Color // Drop shadow color (if not zero)
 }
 
 func (t Text) String() string {

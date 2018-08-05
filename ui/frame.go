@@ -46,14 +46,13 @@ func (w *Frame) Compute(e render.Engine) {
 }
 
 // Present the Frame.
-func (w *Frame) Present(e render.Engine) {
+func (w *Frame) Present(e render.Engine, P render.Point) {
 	var (
-		P = w.Point()
 		S = w.Size()
 	)
 
 	// Draw the widget's border and everything.
-	w.DrawBox(e)
+	w.DrawBox(e, P)
 
 	// Draw the background color.
 	e.DrawBox(w.Background(), render.Rect{
@@ -65,11 +64,13 @@ func (w *Frame) Present(e render.Engine) {
 
 	// Draw the widgets.
 	for _, child := range w.widgets {
+		// child.Compute(e)
 		p := child.Point()
-		child.MoveTo(render.NewPoint(
+		moveTo := render.NewPoint(
 			P.X+p.X+w.BoxThickness(1),
 			P.Y+p.Y+w.BoxThickness(1),
-		))
-		child.Present(e)
+		)
+		child.MoveTo(moveTo)
+		child.Present(e, moveTo)
 	}
 }
