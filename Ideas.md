@@ -170,6 +170,55 @@ For creating Doodads in particular:
   wants to export with the level file itself, for easy sharing.
 * It should have space to store a custom background image.
 
+## Wallpaper Images
+
+* Levels can pick a "wallpaper image" to go behind their pixels. One example of
+  a wallpaper would be a sheet of standard ruled notebook paper.
+* The texture file will be a square (rectangular maybe ok) with four quadrants
+  from which the textures will be extracted. For example if the overall image
+  size was 100x100 pixels, it will be divided into the four 50x50 quadrants.
+  1. `TL`: Top left corner is the top left edge of the "page" the level is on
+  2. `TR`: Top right corner is the repeated "top of page" texture.
+  3. `BL`: Bottom left corner is the repeated "left of page" texture.
+  4. `BR`: Bottom right corner is the repeated background texture that extends
+     infinitely in all directions.
+* Levels will be able to choose a "page type" which controls how the wallpaper
+  will be drawn and how the level boundaries may be constrained. There will be
+  four options:
+  1. **Unbounded:** The map can freely grow in any direction, including into the
+     negative X/Y coordinates. The map author will not run up against a boundary
+     as the level grows in any direction.
+  2. **No Negative Space:** The map coordinates can not dip below `(0,0)`, the
+     origin at the top-left edge of the map. The map can grow infinitely in the
+     positive X and Y directions (to the right and down) but is constrained on
+     the left and right edges. The game engine will stop scrolling the map when
+     the top or left edges are reached, and those edges will behave like a solid
+     wall.
+  3. **Bounded:** The map has a fixed width and height and is bounded on all
+     four edges.
+  4. **Bounded, Mirrored Wallpaper:** same as Bounded but with a different
+     wallpaper behavior.
+* The page types will have their own behaviors with how wallpapers are drawn:
+  * **Unbounded:** only the `BR` texture from the wallpaper is used, repeated
+    infinitely in the X and Y directions. The top-left, top, and left edge
+    textures are not used.
+  * **No Negative Space:** the `TL` texture is drawn at coordinate `(0,0)`.
+    To its right, the `TR` texture is repeated forever in the X direction, and
+    along the left edge of the page, the `BL` texture is repeated in the Y
+    direction. The remaining whitespace on the page repeats the `BR` texture
+    infinitely.
+  * **Bounded:** same as No Negative Space.
+  * **Bounded, Mirrored Wallpaper:** same as No Negative Space, but all of the
+    _other_ corners and edges are textured too, with mirror images of the Top,
+    Top Left, and Left textures. This would look silly on the "ruled notebook"
+    texture, but could be useful to emborder the level with a fancy texture.
+* The game will come with a few built-in textures for levels to refer to by
+  name. These textures don't need to be distributed with the map files themselves,
+  as every copy of the game should include these (or a sensible fallback would
+  be used).
+* The map author can also attach their own custom texture that will be included
+  inside the map file.
+
 # Text Console
 
 * Create a rudimentary dev console for entering text commands in-game. It
