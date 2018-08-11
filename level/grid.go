@@ -1,14 +1,14 @@
-package render
+package level
 
 import (
-	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // Grid is a 2D grid of pixels in X,Y notation.
-type Grid map[level.Pixel]interface{}
+type Grid map[*Pixel]interface{}
 
 // Exists returns true if the point exists on the grid.
-func (g *Grid) Exists(p level.Pixel) bool {
+func (g *Grid) Exists(p *Pixel) bool {
 	if _, ok := (*g)[p]; ok {
 		return true
 	}
@@ -16,9 +16,10 @@ func (g *Grid) Exists(p level.Pixel) bool {
 }
 
 // Draw the grid efficiently.
-func (g *Grid) Draw(e Engine) {
+func (g *Grid) Draw(e render.Engine) {
 	for pixel := range *g {
-		e.DrawPoint(Black, Point{
+		color := pixel.Swatch.Color
+		e.DrawPoint(color, render.Point{
 			X: pixel.X,
 			Y: pixel.Y,
 		})

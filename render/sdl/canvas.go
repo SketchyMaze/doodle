@@ -17,7 +17,7 @@ func (r *Renderer) Clear(color render.Color) {
 // DrawPoint puts a color at a pixel.
 func (r *Renderer) DrawPoint(color render.Color, point render.Point) {
 	if color != r.lastColor {
-		r.renderer.SetDrawColor(color.Red, color.Blue, color.Green, color.Alpha)
+		r.renderer.SetDrawColor(color.Red, color.Green, color.Blue, color.Alpha)
 	}
 	r.renderer.DrawPoint(point.X, point.Y)
 }

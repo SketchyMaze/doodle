@@ -72,7 +72,7 @@ func (p *Player) SetGrounded(v bool) {
 
 // Draw the player sprite.
 func (p *Player) Draw(e render.Engine) {
-	e.DrawBox(render.Color{255, 255, 153, 255}, render.Rect{
+	e.DrawBox(render.RGBA(255, 255, 153, 255), render.Rect{
 		X: p.point.X,
 		Y: p.point.Y,
 		W: p.size.W,

@@ -20,25 +20,42 @@ type Level struct {
 
 	// The Palette holds the unique "colors" used in this map file, and their
 	// properties (solid, fire, slippery, etc.)
-	Palette []Palette `json:"palette"`
+	Palette *Palette `json:"palette"`
 
 	// Pixels is a 2D array indexed by [X][Y]. The cell values are indexes into
 	// the Palette.
-	Pixels []Pixel `json:"pixels"`
+	Pixels []*Pixel `json:"pixels"`
+}
+
+// New creates a blank level object with all its members initialized.
+func New() *Level {
+	return &Level{
+		Version: 1,
+		Pixels:  []*Pixel{},
+		Palette: &Palette{},
+	}
 }
 
 // Pixel associates a coordinate with a palette index.
 type Pixel struct {
-	X       int32 `json:"x"`
-	Y       int32 `json:"y"`
-	Palette int32 `json:"p"`
+	X            int32 `json:"x"`
+	Y            int32 `json:"y"`
+	PaletteIndex int32 `json:"p"`
+
+	// Private runtime values.
+	Palette *Palette `json:"-"` // pointer to its palette, TODO: needed?
+	Swatch  *Swatch  `json:"-"` // pointer to its swatch, for when rendered.
+}
+
+func (p Pixel) String() string {
+	return fmt.Sprintf("Pixel<%s '%s' (%d,%d)>", p.Swatch.Color, p.Swatch.Name, p.X, p.Y)
 }
 
 // MarshalJSON serializes a Pixel compactly as a simple list.
 func (p Pixel) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(
 		`[%d, %d, %d]`,
-		p.X, p.Y, p.Palette,
+		p.X, p.Y, p.PaletteIndex,
 	)), nil
 }
 
@@ -52,17 +69,8 @@ func (p *Pixel) UnmarshalJSON(text []byte) error {
 
 	p.X = triplet[0]
 	p.Y = triplet[1]
-	p.Palette = triplet[2]
+	if len(triplet) > 2 {
+		p.PaletteIndex = triplet[2]
+	}
 	return nil
-}
-
-// Palette are the unique pixel attributes that this map uses, and serves
-// as a lookup table for the Pixels.
-type Palette struct {
-	// Required attributes.
-	Color string `json:"color"`
-
-	// Optional attributes.
-	Solid bool `json:"solid,omitempty"`
-	Fire  bool `json:"fire,omitempty"`
 }

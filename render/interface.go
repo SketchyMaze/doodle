@@ -38,67 +38,6 @@ type Engine interface {
 	Loop() error // maybe?
 }
 
-// Color holds an RGBA color value.
-type Color struct {
-	Red   uint8
-	Green uint8
-	Blue  uint8
-	Alpha uint8
-}
-
-// RGBA creates a new Color.
-func RGBA(r, g, b, a uint8) Color {
-	return Color{
-		Red:   r,
-		Green: g,
-		Blue:  b,
-		Alpha: a,
-	}
-}
-
-func (c Color) String() string {
-	return fmt.Sprintf(
-		"Color<#%02x%02x%02x>",
-		c.Red, c.Green, c.Blue,
-	)
-}
-
-// Add a relative color value to the color.
-func (c Color) Add(r, g, b, a int32) Color {
-	var (
-		R = int32(c.Red) + r
-		G = int32(c.Green) + g
-		B = int32(c.Blue) + b
-		A = int32(c.Alpha) + a
-	)
-
-	cap8 := func(v int32) uint8 {
-		if v > 255 {
-			v = 255
-		} else if v < 0 {
-			v = 0
-		}
-		return uint8(v)
-	}
-
-	return Color{
-		Red:   cap8(R),
-		Green: cap8(G),
-		Blue:  cap8(B),
-		Alpha: cap8(A),
-	}
-}
-
-// Lighten a color value.
-func (c Color) Lighten(v int32) Color {
-	return c.Add(v, v, v, 0)
-}
-
-// Darken a color value.
-func (c Color) Darken(v int32) Color {
-	return c.Add(-v, -v, -v, 0)
-}
-
 // Point holds an X,Y coordinate value.
 type Point struct {
 	X int32
@@ -165,7 +104,12 @@ type Text struct {
 }
 
 func (t Text) String() string {
-	return fmt.Sprintf("Text<%s>", t.Text)
+	return fmt.Sprintf(`Text<"%s" %dpx %s>`, t.Text, t.Size, t.Color)
+}
+
+// IsZero returns if the Text is the zero value.
+func (t Text) IsZero() bool {
+	return t.Text == "" && t.Size == 0 && t.Color == Invisible && t.Padding == 0 && t.Stroke == Invisible && t.Shadow == Invisible
 }
 
 // Common color names.

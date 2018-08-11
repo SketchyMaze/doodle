@@ -18,14 +18,17 @@ type EditorScene struct {
 	// Configuration for the scene initializer.
 	OpenFile bool
 	Filename string
-	Canvas   render.Grid
+	Canvas   level.Grid
 
 	UI *EditorUI
 
+	Palette *level.Palette // Full palette of swatches for this level
+	Swatch  *level.Swatch  // actively selected painting swatch
+
 	// History of all the pixels placed by the user.
-	pixelHistory []level.Pixel
+	pixelHistory []*level.Pixel
 	lastPixel    *level.Pixel // last pixel placed while mouse down and dragging
-	canvas       render.Grid
+	canvas       level.Grid
 	filename     string // Last saved filename.
 
 	// Canvas size
@@ -48,7 +51,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		if s.OpenFile {
 			log.Debug("EditorScene: Loading map from filename at %s", s.filename)
 			if err := s.LoadLevel(s.filename); err != nil {
-				return err
+				d.Flash("LoadLevel error: %s", err)
 			}
 		}
 	}
@@ -58,16 +61,23 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		s.Canvas = nil
 	}
 
-	s.UI = NewEditorUI(d)
+	s.Palette = level.DefaultPalette()
+	if len(s.Palette.Swatches) > 0 {
+		s.Swatch = s.Palette.Swatches[0]
+		s.Palette.ActiveSwatch = s.Swatch.Name
+	}
 
+	// Initialize the user interface. It references the palette and such so it
+	// must be initialized after those things.
+	s.UI = NewEditorUI(d, s)
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
 	if s.pixelHistory == nil {
-		s.pixelHistory = []level.Pixel{}
+		s.pixelHistory = []*level.Pixel{}
 	}
 	if s.canvas == nil {
 		log.Debug("EditorScene: Setting default canvas to an empty grid")
-		s.canvas = render.Grid{}
+		s.canvas = level.Grid{}
 	}
 	s.width = d.width // TODO: canvas width = copy the window size
 	s.height = d.height
@@ -100,28 +110,31 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.Button1.Now {
 		// log.Warn("Button1: %+v", ev.Button1)
 		lastPixel := s.lastPixel
-		pixel := level.Pixel{
-			X: ev.CursorX.Now,
-			Y: ev.CursorY.Now,
+		pixel := &level.Pixel{
+			X:       ev.CursorX.Now,
+			Y:       ev.CursorY.Now,
+			Palette: s.Palette,
+			Swatch:  s.Swatch,
 		}
 
 		// Append unique new pixels.
 		if len(s.pixelHistory) == 0 || s.pixelHistory[len(s.pixelHistory)-1] != pixel {
 			if lastPixel != nil {
 				// Draw the pixels in between.
-				if *lastPixel != pixel {
+				if lastPixel != pixel {
 					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
-						dot := level.Pixel{
+						dot := &level.Pixel{
 							X:       point.X,
 							Y:       point.Y,
 							Palette: lastPixel.Palette,
+							Swatch:  lastPixel.Swatch,
 						}
 						s.canvas[dot] = nil
 					}
 				}
 			}
 
-			s.lastPixel = &pixel
+			s.lastPixel = pixel
 			s.pixelHistory = append(s.pixelHistory, pixel)
 
 			// Save in the pixel canvas map.
@@ -145,19 +158,20 @@ func (s *EditorScene) Draw(d *Doodle) error {
 // LoadLevel loads a level from disk.
 func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
-	s.pixelHistory = []level.Pixel{}
-	s.canvas = render.Grid{}
+	s.pixelHistory = []*level.Pixel{}
+	s.canvas = level.Grid{}
 
 	m, err := level.LoadJSON(filename)
 	if err != nil {
 		return err
 	}
 
-	for _, point := range m.Pixels {
-		pixel := level.Pixel{
-			X: point.X,
-			Y: point.Y,
-		}
+	s.Palette = m.Palette
+	if len(s.Palette.Swatches) > 0 {
+		s.Swatch = m.Palette.Swatches[0]
+	}
+
+	for _, pixel := range m.Pixels {
 		s.pixelHistory = append(s.pixelHistory, pixel)
 		s.canvas[pixel] = nil
 	}
@@ -168,26 +182,19 @@ func (s *EditorScene) LoadLevel(filename string) error {
 // SaveLevel saves the level to disk.
 func (s *EditorScene) SaveLevel(filename string) {
 	s.filename = filename
-	m := level.Level{
-		Version: 1,
-		Title:   "Alpha",
-		Author:  os.Getenv("USER"),
-		Width:   s.width,
-		Height:  s.height,
-		Palette: []level.Palette{
-			level.Palette{
-				Color: "#000000",
-				Solid: true,
-			},
-		},
-		Pixels: []level.Pixel{},
-	}
+
+	m := level.New()
+	m.Title = "Alpha"
+	m.Author = os.Getenv("USER")
+	m.Width = s.width
+	m.Height = s.height
+	m.Palette = s.Palette
 
 	for pixel := range s.canvas {
-		m.Pixels = append(m.Pixels, level.Pixel{
-			X:       pixel.X,
-			Y:       pixel.Y,
-			Palette: 0,
+		m.Pixels = append(m.Pixels, &level.Pixel{
+			X:            pixel.X,
+			Y:            pixel.Y,
+			PaletteIndex: int32(pixel.Swatch.Index()),
 		})
 	}
 

@@ -6,6 +6,12 @@ import (
 	"git.kirsle.net/apps/doodle/render"
 )
 
+// DefaultFont is the default font settings used for a Label.
+var DefaultFont = render.Text{
+	Size:  12,
+	Color: render.Black,
+}
+
 // Label is a simple text label widget.
 type Label struct {
 	BaseWidget
@@ -24,10 +30,13 @@ func NewLabel(c Label) *Label {
 	w := &Label{
 		Text:         c.Text,
 		TextVariable: c.TextVariable,
-		Font:         c.Font,
+		Font:         DefaultFont,
+	}
+	if !c.Font.IsZero() {
+		w.Font = c.Font
 	}
 	w.IDFunc(func() string {
-		return fmt.Sprintf("Label<%s>", w.text().Text)
+		return fmt.Sprintf(`Label<"%s">`, w.text().Text)
 	})
 	return w
 }
@@ -43,9 +52,19 @@ func (w *Label) text() render.Text {
 	return w.Font
 }
 
+// Value returns the current text value displayed in the widget, whether it was
+// the hardcoded value or a TextVariable.
+func (w *Label) Value() string {
+	return w.text().Text
+}
+
 // Compute the size of the label widget.
 func (w *Label) Compute(e render.Engine) {
-	rect, _ := e.ComputeTextRect(w.text())
+	rect, err := e.ComputeTextRect(w.text())
+	if err != nil {
+		log.Error("%s: failed to compute text rect: %s", w, err)
+		return
+	}
 
 	if !w.FixedSize() {
 		w.resizeAuto(render.Rect{

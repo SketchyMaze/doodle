@@ -40,6 +40,7 @@ func main() {
 	)
 
 	app := doodle.New(debug, engine)
+	app.SetupEngine()
 	if filename != "" {
 		if edit {
 			app.EditLevel(filename)

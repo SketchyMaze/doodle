@@ -3,6 +3,7 @@ package level
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -16,15 +17,30 @@ func (m *Level) ToJSON() ([]byte, error) {
 }
 
 // LoadJSON loads a map from JSON file.
-func LoadJSON(filename string) (Level, error) {
+func LoadJSON(filename string) (*Level, error) {
 	fh, err := os.Open(filename)
 	if err != nil {
-		return Level{}, err
+		return nil, err
 	}
 	defer fh.Close()
 
-	m := Level{}
+	m := New()
 	decoder := json.NewDecoder(fh)
 	err = decoder.Decode(&m)
+	if err != nil {
+		return m, err
+	}
+
+	// Inflate the private instance values.
+	for _, px := range m.Pixels {
+		if int(px.PaletteIndex) > len(m.Palette.Swatches) {
+			return nil, fmt.Errorf(
+				"pixel %s references palette index %d but there are only %d swatches in the palette",
+				px, px.PaletteIndex, len(m.Palette.Swatches),
+			)
+		}
+		px.Palette = m.Palette
+		px.Swatch = m.Palette.Swatches[px.PaletteIndex]
+	}
 	return m, err
 }

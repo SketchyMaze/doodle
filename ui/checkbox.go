@@ -11,12 +11,26 @@ type Checkbox struct {
 
 // NewCheckbox creates a new Checkbox.
 func NewCheckbox(name string, boolVar *bool, child Widget) *Checkbox {
+	return makeCheckbox(name, boolVar, nil, "", child)
+}
+
+// NewRadiobox creates a new Checkbox in radio mode.
+func NewRadiobox(name string, stringVar *string, value string, child Widget) *Checkbox {
+	return makeCheckbox(name, nil, stringVar, value, child)
+}
+
+// makeCheckbox constructs an appropriate type of checkbox.
+func makeCheckbox(name string, boolVar *bool, stringVar *string, value string, child Widget) *Checkbox {
 	// Our custom checkbutton widget.
 	mark := NewFrame(name + "_mark")
 
 	w := &Checkbox{
-		button: NewCheckButton(name+"_button", boolVar, mark),
-		child:  child,
+		child: child,
+	}
+	if boolVar != nil {
+		w.button = NewCheckButton(name+"_button", boolVar, mark)
+	} else if stringVar != nil {
+		w.button = NewRadioButton(name+"_button", stringVar, value, mark)
 	}
 	w.Frame.Setup()
 
@@ -37,6 +51,11 @@ func NewCheckbox(name string, boolVar *bool, child Widget) *Checkbox {
 	})
 
 	return w
+}
+
+// Child returns the child widget.
+func (w *Checkbox) Child() Widget {
+	return w.child
 }
 
 // Supervise the checkbutton inside the widget.

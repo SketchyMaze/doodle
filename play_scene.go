@@ -11,10 +11,10 @@ import (
 type PlayScene struct {
 	// Configuration attributes.
 	Filename string
-	Canvas   render.Grid
+	Canvas   level.Grid
 
 	// Private variables.
-	canvas render.Grid
+	canvas level.Grid
 
 	// Canvas size
 	width  int32
@@ -46,7 +46,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 
 	if s.canvas == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
-		s.canvas = render.Grid{}
+		s.canvas = level.Grid{}
 	}
 
 	s.width = d.width // TODO: canvas width = copy the window size
@@ -128,18 +128,14 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 
 // LoadLevel loads a level from disk.
 func (s *PlayScene) LoadLevel(filename string) error {
-	s.canvas = render.Grid{}
+	s.canvas = level.Grid{}
 
 	m, err := level.LoadJSON(filename)
 	if err != nil {
 		return err
 	}
 
-	for _, point := range m.Pixels {
-		pixel := level.Pixel{
-			X: point.X,
-			Y: point.Y,
-		}
+	for _, pixel := range m.Pixels {
 		s.canvas[pixel] = nil
 	}
 

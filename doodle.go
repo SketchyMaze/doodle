@@ -20,8 +20,9 @@ const (
 
 // Doodle is the game object.
 type Doodle struct {
-	Debug  bool
-	Engine render.Engine
+	Debug       bool
+	Engine      render.Engine
+	engineReady bool
 
 	startTime time.Time
 	running   bool
@@ -54,11 +55,21 @@ func New(debug bool, engine render.Engine) *Doodle {
 	return d
 }
 
-// Run initializes SDL and starts the main loop.
-func (d *Doodle) Run() error {
-	// Set up the render engine.
+// SetupEngine sets up the rendering engine.
+func (d *Doodle) SetupEngine() error {
 	if err := d.Engine.Setup(); err != nil {
 		return err
+	}
+	d.engineReady = true
+	return nil
+}
+
+// Run initializes SDL and starts the main loop.
+func (d *Doodle) Run() error {
+	if !d.engineReady {
+		if err := d.SetupEngine(); err != nil {
+			return err
+		}
 	}
 
 	// Set up the default scene.
@@ -156,10 +167,9 @@ func (d *Doodle) NewMap() {
 // EditLevel loads a map from JSON into the EditorScene.
 func (d *Doodle) EditLevel(filename string) error {
 	log.Info("Loading level from file: %s", filename)
-	scene := &EditorScene{}
-	err := scene.LoadLevel(filename)
-	if err != nil {
-		return err
+	scene := &EditorScene{
+		Filename: filename,
+		OpenFile: true,
 	}
 	d.Goto(scene)
 	return nil
