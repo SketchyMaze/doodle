@@ -138,34 +138,39 @@ As a rough idea of the milestones needed for this game to work:
 * [x] Create a user interface toolkit which will be TREMENDOUSLY helpful
   for the rest of this program.
   * [x] Labels
-  * [ ] Buttons (text only is OK)
+  * [x] Buttons (text only is OK)
       * [x] Buttons wrap their Label and dynamically compute their size based
         on how wide the label will render, plus padding and border.
       * [x] Border colors and widths and paddings are all configurable.
-      * [ ] Buttons should interact with the cursor and be hoverable and
+      * [x] Buttons should interact with the cursor and be hoverable and
         clickable.
-  * [ ] UI Manager that will keep track of buttons to know when the mouse
+  * [x] UI Manager that will keep track of buttons to know when the mouse
     is interacting with them.
-  * [ ] Frames
+  * [x] Frames
       * Like Buttons, can have border (raised, sunken or solid), padding and
         background color.
-      * [ ] Should be able to size themselves dynamically based on child widgets.
-  * [ ] Windows (fixed, non-draggable is OK)
-      * [ ] Title bar with label
-      * [ ] Window body implements a Frame that contains child widgets.
-      * [ ] Window can resize itself dynamically based on the Frame.
-* [ ] Create a "Main Menu" scene with buttons to enter a new Edit Mode,
+      * [x] Should be able to size themselves dynamically based on child widgets.
+  * [x] Windows (fixed, non-draggable is OK)
+      * [x] Title bar with label
+      * [x] Window body implements a Frame that contains child widgets.
+      * [x] Window can resize itself dynamically based on the Frame.
+* [x] Create a "Main Menu" scene with buttons to enter a new Edit Mode,
   play an existing map from disk, etc.
-* [ ] Add user interface Frames or Windows to the Edit Mode.
+* [x] Add user interface Frames or Windows to the Edit Mode.
   * [ ] A toolbar of buttons (New, Save, Open, Play) can be drawn at the top
     before the UI toolkit gains a proper MenuBar widget.
-  * [ ] Expand the Palette support in levels for solid vs. transparent, fire,
+  * [x] Expand the Palette support in levels for solid vs. transparent, fire,
     etc. with UI toolbar to choose palettes.
+* [ ] Add a "Canvas" widget that will hold level drawing data and abstract it
+  out such that the Canvas can have a constrained width and height, position,
+  and "scrollable" viewport area that determines rendered pixels. Will be VERY
+  useful for Doodads and working on levels smaller than your window size (like
+  doodads).
 
 Lesser important UI features that can come at any later time:
 
 * [ ] MenuBar widget with drop-down menu support.
-* [ ] Checkbox and Radiobox widgets.
+* [x] Checkbox and Radiobox widgets.
 * [ ] Text Entry widgets (in the meantime use the Developer Shell to prompt for
   text input questions)
 

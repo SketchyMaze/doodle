@@ -12,7 +12,7 @@
 The major milestones of the game are roughly:
 
 * [x] Prototype: make a simple SDL painting program that does nothing special.
-* [ ] Simple Platformer: be able to toggle between "edit mode" and "play mode"
+* [x] Simple Platformer: be able to toggle between "edit mode" and "play mode"
   and control a character who can walk around your level and bump into the
   solid geometry you've drawn (no objects yet, just the basics here).
 * [ ] Add Doodads (buttons, doors, the player character themself, enemies, ...)
@@ -59,6 +59,51 @@ The major milestones of the game are roughly:
       of a "Creative Mode" style, "unlimited ink to draw as much as you want,"
       have some natural limiter where players have to spend time in Play Mode
       to be able to change the map.
+
+# Edit Mode Features
+
+* [ ] A menu bar along the top of the screen with normal drop-down menus.
+  UI toolkit widgets needed:
+  * [ ] Menu: a pop-up menu, like one summoned by a right-click action.
+  * [ ] MenuButton: a Button widget that opens a Menu when clicked.
+  * [ ] MenuBar: a Frame widget that automatically finds the top of your
+    window and makes it easy to fill it with MenuButtons.
+* [x] A status bar that shows your cursor position and other useful details.
+* [x] A palette window that shows you your current palette as a series of
+  radio buttons, and you can toggle between the palette choices.
+  * Palettes are saved with the level file and the list is dynamic.
+  * Colors are not tied to behaviors. Each "Swatch" on the palette has its own
+    color and a set of boolean flags for `solid`, `fire` and `water` behaviors.
+  * [ ] User interface to edit (add/remove) swatches from the palette.
+* [ ] A Toolbox window with radio buttons to select between various drawing tools.
+  * [x] Pencil (the default) draws single pixels on the level.
+  * [ ] Rectangle would draw a rectangular outline.
+  * [ ] Line would draw a line from point to point.
+* [ ] A way to adjust brush properties:
+  * [ ] Brush size, shape (round or square).
+* [ ] Tools to toggle "layers" of visibility into your level:
+  * A drop-down menu with options like "Show all solid", "Show all fire",
+    "Show all decoration", etc.
+  * When layers are applied, adjust the way the pixels in the Grid are drawn on
+    screen. Any pixel that doesn't fit the layers requested should draw in a
+    muted color like light grey, and the layers requested should show in a
+    vibrant color.
+  * Use case: a full-color level can have _many_ solid pixels (grass, dirt,
+    walls) rendering in all kinds of colors. But you want to see how the collision
+    burden will be for the level and you can toggle on "Show all solid pixels"
+    and every solid pixel becomes bright red and all the non-solid pixels turn a
+    muted grey. This way I can easily see the difference between the colors and
+    behaviors of the pixels in my level.
+
+For creating Doodads in particular:
+
+* [ ] Make a way to enter Edit Mode in either "Level Mode" or "Doodad Mode",
+  i.e. by a "New Level" or "New Doodad" button.
+* [ ] Create a "frame manager" window to see and page between the frames of the
+  drawing.
+* [ ] Ability to work on canvases with constrained size (including smaller than
+  your window). This will use a Canvas widget in the UI toolkit as an abstraction
+  layer. Small canvases will be useful for drawing doodads of a fixed size.
 
 # File Formats
 
