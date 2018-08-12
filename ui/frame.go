@@ -22,9 +22,8 @@ func NewFrame(name string) *Frame {
 		widgets: []Widget{},
 	}
 	w.IDFunc(func() string {
-		return fmt.Sprintf("Frame<%s; %d widgets>",
+		return fmt.Sprintf("Frame<%s>",
 			name,
-			len(w.widgets),
 		)
 	})
 	return w

@@ -216,13 +216,14 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 	log.Info("Button1 bg: %s", button1.Background())
 
 	button2 := ui.NewButton("Button2", ui.NewLabel(ui.Label{
-		Text: "New Map",
+		Text: "Load Map",
 		Font: balance.StatusFont,
 	}))
 	button2.Handle("Click", func(p render.Point) {
-		d.Flash("Button2 clicked")
+		d.Prompt("Map name>", func(name string) {
+			d.EditLevel(name)
+		})
 	})
-	button2.SetText("Load Map")
 
 	var align = ui.W
 	btnFrame.Pack(button1, ui.Pack{

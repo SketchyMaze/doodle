@@ -21,6 +21,7 @@ type EditorUI struct {
 
 	// Widgets
 	Supervisor *ui.Supervisor
+	MenuBar    *ui.Frame
 	Palette    *ui.Window
 	StatusBar  *ui.Frame
 }
@@ -35,6 +36,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		StatusPaletteText:  "Swatch: <none>",
 		StatusFilenameText: "Filename: <none>",
 	}
+	u.MenuBar = u.SetupMenuBar(d)
 	u.StatusBar = u.SetupStatusBar(d)
 	u.Palette = u.SetupPalette(d)
 	return u
@@ -61,26 +63,124 @@ func (u *EditorUI) Loop(ev *events.State) {
 		filename,
 	)
 
+	u.MenuBar.Compute(u.d.Engine)
 	u.StatusBar.Compute(u.d.Engine)
 	u.Palette.Compute(u.d.Engine)
 }
 
 // Present the UI to the screen.
 func (u *EditorUI) Present(e render.Engine) {
+	// TODO: if I don't Compute() the palette window, then, whenever the dev console
+	// is open the window will blank out its contents leaving only the outermost Frame.
+	// The title bar and borders are gone. But other UI widgets don't do this.
+	// FIXME: Scene interface should have a separate ComputeUI() from Loop()?
+	u.Palette.Compute(u.d.Engine)
+
 	u.Palette.Present(e, u.Palette.Point())
+	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
+}
+
+// SetupMenuBar sets up the menu bar.
+func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
+	frame := ui.NewFrame("MenuBar")
+	frame.Configure(ui.Config{
+		Width:      d.width,
+		Background: render.Black,
+	})
+
+	type menuButton struct {
+		Text  string
+		Click func(render.Point)
+	}
+	buttons := []menuButton{
+		menuButton{
+			Text: "New Level",
+			Click: func(render.Point) {
+				d.NewMap()
+			},
+		},
+		menuButton{
+			Text: "New Doodad",
+			Click: func(render.Point) {
+				d.NewMap()
+			},
+		},
+		menuButton{
+			Text: "Save",
+			Click: func(render.Point) {
+				if u.Scene.filename != "" {
+					u.Scene.SaveLevel(u.Scene.filename)
+					d.Flash("Saved: %s", u.Scene.filename)
+				} else {
+					d.Prompt("Save filename>", func(answer string) {
+						if answer != "" {
+							u.Scene.SaveLevel("./maps/" + answer) // TODO: maps path
+							d.Flash("Saved: %s", answer)
+						}
+					})
+				}
+			},
+		},
+		menuButton{
+			Text: "Save as...",
+			Click: func(render.Point) {
+				d.Prompt("Save as filename>", func(answer string) {
+					if answer != "" {
+						u.Scene.SaveLevel("./maps/" + answer) // TODO: maps path
+						d.Flash("Saved: %s", answer)
+					}
+				})
+			},
+		},
+		menuButton{
+			Text: "Load",
+			Click: func(render.Point) {
+				d.Prompt("Open filename>", func(answer string) {
+					if answer != "" {
+						u.d.EditLevel("./maps/" + answer) // TODO: maps path
+					}
+				})
+			},
+		},
+	}
+
+	for _, btn := range buttons {
+		w := ui.NewButton(btn.Text, ui.NewLabel(ui.Label{
+			Text: btn.Text,
+			Font: balance.MenuFont,
+		}))
+		w.Configure(ui.Config{
+			BorderSize:  1,
+			OutlineSize: 0,
+		})
+		w.Handle("MouseUp", btn.Click)
+		u.Supervisor.Add(w)
+		frame.Pack(w, ui.Pack{
+			Anchor: ui.W,
+			PadX:   1,
+		})
+	}
+
+	frame.Compute(d.Engine)
+	return frame
 }
 
 // SetupPalette sets up the palette panel.
 func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
+	log.Error("SetupPalette Window")
 	window := ui.NewWindow("Palette")
+	window.ConfigureTitle(balance.TitleConfig)
+	window.TitleBar().Font = balance.TitleFont
 	window.Configure(ui.Config{
-		Width:  150,
-		Height: u.d.height - u.StatusBar.Size().H,
+		Width:       150,
+		Height:      u.d.height - u.StatusBar.Size().H,
+		Background:  balance.WindowBackground,
+		BorderColor: balance.WindowBorder,
 	})
 	window.MoveTo(render.NewPoint(
 		u.d.width-window.BoxSize().W,
-		0,
+		u.MenuBar.BoxSize().H,
 	))
 
 	// Handler function for the radio buttons being clicked.
@@ -109,6 +209,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		window.Pack(btn, ui.Pack{
 			Anchor: ui.N,
 			Fill:   true,
+			PadY:   4,
 		})
 	}
 
@@ -140,6 +241,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	cursorLabel.Compute(d.Engine)
 	frame.Pack(cursorLabel, ui.Pack{
 		Anchor: ui.W,
+		PadX:   1,
 	})
 
 	paletteLabel := ui.NewLabel(ui.Label{
@@ -150,6 +252,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	paletteLabel.Compute(d.Engine)
 	frame.Pack(paletteLabel, ui.Pack{
 		Anchor: ui.W,
+		PadX:   1,
 	})
 
 	filenameLabel := ui.NewLabel(ui.Label{
@@ -160,6 +263,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	filenameLabel.Compute(d.Engine)
 	frame.Pack(filenameLabel, ui.Pack{
 		Anchor: ui.W,
+		PadX:   1,
 	})
 
 	// TODO: right-aligned labels clip out of bounds

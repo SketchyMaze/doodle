@@ -106,8 +106,6 @@ func (w *Button) Present(e render.Engine, P render.Point) {
 	if S.Bigger(ChildSize) {
 		moveTo.X = P.X + (S.W / 2) - (ChildSize.W / 2)
 	}
-	_ = S
-	_ = ChildSize
 
 	// Draw the text label inside.
 	w.child.Present(e, moveTo)

@@ -82,6 +82,7 @@ func (r *Renderer) Setup() error {
 	if err != nil {
 		panic(err)
 	}
+	renderer.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 	r.renderer = renderer
 
 	return nil

@@ -32,6 +32,7 @@ func LoadJSON(filename string) (*Level, error) {
 	}
 
 	// Inflate the private instance values.
+	m.Palette.Inflate()
 	for _, px := range m.Pixels {
 		if int(px.PaletteIndex) > len(m.Palette.Swatches) {
 			return nil, fmt.Errorf(

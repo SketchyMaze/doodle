@@ -49,7 +49,7 @@ func (d *Doodle) DrawDebugOverlay() {
 		},
 		render.Point{
 			X: DebugTextPadding,
-			Y: DebugTextPadding,
+			Y: DebugTextPadding + 32, // extra padding to not overlay menu bars
 		},
 	)
 	if err != nil {

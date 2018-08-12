@@ -201,3 +201,15 @@ Fedora dependencies:
 ```bash
 $ sudo dnf install SDL2-devel SDL2_ttf-devel
 ```
+
+## Fonts
+
+The `fonts/` folder is git-ignored. The app currently uses font files here
+named:
+
+* `DejaVuSans.ttf` for sans-serif font.
+* `DejaVuSans-Bold.ttf` for bold sans-serif font.
+* `DejaVuSansMono.ttf` for monospace font.
+
+These are the open source **DejaVu Sans [Mono]** fonts, so copy them in from
+your `/usr/share/fonts/dejavu` folder or provide alternative fonts.

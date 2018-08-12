@@ -43,6 +43,8 @@ func (s *EditorScene) Name() string {
 
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
+	s.Palette = level.DefaultPalette()
+
 	// Were we given configuration data?
 	if s.Filename != "" {
 		log.Debug("EditorScene: Set filename to %s", s.Filename)
@@ -61,7 +63,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		s.Canvas = nil
 	}
 
-	s.Palette = level.DefaultPalette()
+	// Select the first swatch in the palette.
 	if len(s.Palette.Swatches) > 0 {
 		s.Swatch = s.Palette.Swatches[0]
 		s.Palette.ActiveSwatch = s.Swatch.Name
@@ -102,9 +104,6 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 		})
 		return nil
 	}
-
-	// Clear the canvas and fill it with white.
-	d.Engine.Clear(render.White)
 
 	// Clicking? Log all the pixels while doing so.
 	if ev.Button1.Now {
@@ -149,6 +148,9 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
+	// Clear the canvas and fill it with white.
+	d.Engine.Clear(render.White)
+
 	s.canvas.Draw(d.Engine)
 	s.UI.Present(d.Engine)
 

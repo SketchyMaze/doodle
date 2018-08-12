@@ -41,12 +41,17 @@ func (w *Frame) computePacked(e render.Engine) {
 		}
 
 		for _, packedWidget := range w.packs[anchor] {
+
 			child := packedWidget.widget
 			pack := packedWidget.pack
 			child.Compute(e)
+
+			x += pack.PadX
+			y += pack.PadY
+
 			var (
 				// point = child.Point()
-				size  = child.BoxSize()
+				size  = child.Size()
 				yStep = y * yDirection
 				xStep = x * xDirection
 			)
@@ -59,19 +64,19 @@ func (w *Frame) computePacked(e render.Engine) {
 			}
 
 			if anchor.IsSouth() {
-				y -= size.H + (pack.PadY * 2)
+				y -= size.H + pack.PadY
 			}
 			if anchor.IsEast() {
-				x -= size.W + (pack.PadX * 2)
+				x -= size.W + pack.PadX
 			}
 
 			child.MoveTo(render.NewPoint(x, y))
 
 			if anchor.IsNorth() {
-				y += size.H + (pack.PadY * 2)
+				y += size.H + pack.PadY
 			}
 			if anchor == W {
-				x += size.W + (pack.PadX * 2)
+				x += size.W + pack.PadX
 			}
 
 			visited = append(visited, packedWidget)

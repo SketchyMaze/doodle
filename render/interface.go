@@ -95,12 +95,15 @@ func (r Rect) IsZero() bool {
 
 // Text holds information for drawing text.
 type Text struct {
-	Text    string
-	Size    int
-	Color   Color
-	Padding int32
-	Stroke  Color // Stroke color (if not zero)
-	Shadow  Color // Drop shadow color (if not zero)
+	Text         string
+	Size         int
+	Color        Color
+	Padding      int32
+	PadX         int32
+	PadY         int32
+	Stroke       Color  // Stroke color (if not zero)
+	Shadow       Color  // Drop shadow color (if not zero)
+	FontFilename string // Path to *.ttf file on disk
 }
 
 func (t Text) String() string {

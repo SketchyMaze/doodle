@@ -96,7 +96,6 @@ func (d *Doodle) Run() error {
 
 		// Command line shell.
 		if d.shell.Open {
-
 		} else if ev.EnterKey.Read() {
 			log.Debug("Shell: opening shell")
 			d.shell.Open = true

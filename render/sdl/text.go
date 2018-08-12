@@ -1,6 +1,7 @@
 package sdl
 
 import (
+	"fmt"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/events"
@@ -9,19 +10,28 @@ import (
 	"github.com/veandco/go-sdl2/ttf"
 )
 
-var fonts map[int]*ttf.Font = map[int]*ttf.Font{}
+// TODO: font filenames
+var defaultFontFilename = "./fonts/DejaVuSans.ttf"
+
+var fonts = map[string]*ttf.Font{}
 
 // LoadFont loads and caches the font at a given size.
-func LoadFont(size int) (*ttf.Font, error) {
-	if font, ok := fonts[size]; ok {
+func LoadFont(filename string, size int) (*ttf.Font, error) {
+	if filename == "" {
+		filename = defaultFontFilename
+	}
+
+	// Cached font available?
+	keyName := fmt.Sprintf("%s@%d", filename, size)
+	if font, ok := fonts[keyName]; ok {
 		return font, nil
 	}
 
-	font, err := ttf.OpenFont("./fonts/DejaVuSansMono.ttf", size)
+	font, err := ttf.OpenFont(filename, size)
 	if err != nil {
 		return nil, err
 	}
-	fonts[size] = font
+	fonts[keyName] = font
 
 	return font, nil
 }
@@ -51,7 +61,7 @@ func (r *Renderer) ComputeTextRect(text render.Text) (render.Rect, error) {
 		err     error
 	)
 
-	if font, err = LoadFont(text.Size); err != nil {
+	if font, err = LoadFont(text.FontFilename, text.Size); err != nil {
 		return rect, err
 	}
 
@@ -74,7 +84,7 @@ func (r *Renderer) DrawText(text render.Text, point render.Point) error {
 		err     error
 	)
 
-	if font, err = LoadFont(text.Size); err != nil {
+	if font, err = LoadFont(text.FontFilename, text.Size); err != nil {
 		return err
 	}
 

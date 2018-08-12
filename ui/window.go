@@ -79,6 +79,11 @@ func (w *Window) TitleBar() *Label {
 func (w *Window) Configure(C Config) {
 	w.BaseWidget.Configure(C)
 	w.body.Configure(C)
+
+	// Don't pass dimensions down any further than the body.
+	C.Width = 0
+	C.Height = 0
+	w.content.Configure(C)
 }
 
 // ConfigureTitle configures the title bar widget.

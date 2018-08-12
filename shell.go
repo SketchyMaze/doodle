@@ -16,16 +16,24 @@ func (d *Doodle) Flash(template string, v ...interface{}) {
 	d.shell.Write(fmt.Sprintf(template, v...))
 }
 
+// Prompt the user for a question in the dev console.
+func (d *Doodle) Prompt(question string, callback func(string)) {
+	d.shell.Prompt = question
+	d.shell.callback = callback
+	d.shell.Open = true
+}
+
 // Shell implements the developer console in-game.
 type Shell struct {
 	parent *Doodle
 
-	Open    bool
-	Prompt  string
-	Text    string
-	History []string
-	Output  []string
-	Flashes []Flash
+	Open     bool
+	Prompt   string
+	callback func(string) // for prompt answers only
+	Text     string
+	History  []string
+	Output   []string
+	Flashes  []Flash
 
 	// Blinky cursor variables.
 	cursor     byte   // cursor symbol
@@ -82,6 +90,7 @@ func (s *Shell) Close() {
 	log.Debug("Shell: closing shell")
 	s.Open = false
 	s.Prompt = ">"
+	s.callback = nil
 	s.Text = ""
 	s.historyPaging = false
 	s.historyIndex = 0
@@ -93,6 +102,14 @@ func (s *Shell) Execute(input string) {
 	if command.Raw != "" {
 		s.Output = append(s.Output, s.Prompt+command.Raw)
 		s.History = append(s.History, command.Raw)
+	}
+
+	// Are we answering a Prompt?
+	if s.callback != nil {
+		log.Info("Invoking prompt callback:")
+		s.callback(command.Raw)
+		s.Close()
+		return
 	}
 
 	if command.Command == "clear" {
@@ -257,9 +274,10 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 				line := s.Output[len(s.Output)-1-i]
 				d.Engine.DrawText(
 					render.Text{
-						Text:  line,
-						Size:  balance.ShellFontSize,
-						Color: render.Grey,
+						FontFilename: balance.ShellFontFilename,
+						Text:         line,
+						Size:         balance.ShellFontSize,
+						Color:        balance.ShellForegroundColor,
 					},
 					render.Point{
 						X: balance.ShellPadding,
@@ -273,9 +291,10 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		// Draw the command prompt.
 		d.Engine.DrawText(
 			render.Text{
-				Text:  s.Prompt + s.Text + string(s.cursor),
-				Size:  balance.ShellFontSize,
-				Color: balance.ShellForegroundColor,
+				FontFilename: balance.ShellFontFilename,
+				Text:         s.Prompt + s.Text + string(s.cursor),
+				Size:         balance.ShellFontSize,
+				Color:        balance.ShellPromptColor,
 			},
 			render.Point{
 				X: balance.ShellPadding,

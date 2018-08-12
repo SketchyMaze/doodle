@@ -1,6 +1,8 @@
 package level
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/render"
 )
 
@@ -60,7 +62,15 @@ func (s Swatch) String() string {
 
 // Index returns the Swatch's position in the palette.
 func (s Swatch) Index() int {
+	fmt.Printf("%+v index: %d", s, s.index)
 	return s.index
+}
+
+// Inflate the palette swatch caches. Always call this method after you have
+// initialized the palette (i.e. loaded it from JSON); this will update the
+// "color by name" cache and assign the index numbers to each swatch.
+func (p *Palette) Inflate() {
+	p.update()
 }
 
 // Get a swatch by name.

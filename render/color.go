@@ -36,6 +36,15 @@ func RGBA(r, g, b, a uint8) Color {
 	}
 }
 
+// MustHexColor parses a color from hex code or panics.
+func MustHexColor(hex string) Color {
+	color, err := HexColor(hex)
+	if err != nil {
+		panic(err)
+	}
+	return color
+}
+
 // HexColor parses a color from hexadecimal code.
 func HexColor(hex string) (Color, error) {
 	c := Black // default color
@@ -80,8 +89,8 @@ func HexColor(hex string) (Color, error) {
 
 func (c Color) String() string {
 	return fmt.Sprintf(
-		"Color<#%02x%02x%02x>",
-		c.Red, c.Green, c.Blue,
+		"Color<#%02x%02x%02x+%02x>",
+		c.Red, c.Green, c.Blue, c.Alpha,
 	)
 }
 

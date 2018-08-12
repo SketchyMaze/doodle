@@ -66,10 +66,15 @@ func (w *Label) Compute(e render.Engine) {
 		return
 	}
 
+	var (
+		padX = w.Font.Padding + w.Font.PadX
+		padY = w.Font.Padding + w.Font.PadY
+	)
+
 	if !w.FixedSize() {
 		w.resizeAuto(render.Rect{
-			W: rect.W + (w.Font.Padding * 2),
-			H: rect.H + (w.Font.Padding * 2),
+			W: rect.W + (padX * 2),
+			H: rect.H + (padY * 2),
 		})
 	}
 
@@ -83,9 +88,14 @@ func (w *Label) Compute(e render.Engine) {
 func (w *Label) Present(e render.Engine, P render.Point) {
 	border := w.BoxThickness(1)
 
+	var (
+		padX = w.Font.Padding + w.Font.PadX
+		padY = w.Font.Padding + w.Font.PadY
+	)
+
 	w.DrawBox(e, P)
 	e.DrawText(w.text(), render.Point{
-		X: P.X + border + w.Font.Padding,
-		Y: P.Y + border + w.Font.Padding,
+		X: P.X + border + padX,
+		Y: P.Y + border + padY,
 	})
 }
