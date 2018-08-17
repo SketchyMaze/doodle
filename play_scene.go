@@ -11,10 +11,10 @@ import (
 type PlayScene struct {
 	// Configuration attributes.
 	Filename string
-	Canvas   level.Grid
+	Canvas   *level.Grid
 
 	// Private variables.
-	canvas level.Grid
+	canvas *level.Grid
 
 	// Canvas size
 	width  int32
@@ -46,7 +46,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 
 	if s.canvas == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
-		s.canvas = level.Grid{}
+		s.canvas = &level.Grid{}
 	}
 
 	s.width = d.width // TODO: canvas width = copy the window size
@@ -110,7 +110,7 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 	// Apply gravity.
 	// var onFloor bool
 
-	info, ok := doodads.CollidesWithGrid(s.Player, &s.canvas, delta)
+	info, ok := doodads.CollidesWithGrid(s.Player, s.canvas, delta)
 	if ok {
 		// Collision happened with world.
 	}
@@ -128,16 +128,16 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 
 // LoadLevel loads a level from disk.
 func (s *PlayScene) LoadLevel(filename string) error {
-	s.canvas = level.Grid{}
+	s.canvas = &level.Grid{}
 
-	m, err := level.LoadJSON(filename)
-	if err != nil {
-		return err
-	}
+	// m, err := level.LoadJSON(filename)
+	// if err != nil {
+	// 	return err
+	// }
 
-	for _, pixel := range m.Pixels {
-		s.canvas[pixel] = nil
-	}
+	// for _, pixel := range m.Pixels {
+	// 	// *s.canvas[pixel] = nil
+	// }
 
 	return nil
 }

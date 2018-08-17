@@ -33,12 +33,20 @@ func DefaultPalette() *Palette {
 	}
 }
 
+// NewPalette initializes a blank palette.
+func NewPalette() *Palette {
+	return &Palette{
+		Swatches: []*Swatch{},
+		byName:   map[string]int{},
+	}
+}
+
 // Palette holds an index of colors used in a drawing.
 type Palette struct {
 	Swatches []*Swatch `json:"swatches"`
 
 	// Private runtime values
-	ActiveSwatch string         `json:"-"` // name of the actively selected color
+	ActiveSwatch *Swatch        `json:"-"` // name of the actively selected color
 	byName       map[string]int // Cache map of swatches by name
 }
 

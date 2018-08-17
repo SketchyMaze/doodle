@@ -3,6 +3,7 @@
 ## Table of Contents
 
 * [Major Milestones](#major-milestones)
+* [Release Modes](#release-modes)
 * [File Formats](#file-formats)
 * [Text Console](#text-console)
 * [Doodads](#doodads)
@@ -104,6 +105,35 @@ For creating Doodads in particular:
 * [ ] Ability to work on canvases with constrained size (including smaller than
   your window). This will use a Canvas widget in the UI toolkit as an abstraction
   layer. Small canvases will be useful for drawing doodads of a fixed size.
+
+# Release Modes
+
+## Shareware/Demo Version
+
+This would be a free version with some limitations. Early public alpha releases
+would be built with this release mode.
+
+* Optional expiration date after which the game WILL NOT run.
+* Can play the built-in maps and create your own custom maps.
+* No support for Custom Doodads. The game will have the code to read Doodads from
+  disk dummied out/not compiled in, and any third-party map that embeds or
+  references custom Doodads will not be allowed to run.
+* Custom maps created in a demo version will have some feature limitations:
+  * Infinite map sizes not allowed, only bounded ones with a fixed size.
+  * No custom wallpaper images, only built-in ones.
+  * No custom palette for new maps, only the default standard palette.
+  * No features for drawing doodad graphics (multiple frames, etc.)
+
+As an end user, it means basically:
+
+* You are limited to built-in doodads but you can make (and share) and play
+  other users' custom maps that only use the built-in doodads.
+
+## Release Version
+
+TBD.
+
+Probably mostly DRM free. Will want some sort of account server early-on though.
 
 # File Formats
 

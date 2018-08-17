@@ -29,7 +29,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		Text: "New Map",
 		Font: balance.StatusFont,
 	}))
-	button1.Handle("Click", func(p render.Point) {
+	button1.Handle(ui.Click, func(p render.Point) {
 		d.NewMap()
 	})
 

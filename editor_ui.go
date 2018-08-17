@@ -18,6 +18,7 @@ type EditorUI struct {
 	StatusMouseText    string
 	StatusPaletteText  string
 	StatusFilenameText string
+	selectedSwatch     string // name of selected swatch in palette
 
 	// Widgets
 	Supervisor *ui.Supervisor
@@ -36,6 +37,12 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		StatusPaletteText:  "Swatch: <none>",
 		StatusFilenameText: "Filename: <none>",
 	}
+
+	// Select the first swatch of the palette.
+	if u.Scene.drawing.Palette.ActiveSwatch != nil {
+		u.selectedSwatch = u.Scene.drawing.Palette.ActiveSwatch.Name
+	}
+
 	u.MenuBar = u.SetupMenuBar(d)
 	u.StatusBar = u.SetupStatusBar(d)
 	u.Palette = u.SetupPalette(d)
@@ -51,7 +58,7 @@ func (u *EditorUI) Loop(ev *events.State) {
 		ev.CursorY.Now,
 	)
 	u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
-		u.Scene.Swatch,
+		u.Scene.drawing.Palette.ActiveSwatch,
 	)
 
 	// Statusbar filename label.
@@ -154,7 +161,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 			BorderSize:  1,
 			OutlineSize: 0,
 		})
-		w.Handle("MouseUp", btn.Click)
+		w.Handle(ui.MouseUp, btn.Click)
 		u.Supervisor.Add(w)
 		frame.Pack(w, ui.Pack{
 			Anchor: ui.W,
@@ -185,25 +192,26 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 
 	// Handler function for the radio buttons being clicked.
 	onClick := func(p render.Point) {
-		name := u.Scene.Palette.ActiveSwatch
-		swatch, ok := u.Scene.Palette.Get(name)
+		name := u.selectedSwatch
+		swatch, ok := u.Scene.drawing.Palette.Get(name)
 		if !ok {
 			log.Error("Palette onClick: couldn't get swatch named '%s' from palette", name)
 			return
 		}
-		u.Scene.Swatch = swatch
+		log.Info("Set swatch: %s", swatch)
+		u.Scene.drawing.SetSwatch(swatch)
 	}
 
 	// Draw the radio buttons for the palette.
-	for _, swatch := range u.Scene.Palette.Swatches {
+	for _, swatch := range u.Scene.drawing.Palette.Swatches {
 		label := ui.NewLabel(ui.Label{
 			Text: swatch.Name,
 			Font: balance.StatusFont,
 		})
 		label.Font.Color = swatch.Color.Darken(40)
 
-		btn := ui.NewRadioButton("palette", &u.Scene.Palette.ActiveSwatch, swatch.Name, label)
-		btn.Handle("MouseUp", onClick)
+		btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, label)
+		btn.Handle(ui.Click, onClick)
 		u.Supervisor.Add(btn)
 
 		window.Pack(btn, ui.Pack{

@@ -7,6 +7,22 @@ import (
 	"git.kirsle.net/apps/doodle/render"
 )
 
+// Event is a named event that the supervisor will send.
+type Event int
+
+// Events.
+const (
+	NullEvent Event = iota
+	MouseOver
+	MouseOut
+	MouseDown
+	MouseUp
+	Click
+	KeyDown
+	KeyUp
+	KeyPress
+)
+
 // Supervisor keeps track of widgets of interest to notify them about
 // interaction events such as mouse hovers and clicks in their general
 // vicinity.
@@ -49,30 +65,30 @@ func (s *Supervisor) Loop(ev *events.State) {
 		if XY.X >= P.X && XY.X <= P2.X && XY.Y >= P.Y && XY.Y <= P2.Y {
 			// Cursor has intersected the widget.
 			if _, ok := s.hovering[id]; !ok {
-				w.Event("MouseOver", XY)
+				w.Event(MouseOver, XY)
 				s.hovering[id] = nil
 			}
 
 			_, isClicked := s.clicked[id]
 			if ev.Button1.Now {
 				if !isClicked {
-					w.Event("MouseDown", XY)
+					w.Event(MouseDown, XY)
 					s.clicked[id] = nil
 				}
 			} else if isClicked {
-				w.Event("MouseUp", XY)
-				w.Event("Click", XY)
+				w.Event(MouseUp, XY)
+				w.Event(Click, XY)
 				delete(s.clicked, id)
 			}
 		} else {
 			// Cursor is not intersecting the widget.
 			if _, ok := s.hovering[id]; ok {
-				w.Event("MouseOut", XY)
+				w.Event(MouseOut, XY)
 				delete(s.hovering, id)
 			}
 
 			if _, ok := s.clicked[id]; ok {
-				w.Event("MouseUp", XY)
+				w.Event(MouseUp, XY)
 				delete(s.clicked, id)
 			}
 		}

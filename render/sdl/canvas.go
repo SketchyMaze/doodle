@@ -9,7 +9,7 @@ import (
 // Clear the canvas and set this color.
 func (r *Renderer) Clear(color render.Color) {
 	if color != r.lastColor {
-		r.renderer.SetDrawColor(color.Red, color.Blue, color.Green, color.Alpha)
+		r.renderer.SetDrawColor(color.Red, color.Green, color.Blue, color.Alpha)
 	}
 	r.renderer.Clear()
 }

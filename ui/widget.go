@@ -29,9 +29,10 @@ type Widget interface {
 	BoxSize() render.Rect // Return the full size including the border and outline.
 	Resize(render.Rect)
 	ResizeBy(render.Rect)
+	Rect() render.Rect // Return the full absolute rect combining the Size() and Point()
 
-	Handle(string, func(render.Point))
-	Event(string, render.Point) // called internally to trigger an event
+	Handle(Event, func(render.Point))
+	Event(Event, render.Point) // called internally to trigger an event
 
 	// Thickness of the padding + border + outline.
 	BoxThickness(multiplier int32) int32
@@ -103,7 +104,7 @@ type BaseWidget struct {
 	borderSize   int32
 	outlineColor render.Color
 	outlineSize  int32
-	handlers     map[string][]func(render.Point)
+	handlers     map[Event][]func(render.Point)
 }
 
 // SetID sets a string name for your widget, helpful for debugging purposes.
@@ -167,6 +168,16 @@ func (w *BaseWidget) Configure(c Config) {
 	}
 	if c.OutlineSize != 0 {
 		w.outlineSize = c.OutlineSize
+	}
+}
+
+// Rect returns the widget's absolute rectangle, the combined Size and Point.
+func (w *BaseWidget) Rect() render.Rect {
+	return render.Rect{
+		X: w.point.X,
+		Y: w.point.Y,
+		W: w.width,
+		H: w.height,
 	}
 }
 
@@ -395,8 +406,8 @@ func (w *BaseWidget) SetOutlineSize(v int32) {
 }
 
 // Event is called internally by Doodle to trigger an event.
-func (w *BaseWidget) Event(name string, p render.Point) {
-	if handlers, ok := w.handlers[name]; ok {
+func (w *BaseWidget) Event(event Event, p render.Point) {
+	if handlers, ok := w.handlers[event]; ok {
 		for _, fn := range handlers {
 			fn(p)
 		}
@@ -404,16 +415,16 @@ func (w *BaseWidget) Event(name string, p render.Point) {
 }
 
 // Handle an event in the widget.
-func (w *BaseWidget) Handle(name string, fn func(render.Point)) {
+func (w *BaseWidget) Handle(event Event, fn func(render.Point)) {
 	if w.handlers == nil {
-		w.handlers = map[string][]func(render.Point){}
+		w.handlers = map[Event][]func(render.Point){}
 	}
 
-	if _, ok := w.handlers[name]; !ok {
-		w.handlers[name] = []func(render.Point){}
+	if _, ok := w.handlers[event]; !ok {
+		w.handlers[event] = []func(render.Point){}
 	}
 
-	w.handlers[name] = append(w.handlers[name], fn)
+	w.handlers[event] = append(w.handlers[event], fn)
 }
 
 // OnMouseOut should be overridden on widgets who want this event.

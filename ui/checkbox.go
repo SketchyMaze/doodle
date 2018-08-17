@@ -35,8 +35,8 @@ func makeCheckbox(name string, boolVar *bool, stringVar *string, value string, c
 	w.Frame.Setup()
 
 	// Forward clicks on the child widget to the CheckButton.
-	for _, e := range []string{"MouseOver", "MouseOut", "MouseUp", "MouseDown"} {
-		func(e string) {
+	for _, e := range []Event{MouseOver, MouseOut, MouseUp, MouseDown} {
+		func(e Event) {
 			w.child.Handle(e, func(p render.Point) {
 				w.button.Event(e, p)
 			})

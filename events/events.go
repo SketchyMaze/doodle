@@ -1,7 +1,9 @@
 // Package events manages mouse and keyboard SDL events for Doodle.
 package events
 
-import "strings"
+import (
+	"strings"
+)
 
 // State keeps track of event states.
 type State struct {
