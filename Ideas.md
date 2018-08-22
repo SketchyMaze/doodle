@@ -141,6 +141,21 @@ Probably mostly DRM free. Will want some sort of account server early-on though.
   representation before we go live. JSON support shall remain, but the
   production application will not _write_ JSON files, only read them.
   (This way we can ship drawings in the git repo as text files).
+* The app will support reading three types of files:
+  * `.canvas` files are the lowest common denominator, raw drawing data. It
+    contains a Palette and a pixel grid and nothing more.
+  * `.map` files are level maps. They include a Canvas along with level
+    metadata, Doodad array, attached files, etc.
+  * `.doodad` files are for doodads. They include a Canvas along with
+    metadata, embedded JavaScript, attached files, etc.
+* JSON versions will have `.json.<ext>` file suffixes, like `.json.canvas`
+  or `.json.map`
+* The **production** app will be only be able to read the binary format of
+  the files. The JSON reading code is for dev builds only.
+* Shareware/Demo builds will have even more restrictions on supported file
+  types. For example it won't be built with the code that allows it to
+  read _or_ write a Doodad from disk, as it will be limited only to built-in
+  Doodads and won't support authoring custom ones.
 
 ## Common Drawing Files
 

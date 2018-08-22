@@ -114,7 +114,7 @@ As a rough idea of the milestones needed for this game to work:
   OpenGL or something later on.
 * [x] Implement a command line shell in-game to ease development before a user
   interface is created.
-  * [ ] Add support for the shell to pop itself open and ask the user for
+  * [x] Add support for the shell to pop itself open and ask the user for
     input prompts.
 
 ## Alpha Platformer
@@ -157,11 +157,11 @@ As a rough idea of the milestones needed for this game to work:
 * [x] Create a "Main Menu" scene with buttons to enter a new Edit Mode,
   play an existing map from disk, etc.
 * [x] Add user interface Frames or Windows to the Edit Mode.
-  * [ ] A toolbar of buttons (New, Save, Open, Play) can be drawn at the top
+  * [x] A toolbar of buttons (New, Save, Open, Play) can be drawn at the top
     before the UI toolkit gains a proper MenuBar widget.
   * [x] Expand the Palette support in levels for solid vs. transparent, fire,
     etc. with UI toolbar to choose palettes.
-* [ ] Add a "Canvas" widget that will hold level drawing data and abstract it
+* [x] Add a "Canvas" widget that will hold level drawing data and abstract it
   out such that the Canvas can have a constrained width and height, position,
   and "scrollable" viewport area that determines rendered pixels. Will be VERY
   useful for Doodads and working on levels smaller than your window size (like
