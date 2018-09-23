@@ -38,46 +38,6 @@ type Engine interface {
 	Loop() error // maybe?
 }
 
-// Point holds an X,Y coordinate value.
-type Point struct {
-	X int32
-	Y int32
-}
-
-// NewPoint makes a new Point at an X,Y coordinate.
-func NewPoint(x, y int32) Point {
-	return Point{
-		X: x,
-		Y: y,
-	}
-}
-
-func (p Point) String() string {
-	return fmt.Sprintf("Point<%d,%d>", p.X, p.Y)
-}
-
-// IsZero returns if the point is the zero value.
-func (p Point) IsZero() bool {
-	return p.X == 0 && p.Y == 0
-}
-
-// Inside returns whether the Point falls inside the rect.
-func (p Point) Inside(r Rect) bool {
-	var (
-		x1 = r.X
-		y1 = r.Y
-		x2 = r.X + r.W
-		y2 = r.Y + r.H
-	)
-	return p.X >= x1 && p.X <= x2 && p.Y >= y1 && p.Y <= y2
-}
-
-// Add (or subtract) the other point to your current point.
-func (p *Point) Add(other Point) {
-	p.X += other.X
-	p.Y += other.Y
-}
-
 // Rect has a coordinate and a width and height.
 type Rect struct {
 	X int32

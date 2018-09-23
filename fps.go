@@ -13,7 +13,7 @@ const maxSamples = 100
 // Debug mode options, these can be enabled in the dev console
 // like: boolProp DebugOverlay true
 var (
-	DebugOverlay   = false
+	DebugOverlay   = true
 	DebugCollision = true
 )
 

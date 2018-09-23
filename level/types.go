@@ -3,18 +3,24 @@ package level
 import (
 	"encoding/json"
 	"fmt"
+
+	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // Level is the container format for Doodle map drawings.
 type Level struct {
-	Version     int32  `json:"version"`     // File format version spec.
+	Version     int    `json:"version"`     // File format version spec.
 	GameVersion string `json:"gameVersion"` // Game version that created the level.
 	Title       string `json:"title"`
 	Author      string `json:"author"`
 	Password    string `json:"passwd"`
 	Locked      bool   `json:"locked"`
 
-	// Level size.
+	// Chunked pixel data.
+	Chunker *Chunker `json:"chunks"`
+
+	// XXX: deprecated?
 	Width  int32 `json:"w"`
 	Height int32 `json:"h"`
 
@@ -31,6 +37,7 @@ type Level struct {
 func New() *Level {
 	return &Level{
 		Version: 1,
+		Chunker: NewChunker(balance.ChunkSize),
 		Pixels:  []*Pixel{},
 		Palette: &Palette{},
 	}
@@ -49,6 +56,14 @@ type Pixel struct {
 
 func (p Pixel) String() string {
 	return fmt.Sprintf("Pixel<%s '%s' (%d,%d)>", p.Swatch.Color, p.Swatch.Name, p.X, p.Y)
+}
+
+// Point returns the pixel's point.
+func (p Pixel) Point() render.Point {
+	return render.Point{
+		X: p.X,
+		Y: p.Y,
+	}
 }
 
 // MarshalJSON serializes a Pixel compactly as a simple list.

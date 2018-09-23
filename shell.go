@@ -13,6 +13,7 @@ import (
 
 // Flash a message to the user.
 func (d *Doodle) Flash(template string, v ...interface{}) {
+	log.Warn(template, v...)
 	d.shell.Write(fmt.Sprintf(template, v...))
 }
 

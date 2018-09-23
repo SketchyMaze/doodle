@@ -1,8 +1,6 @@
 package level
 
 import (
-	"fmt"
-
 	"git.kirsle.net/apps/doodle/render"
 )
 
@@ -48,30 +46,6 @@ type Palette struct {
 	// Private runtime values
 	ActiveSwatch *Swatch        `json:"-"` // name of the actively selected color
 	byName       map[string]int // Cache map of swatches by name
-}
-
-// Swatch holds details about a single value in the palette.
-type Swatch struct {
-	Name  string       `json:"name"`
-	Color render.Color `json:"color"`
-
-	// Optional attributes.
-	Solid bool `json:"solid,omitempty"`
-	Fire  bool `json:"fire,omitempty"`
-	Water bool `json:"water,omitempty"`
-
-	// Private runtime attributes.
-	index int // position in the Palette, for reverse of `Palette.byName`
-}
-
-func (s Swatch) String() string {
-	return s.Name
-}
-
-// Index returns the Swatch's position in the palette.
-func (s Swatch) Index() int {
-	fmt.Printf("%+v index: %d", s, s.index)
-	return s.index
 }
 
 // Inflate the palette swatch caches. Always call this method after you have

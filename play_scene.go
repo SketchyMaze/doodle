@@ -63,7 +63,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.KeyName.Read() == "e" {
 		log.Info("Edit Mode, Go!")
 		d.Goto(&EditorScene{
-			Canvas: s.canvas,
+			// Canvas: s.canvas,
 		})
 		return nil
 	}

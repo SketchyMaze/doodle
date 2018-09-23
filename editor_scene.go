@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
@@ -14,7 +15,7 @@ type EditorScene struct {
 	// Configuration for the scene initializer.
 	OpenFile bool
 	Filename string
-	Canvas   *level.Grid
+	Canvas   *level.Chunker
 
 	UI *EditorUI
 
@@ -37,7 +38,7 @@ func (s *EditorScene) Name() string {
 
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
-	s.drawing = level.NewCanvas(true)
+	s.drawing = level.NewCanvas(balance.ChunkSize, true)
 	s.drawing.Palette = level.DefaultPalette()
 	if len(s.drawing.Palette.Swatches) > 0 {
 		s.drawing.SetSwatch(s.drawing.Palette.Swatches[0])
@@ -80,7 +81,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.KeyName.Read() == "p" {
 		log.Info("Play Mode, Go!")
 		d.Goto(&PlayScene{
-			Canvas: s.drawing.Grid(),
+			// Canvas: s.drawing.Grid(), XXX
 		})
 		return nil
 	}
@@ -122,14 +123,7 @@ func (s *EditorScene) SaveLevel(filename string) {
 	m.Width = s.width
 	m.Height = s.height
 	m.Palette = s.drawing.Palette
-
-	for pixel := range *s.drawing.Grid() {
-		m.Pixels = append(m.Pixels, &level.Pixel{
-			X:            pixel.X,
-			Y:            pixel.Y,
-			PaletteIndex: int32(pixel.Swatch.Index()),
-		})
-	}
+	m.Chunker = s.drawing.Chunker()
 
 	json, err := m.ToJSON()
 	if err != nil {
