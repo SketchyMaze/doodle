@@ -30,12 +30,16 @@ type Doodad interface {
 type Collide struct {
 	Top         bool
 	TopPoint    render.Point
+	TopPixel    *level.Swatch
 	Left        bool
 	LeftPoint   render.Point
+	LeftPixel   *level.Swatch
 	Right       bool
 	RightPoint  render.Point
+	RightPixel  *level.Swatch
 	Bottom      bool
 	BottomPoint render.Point
+	BottomPixel *level.Swatch
 	MoveTo      render.Point
 }
 
@@ -68,7 +72,7 @@ const (
 )
 
 // CollidesWithGrid checks if a Doodad collides with level geometry.
-func CollidesWithGrid(d Doodad, grid *level.Grid, target render.Point) (*Collide, bool) {
+func CollidesWithGrid(d Doodad, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P = d.Position()
 		S = d.Size()
@@ -280,7 +284,7 @@ func GetCollisionBox(box render.Rect) CollisionBox {
 
 // ScanBoundingBox scans all of the pixels in a bounding box on the grid and
 // returns if any of them intersect with level geometry.
-func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Grid) bool {
+func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 	col := GetCollisionBox(box)
 
 	c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
@@ -293,12 +297,9 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Grid) bool {
 // ScanGridLine scans all of the pixels between p1 and p2 on the grid and tests
 // for any pixels to be set, implying a collision between level geometry and the
 // bounding boxes of the doodad.
-func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Grid, side Side) {
+func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
 	for point := range render.IterLine2(p1, p2) {
-		if grid.Exists(&level.Pixel{
-			X: point.X,
-			Y: point.Y,
-		}) {
+		if _, err := grid.Get(point); err == nil {
 			// A hit!
 			switch side {
 			case Top:

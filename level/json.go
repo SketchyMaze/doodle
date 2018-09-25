@@ -57,7 +57,6 @@ func LoadJSON(filename string) (*Level, error) {
 				px, px.PaletteIndex, len(m.Palette.Swatches),
 			)
 		}
-		px.Palette = m.Palette
 		px.Swatch = m.Palette.Swatches[px.PaletteIndex]
 	}
 	return m, err

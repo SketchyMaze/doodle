@@ -38,23 +38,15 @@ func NewCanvas(size int, editable bool) *Canvas {
 func (w *Canvas) Load(p *Palette, g *Chunker) {
 	w.Palette = p
 	w.chunks = g
-}
-
-// LoadFilename initializes the Canvas using a file on disk.
-func (w *Canvas) LoadFilename(filename string) error {
-	m, err := LoadJSON(filename)
-	if err != nil {
-		return err
-	}
-
-	w.Palette = m.Palette
-	w.chunks = m.Chunker
 
 	if len(w.Palette.Swatches) > 0 {
 		w.SetSwatch(w.Palette.Swatches[0])
 	}
+}
 
-	return nil
+// LoadLevel initializes a Canvas from a Level object.
+func (w *Canvas) LoadLevel(level *Level) {
+	w.Load(level.Palette, level.Chunker)
 }
 
 // SetSwatch changes the currently selected swatch for editing.
@@ -117,10 +109,9 @@ func (w *Canvas) Loop(ev *events.State) error {
 			Y: ev.CursorY.Now - P.Y + w.Scroll.Y,
 		}
 		pixel := &Pixel{
-			X:       cursor.X,
-			Y:       cursor.Y,
-			Palette: w.Palette,
-			Swatch:  w.Palette.ActiveSwatch,
+			X:      cursor.X,
+			Y:      cursor.Y,
+			Swatch: w.Palette.ActiveSwatch,
 		}
 
 		// Append unique new pixels.

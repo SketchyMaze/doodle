@@ -12,6 +12,11 @@ type Point struct {
 	Y int32
 }
 
+// Common points.
+var (
+	Origin Point
+)
+
 // NewPoint makes a new Point at an X,Y coordinate.
 func NewPoint(x, y int32) Point {
 	return Point{

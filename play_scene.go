@@ -1,6 +1,9 @@
 package doodle
 
 import (
+	"fmt"
+
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
@@ -11,14 +14,10 @@ import (
 type PlayScene struct {
 	// Configuration attributes.
 	Filename string
-	Canvas   *level.Grid
+	Level    *level.Level
 
 	// Private variables.
-	canvas *level.Grid
-
-	// Canvas size
-	width  int32
-	height int32
+	drawing *level.Canvas
 
 	// Player character
 	Player doodads.Doodad
@@ -31,26 +30,27 @@ func (s *PlayScene) Name() string {
 
 // Setup the play scene.
 func (s *PlayScene) Setup(d *Doodle) error {
-	// Given a filename or map data to play?
-	if s.Canvas != nil {
-		log.Debug("PlayScene.Setup: loading map from given canvas")
-		s.canvas = s.Canvas
+	s.drawing = level.NewCanvas(balance.ChunkSize, false)
+	s.drawing.MoveTo(render.Origin)
+	s.drawing.Resize(render.NewRect(d.width, d.height))
+	s.drawing.Compute(d.Engine)
 
+	// Given a filename or map data to play?
+	if s.Level != nil {
+		log.Debug("PlayScene.Setup: received level from scene caller")
+		s.drawing.LoadLevel(s.Level)
 	} else if s.Filename != "" {
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
 		s.LoadLevel(s.Filename)
-		s.Filename = ""
 	}
 
 	s.Player = doodads.NewPlayer()
 
-	if s.canvas == nil {
+	if s.Level == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
-		s.canvas = &level.Grid{}
+		s.Level = level.New()
+		s.drawing.LoadLevel(s.Level)
 	}
-
-	s.width = d.width // TODO: canvas width = copy the window size
-	s.height = d.height
 
 	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
 
@@ -63,11 +63,13 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.KeyName.Read() == "e" {
 		log.Info("Edit Mode, Go!")
 		d.Goto(&EditorScene{
-			// Canvas: s.canvas,
+			Filename: s.Filename,
+			Level:    s.Level,
 		})
 		return nil
 	}
 
+	// s.drawing.Loop(ev)
 	s.movePlayer(ev)
 	return nil
 }
@@ -77,7 +79,8 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
 
-	s.canvas.Draw(d.Engine)
+	// Draw the level.
+	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	// Draw our hero.
 	s.Player.Draw(d.Engine)
@@ -110,7 +113,7 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 	// Apply gravity.
 	// var onFloor bool
 
-	info, ok := doodads.CollidesWithGrid(s.Player, s.canvas, delta)
+	info, ok := doodads.CollidesWithGrid(s.Player, s.Level.Chunker, delta)
 	if ok {
 		// Collision happened with world.
 	}
@@ -128,16 +131,15 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 
 // LoadLevel loads a level from disk.
 func (s *PlayScene) LoadLevel(filename string) error {
-	s.canvas = &level.Grid{}
+	s.Filename = filename
 
-	// m, err := level.LoadJSON(filename)
-	// if err != nil {
-	// 	return err
-	// }
+	level, err := level.LoadJSON(filename)
+	if err != nil {
+		return fmt.Errorf("PlayScene.LoadLevel(%s): %s", filename, err)
+	}
 
-	// for _, pixel := range m.Pixels {
-	// 	// *s.canvas[pixel] = nil
-	// }
+	s.Level = level
+	s.drawing.LoadLevel(s.Level)
 
 	return nil
 }

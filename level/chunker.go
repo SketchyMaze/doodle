@@ -29,7 +29,7 @@ func NewChunker(size int) *Chunker {
 // on disk) to connect references to the swatches in the palette.
 func (c *Chunker) Inflate(pal *Palette) error {
 	for coord, chunk := range c.Chunks {
-		log.Debug("Chunker.Inflate: expanding chunk %s %+v", coord, chunk)
+		log.Debug("Chunker.Inflate: expanding chunk %s", coord)
 		chunk.Inflate(pal)
 	}
 	return nil
@@ -52,7 +52,11 @@ func (c *Chunker) IterViewport(viewport render.Rect) <-chan Pixel {
 			for cy := topLeft.Y; cy <= bottomRight.Y; cy++ {
 				if chunk, ok := c.GetChunk(render.NewPoint(cx, cy)); ok {
 					for px := range chunk.Iter() {
-						pipe <- px
+
+						// Verify this pixel is also in range.
+						if px.Point().Inside(viewport) {
+							pipe <- px
+						}
 					}
 				}
 			}

@@ -50,8 +50,7 @@ type Pixel struct {
 	PaletteIndex int32 `json:"p"`
 
 	// Private runtime values.
-	Palette *Palette `json:"-"` // pointer to its palette, TODO: needed?
-	Swatch  *Swatch  `json:"-"` // pointer to its swatch, for when rendered.
+	Swatch *Swatch `json:"-"` // pointer to its swatch, for when rendered.
 }
 
 func (p Pixel) String() string {

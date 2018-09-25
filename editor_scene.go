@@ -1,10 +1,12 @@
 package doodle
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
@@ -15,20 +17,19 @@ type EditorScene struct {
 	// Configuration for the scene initializer.
 	OpenFile bool
 	Filename string
-	Canvas   *level.Chunker
 
 	UI *EditorUI
+
+	// The current level being edited.
+	DrawingType enum.DrawingType
+	Level       *level.Level
 
 	// The canvas widget that contains the map we're working on.
 	// XXX: in dev builds this is available at $ d.Scene.GetDrawing()
 	drawing *level.Canvas
 
-	// History of all the pixels placed by the user.
-	filename string // Last saved filename.
-
-	// Canvas size
-	width  int32
-	height int32
+	// Last saved filename by the user.
+	filename string
 }
 
 // Name of the scene.
@@ -39,27 +40,37 @@ func (s *EditorScene) Name() string {
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
 	s.drawing = level.NewCanvas(balance.ChunkSize, true)
-	s.drawing.Palette = level.DefaultPalette()
 	if len(s.drawing.Palette.Swatches) > 0 {
 		s.drawing.SetSwatch(s.drawing.Palette.Swatches[0])
 	}
 
-	// Were we given configuration data?
+	// TODO: move inside the UI. Just an approximate position for now.
+	s.drawing.MoveTo(render.NewPoint(0, 19))
+	s.drawing.Resize(render.NewRect(d.width-150, d.height-44))
+	s.drawing.Compute(d.Engine)
+
+	// // Were we given configuration data?
 	if s.Filename != "" {
-		log.Debug("EditorScene: Set filename to %s", s.Filename)
+		log.Debug("EditorScene.Setup: Set filename to %s", s.Filename)
 		s.filename = s.Filename
 		s.Filename = ""
-		if s.OpenFile {
-			log.Debug("EditorScene: Loading map from filename at %s", s.filename)
-			if err := s.LoadLevel(s.filename); err != nil {
-				d.Flash("LoadLevel error: %s", err)
-			}
+	}
+	if s.Level != nil {
+		log.Debug("EditorScene.Setup: received level from scene caller")
+		s.drawing.LoadLevel(s.Level)
+	} else if s.filename != "" && s.OpenFile {
+		log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
+		if err := s.LoadLevel(s.filename); err != nil {
+			d.Flash("LoadLevel error: %s", err)
 		}
 	}
-	if s.Canvas != nil {
-		log.Debug("EditorScene: Received Canvas from caller")
-		s.drawing.Load(s.drawing.Palette, s.Canvas)
-		s.Canvas = nil
+
+	// No level?
+	if s.Level == nil {
+		log.Debug("EditorScene.Setup: initializing a new Level")
+		s.Level = level.New()
+		s.Level.Palette = level.DefaultPalette()
+		s.drawing.LoadLevel(s.Level)
 	}
 
 	// Initialize the user interface. It references the palette and such so it
@@ -67,8 +78,6 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	s.UI = NewEditorUI(d, s)
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
-	s.width = d.width // TODO: canvas width = copy the window size
-	s.height = d.height
 	return nil
 }
 
@@ -81,7 +90,8 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	if ev.KeyName.Read() == "p" {
 		log.Info("Play Mode, Go!")
 		d.Goto(&PlayScene{
-			// Canvas: s.drawing.Grid(), XXX
+			Filename: s.filename,
+			Level:    s.Level,
 		})
 		return nil
 	}
@@ -95,11 +105,6 @@ func (s *EditorScene) Draw(d *Doodle) error {
 	d.Engine.Clear(render.Magenta)
 
 	s.UI.Present(d.Engine)
-
-	// TODO: move inside the UI. Just an approximate position for now.
-	s.drawing.MoveTo(render.NewPoint(0, 19))
-	s.drawing.Resize(render.NewRect(d.width-150, d.height-44))
-	s.drawing.Compute(d.Engine)
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	return nil
@@ -108,8 +113,16 @@ func (s *EditorScene) Draw(d *Doodle) error {
 // LoadLevel loads a level from disk.
 func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
-	return s.drawing.LoadFilename(filename)
 
+	level, err := level.LoadJSON(filename)
+	if err != nil {
+		return fmt.Errorf("EditorScene.LoadLevel(%s): %s", filename, err)
+	}
+
+	s.DrawingType = enum.LevelDrawing
+	s.Level = level
+	s.drawing.LoadLevel(s.Level)
+	return nil
 }
 
 // SaveLevel saves the level to disk.
@@ -117,11 +130,14 @@ func (s *EditorScene) LoadLevel(filename string) error {
 func (s *EditorScene) SaveLevel(filename string) {
 	s.filename = filename
 
-	m := level.New()
-	m.Title = "Alpha"
-	m.Author = os.Getenv("USER")
-	m.Width = s.width
-	m.Height = s.height
+	m := s.Level
+	if m.Title == "" {
+		m.Title = "Alpha"
+	}
+	if m.Author == "" {
+		m.Author = os.Getenv("USER")
+	}
+
 	m.Palette = s.drawing.Palette
 	m.Chunker = s.drawing.Chunker()
 
