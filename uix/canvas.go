@@ -1,8 +1,10 @@
-package level
+package uix
 
 import (
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/events"
+	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 )
@@ -10,32 +12,37 @@ import (
 // Canvas is a custom ui.Widget that manages a single drawing.
 type Canvas struct {
 	ui.Frame
-	Palette *Palette
+	Palette *level.Palette
 
 	// Set to true to allow clicking to edit this canvas.
-	Editable bool
+	Editable   bool
+	Scrollable bool
 
-	chunks       *Chunker
-	pixelHistory []*Pixel
-	lastPixel    *Pixel
+	chunks       *level.Chunker
+	pixelHistory []*level.Pixel
+	lastPixel    *level.Pixel
 
 	// We inherit the ui.Widget which manages the width and height.
 	Scroll render.Point // Scroll offset for which parts of canvas are visible.
 }
 
 // NewCanvas initializes a Canvas widget.
+//
+// If editable is true, Scrollable is also set to true, which means the arrow
+// keys will scroll the canvas viewport which is desirable in Edit Mode.
 func NewCanvas(size int, editable bool) *Canvas {
 	w := &Canvas{
-		Editable: editable,
-		Palette:  NewPalette(),
-		chunks:   NewChunker(size),
+		Editable:   editable,
+		Scrollable: editable,
+		Palette:    level.NewPalette(),
+		chunks:     level.NewChunker(size),
 	}
 	w.setup()
 	return w
 }
 
 // Load initializes the Canvas using an existing Palette and Grid.
-func (w *Canvas) Load(p *Palette, g *Chunker) {
+func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 	w.Palette = p
 	w.chunks = g
 
@@ -45,12 +52,18 @@ func (w *Canvas) Load(p *Palette, g *Chunker) {
 }
 
 // LoadLevel initializes a Canvas from a Level object.
-func (w *Canvas) LoadLevel(level *Level) {
+func (w *Canvas) LoadLevel(level *level.Level) {
 	w.Load(level.Palette, level.Chunker)
 }
 
+// LoadDoodad initializes a Canvas from a Doodad object.
+func (w *Canvas) LoadDoodad(d *doodads.Doodad) {
+	// TODO more safe
+	w.Load(d.Palette, d.Layers[0].Chunker)
+}
+
 // SetSwatch changes the currently selected swatch for editing.
-func (w *Canvas) SetSwatch(s *Swatch) {
+func (w *Canvas) SetSwatch(s *level.Swatch) {
 	w.Palette.ActiveSwatch = s
 }
 
@@ -73,20 +86,22 @@ func (w *Canvas) Loop(ev *events.State) error {
 		_ = P
 	)
 
-	// Arrow keys to scroll the view.
-	scrollBy := render.Point{}
-	if ev.Right.Now {
-		scrollBy.X += balance.CanvasScrollSpeed
-	} else if ev.Left.Now {
-		scrollBy.X -= balance.CanvasScrollSpeed
-	}
-	if ev.Down.Now {
-		scrollBy.Y += balance.CanvasScrollSpeed
-	} else if ev.Up.Now {
-		scrollBy.Y -= balance.CanvasScrollSpeed
-	}
-	if !scrollBy.IsZero() {
-		w.ScrollBy(scrollBy)
+	if w.Scrollable {
+		// Arrow keys to scroll the view.
+		scrollBy := render.Point{}
+		if ev.Right.Now {
+			scrollBy.X += balance.CanvasScrollSpeed
+		} else if ev.Left.Now {
+			scrollBy.X -= balance.CanvasScrollSpeed
+		}
+		if ev.Down.Now {
+			scrollBy.Y += balance.CanvasScrollSpeed
+		} else if ev.Up.Now {
+			scrollBy.Y -= balance.CanvasScrollSpeed
+		}
+		if !scrollBy.IsZero() {
+			w.ScrollBy(scrollBy)
+		}
 	}
 
 	// Only care if the cursor is over our space.
@@ -108,7 +123,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 			X: ev.CursorX.Now - P.X + w.Scroll.X,
 			Y: ev.CursorY.Now - P.Y + w.Scroll.Y,
 		}
-		pixel := &Pixel{
+		pixel := &level.Pixel{
 			X:      cursor.X,
 			Y:      cursor.Y,
 			Swatch: w.Palette.ActiveSwatch,
@@ -152,8 +167,14 @@ func (w *Canvas) Viewport() render.Rect {
 }
 
 // Chunker returns the underlying Chunker object.
-func (w *Canvas) Chunker() *Chunker {
+func (w *Canvas) Chunker() *level.Chunker {
 	return w.chunks
+}
+
+// ScrollTo sets the viewport scroll position.
+func (w *Canvas) ScrollTo(to render.Point) {
+	w.Scroll.X = to.X
+	w.Scroll.Y = to.Y
 }
 
 // ScrollBy adjusts the viewport scroll position.

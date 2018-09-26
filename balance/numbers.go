@@ -7,4 +7,7 @@ var (
 
 	// Default chunk size for canvases.
 	ChunkSize = 1000
+
+	// Default size for a new Doodad.
+	DoodadSize = 100
 )

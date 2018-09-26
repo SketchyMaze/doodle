@@ -5,27 +5,6 @@ import (
 	"git.kirsle.net/apps/doodle/render"
 )
 
-// Doodad is a reusable drawing component used in Doodle. Doodads are buttons,
-// doors, switches, the player characters themselves, anything that isn't a part
-// of the level geometry.
-type Doodad interface {
-	ID() string
-
-	// Position and velocity, not saved to disk.
-	Position() render.Point
-	Velocity() render.Point
-	Size() render.Rect
-	Grounded() bool
-	SetGrounded(bool)
-
-	// Movement commands.
-	MoveBy(render.Point) // Add {X,Y} to current Position.
-	MoveTo(render.Point) // Set current Position to {X,Y}.
-
-	// Implement the Draw function.
-	Draw(render.Engine)
-}
-
 // Collide describes how a collision occurred.
 type Collide struct {
 	Top         bool
@@ -60,6 +39,52 @@ type CollisionBox struct {
 	Right  []render.Point
 }
 
+// GetCollisionBox returns a CollisionBox with the four coordinates.
+func GetCollisionBox(box render.Rect) CollisionBox {
+	return CollisionBox{
+		Top: []render.Point{
+			{
+				X: box.X,
+				Y: box.Y,
+			},
+			{
+				X: box.X + box.W,
+				Y: box.Y,
+			},
+		},
+		Bottom: []render.Point{
+			{
+				X: box.X,
+				Y: box.Y + box.H,
+			},
+			{
+				X: box.X + box.W,
+				Y: box.Y + box.H,
+			},
+		},
+		Left: []render.Point{
+			{
+				X: box.X,
+				Y: box.Y + box.H - 1,
+			},
+			{
+				X: box.X,
+				Y: box.Y + 1,
+			},
+		},
+		Right: []render.Point{
+			{
+				X: box.X + box.W,
+				Y: box.Y + box.H - 1,
+			},
+			{
+				X: box.X + box.W,
+				Y: box.Y + 1,
+			},
+		},
+	}
+}
+
 // Side of the collision box (top, bottom, left, right)
 type Side uint8
 
@@ -72,7 +97,7 @@ const (
 )
 
 // CollidesWithGrid checks if a Doodad collides with level geometry.
-func CollidesWithGrid(d Doodad, grid *level.Chunker, target render.Point) (*Collide, bool) {
+func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P = d.Position()
 		S = d.Size()
@@ -220,101 +245,4 @@ func CollidesWithGrid(d Doodad, grid *level.Chunker, target render.Point) (*Coll
 // IsColliding returns whether any sort of collision has occurred.
 func (c *Collide) IsColliding() bool {
 	return c.Top || c.Bottom || c.Left || c.Right
-}
-
-// GetBoundingRect computes the full pairs of points for the collision box
-// around a doodad.
-func GetBoundingRect(d Doodad) render.Rect {
-	var (
-		P = d.Position()
-		S = d.Size()
-	)
-	return render.Rect{
-		X: P.X,
-		Y: P.Y,
-		W: S.W,
-		H: S.H,
-	}
-}
-
-func GetCollisionBox(box render.Rect) CollisionBox {
-	return CollisionBox{
-		Top: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y,
-			},
-		},
-		Bottom: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y + box.H,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y + box.H,
-			},
-		},
-		Left: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y + box.H - 1,
-			},
-			{
-				X: box.X,
-				Y: box.Y + 1,
-			},
-		},
-		Right: []render.Point{
-			{
-				X: box.X + box.W,
-				Y: box.Y + box.H - 1,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y + 1,
-			},
-		},
-	}
-}
-
-// ScanBoundingBox scans all of the pixels in a bounding box on the grid and
-// returns if any of them intersect with level geometry.
-func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
-	col := GetCollisionBox(box)
-
-	c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
-	c.ScanGridLine(col.Bottom[0], col.Bottom[1], grid, Bottom)
-	c.ScanGridLine(col.Left[0], col.Left[1], grid, Left)
-	c.ScanGridLine(col.Right[0], col.Right[1], grid, Right)
-	return c.IsColliding()
-}
-
-// ScanGridLine scans all of the pixels between p1 and p2 on the grid and tests
-// for any pixels to be set, implying a collision between level geometry and the
-// bounding boxes of the doodad.
-func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
-	for point := range render.IterLine2(p1, p2) {
-		if _, err := grid.Get(point); err == nil {
-			// A hit!
-			switch side {
-			case Top:
-				c.Top = true
-				c.TopPoint = point
-			case Bottom:
-				c.Bottom = true
-				c.BottomPoint = point
-			case Left:
-				c.Left = true
-				c.LeftPoint = point
-			case Right:
-				c.Right = true
-				c.RightPoint = point
-			}
-		}
-	}
 }

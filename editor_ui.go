@@ -2,8 +2,10 @@ package doodle
 
 import (
 	"fmt"
+	"strconv"
 
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
@@ -63,11 +65,16 @@ func (u *EditorUI) Loop(ev *events.State) {
 
 	// Statusbar filename label.
 	filename := "untitled.map"
+	fileType := "Level"
 	if u.Scene.filename != "" {
 		filename = u.Scene.filename
 	}
-	u.StatusFilenameText = fmt.Sprintf("Filename: %s",
+	if u.Scene.DrawingType == enum.DoodadDrawing {
+		fileType = "Doodad"
+	}
+	u.StatusFilenameText = fmt.Sprintf("Filename: %s (%s)",
 		filename,
+		fileType,
 	)
 
 	u.MenuBar.Compute(u.d.Engine)
@@ -110,20 +117,52 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		menuButton{
 			Text: "New Doodad",
 			Click: func(render.Point) {
-				d.NewMap()
+				d.Prompt("Doodad size [100]>", func(answer string) {
+					size := balance.DoodadSize
+					if answer != "" {
+						i, err := strconv.Atoi(answer)
+						if err != nil {
+							d.Flash("Error: Doodad size must be a number.")
+							return
+						}
+						size = i
+					}
+					d.NewDoodad(size)
+				})
 			},
 		},
 		menuButton{
 			Text: "Save",
 			Click: func(render.Point) {
+				var saveFunc func(filename string)
+
+				switch u.Scene.DrawingType {
+				case enum.LevelDrawing:
+					saveFunc = func(filename string) {
+						if err := u.Scene.SaveLevel(filename); err != nil {
+							d.Flash("Error: %s", err)
+						} else {
+							d.Flash("Saved level: %s", filename)
+						}
+					}
+				case enum.DoodadDrawing:
+					saveFunc = func(filename string) {
+						if err := u.Scene.SaveDoodad(filename); err != nil {
+							d.Flash("Error: %s", err)
+						} else {
+							d.Flash("Saved doodad: %s", filename)
+						}
+					}
+				default:
+					d.Flash("Error: Scene.DrawingType is not a valid type")
+				}
+
 				if u.Scene.filename != "" {
-					u.Scene.SaveLevel(u.Scene.filename)
-					d.Flash("Saved: %s", u.Scene.filename)
+					saveFunc(u.Scene.filename)
 				} else {
 					d.Prompt("Save filename>", func(answer string) {
 						if answer != "" {
-							u.Scene.SaveLevel("./maps/" + answer) // TODO: maps path
-							d.Flash("Saved: %s", answer)
+							saveFunc(answer)
 						}
 					})
 				}
@@ -145,7 +184,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 			Click: func(render.Point) {
 				d.Prompt("Open filename>", func(answer string) {
 					if answer != "" {
-						u.d.EditLevel("./maps/" + answer) // TODO: maps path
+						u.d.EditDrawing("./maps/" + answer) // TODO: maps path
 					}
 				})
 			},

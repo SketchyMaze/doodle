@@ -50,14 +50,5 @@ func LoadJSON(filename string) (*Level, error) {
 
 	// Inflate the private instance values.
 	m.Palette.Inflate()
-	for _, px := range m.Pixels {
-		if int(px.PaletteIndex) > len(m.Palette.Swatches) {
-			return nil, fmt.Errorf(
-				"pixel %s references palette index %d but there are only %d swatches in the palette",
-				px, px.PaletteIndex, len(m.Palette.Swatches),
-			)
-		}
-		px.Swatch = m.Palette.Swatches[px.PaletteIndex]
-	}
 	return m, err
 }

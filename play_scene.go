@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/uix"
 )
 
 // PlayScene manages the "Edit Level" game mode.
@@ -17,10 +18,10 @@ type PlayScene struct {
 	Level    *level.Level
 
 	// Private variables.
-	drawing *level.Canvas
+	drawing *uix.Canvas
 
 	// Player character
-	Player doodads.Doodad
+	Player doodads.Actor
 }
 
 // Name of the scene.
@@ -30,7 +31,7 @@ func (s *PlayScene) Name() string {
 
 // Setup the play scene.
 func (s *PlayScene) Setup(d *Doodle) error {
-	s.drawing = level.NewCanvas(balance.ChunkSize, false)
+	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.MoveTo(render.Origin)
 	s.drawing.Resize(render.NewRect(d.width, d.height))
 	s.drawing.Compute(d.Engine)

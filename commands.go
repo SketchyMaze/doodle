@@ -132,7 +132,7 @@ func (c Command) Edit(d *Doodle) error {
 
 	filename := c.Args[0]
 	d.shell.Write("Editing level: " + filename)
-	d.EditLevel(filename)
+	d.EditDrawing(filename)
 	return nil
 }
 

@@ -58,7 +58,7 @@ func (d *Doodle) DrawDebugOverlay() {
 }
 
 // DrawCollisionBox draws the collision box around a Doodad.
-func (d *Doodle) DrawCollisionBox(actor doodads.Doodad) {
+func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 	if !d.Debug || !DebugCollision {
 		return
 	}

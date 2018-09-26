@@ -8,37 +8,36 @@ import (
 	"git.kirsle.net/apps/doodle/render"
 )
 
-// Level is the container format for Doodle map drawings.
-type Level struct {
+// Base provides the common struct keys that are shared between Levels and
+// Doodads.
+type Base struct {
 	Version     int    `json:"version"`     // File format version spec.
 	GameVersion string `json:"gameVersion"` // Game version that created the level.
 	Title       string `json:"title"`
 	Author      string `json:"author"`
-	Password    string `json:"passwd"`
-	Locked      bool   `json:"locked"`
+}
+
+// Level is the container format for Doodle map drawings.
+type Level struct {
+	Base
+	Password string `json:"passwd"`
+	Locked   bool   `json:"locked"`
 
 	// Chunked pixel data.
 	Chunker *Chunker `json:"chunks"`
 
-	// XXX: deprecated?
-	Width  int32 `json:"w"`
-	Height int32 `json:"h"`
-
 	// The Palette holds the unique "colors" used in this map file, and their
 	// properties (solid, fire, slippery, etc.)
 	Palette *Palette `json:"palette"`
-
-	// Pixels is a 2D array indexed by [X][Y]. The cell values are indexes into
-	// the Palette.
-	Pixels []*Pixel `json:"pixels"`
 }
 
 // New creates a blank level object with all its members initialized.
 func New() *Level {
 	return &Level{
-		Version: 1,
+		Base: Base{
+			Version: 1,
+		},
 		Chunker: NewChunker(balance.ChunkSize),
-		Pixels:  []*Pixel{},
 		Palette: &Palette{},
 	}
 }

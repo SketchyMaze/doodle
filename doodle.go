@@ -1,8 +1,11 @@
 package doodle
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/kirsle/golog"
 )
@@ -163,13 +166,41 @@ func (d *Doodle) NewMap() {
 	d.Goto(scene)
 }
 
-// EditLevel loads a map from JSON into the EditorScene.
-func (d *Doodle) EditLevel(filename string) error {
-	log.Info("Loading level from file: %s", filename)
+// NewDoodad loads a new Doodad in Edit Mode.
+func (d *Doodle) NewDoodad(size int) {
+	log.Info("Starting a new doodad")
+	scene := &EditorScene{
+		DrawingType: enum.DoodadDrawing,
+		DoodadSize:  size,
+	}
+	d.Goto(scene)
+}
+
+// EditDrawing loads a drawing (Level or Doodad) in Edit Mode.
+func (d *Doodle) EditDrawing(filename string) error {
+	log.Info("Loading drawing from file: %s", filename)
+	parts := strings.Split(filename, ".")
+	if len(parts) < 2 {
+		return fmt.Errorf("filename `%s` has no file extension", filename)
+	}
+	ext := strings.ToLower(parts[len(parts)-1])
+
 	scene := &EditorScene{
 		Filename: filename,
 		OpenFile: true,
 	}
+
+	switch ext {
+	case "level":
+	case "map":
+		log.Info("is a LEvel type")
+		scene.DrawingType = enum.LevelDrawing
+	case "doodad":
+		scene.DrawingType = enum.DoodadDrawing
+	default:
+		return fmt.Errorf("file extension '%s' doesn't indicate its drawing type", ext)
+	}
+
 	d.Goto(scene)
 	return nil
 }

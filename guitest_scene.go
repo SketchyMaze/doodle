@@ -221,7 +221,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 	}))
 	button2.Handle(ui.Click, func(p render.Point) {
 		d.Prompt("Map name>", func(name string) {
-			d.EditLevel(name)
+			d.EditDrawing(name)
 		})
 	})
 
