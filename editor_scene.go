@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/doodads"
@@ -167,6 +168,10 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		return errors.New("SaveLevel: current drawing is not a Level type")
 	}
 
+	if !strings.HasSuffix(filename, extLevel) {
+		filename += extLevel
+	}
+
 	s.filename = filename
 
 	m := s.Level
@@ -185,6 +190,9 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		return fmt.Errorf("SaveLevel error: %s", err)
 	}
 
+	// Save it to their profile directory.
+	filename = LevelPath(filename)
+	log.Info("Write Level: %s", filename)
 	err = ioutil.WriteFile(filename, json, 0644)
 	if err != nil {
 		return fmt.Errorf("Create map file error: %s", err)
@@ -215,6 +223,10 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		return errors.New("SaveDoodad: current drawing is not a Doodad type")
 	}
 
+	if !strings.HasSuffix(filename, extDoodad) {
+		filename += extDoodad
+	}
+
 	s.filename = filename
 	d := s.Doodad
 	if d.Title == "" {
@@ -228,7 +240,10 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 	d.Palette = s.drawing.Palette
 	d.Layers[0].Chunker = s.drawing.Chunker()
 
-	err := d.WriteJSON(s.filename)
+	// Save it to their profile directory.
+	filename = DoodadPath(filename)
+	log.Info("Write Doodad: %s", filename)
+	err := d.WriteJSON(filename)
 	return err
 }
 

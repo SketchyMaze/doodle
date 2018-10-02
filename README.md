@@ -176,8 +176,8 @@ Lesser important UI features that can come at any later time:
 
 ## Doodad Editor
 
-* [ ] The Edit Mode should support creating drawings for Doodads.
-  * [ ] It should know whether you're drawing a Map or a Doodad as some
+* [x] The Edit Mode should support creating drawings for Doodads.
+  * [x] It should know whether you're drawing a Map or a Doodad as some
     behaviors may need to be different between the two.
   * [ ] Compress the coordinates down toward `(0,0)` when saving a Doodad,
     by finding the toppest, leftest point and making that `(0,0)` and adjusting

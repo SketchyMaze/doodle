@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+
+	"git.kirsle.net/apps/doodle/enum"
 )
 
 // Command is a parsed shell command.
@@ -112,11 +114,17 @@ func (c Command) Save(d *Doodle) error {
 		} else if scene.filename != "" {
 			filename = scene.filename
 		} else {
-			return errors.New("usage: save <filename.json>")
+			return errors.New("usage: save <filename>")
 		}
 
-		d.shell.Write("Saving to file: " + filename)
-		scene.SaveLevel(filename)
+		switch scene.DrawingType {
+		case enum.LevelDrawing:
+			d.shell.Write("Saving Level: " + filename)
+			scene.SaveLevel(filename)
+		case enum.DoodadDrawing:
+			d.shell.Write("Saving Doodad: " + filename)
+			scene.SaveDoodad(filename)
+		}
 	} else {
 		return errors.New("save: only available in Edit Mode")
 	}
@@ -131,8 +139,8 @@ func (c Command) Edit(d *Doodle) error {
 	}
 
 	filename := c.Args[0]
-	d.shell.Write("Editing level: " + filename)
-	d.EditDrawing(filename)
+	d.shell.Write("Editing file: " + filename)
+	d.EditFile(filename)
 	return nil
 }
 

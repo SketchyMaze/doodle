@@ -43,7 +43,7 @@ func main() {
 	app.SetupEngine()
 	if filename != "" {
 		if edit {
-			app.EditDrawing(filename)
+			app.EditFile(filename)
 		} else {
 			app.PlayLevel(filename)
 		}
