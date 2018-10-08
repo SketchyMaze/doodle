@@ -69,6 +69,13 @@ func NewWindow(title string) *Window {
 	return w
 }
 
+// Children returns the window's child widgets.
+func (w *Window) Children() []Widget {
+	return []Widget{
+		w.body,
+	}
+}
+
 // TitleBar returns the title bar widget.
 func (w *Window) TitleBar() *Label {
 	return w.titleBar

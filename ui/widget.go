@@ -56,10 +56,16 @@ type Widget interface {
 	OutlineSize() int32           // Outline size (default 0)
 	SetOutlineSize(int32)         //
 
+	// Visibility
+	Hide()
+	Show()
+	Hidden() bool
+
 	// Container widgets like Frames can wire up associations between the
 	// child widgets and the parent.
 	Parent() (parent Widget, ok bool)
 	Adopt(parent Widget) // for the container to assign itself the parent
+	Children() []Widget  // for containers to return their children
 
 	// Run any render computations; by the end the widget must know its
 	// Width and Height. For example the Label widget will render itself onto
@@ -98,6 +104,7 @@ type BaseWidget struct {
 	id           string
 	idFunc       func() string
 	fixedSize    bool
+	hidden       bool
 	width        int32
 	height       int32
 	point        render.Point
@@ -274,6 +281,37 @@ func (w *BaseWidget) Adopt(parent Widget) {
 		w.hasParent = true
 		w.parent = parent
 	}
+}
+
+// Children returns the widget's children, to be implemented by containers.
+// The default implementation returns an empty slice.
+func (w *BaseWidget) Children() []Widget {
+	return []Widget{}
+}
+
+// Hide the widget from being rendered.
+func (w *BaseWidget) Hide() {
+	w.hidden = true
+}
+
+// Show the widget.
+func (w *BaseWidget) Show() {
+	w.hidden = false
+}
+
+// Hidden returns whether the widget is hidden. If this widget is not hidden,
+// but it has a parent, this will recursively crawl the parents to see if any
+// of them are hidden.
+func (w *BaseWidget) Hidden() bool {
+	if w.hidden {
+		return true
+	}
+
+	if parent, ok := w.Parent(); ok {
+		return parent.Hidden()
+	}
+
+	return false
 }
 
 // DrawBox draws the border and outline.

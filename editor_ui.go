@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
@@ -23,14 +24,22 @@ type EditorUI struct {
 	StatusPaletteText  string
 	StatusFilenameText string
 	selectedSwatch     string // name of selected swatch in palette
+	selectedDoodad     string
 
 	// Widgets
 	Supervisor *ui.Supervisor
 	Canvas     *uix.Canvas
 	Workspace  *ui.Frame
 	MenuBar    *ui.Frame
-	Palette    *ui.Window
 	StatusBar  *ui.Frame
+
+	// Palette window.
+	Palette    *ui.Window
+	PaletteTab *ui.Frame
+	DoodadTab  *ui.Frame
+
+	// Palette variables.
+	paletteTab string // selected tab, Palette or Doodads
 }
 
 // NewEditorUI initializes the Editor UI.
@@ -268,11 +277,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 
 // SetupPalette sets up the palette panel.
 func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
+	var paletteWidth int32 = 150
+
 	window := ui.NewWindow("Palette")
 	window.ConfigureTitle(balance.TitleConfig)
 	window.TitleBar().Font = balance.TitleFont
 	window.Configure(ui.Config{
-		Width:       150,
+		Width:       paletteWidth,
 		Height:      u.d.height - u.StatusBar.Size().H,
 		Background:  balance.WindowBackground,
 		BorderColor: balance.WindowBorder,
@@ -282,36 +293,142 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		u.MenuBar.BoxSize().H,
 	))
 
-	// Handler function for the radio buttons being clicked.
-	onClick := func(p render.Point) {
-		name := u.selectedSwatch
-		swatch, ok := u.Canvas.Palette.Get(name)
-		if !ok {
-			log.Error("Palette onClick: couldn't get swatch named '%s' from palette", name)
-			return
+	// Frame that holds the tab buttons in Level Edit mode.
+	tabFrame := ui.NewFrame("Palette Tabs")
+	if u.Scene.DrawingType != enum.LevelDrawing {
+		// Don't show the tab bar except in Level Edit mode.
+		tabFrame.Hide()
+	}
+	for _, name := range []string{"Palette", "Doodads"} {
+		if u.paletteTab == "" {
+			u.paletteTab = name
 		}
-		log.Info("Set swatch: %s", swatch)
-		u.Canvas.SetSwatch(swatch)
+
+		tab := ui.NewRadioButton("Palette Tab", &u.paletteTab, name, ui.NewLabel(ui.Label{
+			Text: name,
+		}))
+		tab.Handle(ui.Click, func(p render.Point) {
+			if u.paletteTab == "Palette" {
+				u.PaletteTab.Show()
+				u.DoodadTab.Hide()
+			} else {
+				u.PaletteTab.Hide()
+				u.DoodadTab.Show()
+			}
+			window.Compute(d.Engine)
+		})
+		u.Supervisor.Add(tab)
+		tabFrame.Pack(tab, ui.Pack{
+			Anchor: ui.W,
+			Fill:   true,
+			Expand: true,
+		})
+	}
+	window.Pack(tabFrame, ui.Pack{
+		Anchor: ui.N,
+		Fill:   true,
+		PadY:   4,
+	})
+
+	// Doodad frame.
+	{
+		u.DoodadTab = ui.NewFrame("Doodad Tab")
+		u.DoodadTab.Hide()
+		window.Pack(u.DoodadTab, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+		})
+
+		doodadsAvailable, err := ListDoodads()
+		if err != nil {
+			d.Flash("ListDoodads: %s", err)
+		}
+
+		var buttonSize = (paletteWidth - window.BoxThickness(2)) / 2
+
+		// Draw the doodad buttons in a grid 2 wide.
+		var row *ui.Frame
+		for i, filename := range doodadsAvailable {
+			si := fmt.Sprintf("%d", i)
+			if row == nil || i%2 == 0 {
+				row = ui.NewFrame("Doodad Row " + si)
+				row.SetBackground(balance.WindowBackground)
+				u.DoodadTab.Pack(row, ui.Pack{
+					Anchor: ui.N,
+					Fill:   true,
+					// Expand: true,
+				})
+			}
+
+			doodad, err := doodads.LoadJSON(DoodadPath(filename))
+			if err != nil {
+				log.Error(err.Error())
+				doodad = doodads.New(balance.DoodadSize)
+			}
+
+			can := uix.NewCanvas(int(buttonSize), true)
+			can.LoadDoodad(doodad)
+			btn := ui.NewRadioButton(filename, &u.selectedDoodad, si, can)
+			btn.Resize(render.NewRect(
+				buttonSize-2, // TODO: without the -2 the button border
+				buttonSize-2, // rests on top of the window border.
+			))
+			u.Supervisor.Add(btn)
+			row.Pack(btn, ui.Pack{
+				Anchor: ui.W,
+			})
+
+			// Resize the canvas to fill the button interior.
+			btnSize := btn.Size()
+			can.Resize(render.NewRect(
+				btnSize.W-btn.BoxThickness(2),
+				btnSize.H-btn.BoxThickness(2),
+			))
+
+			btn.Compute(d.Engine)
+		}
 	}
 
-	// Draw the radio buttons for the palette.
-	if u.Canvas != nil && u.Canvas.Palette != nil {
-		for _, swatch := range u.Canvas.Palette.Swatches {
-			label := ui.NewLabel(ui.Label{
-				Text: swatch.Name,
-				Font: balance.StatusFont,
-			})
-			label.Font.Color = swatch.Color.Darken(40)
+	// Color Palette Frame.
+	{
+		u.PaletteTab = ui.NewFrame("Palette Tab")
+		u.PaletteTab.SetBackground(balance.WindowBackground)
+		window.Pack(u.PaletteTab, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+		})
 
-			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, label)
-			btn.Handle(ui.Click, onClick)
-			u.Supervisor.Add(btn)
+		// Handler function for the radio buttons being clicked.
+		onClick := func(p render.Point) {
+			name := u.selectedSwatch
+			swatch, ok := u.Canvas.Palette.Get(name)
+			if !ok {
+				log.Error("Palette onClick: couldn't get swatch named '%s' from palette", name)
+				return
+			}
+			log.Info("Set swatch: %s", swatch)
+			u.Canvas.SetSwatch(swatch)
+		}
 
-			window.Pack(btn, ui.Pack{
-				Anchor: ui.N,
-				Fill:   true,
-				PadY:   4,
-			})
+		// Draw the radio buttons for the palette.
+		if u.Canvas != nil && u.Canvas.Palette != nil {
+			for _, swatch := range u.Canvas.Palette.Swatches {
+				label := ui.NewLabel(ui.Label{
+					Text: swatch.Name,
+					Font: balance.StatusFont,
+				})
+				label.Font.Color = swatch.Color.Darken(40)
+
+				btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, label)
+				btn.Handle(ui.Click, onClick)
+				u.Supervisor.Add(btn)
+
+				u.PaletteTab.Pack(btn, ui.Pack{
+					Anchor: ui.N,
+					Fill:   true,
+					PadY:   4,
+				})
+			}
 		}
 	}
 

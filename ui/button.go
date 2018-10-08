@@ -56,6 +56,11 @@ func NewButton(name string, child Widget) *Button {
 	return w
 }
 
+// Children returns the button's child widget.
+func (w *Button) Children() []Widget {
+	return []Widget{w.child}
+}
+
 // Compute the size of the button.
 func (w *Button) Compute(e render.Engine) {
 	// Compute the size of the inner widget first.
@@ -81,6 +86,10 @@ func (w *Button) SetText(text string) error {
 
 // Present the button.
 func (w *Button) Present(e render.Engine, P render.Point) {
+	if w.Hidden() {
+		return
+	}
+
 	w.Compute(e)
 	w.MoveTo(P)
 	var (

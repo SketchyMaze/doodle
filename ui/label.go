@@ -86,6 +86,10 @@ func (w *Label) Compute(e render.Engine) {
 
 // Present the label widget.
 func (w *Label) Present(e render.Engine, P render.Point) {
+	if w.Hidden() {
+		return
+	}
+
 	border := w.BoxThickness(1)
 
 	var (

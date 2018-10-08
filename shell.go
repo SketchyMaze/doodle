@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/ui"
 	"github.com/robertkrimen/otto"
 )
 
@@ -30,6 +31,7 @@ type Shell struct {
 
 	Open     bool
 	Prompt   string
+	Repl     bool
 	callback func(string) // for prompt answers only
 	Text     string
 	History  []string
@@ -75,6 +77,12 @@ func NewShell(d *Doodle) Shell {
 		"RGBA":  render.RGBA,
 		"Point": render.NewPoint,
 		"Rect":  render.NewRect,
+		"Tree": func(w ui.Widget) string {
+			for _, row := range ui.WidgetTree(w) {
+				d.Flash(row)
+			}
+			return ""
+		},
 	}
 	for name, v := range bindings {
 		err := s.js.Set(name, v)
@@ -90,6 +98,7 @@ func NewShell(d *Doodle) Shell {
 func (s *Shell) Close() {
 	log.Debug("Shell: closing shell")
 	s.Open = false
+	s.Repl = false
 	s.Prompt = ">"
 	s.callback = nil
 	s.Text = ""
@@ -100,6 +109,7 @@ func (s *Shell) Close() {
 // Execute a command in the shell.
 func (s *Shell) Execute(input string) {
 	command := s.Parse(input)
+
 	if command.Raw != "" {
 		s.Output = append(s.Output, s.Prompt+command.Raw)
 		s.History = append(s.History, command.Raw)
@@ -123,7 +133,11 @@ func (s *Shell) Execute(input string) {
 	}
 
 	// Reset the text buffer in the shell.
-	s.Text = ""
+	if s.Repl {
+		s.Text = "$ "
+	} else {
+		s.Text = ""
+	}
 }
 
 // Write a line of output text to the console.
@@ -197,7 +211,12 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		return nil
 	} else if ev.EnterKey.Read() || ev.EscapeKey.Read() {
 		s.Execute(s.Text)
-		s.Close()
+
+		// Auto-close the console unless in REPL mode.
+		if !s.Repl {
+			s.Close()
+		}
+
 		return nil
 	} else if (ev.Up.Now || ev.Down.Now) && len(s.History) > 0 {
 		// Paging through history.

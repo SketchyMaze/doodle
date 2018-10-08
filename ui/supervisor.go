@@ -53,6 +53,12 @@ func (s *Supervisor) Loop(ev *events.State) {
 
 	// See if we are hovering over any widgets.
 	for id, w := range s.widgets {
+		if w.Hidden() {
+			// TODO: somehow the Supervisor wasn't triggering hidden widgets
+			// anyway, but I don't know why. Adding this check for safety.
+			continue
+		}
+
 		var (
 			P  = w.Point()
 			S  = w.Size()

@@ -1,6 +1,9 @@
 package uix
 
 import (
+	"fmt"
+	"strings"
+
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/events"
@@ -39,7 +42,19 @@ func NewCanvas(size int, editable bool) *Canvas {
 	}
 	w.setup()
 	w.IDFunc(func() string {
-		return "Canvas"
+		var attrs []string
+
+		if w.Editable {
+			attrs = append(attrs, "editable")
+		} else {
+			attrs = append(attrs, "read-only")
+		}
+
+		if w.Scrollable {
+			attrs = append(attrs, "scrollable")
+		}
+
+		return fmt.Sprintf("Canvas<%d; %s>", size, strings.Join(attrs, "; "))
 	})
 	return w
 }

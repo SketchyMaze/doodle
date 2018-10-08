@@ -2,6 +2,58 @@ package ui
 
 import "git.kirsle.net/apps/doodle/render"
 
+// Pack provides configuration fields for Frame.Pack().
+type Pack struct {
+	// Side of the parent to anchor the position to, like N, SE, W. Default
+	// is Center.
+	Anchor Anchor
+
+	// If the widget is smaller than its allocated space, grow the widget
+	// to fill its space in the Frame.
+	Fill  bool
+	FillX bool
+	FillY bool
+
+	Padding int32 // Equal padding on X and Y.
+	PadX    int32
+	PadY    int32
+	Expand  bool // Widget should grow its allocated space to better fill the parent.
+}
+
+// Pack a widget along a side of the frame.
+func (w *Frame) Pack(child Widget, config ...Pack) {
+	var C Pack
+	if len(config) > 0 {
+		C = config[0]
+	}
+
+	// Initialize the pack list for this anchor?
+	if _, ok := w.packs[C.Anchor]; !ok {
+		w.packs[C.Anchor] = []packedWidget{}
+	}
+
+	// Padding: if the user only provided Padding add it to both
+	// the X and Y value. If the user additionally provided the X
+	// and Y value, it will add to the base padding as you'd expect.
+	C.PadX += C.Padding
+	C.PadY += C.Padding
+
+	// Fill: true implies both directions.
+	if C.Fill {
+		C.FillX = true
+		C.FillY = true
+	}
+
+	// Adopt the child widget so it can access the Frame.
+	child.Adopt(w)
+
+	w.packs[C.Anchor] = append(w.packs[C.Anchor], packedWidget{
+		widget: child,
+		pack:   C,
+	})
+	w.widgets = append(w.widgets, child)
+}
+
 // computePacked processes all the Pack layout widgets in the Frame.
 func (w *Frame) computePacked(e render.Engine) {
 	var (
@@ -45,6 +97,10 @@ func (w *Frame) computePacked(e render.Engine) {
 			child := packedWidget.widget
 			pack := packedWidget.pack
 			child.Compute(e)
+
+			if child.Hidden() {
+				continue
+			}
 
 			x += pack.PadX
 			y += pack.PadY
@@ -187,24 +243,6 @@ func (w *Frame) computePacked(e render.Engine) {
 	// }
 }
 
-// Pack provides configuration fields for Frame.Pack().
-type Pack struct {
-	// Side of the parent to anchor the position to, like N, SE, W. Default
-	// is Center.
-	Anchor Anchor
-
-	// If the widget is smaller than its allocated space, grow the widget
-	// to fill its space in the Frame.
-	Fill  bool
-	FillX bool
-	FillY bool
-
-	Padding int32 // Equal padding on X and Y.
-	PadX    int32
-	PadY    int32
-	Expand  bool // Widget should grow its allocated space to better fill the parent.
-}
-
 // Anchor is a cardinal direction.
 type Anchor uint8
 
@@ -257,40 +295,6 @@ func (a Anchor) IsCenter() bool {
 // whether to align text as middled for East/West anchors.
 func (a Anchor) IsMiddle() bool {
 	return a == Center || a == W || a == E
-}
-
-// Pack a widget along a side of the frame.
-func (w *Frame) Pack(child Widget, config ...Pack) {
-	var C Pack
-	if len(config) > 0 {
-		C = config[0]
-	}
-
-	// Initialize the pack list for this anchor?
-	if _, ok := w.packs[C.Anchor]; !ok {
-		w.packs[C.Anchor] = []packedWidget{}
-	}
-
-	// Padding: if the user only provided Padding add it to both
-	// the X and Y value. If the user additionally provided the X
-	// and Y value, it will add to the base padding as you'd expect.
-	C.PadX += C.Padding
-	C.PadY += C.Padding
-
-	// Fill: true implies both directions.
-	if C.Fill {
-		C.FillX = true
-		C.FillY = true
-	}
-
-	// Adopt the child widget so it can access the Frame.
-	child.Adopt(w)
-
-	w.packs[C.Anchor] = append(w.packs[C.Anchor], packedWidget{
-		widget: child,
-		pack:   C,
-	})
-	w.widgets = append(w.widgets, child)
 }
 
 type packLayout struct {

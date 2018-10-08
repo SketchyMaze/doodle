@@ -52,6 +52,9 @@ func (c Command) Run(d *Doodle) error {
 		out, err := d.shell.js.Run(c.ArgsLiteral)
 		d.Flash("%+v", out)
 		return err
+	case "repl":
+		d.shell.Repl = true
+		d.shell.Text = "$ "
 	case "boolProp":
 		return c.BoolProp(d)
 	default:

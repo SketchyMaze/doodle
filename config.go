@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -67,6 +68,25 @@ func LevelPath(filename string) string {
 // DoodadPath is like LevelPath but for Doodad files.
 func DoodadPath(filename string) string {
 	return resolvePath(DoodadDirectory, filename, extDoodad)
+}
+
+// ListDoodads returns a listing of all available doodads.
+func ListDoodads() ([]string, error) {
+	var names []string
+
+	files, err := ioutil.ReadDir(DoodadDirectory)
+	if err != nil {
+		return names, err
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(strings.ToLower(name), extDoodad) {
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
 }
 
 // resolvePath is the inner logic for LevelPath and DoodadPath.

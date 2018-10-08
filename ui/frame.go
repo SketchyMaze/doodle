@@ -39,6 +39,11 @@ func (w *Frame) Setup() {
 	}
 }
 
+// Children returns all of the child widgets.
+func (w *Frame) Children() []Widget {
+	return w.widgets
+}
+
 // Compute the size of the Frame.
 func (w *Frame) Compute(e render.Engine) {
 	w.computePacked(e)
@@ -46,6 +51,10 @@ func (w *Frame) Compute(e render.Engine) {
 
 // Present the Frame.
 func (w *Frame) Present(e render.Engine, P render.Point) {
+	if w.Hidden() {
+		return
+	}
+
 	var (
 		S = w.Size()
 	)
