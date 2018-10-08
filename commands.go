@@ -34,6 +34,8 @@ func (c Command) Run(d *Doodle) error {
 		return c.Edit(d)
 	case "play":
 		return c.Play(d)
+	case "close":
+		return c.Close(d)
 	case "exit":
 	case "quit":
 		return c.Quit()
@@ -62,6 +64,13 @@ func (c Command) Run(d *Doodle) error {
 func (c Command) New(d *Doodle) error {
 	d.Flash("Starting a new map")
 	d.NewMap()
+	return nil
+}
+
+// Close returns to the Main Scene.
+func (c Command) Close(d *Doodle) error {
+	main := &MainScene{}
+	d.Goto(main)
 	return nil
 }
 

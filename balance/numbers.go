@@ -2,6 +2,10 @@ package balance
 
 // Numbers.
 var (
+	// Window dimensions.
+	Width  = 1024
+	Height = 768
+
 	// Speed to scroll a canvas with arrow keys in Edit Mode.
 	CanvasScrollSpeed int32 = 8
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/kirsle/golog"
@@ -46,8 +47,8 @@ func New(debug bool, engine render.Engine) *Doodle {
 		Engine:    engine,
 		startTime: time.Now(),
 		running:   true,
-		width:     800,
-		height:    600,
+		width:     int32(balance.Width),
+		height:    int32(balance.Height),
 	}
 	d.shell = NewShell(d)
 

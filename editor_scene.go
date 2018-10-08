@@ -7,13 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/render"
-	"git.kirsle.net/apps/doodle/uix"
 )
 
 // EditorScene manages the "Edit Level" game mode.
@@ -31,10 +29,6 @@ type EditorScene struct {
 	Level  *level.Level
 	Doodad *doodads.Doodad
 
-	// The canvas widget that contains the map we're working on.
-	// XXX: in dev builds this is available at $ d.Scene.GetDrawing()
-	drawing *uix.Canvas
-
 	// Last saved filename by the user.
 	filename string
 }
@@ -46,15 +40,9 @@ func (s *EditorScene) Name() string {
 
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
-	s.drawing = uix.NewCanvas(balance.ChunkSize, true)
-	if len(s.drawing.Palette.Swatches) > 0 {
-		s.drawing.SetSwatch(s.drawing.Palette.Swatches[0])
-	}
-
-	// TODO: move inside the UI. Just an approximate position for now.
-	s.drawing.MoveTo(render.NewPoint(0, 19))
-	s.drawing.Resize(render.NewRect(d.width-150, d.height-44))
-	s.drawing.Compute(d.Engine)
+	// Initialize the user interface. It references the palette and such so it
+	// must be initialized after those things.
+	s.UI = NewEditorUI(d, s)
 
 	// Were we given configuration data?
 	if s.Filename != "" {
@@ -68,7 +56,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	case enum.LevelDrawing:
 		if s.Level != nil {
 			log.Debug("EditorScene.Setup: received level from scene caller")
-			s.drawing.LoadLevel(s.Level)
+			s.UI.Canvas.LoadLevel(s.Level)
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
 			if err := s.LoadLevel(s.filename); err != nil {
@@ -81,9 +69,9 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			log.Debug("EditorScene.Setup: initializing a new Level")
 			s.Level = level.New()
 			s.Level.Palette = level.DefaultPalette()
-			s.drawing.LoadLevel(s.Level)
-			s.drawing.ScrollTo(render.Origin)
-			s.drawing.Scrollable = true
+			s.UI.Canvas.LoadLevel(s.Level)
+			s.UI.Canvas.ScrollTo(render.Origin)
+			s.UI.Canvas.Scrollable = true
 		}
 	case enum.DoodadDrawing:
 		// No Doodad?
@@ -98,20 +86,16 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		if s.Doodad == nil {
 			log.Debug("EditorScene.Setup: initializing a new Doodad")
 			s.Doodad = doodads.New(s.DoodadSize)
-			s.drawing.LoadDoodad(s.Doodad)
+			s.UI.Canvas.LoadDoodad(s.Doodad)
 		}
 
 		// TODO: move inside the UI. Just an approximate position for now.
-		s.drawing.MoveTo(render.NewPoint(200, 200))
-		s.drawing.Resize(render.NewRect(int32(s.DoodadSize), int32(s.DoodadSize)))
-		s.drawing.ScrollTo(render.Origin)
-		s.drawing.Scrollable = false
-		s.drawing.Compute(d.Engine)
+		s.UI.Canvas.Resize(render.NewRect(int32(s.DoodadSize), int32(s.DoodadSize)))
+		s.UI.Canvas.ScrollTo(render.Origin)
+		s.UI.Canvas.Scrollable = false
+		s.UI.Workspace.Compute(d.Engine)
 	}
 
-	// Initialize the user interface. It references the palette and such so it
-	// must be initialized after those things.
-	s.UI = NewEditorUI(d, s)
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
 	return nil
@@ -120,7 +104,6 @@ func (s *EditorScene) Setup(d *Doodle) error {
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	s.UI.Loop(ev)
-	s.drawing.Loop(ev)
 
 	// Switching to Play Mode?
 	if ev.KeyName.Read() == "p" {
@@ -141,7 +124,6 @@ func (s *EditorScene) Draw(d *Doodle) error {
 	d.Engine.Clear(render.Magenta)
 
 	s.UI.Present(d.Engine)
-	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	return nil
 }
@@ -157,7 +139,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 
 	s.DrawingType = enum.LevelDrawing
 	s.Level = level
-	s.drawing.LoadLevel(s.Level)
+	s.UI.Canvas.LoadLevel(s.Level)
 	return nil
 }
 
@@ -182,8 +164,8 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		m.Author = os.Getenv("USER")
 	}
 
-	m.Palette = s.drawing.Palette
-	m.Chunker = s.drawing.Chunker()
+	m.Palette = s.UI.Canvas.Palette
+	m.Chunker = s.UI.Canvas.Chunker()
 
 	json, err := m.ToJSON()
 	if err != nil {
@@ -213,7 +195,7 @@ func (s *EditorScene) LoadDoodad(filename string) error {
 	s.DrawingType = enum.DoodadDrawing
 	s.Doodad = doodad
 	s.DoodadSize = doodad.Layers[0].Chunker.Size
-	s.drawing.LoadDoodad(s.Doodad)
+	s.UI.Canvas.LoadDoodad(s.Doodad)
 	return nil
 }
 
@@ -237,8 +219,8 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 	}
 
 	// TODO: is this copying necessary?
-	d.Palette = s.drawing.Palette
-	d.Layers[0].Chunker = s.drawing.Chunker()
+	d.Palette = s.UI.Canvas.Palette
+	d.Layers[0].Chunker = s.UI.Canvas.Chunker()
 
 	// Save it to their profile directory.
 	filename = DoodadPath(filename)

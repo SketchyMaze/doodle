@@ -32,12 +32,12 @@ func (w *Frame) computePacked(e render.Engine) {
 			xDirection int32 = 1
 		)
 
-		if anchor.IsSouth() {
-			y = frameSize.H
-			yDirection = -1 - w.BoxThickness(2) // parent + child BoxThickness(1) = 2
+		if anchor.IsSouth() { // TODO: these need tuning
+			y = frameSize.H - w.BoxThickness(4)
+			yDirection = -1 * w.BoxThickness(4) // parent + child BoxThickness(1) = 2
 		} else if anchor == E {
-			x = frameSize.W
-			xDirection = -1 // - w.BoxThickness(2)
+			x = frameSize.W - w.BoxThickness(4)
+			xDirection = -1 - w.BoxThickness(4) // - w.BoxThickness(2)
 		}
 
 		for _, packedWidget := range w.packs[anchor] {
@@ -64,10 +64,10 @@ func (w *Frame) computePacked(e render.Engine) {
 			}
 
 			if anchor.IsSouth() {
-				y -= size.H + pack.PadY
+				y -= size.H - pack.PadY
 			}
 			if anchor.IsEast() {
-				x -= size.W + pack.PadX
+				x -= size.W - pack.PadX
 			}
 
 			child.MoveTo(render.NewPoint(x, y))
@@ -80,7 +80,7 @@ func (w *Frame) computePacked(e render.Engine) {
 			}
 
 			visited = append(visited, packedWidget)
-			if pack.Expand {
+			if pack.Expand { // TODO: don't fuck with children of fixed size
 				expanded = append(expanded, packedWidget)
 			}
 		}
@@ -131,10 +131,6 @@ func (w *Frame) computePacked(e render.Engine) {
 			moved   bool
 		)
 
-		if w.String() == "Frame<Row0; 3 widgets>" {
-			log.Debug("%s>%s: pack.FillX=%d  resize=%s  innerFrameSize=%s", w, child, pack.FillX, resize, innerFrameSize)
-		}
-
 		if pack.Anchor.IsNorth() || pack.Anchor.IsSouth() {
 			if pack.FillX && resize.W < innerFrameSize.W {
 				resize.W = innerFrameSize.W - w.BoxThickness(2)
@@ -175,7 +171,6 @@ func (w *Frame) computePacked(e render.Engine) {
 		}
 
 		if resized && size != resize {
-			// log.Debug("%s/%s: resize to: %s", w, child, resize)
 			child.Resize(resize)
 			child.Compute(e)
 		}
@@ -287,6 +282,9 @@ func (w *Frame) Pack(child Widget, config ...Pack) {
 		C.FillX = true
 		C.FillY = true
 	}
+
+	// Adopt the child widget so it can access the Frame.
+	child.Adopt(w)
 
 	w.packs[C.Anchor] = append(w.packs[C.Anchor], packedWidget{
 		widget: child,

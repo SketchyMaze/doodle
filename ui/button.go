@@ -82,6 +82,7 @@ func (w *Button) SetText(text string) error {
 // Present the button.
 func (w *Button) Present(e render.Engine, P render.Point) {
 	w.Compute(e)
+	w.MoveTo(P)
 	var (
 		S         = w.Size()
 		ChildSize = w.child.Size()

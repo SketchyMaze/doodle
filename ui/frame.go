@@ -69,7 +69,14 @@ func (w *Frame) Present(e render.Engine, P render.Point) {
 			P.X+p.X+w.BoxThickness(1),
 			P.Y+p.Y+w.BoxThickness(1),
 		)
-		child.MoveTo(moveTo)
+		// if child.ID() == "Canvas" {
+		// 	log.Debug("Frame X=%d  Child X=%d  Box=%d  Point=%s", P.X, p.X, w.BoxThickness(1), p)
+		// 	log.Debug("Frame Y=%d  Child Y=%d  Box=%d  MoveTo=%s", P.Y, p.Y, w.BoxThickness(1), moveTo)
+		// }
+		// child.MoveTo(moveTo) // TODO: if uncommented the child will creep down the parent each tick
+		// if child.ID() == "Canvas" {
+		// 	log.Debug("New Point: %s", child.Point())
+		// }
 		child.Present(e, moveTo)
 	}
 }

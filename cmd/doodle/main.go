@@ -5,6 +5,7 @@ import (
 	"runtime"
 
 	"git.kirsle.net/apps/doodle"
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/render/sdl"
 )
 
@@ -13,13 +14,15 @@ var Build string
 
 // Command line args
 var (
-	debug bool
-	edit  bool
+	debug   bool
+	edit    bool
+	guitest bool
 )
 
 func init() {
 	flag.BoolVar(&debug, "debug", false, "Debug mode")
 	flag.BoolVar(&edit, "edit", false, "Edit the map given on the command line. Default is to play the map.")
+	flag.BoolVar(&guitest, "guitest", false, "Enter the GUI Test scene.")
 }
 
 func main() {
@@ -35,13 +38,15 @@ func main() {
 	// SDL engine.
 	engine := sdl.New(
 		"Doodle v"+doodle.Version,
-		800,
-		600,
+		balance.Width,
+		balance.Height,
 	)
 
 	app := doodle.New(debug, engine)
 	app.SetupEngine()
-	if filename != "" {
+	if guitest {
+		app.Goto(&doodle.GUITestScene{})
+	} else if filename != "" {
 		if edit {
 			app.EditFile(filename)
 		} else {

@@ -23,9 +23,13 @@ var (
 // Profile Directory settings.
 var (
 	ConfigDirectoryName = "doodle"
-	ProfileDirectory    string
-	LevelDirectory      string
-	DoodadDirectory     string
+
+	ProfileDirectory string
+	LevelDirectory   string
+	DoodadDirectory  string
+
+	CacheDirectory string
+	FontDirectory  string
 
 	// Regexp to match simple filenames for maps and doodads.
 	reSimpleFilename = regexp.MustCompile(`^([A-Za-z0-9-_.,+ '"\[\](){}]+)$`)
@@ -38,10 +42,19 @@ const (
 )
 
 func init() {
+	// Profile directory contains the user's levels and doodads.
 	ProfileDirectory = configdir.LocalConfig(ConfigDirectoryName)
 	LevelDirectory = configdir.LocalConfig(ConfigDirectoryName, "levels")
 	DoodadDirectory = configdir.LocalConfig(ConfigDirectoryName, "doodads")
-	configdir.MakePath(LevelDirectory, DoodadDirectory)
+
+	// Cache directory to extract font files to.
+	CacheDirectory = configdir.LocalCache(ConfigDirectoryName)
+	FontDirectory = configdir.LocalCache(ConfigDirectoryName, "fonts")
+
+	// Ensure all the directories exist.
+	configdir.MakePath(LevelDirectory)
+	configdir.MakePath(DoodadDirectory)
+	configdir.MakePath(FontDirectory)
 }
 
 // LevelPath will turn a "simple" filename into an absolute path in the user's

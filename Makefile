@@ -23,6 +23,11 @@ build:
 run:
 	go run cmd/doodle/main.go -debug
 
+# `make guitest` to run it in guitest mode.
+.PHONY: guitest
+guitest:
+	go run cmd/doodle/main.go -debug -guitest
+
 # `make test` to run unit tests.
 .PHONY: test
 test:

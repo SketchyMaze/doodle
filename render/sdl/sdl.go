@@ -31,12 +31,12 @@ type Renderer struct {
 }
 
 // New creates the SDL renderer.
-func New(title string, width, height int32) *Renderer {
+func New(title string, width, height int) *Renderer {
 	return &Renderer{
 		events: events.New(),
 		title:  title,
-		width:  width,
-		height: height,
+		width:  int32(width),
+		height: int32(height),
 	}
 }
 

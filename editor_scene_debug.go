@@ -7,5 +7,5 @@ import "git.kirsle.net/apps/doodle/uix"
 
 // GetDrawing returns the uix.Canvas
 func (w *EditorScene) GetDrawing() *uix.Canvas {
-	return w.drawing
+	return w.UI.Canvas
 }

@@ -56,6 +56,11 @@ type Widget interface {
 	OutlineSize() int32           // Outline size (default 0)
 	SetOutlineSize(int32)         //
 
+	// Container widgets like Frames can wire up associations between the
+	// child widgets and the parent.
+	Parent() (parent Widget, ok bool)
+	Adopt(parent Widget) // for the container to assign itself the parent
+
 	// Run any render computations; by the end the widget must know its
 	// Width and Height. For example the Label widget will render itself onto
 	// an SDL Surface and then it will know its bounding box, but not before.
@@ -105,6 +110,8 @@ type BaseWidget struct {
 	outlineColor render.Color
 	outlineSize  int32
 	handlers     map[Event][]func(render.Point)
+	hasParent    bool
+	parent       Widget
 }
 
 // SetID sets a string name for your widget, helpful for debugging purposes.
@@ -248,6 +255,25 @@ func (w *BaseWidget) BoxThickness(m int32) int32 {
 		m = 1
 	}
 	return (w.Margin() * m) + (w.BorderSize() * m) + (w.OutlineSize() * m)
+}
+
+// Parent returns the parent widget, like a Frame, and a boolean indicating
+// whether the widget had a parent.
+func (w *BaseWidget) Parent() (Widget, bool) {
+	return w.parent, w.hasParent
+}
+
+// Adopt sets the widget's parent. This function is called by container
+// widgets like Frame when they add a child widget to their care.
+// Pass a nil parent to unset the parent.
+func (w *BaseWidget) Adopt(parent Widget) {
+	if parent == nil {
+		w.hasParent = false
+		w.parent = nil
+	} else {
+		w.hasParent = true
+		w.parent = parent
+	}
 }
 
 // DrawBox draws the border and outline.

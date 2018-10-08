@@ -38,6 +38,9 @@ func NewCanvas(size int, editable bool) *Canvas {
 		chunks:     level.NewChunker(size),
 	}
 	w.setup()
+	w.IDFunc(func() string {
+		return "Canvas"
+	})
 	return w
 }
 
@@ -81,10 +84,9 @@ func (w *Canvas) setup() {
 // Loop is called on the scene's event loop to handle mouse interaction with
 // the canvas, i.e. to edit it.
 func (w *Canvas) Loop(ev *events.State) error {
-	var (
-		P = w.Point()
-		_ = P
-	)
+	// Get the absolute position of the canvas on screen to accurately match
+	// it up to mouse clicks.
+	var P = ui.AbsolutePosition(w)
 
 	if w.Scrollable {
 		// Arrow keys to scroll the view.
@@ -106,7 +108,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 	// Only care if the cursor is over our space.
 	cursor := render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
-	if !cursor.Inside(w.Rect()) {
+	if !cursor.Inside(ui.AbsoluteRect(w)) {
 		return nil
 	}
 
@@ -117,7 +119,6 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 	// Clicking? Log all the pixels while doing so.
 	if ev.Button1.Now {
-		// log.Warn("Button1: %+v", ev.Button1)
 		lastPixel := w.lastPixel
 		cursor := render.Point{
 			X: ev.CursorX.Now - P.X + w.Scroll.X,
@@ -193,7 +194,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		S        = w.Size()
 		Viewport = w.Viewport()
 	)
-	w.MoveTo(p)
+	// w.MoveTo(p) // TODO: when uncommented the canvas will creep down the Workspace frame in EditorMode
 	w.DrawBox(e, p)
 	e.DrawBox(w.Background(), render.Rect{
 		X: p.X + w.BoxThickness(1),
