@@ -17,6 +17,7 @@ setup: clean
 build:
 	gofmt -w .
 	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 
 # `make run` to run it in debug mode.
 .PHONY: run

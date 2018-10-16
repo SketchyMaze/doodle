@@ -213,3 +213,8 @@ named:
 
 These are the open source **DejaVu Sans [Mono]** fonts, so copy them in from
 your `/usr/share/fonts/dejavu` folder or provide alternative fonts.
+
+```bash
+mkdir fonts
+cp /usr/share/fonts/dejavu/{DejaVuSans.ttf,DejaVuSans-Bold.ttf,DejaVuSansMono.ttf} fonts/
+```

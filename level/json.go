@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -18,13 +19,15 @@ func (m *Level) ToJSON() ([]byte, error) {
 
 // WriteJSON writes a level to JSON on disk.
 func (m *Level) WriteJSON(filename string) error {
-	fh, err := os.Create(filename)
+	json, err := m.ToJSON()
 	if err != nil {
-		return fmt.Errorf("Level.WriteJSON(%s): failed to create file: %s", filename, err)
+		return fmt.Errorf("Level.WriteJSON: JSON encode error: %s", err)
 	}
-	defer fh.Close()
 
-	_ = fh
+	err = ioutil.WriteFile(filename, json, 0755)
+	if err != nil {
+		return fmt.Errorf("Level.WriteJSON: WriteFile error: %s", err)
+	}
 
 	return nil
 }

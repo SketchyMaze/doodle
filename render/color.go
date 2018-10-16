@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image/color"
 	"regexp"
 	"strconv"
 )
@@ -34,6 +35,22 @@ func RGBA(r, g, b, a uint8) Color {
 		Blue:  b,
 		Alpha: a,
 	}
+}
+
+// FromColor creates a render.Color from a Go color.Color
+func FromColor(from color.Color) Color {
+	// downscale a 16-bit color value to 8-bit. input range 0x0000..0xffff
+	downscale := func(in uint32) uint8 {
+		var scale = float64(in) / 0xffff
+		return uint8(scale * 0xff)
+	}
+	r, g, b, a := from.RGBA()
+	return RGBA(
+		downscale(r),
+		downscale(g),
+		downscale(b),
+		downscale(a),
+	)
 }
 
 // MustHexColor parses a color from hex code or panics.
@@ -92,6 +109,22 @@ func (c Color) String() string {
 		"Color<#%02x%02x%02x+%02x>",
 		c.Red, c.Green, c.Blue, c.Alpha,
 	)
+}
+
+// ToColor converts a render.Color into a Go standard color.Color
+func (c Color) ToColor() color.RGBA {
+	return color.RGBA{
+		R: c.Red,
+		G: c.Green,
+		B: c.Blue,
+		A: c.Alpha,
+	}
+}
+
+// Transparent returns whether the alpha channel is zeroed out and the pixel
+// won't appear as anything when rendered.
+func (c Color) Transparent() bool {
+	return c.Alpha == 0x00
 }
 
 // MarshalJSON serializes the Color for JSON.

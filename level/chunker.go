@@ -81,6 +81,53 @@ func (c *Chunker) IterPixels() <-chan Pixel {
 	return pipe
 }
 
+// WorldSize returns the bounding coordinates that the Chunker has chunks to
+// manage: the lowest pixels from the lowest chunks to the highest pixels of
+// the highest chunks.
+func (c *Chunker) WorldSize() render.Rect {
+	// Lowest and highest chunks.
+	var (
+		chunkLowest  render.Point
+		chunkHighest render.Point
+		size         = int32(c.Size)
+	)
+
+	for coord := range c.Chunks {
+		if coord.X < chunkLowest.X {
+			chunkLowest.X = coord.X
+		}
+		if coord.Y < chunkLowest.Y {
+			chunkLowest.Y = coord.Y
+		}
+
+		if coord.X > chunkHighest.X {
+			chunkHighest.X = coord.X
+		}
+		if coord.Y > chunkHighest.Y {
+			chunkHighest.Y = coord.Y
+		}
+	}
+
+	return render.Rect{
+		X: chunkLowest.X * size,
+		Y: chunkLowest.Y * size,
+		W: (chunkHighest.X * size) + (size - 1),
+		H: (chunkHighest.Y * size) + (size - 1),
+	}
+}
+
+// WorldSizePositive returns the WorldSize anchored to 0,0 with only positive
+// coordinates.
+func (c *Chunker) WorldSizePositive() render.Rect {
+	S := c.WorldSize()
+	return render.Rect{
+		X: 0,
+		Y: 0,
+		W: int32(math.Abs(float64(S.X))) + S.W,
+		H: int32(math.Abs(float64(S.Y))) + S.H,
+	}
+}
+
 // GetChunk gets a chunk at a certain position. Returns false if not found.
 func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 	chunk, ok := c.Chunks[p]
