@@ -30,6 +30,8 @@ func NewChunker(size int) *Chunker {
 func (c *Chunker) Inflate(pal *Palette) error {
 	for coord, chunk := range c.Chunks {
 		log.Debug("Chunker.Inflate: expanding chunk %s", coord)
+		chunk.Point = coord
+		chunk.Size = c.Size
 		chunk.Inflate(pal)
 	}
 	return nil
@@ -61,6 +63,58 @@ func (c *Chunker) IterViewport(viewport render.Rect) <-chan Pixel {
 				}
 			}
 		}
+		close(pipe)
+	}()
+	return pipe
+}
+
+// IterViewportChunks returns a channel to iterate over the Chunk objects that
+// appear within the viewport rect, instead of the pixels in each chunk.
+func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
+	pipe := make(chan render.Point)
+	go func() {
+		sent := make(map[render.Point]interface{})
+		for x := viewport.X; x < viewport.W; x += int32(c.Size / 4) {
+			for y := viewport.Y; y < viewport.H; y += int32(c.Size / 4) {
+
+				// Constrain this chunksize step to a point within the bounds
+				// of the viewport. This can yield partial chunks on the edges
+				// of the viewport.
+				point := render.NewPoint(x, y)
+				if point.X < viewport.X {
+					point.X = viewport.X
+				} else if point.X > viewport.X+viewport.W {
+					point.X = viewport.X + viewport.W
+				}
+				if point.Y < viewport.Y {
+					point.Y = viewport.Y
+				} else if point.Y > viewport.Y+viewport.H {
+					point.Y = viewport.Y + viewport.H
+				}
+
+				// Translate to a chunk coordinate, dedupe and send it.
+				coord := c.ChunkCoordinate(render.NewPoint(x, y))
+				// fmt.Printf("IterViewportChunks: x=%d y=%d  chunk=%s\n", x, y, coord)
+				if _, ok := sent[coord]; ok {
+					continue
+				}
+				sent[coord] = nil
+
+				if _, ok := c.GetChunk(coord); ok {
+					fmt.Printf("Iter: send chunk %s for point %s\n", coord, point)
+					pipe <- coord
+				}
+			}
+		}
+
+		// for cx := topLeft.X; cx <= bottomRight.X; cx++ {
+		// 	for cy := topLeft.Y; cy <= bottomRight.Y; cy++ {
+		// 		pt := render.NewPoint(cx, cy)
+		// 		if _, ok := c.GetChunk(pt); ok {
+		// 			pipe <- pt
+		// 		}
+		// 	}
+		// }
 		close(pipe)
 	}()
 	return pipe
@@ -152,6 +206,8 @@ func (c *Chunker) Set(p render.Point, sw *Swatch) error {
 	if !ok {
 		chunk = NewChunk()
 		c.Chunks[coord] = chunk
+		chunk.Point = coord
+		chunk.Size = c.Size
 	}
 
 	return chunk.Set(p, sw)

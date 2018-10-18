@@ -28,6 +28,10 @@ type Engine interface {
 	DrawText(Text, Point) error
 	ComputeTextRect(Text) (Rect, error)
 
+	// Texture caching.
+	NewBitmap(filename string) (Texturer, error)
+	Copy(t Texturer, src, dst Rect)
+
 	// Delay for a moment using the render engine's delay method,
 	// implemented by sdl.Delay(uint32)
 	Delay(uint32)
@@ -36,6 +40,12 @@ type Engine interface {
 	Teardown()
 
 	Loop() error // maybe?
+}
+
+// Texturer is a stored image texture used by the rendering engine while
+// abstracting away its inner workings.
+type Texturer interface {
+	Size() Rect
 }
 
 // Rect has a coordinate and a width and height.
@@ -81,6 +91,26 @@ func (r Rect) Bigger(other Rect) bool {
 // IsZero returns if the Rect is uninitialized.
 func (r Rect) IsZero() bool {
 	return r.X == 0 && r.Y == 0 && r.W == 0 && r.H == 0
+}
+
+// Add another rect.
+func (r Rect) Add(other Rect) Rect {
+	return Rect{
+		X: r.X + other.X,
+		Y: r.Y + other.Y,
+		W: r.W + other.W,
+		H: r.H + other.H,
+	}
+}
+
+// Add a point to move the rect.
+func (r Rect) AddPoint(other Point) Rect {
+	return Rect{
+		X: r.X + other.X,
+		Y: r.Y + other.Y,
+		W: r.W,
+		H: r.H,
+	}
 }
 
 // Text holds information for drawing text.

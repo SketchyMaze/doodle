@@ -20,9 +20,11 @@ type EditorUI struct {
 	Scene *EditorScene
 
 	// Variables
+	StatusBoxes        []*string
 	StatusMouseText    string
 	StatusPaletteText  string
 	StatusFilenameText string
+	StatusScrollText   string
 	selectedSwatch     string // name of selected swatch in palette
 	selectedDoodad     string
 
@@ -51,6 +53,15 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		StatusMouseText:    "Cursor: (waiting)",
 		StatusPaletteText:  "Swatch: <none>",
 		StatusFilenameText: "Filename: <none>",
+		StatusScrollText:   "Hello world",
+	}
+
+	// Bind the StatusBoxes arrays to the text variables.
+	u.StatusBoxes = []*string{
+		&u.StatusMouseText,
+		&u.StatusPaletteText,
+		&u.StatusFilenameText,
+		&u.StatusScrollText,
 	}
 
 	u.Canvas = u.SetupCanvas(d)
@@ -83,6 +94,10 @@ func (u *EditorUI) Loop(ev *events.State) {
 	)
 	u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
 		u.Canvas.Palette.ActiveSwatch,
+	)
+	u.StatusScrollText = fmt.Sprintf("Scroll: %s   Viewport: %s",
+		u.Canvas.Scroll,
+		u.Canvas.Viewport(),
 	)
 
 	// Statusbar filename label.
@@ -142,6 +157,7 @@ func (u *EditorUI) SetupWorkspace(d *Doodle) *ui.Frame {
 // SetupCanvas configures the main drawing canvas in the editor.
 func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	drawing := uix.NewCanvas(balance.ChunkSize, true)
+	drawing.Name = "edit-canvas"
 	drawing.Palette = level.DefaultPalette()
 	if len(drawing.Palette.Swatches) > 0 {
 		drawing.SetSwatch(drawing.Palette.Swatches[0])
@@ -367,6 +383,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 			}
 
 			can := uix.NewCanvas(int(buttonSize), true)
+			can.Name = filename
 			can.LoadDoodad(doodad)
 			btn := ui.NewRadioButton(filename, &u.selectedDoodad, si, can)
 			btn.Resize(render.NewRect(
@@ -452,38 +469,23 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		BorderSize:  1,
 	}
 
-	cursorLabel := ui.NewLabel(ui.Label{
-		TextVariable: &u.StatusMouseText,
-		Font:         balance.StatusFont,
-	})
-	cursorLabel.Configure(style)
-	cursorLabel.Compute(d.Engine)
-	frame.Pack(cursorLabel, ui.Pack{
-		Anchor: ui.W,
-		PadX:   1,
-	})
+	var labelHeight int32
+	for _, variable := range u.StatusBoxes {
+		label := ui.NewLabel(ui.Label{
+			TextVariable: variable,
+			Font:         balance.StatusFont,
+		})
+		label.Configure(style)
+		label.Compute(d.Engine)
+		frame.Pack(label, ui.Pack{
+			Anchor: ui.W,
+			PadX:   1,
+		})
 
-	paletteLabel := ui.NewLabel(ui.Label{
-		TextVariable: &u.StatusPaletteText,
-		Font:         balance.StatusFont,
-	})
-	paletteLabel.Configure(style)
-	paletteLabel.Compute(d.Engine)
-	frame.Pack(paletteLabel, ui.Pack{
-		Anchor: ui.W,
-		PadX:   1,
-	})
-
-	filenameLabel := ui.NewLabel(ui.Label{
-		TextVariable: &u.StatusFilenameText,
-		Font:         balance.StatusFont,
-	})
-	filenameLabel.Configure(style)
-	filenameLabel.Compute(d.Engine)
-	frame.Pack(filenameLabel, ui.Pack{
-		Anchor: ui.E,
-		PadX:   1,
-	})
+		if labelHeight == 0 {
+			labelHeight = label.BoxSize().H
+		}
+	}
 
 	// TODO: right-aligned labels clip out of bounds
 	extraLabel := ui.NewLabel(ui.Label{
@@ -503,7 +505,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 
 	frame.Resize(render.Rect{
 		W: d.width,
-		H: cursorLabel.BoxSize().H + frame.BoxThickness(1),
+		H: labelHeight + frame.BoxThickness(1),
 	})
 	frame.Compute(d.Engine)
 	frame.MoveTo(render.Point{

@@ -151,6 +151,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		})
 	}
 
+	// Main frame widgets.
 	frame.Pack(ui.NewLabel(ui.Label{
 		Text: "Hello World!",
 		Font: render.Text{
@@ -174,6 +175,17 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Padding: 4,
 	})
 	cb.Supervise(s.Supervisor)
+
+	// Put an image in.
+	img, err := ui.OpenImage(d.Engine, "exit.bmp")
+	if err != nil {
+		log.Error(err.Error())
+	}
+	frame.Pack(img, ui.Pack{
+		Anchor:  ui.NE,
+		Padding: 4,
+	})
+
 	frame.Pack(ui.NewLabel(ui.Label{
 		Text: "Like Tk!",
 		Font: render.Text{

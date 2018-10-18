@@ -10,7 +10,7 @@ var (
 	CanvasScrollSpeed int32 = 8
 
 	// Default chunk size for canvases.
-	ChunkSize = 1000
+	ChunkSize = 100
 
 	// Default size for a new Doodad.
 	DoodadSize = 100
