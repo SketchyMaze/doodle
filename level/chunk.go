@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/render"
 	"golang.org/x/image/bmp"
 )
@@ -103,15 +104,15 @@ func (c *Chunk) ToBitmap(filename string) error {
 	// Blank out the pixels.
 	for x := 0; x < img.Bounds().Max.X; x++ {
 		for y := 0; y < img.Bounds().Max.Y; y++ {
-			img.Set(x, y, render.RGBA(255, 255, 0, 153).ToColor())
+			img.Set(x, y, balance.DebugChunkBitmapBackground.ToColor())
 		}
 	}
 
 	// Pixel coordinate offset to map the Chunk World Position to the
 	// smaller image boundaries.
 	pointOffset := render.Point{
-		X: int32(math.Abs(float64(c.Point.X * int32(c.Size)))),
-		Y: int32(math.Abs(float64(c.Point.Y * int32(c.Size)))),
+		X: int32(c.Point.X * int32(c.Size)),
+		Y: int32(c.Point.Y * int32(c.Size)),
 	}
 
 	// Blot all the pixels onto it.
@@ -181,8 +182,6 @@ func (c *Chunk) Rect() render.Rect {
 func (c *Chunk) SizePositive() render.Rect {
 	S := c.Rect()
 	return render.Rect{
-		X: c.Point.X * int32(c.Size),
-		Y: c.Point.Y * int32(c.Size),
 		W: int32(math.Abs(float64(S.X))) + S.W,
 		H: int32(math.Abs(float64(S.Y))) + S.H,
 	}

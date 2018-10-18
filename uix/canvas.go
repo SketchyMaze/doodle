@@ -107,14 +107,14 @@ func (w *Canvas) Loop(ev *events.State) error {
 		// Arrow keys to scroll the view.
 		scrollBy := render.Point{}
 		if ev.Right.Now {
-			scrollBy.X += balance.CanvasScrollSpeed
-		} else if ev.Left.Now {
 			scrollBy.X -= balance.CanvasScrollSpeed
+		} else if ev.Left.Now {
+			scrollBy.X += balance.CanvasScrollSpeed
 		}
 		if ev.Down.Now {
-			scrollBy.Y += balance.CanvasScrollSpeed
-		} else if ev.Up.Now {
 			scrollBy.Y -= balance.CanvasScrollSpeed
+		} else if ev.Up.Now {
+			scrollBy.Y += balance.CanvasScrollSpeed
 		}
 		if !scrollBy.IsZero() {
 			w.ScrollBy(scrollBy)
@@ -136,8 +136,8 @@ func (w *Canvas) Loop(ev *events.State) error {
 	if ev.Button1.Now {
 		lastPixel := w.lastPixel
 		cursor := render.Point{
-			X: ev.CursorX.Now - P.X + w.Scroll.X,
-			Y: ev.CursorY.Now - P.Y + w.Scroll.Y,
+			X: ev.CursorX.Now - P.X - w.Scroll.X,
+			Y: ev.CursorY.Now - P.Y - w.Scroll.Y,
 		}
 		pixel := &level.Pixel{
 			X:      cursor.X,
@@ -184,10 +184,10 @@ func (w *Canvas) Loop(ev *events.State) error {
 func (w *Canvas) Viewport() render.Rect {
 	var S = w.Size()
 	return render.Rect{
-		X: w.Scroll.X,
-		Y: w.Scroll.Y,
-		W: S.W - w.BoxThickness(2) + w.Scroll.X,
-		H: S.H - w.BoxThickness(2) + w.Scroll.Y,
+		X: -w.Scroll.X,
+		Y: -w.Scroll.Y,
+		W: S.W - w.Scroll.X,
+		H: S.H - w.Scroll.Y,
 	}
 }
 
@@ -258,13 +258,6 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				H: src.H, // - w.Scroll.Y,
 			}
 
-			// log.Warn(
-			// 	"chunk: %s   src: %s   dst: %s",
-			// 	coord,
-			// 	src,
-			// 	dst,
-			// )
-
 			// If the destination width will cause it to overflow the widget
 			// box, trim off the right edge of the destination rect.
 			//
@@ -316,12 +309,6 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				src.Y += delta
 			}
 
-			// If the destination rect would overflow our widget bounds, trim
-			// it off.
-
-			// if w.Name == "edit-canvas" {
-			// 	log.Info("%s: copy %+v -> %+v", w.Name, src, dst)
-			// }
 			e.Copy(tex, src, dst)
 		}
 	}

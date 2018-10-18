@@ -32,8 +32,6 @@ func (t *Texture) Size() render.Rect {
 
 // NewBitmap initializes a texture from a bitmap image.
 func (r *Renderer) NewBitmap(filename string) (render.Texturer, error) {
-	log.Debug("NewBitmap: open from file %s", filename)
-
 	surface, err := sdl.LoadBMP(filename)
 	if err != nil {
 		return nil, fmt.Errorf("NewBitmap: LoadBMP: %s", err)
@@ -45,7 +43,6 @@ func (r *Renderer) NewBitmap(filename string) (render.Texturer, error) {
 		return nil, fmt.Errorf("NewBitmap: create texture: %s", err)
 	}
 
-	log.Debug("Created texture")
 	return &Texture{
 		width:  surface.W,
 		height: surface.H,

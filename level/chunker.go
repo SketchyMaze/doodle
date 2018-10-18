@@ -74,6 +74,7 @@ func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
 	pipe := make(chan render.Point)
 	go func() {
 		sent := make(map[render.Point]interface{})
+
 		for x := viewport.X; x < viewport.W; x += int32(c.Size / 4) {
 			for y := viewport.Y; y < viewport.H; y += int32(c.Size / 4) {
 
@@ -94,27 +95,17 @@ func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
 
 				// Translate to a chunk coordinate, dedupe and send it.
 				coord := c.ChunkCoordinate(render.NewPoint(x, y))
-				// fmt.Printf("IterViewportChunks: x=%d y=%d  chunk=%s\n", x, y, coord)
 				if _, ok := sent[coord]; ok {
 					continue
 				}
 				sent[coord] = nil
 
 				if _, ok := c.GetChunk(coord); ok {
-					fmt.Printf("Iter: send chunk %s for point %s\n", coord, point)
 					pipe <- coord
 				}
 			}
 		}
 
-		// for cx := topLeft.X; cx <= bottomRight.X; cx++ {
-		// 	for cy := topLeft.Y; cy <= bottomRight.Y; cy++ {
-		// 		pt := render.NewPoint(cx, cy)
-		// 		if _, ok := c.GetChunk(pt); ok {
-		// 			pipe <- pt
-		// 		}
-		// 	}
-		// }
 		close(pipe)
 	}()
 	return pipe
