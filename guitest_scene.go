@@ -275,14 +275,14 @@ func (s *GUITestScene) Draw(d *Doodle) error {
 	})
 	label.Compute(d.Engine)
 	label.MoveTo(render.Point{
-		X: (d.width / 2) - (label.Size().W / 2),
+		X: (int32(d.width) / 2) - (label.Size().W / 2),
 		Y: 40,
 	})
 	label.Present(d.Engine, label.Point())
 
 	s.Window.Compute(d.Engine)
 	s.Window.MoveTo(render.Point{
-		X: (d.width / 2) - (s.Window.Size().W / 2),
+		X: (int32(d.width) / 2) - (s.Window.Size().W / 2),
 		Y: 100,
 	})
 	s.Window.Present(d.Engine, s.Window.Point())

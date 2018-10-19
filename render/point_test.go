@@ -8,13 +8,9 @@ import (
 )
 
 func TestPointInside(t *testing.T) {
-	var p = render.Point{
-		X: 128,
-		Y: 256,
-	}
-
 	type testCase struct {
 		rect       render.Rect
+		p          render.Point
 		shouldPass bool
 	}
 	tests := []testCase{
@@ -25,6 +21,7 @@ func TestPointInside(t *testing.T) {
 				W: 500,
 				H: 500,
 			},
+			p:          render.NewPoint(128, 256),
 			shouldPass: true,
 		},
 		testCase{
@@ -34,14 +31,27 @@ func TestPointInside(t *testing.T) {
 				W: 40,
 				H: 60,
 			},
+			p:          render.NewPoint(128, 256),
 			shouldPass: false,
+		},
+		testCase{
+			// true values when debugging why Doodads weren't
+			// considered inside the viewport.
+			rect: render.Rect{
+				X: 0,
+				Y: -232,
+				H: 874,
+				W: 490,
+			},
+			p:          render.NewPoint(509, 260),
+			shouldPass: true,
 		},
 	}
 
 	for _, test := range tests {
-		if p.Inside(test.rect) != test.shouldPass {
-			t.Errorf("Failed: %s inside %s should %s",
-				p,
+		if test.p.Inside(test.rect) != test.shouldPass {
+			t.Errorf("Failed: %s inside %s should be %s",
+				test.p,
 				test.rect,
 				strconv.FormatBool(test.shouldPass),
 			)

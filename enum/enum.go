@@ -10,3 +10,9 @@ const (
 	LevelDrawing DrawingType = iota
 	DoodadDrawing
 )
+
+// File extensions
+const (
+	LevelExt  = ".level"
+	DoodadExt = ".doodad"
+)

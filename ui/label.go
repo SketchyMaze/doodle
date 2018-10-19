@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/render"
 )
@@ -21,8 +22,9 @@ type Label struct {
 	TextVariable *string
 	Font         render.Text
 
-	width  int32
-	height int32
+	width      int32
+	height     int32
+	lineHeight int
 }
 
 // NewLabel creates a new label.
@@ -60,10 +62,24 @@ func (w *Label) Value() string {
 
 // Compute the size of the label widget.
 func (w *Label) Compute(e render.Engine) {
-	rect, err := e.ComputeTextRect(w.text())
-	if err != nil {
-		log.Error("%s: failed to compute text rect: %s", w, err)
-		return
+	text := w.text()
+	lines := strings.Split(text.Text, "\n")
+
+	// Max rect to encompass all lines of text.
+	var maxRect = render.Rect{}
+	for _, line := range lines {
+		text.Text = line // only this line at this time.
+		rect, err := e.ComputeTextRect(text)
+		if err != nil {
+			log.Error("%s: failed to compute text rect: %s", w, err)
+			return
+		}
+
+		if rect.W > maxRect.W {
+			maxRect.W = rect.W
+		}
+		maxRect.H += rect.H
+		w.lineHeight = int(rect.H)
 	}
 
 	var (
@@ -73,14 +89,14 @@ func (w *Label) Compute(e render.Engine) {
 
 	if !w.FixedSize() {
 		w.resizeAuto(render.Rect{
-			W: rect.W + (padX * 2),
-			H: rect.H + (padY * 2),
+			W: maxRect.W + (padX * 2),
+			H: maxRect.H + (padY * 2),
 		})
 	}
 
 	w.MoveTo(render.Point{
-		X: rect.X + w.BoxThickness(1),
-		Y: rect.Y + w.BoxThickness(1),
+		X: maxRect.X + w.BoxThickness(1),
+		Y: maxRect.Y + w.BoxThickness(1),
 	})
 }
 
@@ -93,13 +109,17 @@ func (w *Label) Present(e render.Engine, P render.Point) {
 	border := w.BoxThickness(1)
 
 	var (
+		text = w.text()
 		padX = w.Font.Padding + w.Font.PadX
 		padY = w.Font.Padding + w.Font.PadY
 	)
 
 	w.DrawBox(e, P)
-	e.DrawText(w.text(), render.Point{
-		X: P.X + border + padX,
-		Y: P.Y + border + padY,
-	})
+	for i, line := range strings.Split(text.Text, "\n") {
+		text.Text = line
+		e.DrawText(text, render.Point{
+			X: P.X + border + padX,
+			Y: P.Y + border + padY + int32(i*w.lineHeight),
+		})
+	}
 }

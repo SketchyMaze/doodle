@@ -15,6 +15,7 @@ type Engine interface {
 	// Poll for events like keypresses and mouse clicks.
 	Poll() (*events.State, error)
 	GetTicks() uint32
+	WindowSize() (w, h int)
 
 	// Present presents the current state to the screen.
 	Present() error
@@ -86,6 +87,27 @@ func (r Rect) Bigger(other Rect) bool {
 		other.Y < r.Y || // Higher
 		other.W > r.W || // Wider
 		other.H > r.H) // Taller
+}
+
+// Intersects with the other rectangle in any way.
+func (r Rect) Intersects(other Rect) bool {
+	// Do a bidirectional compare.
+	compare := func(a, b Rect) bool {
+		var corners = []Point{
+			NewPoint(b.X, b.Y),
+			NewPoint(b.X, b.Y+b.H),
+			NewPoint(b.X+b.W, b.Y),
+			NewPoint(b.X+b.W, b.Y+b.H),
+		}
+		for _, pt := range corners {
+			if pt.Inside(a) {
+				return true
+			}
+		}
+		return false
+	}
+
+	return compare(r, other) || compare(other, r) || false
 }
 
 // IsZero returns if the Rect is uninitialized.

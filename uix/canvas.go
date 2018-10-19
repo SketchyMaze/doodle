@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 )
@@ -21,12 +22,25 @@ type Canvas struct {
 	Editable   bool
 	Scrollable bool
 
-	chunks       *level.Chunker
+	// Underlying chunk data for the drawing.
+	chunks *level.Chunker
+
+	// Actors to superimpose on top of the drawing.
+	actor  *level.Actor // if this canvas IS an actor
+	actors []*Actor
+
+	// Tracking pixels while editing. TODO: get rid of pixelHistory?
 	pixelHistory []*level.Pixel
 	lastPixel    *level.Pixel
 
 	// We inherit the ui.Widget which manages the width and height.
 	Scroll render.Point // Scroll offset for which parts of canvas are visible.
+}
+
+// Actor is an instance of an actor with a Canvas attached.
+type Actor struct {
+	Actor  *level.Actor
+	Canvas *Canvas
 }
 
 // NewCanvas initializes a Canvas widget.
@@ -39,6 +53,7 @@ func NewCanvas(size int, editable bool) *Canvas {
 		Scrollable: editable,
 		Palette:    level.NewPalette(),
 		chunks:     level.NewChunker(size),
+		actors:     make([]*Actor, 0),
 	}
 	w.setup()
 	w.IDFunc(func() string {
@@ -80,6 +95,32 @@ func (w *Canvas) LoadDoodad(d *doodads.Doodad) {
 	w.Load(d.Palette, d.Layers[0].Chunker)
 }
 
+// InstallActors adds external Actors to the canvas to be superimposed on top
+// of the drawing.
+func (w *Canvas) InstallActors(actors level.ActorMap) error {
+	w.actors = make([]*Actor, 0)
+	for id, actor := range actors {
+		log.Info("InstallActors: %s", id)
+
+		doodad, err := doodads.LoadJSON(userdir.DoodadPath(actor.Filename))
+		if err != nil {
+			return fmt.Errorf("InstallActors: %s", err)
+		}
+
+		size := int32(doodad.Layers[0].Chunker.Size)
+		can := NewCanvas(int(size), false)
+		can.Name = id
+		can.actor = actor
+		can.LoadDoodad(doodad)
+		can.Resize(render.NewRect(size, size))
+		w.actors = append(w.actors, &Actor{
+			Actor:  actor,
+			Canvas: can,
+		})
+	}
+	return nil
+}
+
 // SetSwatch changes the currently selected swatch for editing.
 func (w *Canvas) SetSwatch(s *level.Swatch) {
 	w.Palette.ActiveSwatch = s
@@ -88,6 +129,16 @@ func (w *Canvas) SetSwatch(s *level.Swatch) {
 // setup common configs between both initializers of the canvas.
 func (w *Canvas) setup() {
 	w.SetBackground(render.White)
+
+	// XXX: Debug code.
+	if balance.DebugCanvasBorder != render.Invisible {
+		w.Configure(ui.Config{
+			BorderColor: balance.DebugCanvasBorder,
+			BorderSize:  2,
+			BorderStyle: ui.BorderSolid,
+		})
+	}
+
 	w.Handle(ui.MouseOver, func(p render.Point) {
 		w.SetBackground(render.Yellow)
 	})
@@ -145,14 +196,6 @@ func (w *Canvas) Loop(ev *events.State) error {
 			Swatch: w.Palette.ActiveSwatch,
 		}
 
-		log.Warn(
-			"real cursor: %d,%d   translated: %s   widget pos: %s   scroll: %s",
-			ev.CursorX.Now, ev.CursorY.Now,
-			cursor,
-			P,
-			w.Scroll,
-		)
-
 		// Append unique new pixels.
 		if len(w.pixelHistory) == 0 || w.pixelHistory[len(w.pixelHistory)-1] != pixel {
 			if lastPixel != nil {
@@ -168,7 +211,6 @@ func (w *Canvas) Loop(ev *events.State) error {
 			w.pixelHistory = append(w.pixelHistory, pixel)
 
 			// Save in the pixel canvas map.
-			log.Info("Set: %s %s", cursor, pixel.Swatch.Color)
 			w.chunks.Set(cursor, pixel.Swatch)
 		}
 	} else {
@@ -181,6 +223,15 @@ func (w *Canvas) Loop(ev *events.State) error {
 // Viewport returns a rect containing the viewable drawing coordinates in this
 // canvas. The X,Y values are the scroll offset (top left) and the W,H values
 // are the scroll offset plus the width/height of the Canvas widget.
+//
+// The Viewport rect are the Absolute World Coordinates of the drawing that are
+// visible inside the Canvas. The X,Y is the top left World Coordinate and the
+// W,H are the bottom right World Coordinate, making this rect an absolute
+// slice of the world. For a normal rect with a relative width and height,
+// use ViewportRelative().
+//
+// The rect X,Y are the negative Scroll Value.
+// The rect W,H are the Canvas widget size minus the Scroll Value.
 func (w *Canvas) Viewport() render.Rect {
 	var S = w.Size()
 	return render.Rect{
@@ -188,6 +239,22 @@ func (w *Canvas) Viewport() render.Rect {
 		Y: -w.Scroll.Y,
 		W: S.W - w.Scroll.X,
 		H: S.H - w.Scroll.Y,
+	}
+}
+
+// ViewportRelative returns a relative viewport where the Width and Height
+// values are zero-relative: so you can use it with point.Inside(viewport)
+// to see if a World Index point should be visible on screen.
+//
+// The rect X,Y are the negative Scroll Value
+// The rect W,H are the Canvas widget size.
+func (w *Canvas) ViewportRelative() render.Rect {
+	var S = w.Size()
+	return render.Rect{
+		X: -w.Scroll.X,
+		Y: -w.Scroll.Y,
+		W: S.W,
+		H: S.H,
 	}
 }
 
@@ -254,8 +321,8 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				// src.W and src.H will be AT MOST the full width and height of
 				// a Canvas widget. Subtract the scroll offset to keep it bounded
 				// visually on its right and bottom sides.
-				W: src.W, // - w.Scroll.X,
-				H: src.H, // - w.Scroll.Y,
+				W: src.W,
+				H: src.H,
 			}
 
 			// If the destination width will cause it to overflow the widget
@@ -273,13 +340,13 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			if dst.X+src.W > p.X+S.W {
 				// NOTE: delta is a negative number,
 				// so it will subtract from the width.
-				delta := (S.W + p.X) - (dst.W + dst.X)
+				delta := (p.X + S.W - w.BoxThickness(1)) - (dst.W + dst.X)
 				src.W += delta
 				dst.W += delta
 			}
 			if dst.Y+src.H > p.Y+S.H {
 				// NOTE: delta is a negative number
-				delta := (S.H + p.Y) - (dst.H + dst.Y)
+				delta := (p.Y + S.H - w.BoxThickness(1)) - (dst.H + dst.Y)
 				src.H += delta
 				dst.H += delta
 			}
@@ -298,30 +365,141 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				// NOTE: delta is a positive number,
 				// so it will add to the destination coordinates.
 				delta := p.X - dst.X
-				dst.X = p.X
+				dst.X = p.X + w.BoxThickness(1)
 				dst.W -= delta
 				src.X += delta
 			}
 			if dst.Y < p.Y {
 				delta := p.Y - dst.Y
-				dst.Y = p.Y
+				dst.Y = p.Y + w.BoxThickness(1)
 				dst.H -= delta
 				src.Y += delta
+			}
+
+			// Trim the destination width so it doesn't overlap the Canvas border.
+			if dst.W >= S.W-w.BoxThickness(1) {
+				dst.W = S.W - w.BoxThickness(1)
 			}
 
 			e.Copy(tex, src, dst)
 		}
 	}
 
-	// for px := range w.chunks.IterViewport(Viewport) {
-	// 	// This pixel is visible in the canvas, but offset it by the
-	// 	// scroll height.
-	// 	px.X -= Viewport.X
-	// 	px.Y -= Viewport.Y
-	// 	color := render.Cyan // px.Swatch.Color
-	// 	e.DrawPoint(color, render.Point{
-	// 		X: p.X + w.BoxThickness(1) + px.X,
-	// 		Y: p.Y + w.BoxThickness(1) + px.Y,
-	// 	})
-	// }
+	w.drawActors(e, p)
+
+	// XXX: Debug, show label in canvas corner.
+	if balance.DebugCanvasLabel {
+		rows := []string{
+			w.Name,
+
+			// XXX: debug options, uncomment for more details
+
+			// Size of the canvas
+			// fmt.Sprintf("S=%d,%d", S.W, S.H),
+
+			// Viewport of the canvas
+			// fmt.Sprintf("V=%d,%d:%d,%d",
+			// 	Viewport.X, Viewport.Y,
+			// 	Viewport.W, Viewport.H,
+			// ),
+		}
+		if w.actor != nil {
+			rows = append(rows,
+				fmt.Sprintf("WP=%s", w.actor.Point),
+			)
+		}
+		label := ui.NewLabel(ui.Label{
+			Text: strings.Join(rows, "\n"),
+			Font: render.Text{
+				FontFilename: balance.ShellFontFilename,
+				Size:         balance.ShellFontSizeSmall,
+				Color:        render.White,
+			},
+		})
+		label.SetBackground(render.RGBA(0, 0, 50, 150))
+		label.Compute(e)
+		label.Present(e, render.Point{
+			X: p.X + S.W - label.Size().W - w.BoxThickness(1),
+			Y: p.Y + w.BoxThickness(1),
+		})
+	}
+}
+
+// drawActors superimposes the actors on top of the drawing.
+func (w *Canvas) drawActors(e render.Engine, p render.Point) {
+	var (
+		Viewport = w.ViewportRelative()
+		S        = w.Size()
+	)
+
+	// See if each Actor is in range of the Viewport.
+	for _, a := range w.actors {
+		var (
+			actor      = a.Actor     // Static Actor instance from Level file, DO NOT CHANGE
+			can        = a.Canvas    // Canvas widget that draws the actor
+			actorPoint = actor.Point // XXX TODO: DO NOT CHANGE
+			actorSize  = can.Size()
+		)
+
+		// Create a box of World Coordinates that this actor occupies. The
+		// Actor X,Y from level data is already a World Coordinate;
+		// accomodate for the size of the Actor.
+		actorBox := render.Rect{
+			X: actorPoint.X,
+			Y: actorPoint.Y,
+			W: actorSize.W,
+			H: actorSize.H,
+		}
+
+		// Is any part of the actor visible?
+		if !Viewport.Intersects(actorBox) {
+			continue // not visible on screen
+		}
+
+		drawAt := render.Point{
+			X: p.X + w.Scroll.X + actorPoint.X + w.BoxThickness(1),
+			Y: p.Y + w.Scroll.Y + actorPoint.Y + w.BoxThickness(1),
+		}
+		resizeTo := actorSize
+
+		// XXX TODO: when an Actor hits the left or top edge and shrinks,
+		// scrolling to offset that shrink is currently hard to solve.
+		scrollTo := render.Origin
+
+		// Handle cropping and scaling if this Actor's canvas can't be
+		// completely visible within the parent.
+		if drawAt.X+resizeTo.W > p.X+S.W {
+			// Hitting the right edge, shrunk the width now.
+			delta := (drawAt.X + resizeTo.W) - (p.X + S.W)
+			resizeTo.W -= delta
+		} else if drawAt.X < p.X {
+			// Hitting the left edge. Cap the X coord and shrink the width.
+			delta := p.X - drawAt.X // positive number
+			drawAt.X = p.X
+			// scrollTo.X -= delta // TODO
+			resizeTo.W -= delta
+		}
+
+		if drawAt.Y+resizeTo.H > p.Y+S.H {
+			// Hitting the bottom edge, shrink the height.
+			delta := (drawAt.Y + resizeTo.H) - (p.Y + S.H)
+			resizeTo.H -= delta
+		} else if drawAt.Y < p.Y {
+			// Hitting the top edge. Cap the Y coord and shrink the height.
+			delta := p.Y - drawAt.Y
+			drawAt.Y = p.Y
+			// scrollTo.Y -= delta // TODO
+			resizeTo.H -= delta
+		}
+
+		if resizeTo != actorSize {
+			can.Resize(resizeTo)
+			can.ScrollTo(scrollTo)
+		}
+		can.Present(e, drawAt)
+
+		// Clean up the canvas size and offset.
+		can.Resize(actorSize) // restore original size in case cropped
+		can.ScrollTo(render.Origin)
+	}
 }

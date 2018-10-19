@@ -33,7 +33,7 @@ func (s *PlayScene) Name() string {
 func (s *PlayScene) Setup(d *Doodle) error {
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.MoveTo(render.Origin)
-	s.drawing.Resize(render.NewRect(d.width, d.height))
+	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
 	s.drawing.Compute(d.Engine)
 
 	// Given a filename or map data to play?

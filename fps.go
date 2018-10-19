@@ -2,9 +2,12 @@ package doodle
 
 import (
 	"fmt"
+	"strings"
 
+	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/ui"
 )
 
 // Frames to cache for FPS calculation.
@@ -15,6 +18,12 @@ const maxSamples = 100
 var (
 	DebugOverlay   = true
 	DebugCollision = true
+
+	DebugTextPadding int32 = 8
+	DebugTextSize          = 24
+	DebugTextColor         = render.SkyBlue
+	DebugTextStroke        = render.Grey
+	DebugTextShadow        = render.Black
 )
 
 var (
@@ -24,6 +33,11 @@ var (
 	fpsFrames       int
 	fpsSkipped      uint32
 	fpsInterval     uint32 = 1000
+
+	// XXX: some opt-in WorldIndex variables for the debug overlay.
+	// This is the world pixel that the mouse cursor is over,
+	// the Cursor + Scroll position of the canvas.
+	debugWorldIndex render.Point
 )
 
 // DrawDebugOverlay draws the debug FPS text on the SDL canvas.
@@ -32,29 +46,53 @@ func (d *Doodle) DrawDebugOverlay() {
 		return
 	}
 
-	label := fmt.Sprintf(
-		"FPS: %d (%dms)  S:%s  F12=screenshot",
-		fpsCurrent,
-		fpsSkipped,
-		d.Scene.Name(),
+	var (
+		darken        = balance.DebugStrokeDarken
+		Yoffset int32 = 20 // leave room for the menu bar
+		Xoffset int32 = 5
+		keys          = []string{
+			"  FPS:",
+			"Scene:",
+			"Pixel:",
+			"Mouse:",
+		}
+		values = []string{
+			fmt.Sprintf("%d   (skip: %dms)", fpsCurrent, fpsSkipped),
+			d.Scene.Name(),
+			debugWorldIndex.String(),
+			fmt.Sprintf("%d,%d", d.event.CursorX.Now, d.event.CursorY.Now),
+		}
 	)
 
-	err := d.Engine.DrawText(
-		render.Text{
-			Text:   label,
-			Size:   24,
-			Color:  DebugTextColor,
-			Stroke: DebugTextStroke,
-			Shadow: DebugTextShadow,
+	key := ui.NewLabel(ui.Label{
+		Text: strings.Join(keys, "\n"),
+		Font: render.Text{
+			Size:         balance.DebugFontSize,
+			FontFilename: balance.ShellFontFilename,
+			Color:        balance.DebugLabelColor,
+			Stroke:       balance.DebugLabelColor.Darken(darken),
 		},
-		render.Point{
-			X: DebugTextPadding,
-			Y: DebugTextPadding + 32, // extra padding to not overlay menu bars
+	})
+	key.Compute(d.Engine)
+	key.Present(d.Engine, render.NewPoint(
+		DebugTextPadding+Xoffset,
+		DebugTextPadding+Yoffset,
+	))
+
+	value := ui.NewLabel(ui.Label{
+		Text: strings.Join(values, "\n"),
+		Font: render.Text{
+			Size:         balance.DebugFontSize,
+			FontFilename: balance.DebugFontFilename,
+			Color:        balance.DebugValueColor,
+			Stroke:       balance.DebugValueColor.Darken(darken),
 		},
-	)
-	if err != nil {
-		log.Error("DrawDebugOverlay: text error: %s", err.Error())
-	}
+	})
+	value.Compute(d.Engine)
+	value.Present(d.Engine, render.NewPoint(
+		DebugTextPadding+Xoffset+key.Size().W+DebugTextPadding,
+		DebugTextPadding+Yoffset, // padding to not overlay menu bar
+	))
 }
 
 // DrawCollisionBox draws the collision box around a Doodad.

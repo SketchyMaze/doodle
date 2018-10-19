@@ -21,12 +21,16 @@ like `#FF00FF99` for 153 ($99) on the alpha channel.
   * `D_SHELL_FS=16`: font size for both the shell and on-screen flashed
     messages.
 * Debug Colors and Hitboxes (default invisible=off):
+  * `DOODLE_DEBUG_ALL=false`: turn on all debug colors and hitboxes to their
+    default colors and settings.
   * `DEBUG_CHUNK_COLOR=#FFFFFF`: background color when caching a
     chunk to bitmap. Helps visualize where the chunks and caching
     are happening.
   * `DEBUG_CANVAS_BORDER`: draw a border color around every uix.Canvas
     widget. This effectively draws the bounds of every Doodad drawn on top
     of a level or inside a button and the bounds of the level space itself.
+  * `DEBUG_CANVAS_LABEL=false`: draw a label in the corner of every Canvas
+    with details about the Canvas.
 * Tuning constants (may not be available in production builds):
   * `D_SCROLL_SPEED=8`: Canvas scroll speed when using the keyboard arrows
     in the Editor Mode, in pixels per tick.

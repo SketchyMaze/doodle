@@ -55,6 +55,9 @@ func (p Point) IsZero() bool {
 }
 
 // Inside returns whether the Point falls inside the rect.
+//
+// NOTICE: the W and H are zero-relative, so a 100x100 box at coordinate
+// X,Y would still have W,H of 100.
 func (p Point) Inside(r Rect) bool {
 	var (
 		x1 = r.X
@@ -62,7 +65,8 @@ func (p Point) Inside(r Rect) bool {
 		x2 = r.X + r.W
 		y2 = r.Y + r.H
 	)
-	return p.X >= x1 && p.X <= x2 && p.Y >= y1 && p.Y <= y2
+	return ((p.X >= x1 && p.X <= x2) &&
+		(p.Y >= y1 && p.Y <= y2))
 }
 
 // Add (or subtract) the other point to your current point.

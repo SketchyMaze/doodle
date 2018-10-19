@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/enum"
+	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/render"
 	"github.com/kirsle/golog"
 )
@@ -28,11 +29,15 @@ type Doodle struct {
 	Engine      render.Engine
 	engineReady bool
 
+	// Easy access to the event state, for the debug overlay to use.
+	// Might not be thread safe.
+	event *events.State
+
 	startTime time.Time
 	running   bool
 	ticks     uint64
-	width     int32
-	height    int32
+	width     int
+	height    int
 
 	// Command line shell options.
 	shell Shell
@@ -47,8 +52,8 @@ func New(debug bool, engine render.Engine) *Doodle {
 		Engine:    engine,
 		startTime: time.Now(),
 		running:   true,
-		width:     int32(balance.Width),
-		height:    int32(balance.Height),
+		width:     balance.Width,
+		height:    balance.Height,
 	}
 	d.shell = NewShell(d)
 
@@ -97,6 +102,7 @@ func (d *Doodle) Run() error {
 			d.running = false
 			break
 		}
+		d.event = ev
 
 		// Command line shell.
 		if d.shell.Open {

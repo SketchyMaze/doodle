@@ -6,9 +6,10 @@ var log *golog.Logger
 
 // Verbose debug logging.
 var (
-	DebugMouseEvents = false
-	DebugClickEvents = false
-	DebugKeyEvents   = false
+	DebugMouseEvents  = false
+	DebugClickEvents  = false
+	DebugKeyEvents    = false
+	DebugWindowEvents = false
 )
 
 func init() {

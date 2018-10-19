@@ -9,10 +9,14 @@ import (
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 	"git.kirsle.net/apps/doodle/uix"
 )
+
+// Width of the panel frame.
+var paletteWidth int32 = 150
 
 // EditorUI manages the user interface for the Editor Scene.
 type EditorUI struct {
@@ -70,6 +74,8 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.Palette = u.SetupPalette(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
 
+	u.Resized(d)
+
 	// Position the Canvas inside the frame.
 	u.Workspace.Pack(u.Canvas, ui.Pack{
 		Anchor: ui.N,
@@ -84,14 +90,75 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	return u
 }
 
+// Resized handles the window being resized so we can recompute the widgets.
+func (u *EditorUI) Resized(d *Doodle) {
+	// Menu Bar frame.
+	{
+		u.MenuBar.Configure(ui.Config{
+			Width:      int32(d.width),
+			Background: render.Black,
+		})
+		u.MenuBar.Compute(d.Engine)
+	}
+
+	// Status Bar.
+	{
+		u.StatusBar.Configure(ui.Config{
+			Width: int32(d.width),
+		})
+		u.StatusBar.MoveTo(render.Point{
+			X: 0,
+			Y: int32(d.height) - u.StatusBar.Size().H,
+		})
+		u.StatusBar.Compute(d.Engine)
+	}
+
+	// Palette panel.
+	{
+		u.Palette.Configure(ui.Config{
+			Width:  paletteWidth,
+			Height: int32(u.d.height) - u.StatusBar.Size().H,
+		})
+		u.Palette.MoveTo(render.NewPoint(
+			int32(u.d.width)-u.Palette.BoxSize().W,
+			u.MenuBar.BoxSize().H,
+		))
+		u.Palette.Compute(d.Engine)
+	}
+
+	// Position the workspace around with the other widgets.
+	{
+		frame := u.Workspace
+		frame.MoveTo(render.NewPoint(
+			0,
+			u.MenuBar.Size().H,
+		))
+		frame.Resize(render.NewRect(
+			int32(d.width)-u.Palette.Size().W,
+			int32(d.height)-u.MenuBar.Size().H-u.StatusBar.Size().H,
+		))
+		frame.Compute(d.Engine)
+
+		u.ExpandCanvas(d.Engine)
+	}
+}
+
 // Loop to process events and update the UI.
 func (u *EditorUI) Loop(ev *events.State) {
 	u.Supervisor.Loop(ev)
 
-	u.StatusMouseText = fmt.Sprintf("Mouse: (%d,%d)",
-		ev.CursorX.Now,
-		ev.CursorY.Now,
-	)
+	{
+		var P = u.Workspace.Point()
+		debugWorldIndex = render.NewPoint(
+			ev.CursorX.Now-P.X-u.Canvas.Scroll.X,
+			ev.CursorY.Now-P.Y-u.Canvas.Scroll.Y,
+		)
+		u.StatusMouseText = fmt.Sprintf("Mouse: (%d,%d)  Px: (%s)",
+			ev.CursorX.Now,
+			ev.CursorY.Now,
+			debugWorldIndex,
+		)
+	}
 	u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
 		u.Canvas.Palette.ActiveSwatch,
 	)
@@ -139,18 +206,6 @@ func (u *EditorUI) Present(e render.Engine) {
 // Canvas, so it can easily full-screen it or center it for Doodad editing.
 func (u *EditorUI) SetupWorkspace(d *Doodle) *ui.Frame {
 	frame := ui.NewFrame("Workspace")
-
-	// Position and size the frame around the other main widgets.
-	frame.MoveTo(render.NewPoint(
-		0,
-		u.MenuBar.Size().H,
-	))
-	frame.Resize(render.NewRect(
-		d.width-u.Palette.Size().W,
-		d.height-u.MenuBar.Size().H-u.StatusBar.Size().H,
-	))
-	frame.Compute(d.Engine)
-
 	return frame
 }
 
@@ -170,17 +225,17 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 // in its frame, but that would artificially expand the Canvas also when it
 // _wanted_ to be smaller, as in Doodad Editing Mode.
 func (u *EditorUI) ExpandCanvas(e render.Engine) {
-	u.Canvas.Resize(u.Workspace.Size())
+	if u.Scene.DrawingType == enum.LevelDrawing {
+		u.Canvas.Resize(u.Workspace.Size())
+	} else {
+		// Size is managed externally.
+	}
 	u.Workspace.Compute(e)
 }
 
 // SetupMenuBar sets up the menu bar.
 func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 	frame := ui.NewFrame("MenuBar")
-	frame.Configure(ui.Config{
-		Width:      d.width,
-		Background: render.Black,
-	})
 
 	type menuButton struct {
 		Text  string
@@ -293,21 +348,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 
 // SetupPalette sets up the palette panel.
 func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
-	var paletteWidth int32 = 150
-
 	window := ui.NewWindow("Palette")
 	window.ConfigureTitle(balance.TitleConfig)
 	window.TitleBar().Font = balance.TitleFont
 	window.Configure(ui.Config{
-		Width:       paletteWidth,
-		Height:      u.d.height - u.StatusBar.Size().H,
 		Background:  balance.WindowBackground,
 		BorderColor: balance.WindowBorder,
 	})
-	window.MoveTo(render.NewPoint(
-		u.d.width-window.BoxSize().W,
-		u.MenuBar.BoxSize().H,
-	))
 
 	// Frame that holds the tab buttons in Level Edit mode.
 	tabFrame := ui.NewFrame("Palette Tabs")
@@ -355,7 +402,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 			Fill:   true,
 		})
 
-		doodadsAvailable, err := ListDoodads()
+		doodadsAvailable, err := userdir.ListDoodads()
 		if err != nil {
 			d.Flash("ListDoodads: %s", err)
 		}
@@ -376,7 +423,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 				})
 			}
 
-			doodad, err := doodads.LoadJSON(DoodadPath(filename))
+			doodad, err := doodads.LoadJSON(userdir.DoodadPath(filename))
 			if err != nil {
 				log.Error(err.Error())
 				doodad = doodads.New(balance.DoodadSize)
@@ -459,7 +506,6 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		BorderStyle: ui.BorderRaised,
 		Background:  render.Grey,
 		BorderSize:  2,
-		Width:       d.width,
 	})
 
 	style := ui.Config{
@@ -503,15 +549,13 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		Anchor: ui.E,
 	})
 
+	// Set the initial good frame size to have the height secured,
+	// so when resizing the application window we can just adjust for width.
 	frame.Resize(render.Rect{
-		W: d.width,
+		W: int32(d.width),
 		H: labelHeight + frame.BoxThickness(1),
 	})
 	frame.Compute(d.Engine)
-	frame.MoveTo(render.Point{
-		X: 0,
-		Y: d.height - frame.Size().H,
-	})
 
 	return frame
 }

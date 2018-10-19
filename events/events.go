@@ -25,6 +25,9 @@ type State struct {
 	// Cursor positions.
 	CursorX *Int32Tick
 	CursorY *Int32Tick
+
+	// Window events: window has changed size.
+	Resized *BoolTick
 }
 
 // New creates a new event state manager.
@@ -43,6 +46,7 @@ func New() *State {
 		Down:          &BoolTick{},
 		CursorX:       &Int32Tick{},
 		CursorY:       &Int32Tick{},
+		Resized:       &BoolTick{},
 	}
 }
 

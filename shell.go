@@ -281,14 +281,14 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 			balance.ShellBackgroundColor,
 			render.Rect{
 				X: 0,
-				Y: d.height - boxHeight,
-				W: d.width,
+				Y: int32(d.height) - boxHeight,
+				W: int32(d.width),
 				H: boxHeight,
 			},
 		)
 
 		// Draw the recent commands.
-		outputY := d.height - int32(lineHeight*2)
+		outputY := int32(d.height - (lineHeight * 2))
 		for i := 0; i < balance.ShellHistoryLineCount; i++ {
 			if len(s.Output) > i {
 				line := s.Output[len(s.Output)-1-i]
@@ -318,14 +318,14 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 			},
 			render.Point{
 				X: balance.ShellPadding,
-				Y: d.height - int32(balance.ShellFontSize) - balance.ShellPadding,
+				Y: int32(d.height-balance.ShellFontSize) - balance.ShellPadding,
 			},
 		)
 	} else if len(s.Flashes) > 0 {
 		// Otherwise, just draw flashed messages.
 		valid := false // Did we actually draw any?
 
-		outputY := d.height - int32(lineHeight*2)
+		outputY := int32(d.height - (lineHeight * 2))
 		for i := len(s.Flashes); i > 0; i-- {
 			flash := s.Flashes[i-1]
 			if d.ticks >= flash.Expires {

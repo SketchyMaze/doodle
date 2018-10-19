@@ -15,6 +15,9 @@ type Base struct {
 	GameVersion string `json:"gameVersion"` // Game version that created the level.
 	Title       string `json:"title"`
 	Author      string `json:"author"`
+
+	// Every drawing type is able to embed other files inside of itself.
+	Files FileSystem `json:"files"`
 }
 
 // Level is the container format for Doodle map drawings.
@@ -29,6 +32,9 @@ type Level struct {
 	// The Palette holds the unique "colors" used in this map file, and their
 	// properties (solid, fire, slippery, etc.)
 	Palette *Palette `json:"palette"`
+
+	// Actors keep a list of the doodad instances in this map.
+	Actors ActorMap `json:"actors"`
 }
 
 // New creates a blank level object with all its members initialized.

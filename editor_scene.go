@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
 )
 
@@ -103,6 +104,18 @@ func (s *EditorScene) Setup(d *Doodle) error {
 
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
+	// Has the window been resized?
+	if resized := ev.Resized.Read(); resized {
+		w, h := d.Engine.WindowSize()
+		if w != d.width || h != d.height {
+			// Not a false alarm.
+			d.width = w
+			d.height = h
+			s.UI.Resized(d)
+			return nil
+		}
+	}
+
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?
@@ -133,6 +146,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
 
 	level, err := level.LoadJSON(filename)
+	fmt.Printf("%+v\n", level)
 	if err != nil {
 		return fmt.Errorf("EditorScene.LoadLevel(%s): %s", filename, err)
 	}
@@ -140,6 +154,20 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	s.DrawingType = enum.LevelDrawing
 	s.Level = level
 	s.UI.Canvas.LoadLevel(s.Level)
+
+	// TODO: debug
+	for i, actor := range level.Actors {
+		log.Info("Actor %s is a %s", i, actor.ID())
+	}
+	for name, file := range level.Files {
+		log.Info("File %s has: %s", name, file.Data)
+	}
+
+	log.Info("Installing %d actors into the drawing", len(level.Actors))
+	if err := s.UI.Canvas.InstallActors(level.Actors); err != nil {
+		return fmt.Errorf("EditorScene.LoadLevel: InstallActors: %s", err)
+	}
+
 	return nil
 }
 
@@ -150,8 +178,8 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		return errors.New("SaveLevel: current drawing is not a Level type")
 	}
 
-	if !strings.HasSuffix(filename, extLevel) {
-		filename += extLevel
+	if !strings.HasSuffix(filename, enum.LevelExt) {
+		filename += enum.LevelExt
 	}
 
 	s.filename = filename
@@ -173,7 +201,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 	}
 
 	// Save it to their profile directory.
-	filename = LevelPath(filename)
+	filename = userdir.LevelPath(filename)
 	log.Info("Write Level: %s", filename)
 	err = ioutil.WriteFile(filename, json, 0644)
 	if err != nil {
@@ -205,8 +233,8 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		return errors.New("SaveDoodad: current drawing is not a Doodad type")
 	}
 
-	if !strings.HasSuffix(filename, extDoodad) {
-		filename += extDoodad
+	if !strings.HasSuffix(filename, enum.DoodadExt) {
+		filename += enum.DoodadExt
 	}
 
 	s.filename = filename
@@ -223,7 +251,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 	d.Layers[0].Chunker = s.UI.Canvas.Chunker()
 
 	// Save it to their profile directory.
-	filename = DoodadPath(filename)
+	filename = userdir.DoodadPath(filename)
 	log.Info("Write Doodad: %s", filename)
 	err := d.WriteJSON(filename)
 	return err
@@ -231,5 +259,6 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 
 // Destroy the scene.
 func (s *EditorScene) Destroy() error {
+	debugWorldIndex = render.Origin
 	return nil
 }
