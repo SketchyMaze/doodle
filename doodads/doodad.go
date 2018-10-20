@@ -3,14 +3,16 @@ package doodads
 import (
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/render"
 )
 
 // Doodad is a reusable component for Levels that have scripts and graphics.
 type Doodad struct {
 	level.Base
-	Palette *level.Palette `json:"palette"`
-	Script  string         `json:"script"`
-	Layers  []Layer        `json:"layers"`
+	Filename string         `json:"-"` // used internally, not saved in json
+	Palette  *level.Palette `json:"palette"`
+	Script   string         `json:"script"`
+	Layers   []Layer        `json:"layers"`
 }
 
 // Layer holds a layer of drawing data for a Doodad.
@@ -36,6 +38,20 @@ func New(size int) *Doodad {
 				Chunker: level.NewChunker(size),
 			},
 		},
+	}
+}
+
+// ChunkSize returns the chunk size of the Doodad's first layer.
+func (d *Doodad) ChunkSize() int {
+	return d.Layers[0].Chunker.Size
+}
+
+// Rect returns a rect of the ChunkSize for scaling a Canvas widget.
+func (d *Doodad) Rect() render.Rect {
+	var size = d.ChunkSize()
+	return render.Rect{
+		W: int32(size),
+		H: int32(size),
 	}
 }
 

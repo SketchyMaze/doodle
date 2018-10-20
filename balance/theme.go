@@ -36,4 +36,7 @@ var (
 		Padding: 4,
 		Color:   render.Black,
 	}
+
+	// Color for draggable doodad.
+	DragColor = render.MustHexColor("#0099FF")
 )

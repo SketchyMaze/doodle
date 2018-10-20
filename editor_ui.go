@@ -2,14 +2,13 @@ package doodle
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/balance"
-	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 	"git.kirsle.net/apps/doodle/uix"
@@ -29,8 +28,8 @@ type EditorUI struct {
 	StatusPaletteText  string
 	StatusFilenameText string
 	StatusScrollText   string
-	selectedSwatch     string // name of selected swatch in palette
-	selectedDoodad     string
+	selectedSwatch     string       // name of selected swatch in palette
+	cursor             render.Point // remember the cursor position in Loop
 
 	// Widgets
 	Supervisor *ui.Supervisor
@@ -43,6 +42,9 @@ type EditorUI struct {
 	Palette    *ui.Window
 	PaletteTab *ui.Frame
 	DoodadTab  *ui.Frame
+
+	// Draggable Doodad canvas.
+	DraggableActor *DraggableActor
 
 	// Palette variables.
 	paletteTab string // selected tab, Palette or Doodads
@@ -144,47 +146,60 @@ func (u *EditorUI) Resized(d *Doodle) {
 }
 
 // Loop to process events and update the UI.
-func (u *EditorUI) Loop(ev *events.State) {
-	u.Supervisor.Loop(ev)
+func (u *EditorUI) Loop(ev *events.State) error {
+	u.cursor = render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
 
+	// Loop the UI and see whether we're told to stop event propagation.
+	var stopPropagation bool
+	if err := u.Supervisor.Loop(ev); err != nil {
+		if err == ui.ErrStopPropagation {
+			stopPropagation = true
+		} else {
+			return err
+		}
+	}
+
+	// Update status bar labels.
 	{
-		var P = u.Workspace.Point()
-		debugWorldIndex = render.NewPoint(
-			ev.CursorX.Now-P.X-u.Canvas.Scroll.X,
-			ev.CursorY.Now-P.Y-u.Canvas.Scroll.Y,
-		)
-		u.StatusMouseText = fmt.Sprintf("Mouse: (%d,%d)  Px: (%s)",
+		debugWorldIndex = u.Canvas.WorldIndexAt(u.cursor)
+		u.StatusMouseText = fmt.Sprintf("Rel:(%d,%d)  Abs:(%s)",
 			ev.CursorX.Now,
 			ev.CursorY.Now,
 			debugWorldIndex,
 		)
-	}
-	u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
-		u.Canvas.Palette.ActiveSwatch,
-	)
-	u.StatusScrollText = fmt.Sprintf("Scroll: %s   Viewport: %s",
-		u.Canvas.Scroll,
-		u.Canvas.Viewport(),
-	)
+		u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
+			u.Canvas.Palette.ActiveSwatch,
+		)
+		u.StatusScrollText = fmt.Sprintf("Scroll: %s   Viewport: %s",
+			u.Canvas.Scroll,
+			u.Canvas.Viewport(),
+		)
 
-	// Statusbar filename label.
-	filename := "untitled.map"
-	fileType := "Level"
-	if u.Scene.filename != "" {
-		filename = u.Scene.filename
+		// Statusbar filename label.
+		filename := "untitled.map"
+		fileType := "Level"
+		if u.Scene.filename != "" {
+			filename = u.Scene.filename
+		}
+		if u.Scene.DrawingType == enum.DoodadDrawing {
+			fileType = "Doodad"
+		}
+		u.StatusFilenameText = fmt.Sprintf("Filename: %s (%s)",
+			filepath.Base(filename),
+			fileType,
+		)
 	}
-	if u.Scene.DrawingType == enum.DoodadDrawing {
-		fileType = "Doodad"
-	}
-	u.StatusFilenameText = fmt.Sprintf("Filename: %s (%s)",
-		filename,
-		fileType,
-	)
 
+	// Recompute widgets.
 	u.MenuBar.Compute(u.d.Engine)
 	u.StatusBar.Compute(u.d.Engine)
 	u.Palette.Compute(u.d.Engine)
-	u.Canvas.Loop(ev)
+
+	// Only forward events to the Canvas if the UI hasn't stopped them.
+	if !stopPropagation {
+		u.Canvas.Loop(ev)
+	}
+	return nil
 }
 
 // Present the UI to the screen.
@@ -199,6 +214,17 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
 	u.Workspace.Present(e, u.Workspace.Point())
+
+	// Are we dragging a Doodad canvas?
+	if u.Supervisor.IsDragging() {
+		if actor := u.DraggableActor; actor != nil {
+			var size = actor.canvas.Size()
+			actor.canvas.Present(u.d.Engine, render.NewPoint(
+				u.cursor.X-(size.W/2),
+				u.cursor.Y-(size.H/2),
+			))
+		}
+	}
 }
 
 // SetupWorkspace configures the main Workspace frame that takes up the full
@@ -214,9 +240,40 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	drawing := uix.NewCanvas(balance.ChunkSize, true)
 	drawing.Name = "edit-canvas"
 	drawing.Palette = level.DefaultPalette()
+	drawing.SetBackground(render.White)
 	if len(drawing.Palette.Swatches) > 0 {
 		drawing.SetSwatch(drawing.Palette.Swatches[0])
 	}
+
+	// Set up the drop handler for draggable doodads.
+	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
+	// Doodad Palette buttons.
+	drawing.Handle(ui.Drop, func(e render.Point) {
+		log.Info("Drawing canvas has received a drop!")
+		var P = ui.AbsolutePosition(drawing)
+
+		// Was it an actor from the Doodad Palette?
+		if actor := u.DraggableActor; actor != nil {
+			log.Info("Actor is a %s", actor.doodad.Filename)
+			if u.Scene.Level == nil {
+				u.d.Flash("Can't drop doodads onto doodad drawings!")
+				return
+			}
+
+			size := actor.canvas.Size()
+			u.Scene.Level.Actors.Add(&level.Actor{
+				// Uncenter the drawing from the cursor.
+				Point: render.Point{
+					X: (u.cursor.X - drawing.Scroll.X - (size.W / 2)) - P.X,
+					Y: (u.cursor.Y - drawing.Scroll.Y - (size.H / 2)) - P.Y,
+				},
+				Filename: actor.doodad.Filename,
+			})
+
+			drawing.InstallActors(u.Scene.Level.Actors)
+		}
+	})
+	u.Supervisor.Add(drawing)
 	return drawing
 }
 
@@ -395,106 +452,28 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 
 	// Doodad frame.
 	{
-		u.DoodadTab = ui.NewFrame("Doodad Tab")
+		frame, err := u.setupDoodadFrame(d.Engine, window)
+		if err != nil {
+			d.Flash(err.Error())
+		}
+
+		// Even if there was an error (userdir.ListDoodads couldn't read the
+		// config folder on disk or whatever) the Frame is still valid but
+		// empty, which is still the intended behavior.
+		u.DoodadTab = frame
 		u.DoodadTab.Hide()
 		window.Pack(u.DoodadTab, ui.Pack{
 			Anchor: ui.N,
 			Fill:   true,
 		})
-
-		doodadsAvailable, err := userdir.ListDoodads()
-		if err != nil {
-			d.Flash("ListDoodads: %s", err)
-		}
-
-		var buttonSize = (paletteWidth - window.BoxThickness(2)) / 2
-
-		// Draw the doodad buttons in a grid 2 wide.
-		var row *ui.Frame
-		for i, filename := range doodadsAvailable {
-			si := fmt.Sprintf("%d", i)
-			if row == nil || i%2 == 0 {
-				row = ui.NewFrame("Doodad Row " + si)
-				row.SetBackground(balance.WindowBackground)
-				u.DoodadTab.Pack(row, ui.Pack{
-					Anchor: ui.N,
-					Fill:   true,
-					// Expand: true,
-				})
-			}
-
-			doodad, err := doodads.LoadJSON(userdir.DoodadPath(filename))
-			if err != nil {
-				log.Error(err.Error())
-				doodad = doodads.New(balance.DoodadSize)
-			}
-
-			can := uix.NewCanvas(int(buttonSize), true)
-			can.Name = filename
-			can.LoadDoodad(doodad)
-			btn := ui.NewRadioButton(filename, &u.selectedDoodad, si, can)
-			btn.Resize(render.NewRect(
-				buttonSize-2, // TODO: without the -2 the button border
-				buttonSize-2, // rests on top of the window border.
-			))
-			u.Supervisor.Add(btn)
-			row.Pack(btn, ui.Pack{
-				Anchor: ui.W,
-			})
-
-			// Resize the canvas to fill the button interior.
-			btnSize := btn.Size()
-			can.Resize(render.NewRect(
-				btnSize.W-btn.BoxThickness(2),
-				btnSize.H-btn.BoxThickness(2),
-			))
-
-			btn.Compute(d.Engine)
-		}
 	}
 
 	// Color Palette Frame.
-	{
-		u.PaletteTab = ui.NewFrame("Palette Tab")
-		u.PaletteTab.SetBackground(balance.WindowBackground)
-		window.Pack(u.PaletteTab, ui.Pack{
-			Anchor: ui.N,
-			Fill:   true,
-		})
-
-		// Handler function for the radio buttons being clicked.
-		onClick := func(p render.Point) {
-			name := u.selectedSwatch
-			swatch, ok := u.Canvas.Palette.Get(name)
-			if !ok {
-				log.Error("Palette onClick: couldn't get swatch named '%s' from palette", name)
-				return
-			}
-			log.Info("Set swatch: %s", swatch)
-			u.Canvas.SetSwatch(swatch)
-		}
-
-		// Draw the radio buttons for the palette.
-		if u.Canvas != nil && u.Canvas.Palette != nil {
-			for _, swatch := range u.Canvas.Palette.Swatches {
-				label := ui.NewLabel(ui.Label{
-					Text: swatch.Name,
-					Font: balance.StatusFont,
-				})
-				label.Font.Color = swatch.Color.Darken(40)
-
-				btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, label)
-				btn.Handle(ui.Click, onClick)
-				u.Supervisor.Add(btn)
-
-				u.PaletteTab.Pack(btn, ui.Pack{
-					Anchor: ui.N,
-					Fill:   true,
-					PadY:   4,
-				})
-			}
-		}
-	}
+	u.PaletteTab = u.setupPaletteFrame(window)
+	window.Pack(u.PaletteTab, ui.Pack{
+		Anchor: ui.N,
+		Fill:   true,
+	})
 
 	return window
 }

@@ -8,7 +8,9 @@ import (
 	"os"
 
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
+	"github.com/satori/go.uuid"
 	"golang.org/x/image/bmp"
 )
 
@@ -28,8 +30,10 @@ type Chunk struct {
 	Size  int
 
 	// Texture cache properties so we don't redraw pixel-by-pixel every frame.
-	texture render.Texturer
-	dirty   bool
+	uuid          uuid.UUID
+	texture       render.Texturer
+	textureMasked render.Texturer
+	dirty         bool
 }
 
 // JSONChunk holds a lightweight (interface-free) copy of the Chunk for
@@ -63,26 +67,66 @@ func NewChunk() *Chunk {
 
 // Texture will return a cached texture for the rendering engine for this
 // chunk's pixel data. If the cache is dirty it will be rebuilt in this func.
-func (c *Chunk) Texture(e render.Engine, name string) render.Texturer {
+func (c *Chunk) Texture(e render.Engine) render.Texturer {
 	if c.texture == nil || c.dirty {
-		err := c.ToBitmap("/tmp/" + name + ".bmp")
-		if err != nil {
-			log.Error("Texture: %s", err)
-		}
-
-		tex, err := e.NewBitmap("/tmp/" + name + ".bmp")
+		// Generate the normal bitmap and one with a color mask if applicable.
+		bitmap := c.toBitmap(render.Invisible)
+		defer os.Remove(bitmap)
+		tex, err := e.NewBitmap(bitmap)
 		if err != nil {
 			log.Error("Texture: %s", err)
 		}
 
 		c.texture = tex
+		c.textureMasked = nil // invalidate until next call
 		c.dirty = false
 	}
 	return c.texture
 }
 
+// TextureMasked returns a cached texture with the ColorMask applied.
+func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texturer {
+	if c.textureMasked == nil {
+		// Generate the normal bitmap and one with a color mask if applicable.
+		bitmap := c.toBitmap(mask)
+		defer os.Remove(bitmap)
+		tex, err := e.NewBitmap(bitmap)
+		if err != nil {
+			log.Error("Texture: %s", err)
+		}
+
+		c.textureMasked = tex
+	}
+	return c.textureMasked
+}
+
+// toBitmap puts the texture in a well named bitmap path in the cache folder.
+func (c *Chunk) toBitmap(mask render.Color) string {
+	// Generate a unique filename for this chunk cache.
+	var filename string
+	if c.uuid == uuid.Nil {
+		c.uuid = uuid.Must(uuid.NewV4())
+	}
+	filename = c.uuid.String()
+
+	if mask != render.Invisible {
+		filename += fmt.Sprintf("-%02x%02x%02x%02x",
+			mask.Red, mask.Green, mask.Blue, mask.Alpha,
+		)
+	}
+
+	// Get the temp bitmap image.
+	bitmap := userdir.CacheFilename("chunk", filename+".bmp")
+	err := c.ToBitmap(bitmap, mask)
+	if err != nil {
+		log.Error("Texture: %s", err)
+	}
+
+	return bitmap
+}
+
 // ToBitmap exports the chunk's pixels as a bitmap image.
-func (c *Chunk) ToBitmap(filename string) error {
+func (c *Chunk) ToBitmap(filename string, mask render.Color) error {
 	canvas := c.SizePositive()
 	imgSize := image.Rectangle{
 		Min: image.Point{},
@@ -117,10 +161,14 @@ func (c *Chunk) ToBitmap(filename string) error {
 
 	// Blot all the pixels onto it.
 	for px := range c.Iter() {
+		var color = px.Swatch.Color
+		if mask != render.Invisible {
+			color = mask
+		}
 		img.Set(
 			int(px.X-pointOffset.X),
 			int(px.Y-pointOffset.Y),
-			px.Swatch.Color.ToColor(),
+			color.ToColor(),
 		)
 	}
 

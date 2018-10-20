@@ -38,6 +38,10 @@ func (r *Renderer) NewBitmap(filename string) (render.Texturer, error) {
 	}
 	defer surface.Free()
 
+	// TODO: chroma key color hardcoded to white here
+	key := sdl.MapRGB(surface.Format, 255, 255, 255)
+	surface.SetColorKey(true, key)
+
 	tex, err := r.renderer.CreateTextureFromSurface(surface)
 	if err != nil {
 		return nil, fmt.Errorf("NewBitmap: create texture: %s", err)

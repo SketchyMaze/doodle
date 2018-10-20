@@ -18,9 +18,16 @@ type Canvas struct {
 	ui.Frame
 	Palette *level.Palette
 
-	// Set to true to allow clicking to edit this canvas.
-	Editable   bool
-	Scrollable bool
+	// Editable and Scrollable go hand in hand and, if you initialize a
+	// NewCanvas() with editable=true, they are both enabled.
+	Editable   bool // Clicking will edit pixels of this canvas.
+	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
+
+	// MaskColor will force every pixel to render as this color regardless of
+	// the palette index of that pixel. Otherwise pixels behave the same and
+	// the palette does work as normal. Set to render.Invisible (zero value)
+	// to remove the mask.
+	MaskColor render.Color
 
 	// Underlying chunk data for the drawing.
 	chunks *level.Chunker
@@ -111,6 +118,9 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		can := NewCanvas(int(size), false)
 		can.Name = id
 		can.actor = actor
+		// TODO: if the Background is render.Invisible it gets defaulted to
+		// White somewhere and the Doodad masks the level drawing behind it.
+		can.SetBackground(render.RGBA(0, 0, 1, 0))
 		can.LoadDoodad(doodad)
 		can.Resize(render.NewRect(size, size))
 		w.actors = append(w.actors, &Actor{
@@ -128,8 +138,6 @@ func (w *Canvas) SetSwatch(s *level.Swatch) {
 
 // setup common configs between both initializers of the canvas.
 func (w *Canvas) setup() {
-	w.SetBackground(render.White)
-
 	// XXX: Debug code.
 	if balance.DebugCanvasBorder != render.Invisible {
 		w.Configure(ui.Config{
@@ -138,13 +146,6 @@ func (w *Canvas) setup() {
 			BorderStyle: ui.BorderSolid,
 		})
 	}
-
-	w.Handle(ui.MouseOver, func(p render.Point) {
-		w.SetBackground(render.Yellow)
-	})
-	w.Handle(ui.MouseOut, func(p render.Point) {
-		w.SetBackground(render.SkyBlue)
-	})
 }
 
 // Loop is called on the scene's event loop to handle mouse interaction with
@@ -258,6 +259,18 @@ func (w *Canvas) ViewportRelative() render.Rect {
 	}
 }
 
+// WorldIndexAt returns the World Index that corresponds to a Screen Pixel
+// on the screen. If the screen pixel is the mouse coordinate (relative to
+// the application window) this will return the World Index of the pixel below
+// the mouse cursor.
+func (w *Canvas) WorldIndexAt(screenPixel render.Point) render.Point {
+	var P = ui.AbsolutePosition(w)
+	return render.Point{
+		X: screenPixel.X - P.X - w.Scroll.X,
+		Y: screenPixel.Y - P.Y - w.Scroll.Y,
+	}
+}
+
 // Chunker returns the underlying Chunker object.
 func (w *Canvas) Chunker() *level.Chunker {
 	return w.chunks
@@ -297,7 +310,12 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	// Get the chunks in the viewport and cache their textures.
 	for coord := range w.chunks.IterViewportChunks(Viewport) {
 		if chunk, ok := w.chunks.GetChunk(coord); ok {
-			tex := chunk.Texture(e, w.Name+coord.String())
+			var tex render.Texturer
+			if w.MaskColor != render.Invisible {
+				tex = chunk.TextureMasked(e, w.MaskColor)
+			} else {
+				tex = chunk.Texture(e)
+			}
 			src := render.Rect{
 				W: tex.Size().W,
 				H: tex.Size().H,

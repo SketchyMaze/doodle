@@ -15,3 +15,9 @@ var (
 	// Default size for a new Doodad.
 	DoodadSize = 100
 )
+
+// Edit Mode Values
+var (
+	// Number of Doodads per row in the palette.
+	UIDoodadsPerRow = 2
+)

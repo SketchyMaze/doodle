@@ -45,6 +45,7 @@ func New() *Level {
 		},
 		Chunker: NewChunker(balance.ChunkSize),
 		Palette: &Palette{},
+		Actors:  ActorMap{},
 	}
 }
 

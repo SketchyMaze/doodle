@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 // ToJSON serializes the doodad as JSON.
@@ -29,6 +30,7 @@ func (d *Doodad) WriteJSON(filename string) error {
 		return fmt.Errorf("Doodad.WriteJSON: WriteFile error: %s", err)
 	}
 
+	d.Filename = filepath.Base(filename)
 	return nil
 }
 
@@ -49,6 +51,7 @@ func LoadJSON(filename string) (*Doodad, error) {
 	}
 
 	// Inflate the chunk metadata to map the pixels to their palette indexes.
+	d.Filename = filepath.Base(filename)
 	d.Inflate()
 	return d, err
 }

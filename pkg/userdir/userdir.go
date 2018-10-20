@@ -55,6 +55,16 @@ func DoodadPath(filename string) string {
 	return resolvePath(DoodadDirectory, filename, extDoodad)
 }
 
+// CacheFilename returns a path to a file in the cache folder. Send in path
+// components and not literal slashes, like
+// CacheFilename("images", "chunks", "id.bmp")
+func CacheFilename(filename ...string) string {
+	paths := append([]string{CacheDirectory}, filename...)
+	dir := paths[:len(paths)-1]
+	configdir.MakePath(filepath.Join(dir...))
+	return filepath.Join(paths[0], filepath.Join(paths[1:]...))
+}
+
 // ListDoodads returns a listing of all available doodads.
 func ListDoodads() ([]string, error) {
 	var names []string
