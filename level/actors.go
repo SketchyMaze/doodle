@@ -24,6 +24,16 @@ func (m ActorMap) Add(a *Actor) {
 	m[a.id] = a
 }
 
+// Remove an Actor from the map. The ID must be set at the very least, so to
+// remove by ID just create an Actor{id: x}
+func (m ActorMap) Remove(a *Actor) bool {
+	if _, ok := m[a.id]; ok {
+		delete(m, a.id)
+		return true
+	}
+	return false
+}
+
 // Actor is an instance of a Doodad in the level.
 type Actor struct {
 	id       string       // NOTE: read only, use ID() to access.

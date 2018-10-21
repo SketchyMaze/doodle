@@ -23,6 +23,9 @@ type Canvas struct {
 	Editable   bool // Clicking will edit pixels of this canvas.
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 
+	// Selected draw tool/mode, default Pencil, for editable canvases.
+	Tool Tool
+
 	// MaskColor will force every pixel to render as this color regardless of
 	// the palette index of that pixel. Otherwise pixels behave the same and
 	// the palette does work as normal. Set to render.Invisible (zero value)
@@ -35,6 +38,12 @@ type Canvas struct {
 	// Actors to superimpose on top of the drawing.
 	actor  *level.Actor // if this canvas IS an actor
 	actors []*Actor
+
+	// When the Canvas wants to delete Actors, but ultimately it is upstream
+	// that controls the actors. Upstream should delete them and then reinstall
+	// the actor list from scratch.
+	OnDeleteActors func([]*level.Actor)
+	OnDragStart    func(filename string)
 
 	// Tracking pixels while editing. TODO: get rid of pixelHistory?
 	pixelHistory []*level.Pixel
@@ -151,10 +160,6 @@ func (w *Canvas) setup() {
 // Loop is called on the scene's event loop to handle mouse interaction with
 // the canvas, i.e. to edit it.
 func (w *Canvas) Loop(ev *events.State) error {
-	// Get the absolute position of the canvas on screen to accurately match
-	// it up to mouse clicks.
-	var P = ui.AbsolutePosition(w)
-
 	if w.Scrollable {
 		// Arrow keys to scroll the view.
 		scrollBy := render.Point{}
@@ -173,51 +178,13 @@ func (w *Canvas) Loop(ev *events.State) error {
 		}
 	}
 
-	// Only care if the cursor is over our space.
-	cursor := render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
-	if !cursor.Inside(ui.AbsoluteRect(w)) {
-		return nil
-	}
-
-	// If no swatch is active, do nothing with mouse clicks.
-	if w.Palette.ActiveSwatch == nil {
-		return nil
-	}
-
-	// Clicking? Log all the pixels while doing so.
-	if ev.Button1.Now {
-		lastPixel := w.lastPixel
-		cursor := render.Point{
-			X: ev.CursorX.Now - P.X - w.Scroll.X,
-			Y: ev.CursorY.Now - P.Y - w.Scroll.Y,
+	// If the canvas is editable, only care if it's over our space.
+	if w.Editable {
+		cursor := render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
+		if cursor.Inside(ui.AbsoluteRect(w)) {
+			return w.loopEditable(ev)
 		}
-		pixel := &level.Pixel{
-			X:      cursor.X,
-			Y:      cursor.Y,
-			Swatch: w.Palette.ActiveSwatch,
-		}
-
-		// Append unique new pixels.
-		if len(w.pixelHistory) == 0 || w.pixelHistory[len(w.pixelHistory)-1] != pixel {
-			if lastPixel != nil {
-				// Draw the pixels in between.
-				if lastPixel != pixel {
-					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
-						w.chunks.Set(point, lastPixel.Swatch)
-					}
-				}
-			}
-
-			w.lastPixel = pixel
-			w.pixelHistory = append(w.pixelHistory, pixel)
-
-			// Save in the pixel canvas map.
-			w.chunks.Set(cursor, pixel.Swatch)
-		}
-	} else {
-		w.lastPixel = nil
 	}
-
 	return nil
 }
 

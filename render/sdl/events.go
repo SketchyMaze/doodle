@@ -49,23 +49,27 @@ func (r *Renderer) Poll() (*events.State, error) {
 			s.CursorY.Push(t.Y)
 
 			// Is a mouse button pressed down?
-			if t.Button == 1 {
-				var eventName string
-				if t.State == 1 && s.Button1.Now == false {
-					eventName = "DOWN"
-				} else if t.State == 0 && s.Button1.Now == true {
-					eventName = "UP"
-				}
+			checkDown := func(number uint8, target *events.BoolTick) bool {
+				if t.Button == number {
+					var eventName string
+					if t.State == 1 && target.Now == false {
+						eventName = "DOWN"
+					} else if t.State == 0 && target.Now == true {
+						eventName = "UP"
+					}
 
-				if eventName != "" {
-					s.Button1.Push(eventName == "DOWN")
-
-					// Return the event immediately.
-					return s, nil
+					if eventName != "" {
+						target.Push(eventName == "DOWN")
+					}
+					return true
 				}
+				return false
 			}
 
-			// s.Button2.Push(t.Button == 3 && t.State == 1)
+			if checkDown(1, s.Button1) || checkDown(3, s.Button2) {
+				// Return the event immediately.
+				return s, nil
+			}
 		case *sdl.MouseWheelEvent:
 			if DebugMouseEvents {
 				log.Debug("[%d ms] tick:%d MouseWheel  type:%d  id:%d  x:%d  y:%d",

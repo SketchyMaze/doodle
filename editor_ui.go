@@ -6,9 +6,11 @@ import (
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/balance"
+	"git.kirsle.net/apps/doodle/doodads"
 	"git.kirsle.net/apps/doodle/enum"
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 	"git.kirsle.net/apps/doodle/uix"
@@ -167,8 +169,8 @@ func (u *EditorUI) Loop(ev *events.State) error {
 			ev.CursorY.Now,
 			debugWorldIndex,
 		)
-		u.StatusPaletteText = fmt.Sprintf("Swatch: %s",
-			u.Canvas.Palette.ActiveSwatch,
+		u.StatusPaletteText = fmt.Sprintf("%s Tool",
+			u.Canvas.Tool,
 		)
 		u.StatusScrollText = fmt.Sprintf("Scroll: %s   Viewport: %s",
 			u.Canvas.Scroll,
@@ -243,6 +245,27 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	drawing.SetBackground(render.White)
 	if len(drawing.Palette.Swatches) > 0 {
 		drawing.SetSwatch(drawing.Palette.Swatches[0])
+	}
+
+	// Handle the Canvas deleting our actors in edit mode.
+	drawing.OnDeleteActors = func(actors []*level.Actor) {
+		if u.Scene.Level != nil {
+			for _, actor := range actors {
+				u.Scene.Level.Actors.Remove(actor)
+			}
+			drawing.InstallActors(u.Scene.Level.Actors)
+		}
+	}
+
+	// A drag event initiated inside the Canvas. This happens in the ActorTool
+	// mode when you click an existing Doodad and it "pops" out of the canvas
+	// and onto the cursor to be repositioned.
+	drawing.OnDragStart = func(filename string) {
+		doodad, err := doodads.LoadJSON(userdir.DoodadPath(filename))
+		if err != nil {
+			log.Error("drawing.OnDragStart: %s", err.Error())
+		}
+		u.startDragActor(doodad)
 	}
 
 	// Set up the drop handler for draggable doodads.
@@ -415,10 +438,6 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 
 	// Frame that holds the tab buttons in Level Edit mode.
 	tabFrame := ui.NewFrame("Palette Tabs")
-	if u.Scene.DrawingType != enum.LevelDrawing {
-		// Don't show the tab bar except in Level Edit mode.
-		tabFrame.Hide()
-	}
 	for _, name := range []string{"Palette", "Doodads"} {
 		if u.paletteTab == "" {
 			u.paletteTab = name
@@ -429,9 +448,11 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		}))
 		tab.Handle(ui.Click, func(p render.Point) {
 			if u.paletteTab == "Palette" {
+				u.Canvas.Tool = uix.PencilTool
 				u.PaletteTab.Show()
 				u.DoodadTab.Hide()
 			} else {
+				u.Canvas.Tool = uix.ActorTool
 				u.PaletteTab.Hide()
 				u.DoodadTab.Show()
 			}
@@ -449,6 +470,11 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		Fill:   true,
 		PadY:   4,
 	})
+
+	// Only show the tab frame in Level drawing mode!
+	if u.Scene.DrawingType != enum.LevelDrawing {
+		tabFrame.Hide()
+	}
 
 	// Doodad frame.
 	{

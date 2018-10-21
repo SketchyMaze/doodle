@@ -21,6 +21,22 @@ type DraggableActor struct {
 	doodad *doodads.Doodad
 }
 
+// startDragActor begins the drag event for a Doodad onto a level.
+func (u *EditorUI) startDragActor(doodad *doodads.Doodad) {
+	u.Supervisor.DragStart()
+
+	// Create the canvas to render on the mouse cursor.
+	drawing := uix.NewCanvas(doodad.Layers[0].Chunker.Size, false)
+	drawing.LoadDoodad(doodad)
+	drawing.Resize(doodad.Rect())
+	drawing.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO: invisible becomes white
+	drawing.MaskColor = balance.DragColor          // blueprint effect
+	u.DraggableActor = &DraggableActor{
+		canvas: drawing,
+		doodad: doodad,
+	}
+}
+
 // setupDoodadFrame configures the Doodad Palette tab for Edit Mode.
 // This is a subroutine of editor_ui.go#SetupPalette()
 //
@@ -84,18 +100,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			// NOTE: The drag target is the EditorUI.Canvas in
 			// editor_ui.go#SetupCanvas()
 			btn.Handle(ui.MouseDown, func(e render.Point) {
-				u.Supervisor.DragStart()
-
-				// Create the canvas to render on the mouse cursor.
-				drawing := uix.NewCanvas(doodad.Layers[0].Chunker.Size, false)
-				drawing.LoadDoodad(doodad)
-				drawing.Resize(doodad.Rect())
-				drawing.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO: invisible becomes white
-				drawing.MaskColor = balance.DragColor          // blueprint effect
-				u.DraggableActor = &DraggableActor{
-					canvas: drawing,
-					doodad: doodad,
-				}
+				u.startDragActor(doodad)
 			})
 			u.Supervisor.Add(btn)
 
