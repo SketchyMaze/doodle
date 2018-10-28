@@ -3,3 +3,4 @@ maps/
 bin/
 screenshot-*.png
 map-*.json
+pkg/wallpaper/*.png

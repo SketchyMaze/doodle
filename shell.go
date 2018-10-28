@@ -206,51 +206,51 @@ func (s *Shell) Parse(input string) Command {
 
 // Draw the shell.
 func (s *Shell) Draw(d *Doodle, ev *events.State) error {
-	if ev.EscapeKey.Read() {
-		s.Close()
-		return nil
-	} else if ev.EnterKey.Read() || ev.EscapeKey.Read() {
-		s.Execute(s.Text)
-
-		// Auto-close the console unless in REPL mode.
-		if !s.Repl {
-			s.Close()
-		}
-
-		return nil
-	} else if (ev.Up.Now || ev.Down.Now) && len(s.History) > 0 {
-		// Paging through history.
-		if !s.historyPaging {
-			s.historyPaging = true
-			s.historyIndex = len(s.History)
-		}
-
-		// Consume the inputs and make convenient variables.
-		ev.Down.Read()
-		isUp := ev.Up.Read()
-
-		// Scroll through the input history.
-		if isUp {
-			s.historyIndex--
-			if s.historyIndex < 0 {
-				s.historyIndex = 0
-			}
-		} else {
-			s.historyIndex++
-			if s.historyIndex >= len(s.History) {
-				s.historyIndex = len(s.History) - 1
-			}
-		}
-
-		s.Text = s.History[s.historyIndex]
-
-	}
-
 	// Compute the line height we can draw.
 	lineHeight := balance.ShellFontSize + int(balance.ShellPadding)
 
 	// If the console is open, draw the console.
 	if s.Open {
+		if ev.EscapeKey.Read() {
+			s.Close()
+			return nil
+		} else if ev.EnterKey.Read() || ev.EscapeKey.Read() {
+			s.Execute(s.Text)
+
+			// Auto-close the console unless in REPL mode.
+			if !s.Repl {
+				s.Close()
+			}
+
+			return nil
+		} else if (ev.Up.Now || ev.Down.Now) && len(s.History) > 0 {
+			// Paging through history.
+			if !s.historyPaging {
+				s.historyPaging = true
+				s.historyIndex = len(s.History)
+			}
+
+			// Consume the inputs and make convenient variables.
+			ev.Down.Read()
+			isUp := ev.Up.Read()
+
+			// Scroll through the input history.
+			if isUp {
+				s.historyIndex--
+				if s.historyIndex < 0 {
+					s.historyIndex = 0
+				}
+			} else {
+				s.historyIndex++
+				if s.historyIndex >= len(s.History) {
+					s.historyIndex = len(s.History) - 1
+				}
+			}
+
+			s.Text = s.History[s.historyIndex]
+
+		}
+
 		// Cursor flip?
 		if d.ticks > s.cursorFlip {
 			s.cursorFlip = d.ticks + s.cursorRate

@@ -18,6 +18,7 @@ type PlayScene struct {
 	Level    *level.Level
 
 	// Private variables.
+	d       *Doodle
 	drawing *uix.Canvas
 
 	// Player character
@@ -31,6 +32,7 @@ func (s *PlayScene) Name() string {
 
 // Setup the play scene.
 func (s *PlayScene) Setup(d *Doodle) error {
+	s.d = d
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.MoveTo(render.Origin)
 	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
@@ -39,7 +41,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	// Given a filename or map data to play?
 	if s.Level != nil {
 		log.Debug("PlayScene.Setup: received level from scene caller")
-		s.drawing.LoadLevel(s.Level)
+		s.drawing.LoadLevel(d.Engine, s.Level)
 	} else if s.Filename != "" {
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
 		s.LoadLevel(s.Filename)
@@ -50,7 +52,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	if s.Level == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
 		s.Level = level.New()
-		s.drawing.LoadLevel(s.Level)
+		s.drawing.LoadLevel(d.Engine, s.Level)
 	}
 
 	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
@@ -140,7 +142,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 	}
 
 	s.Level = level
-	s.drawing.LoadLevel(s.Level)
+	s.drawing.LoadLevel(s.d.Engine, s.Level)
 
 	return nil
 }

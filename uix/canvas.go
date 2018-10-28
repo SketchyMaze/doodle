@@ -2,6 +2,7 @@ package uix
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/balance"
@@ -9,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/events"
 	"git.kirsle.net/apps/doodle/level"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 	"git.kirsle.net/apps/doodle/render"
 	"git.kirsle.net/apps/doodle/ui"
 )
@@ -32,12 +34,19 @@ type Canvas struct {
 	// to remove the mask.
 	MaskColor render.Color
 
+	// Debug tools
+	// NoLimitScroll suppresses the scroll limit for bounded levels.
+	NoLimitScroll bool
+
 	// Underlying chunk data for the drawing.
 	chunks *level.Chunker
 
 	// Actors to superimpose on top of the drawing.
 	actor  *level.Actor // if this canvas IS an actor
 	actors []*Actor
+
+	// Wallpaper settings.
+	wallpaper *Wallpaper
 
 	// When the Canvas wants to delete Actors, but ultimately it is upstream
 	// that controls the actors. Upstream should delete them and then reinstall
@@ -70,6 +79,7 @@ func NewCanvas(size int, editable bool) *Canvas {
 		Palette:    level.NewPalette(),
 		chunks:     level.NewChunker(size),
 		actors:     make([]*Actor, 0),
+		wallpaper:  &Wallpaper{},
 	}
 	w.setup()
 	w.IDFunc(func() string {
@@ -101,8 +111,27 @@ func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 }
 
 // LoadLevel initializes a Canvas from a Level object.
-func (w *Canvas) LoadLevel(level *level.Level) {
+func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 	w.Load(level.Palette, level.Chunker)
+
+	// TODO: wallpaper paths
+	filename := "assets/wallpapers/" + level.Wallpaper
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		log.Error("LoadLevel: %s", err)
+		filename = "assets/wallpapers/notebook.png" // XXX TODO
+	}
+
+	wp, err := wallpaper.FromFile(e, filename)
+	if err != nil {
+		log.Error("wallpaper FromFile(%s): %s", filename, err)
+	}
+
+	w.wallpaper.maxWidth = level.MaxWidth
+	w.wallpaper.maxHeight = level.MaxHeight
+	err = w.wallpaper.Load(e, level.PageType, wp)
+	if err != nil {
+		log.Error("wallpaper Load: %s", err)
+	}
 }
 
 // LoadDoodad initializes a Canvas from a Doodad object.
@@ -274,6 +303,44 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		H: S.H - w.BoxThickness(2),
 	})
 
+	// Constrain the scroll view if the level is bounded.
+	if w.Scrollable && !w.NoLimitScroll {
+		// Constrain the top and left edges.
+		if w.wallpaper.pageType > level.Unbounded {
+			if w.Scroll.X > 0 {
+				w.Scroll.X = 0
+			}
+			if w.Scroll.Y > 0 {
+				w.Scroll.Y = 0
+			}
+		}
+
+		// Constrain the bottom and right for limited world sizes.
+		if w.wallpaper.maxWidth > 0 && w.wallpaper.maxHeight > 0 {
+			var (
+				// TODO: downcast from int64!
+				mw = int32(w.wallpaper.maxWidth)
+				mh = int32(w.wallpaper.maxHeight)
+			)
+			if Viewport.W > mw {
+				delta := Viewport.W - mw
+				w.Scroll.X += delta
+			}
+			if Viewport.H > mh {
+				delta := Viewport.H - mh
+				w.Scroll.Y += delta
+			}
+		}
+	}
+
+	// Draw the wallpaper.
+	if w.wallpaper.Valid() {
+		err := w.PresentWallpaper(e, p)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
 	// Get the chunks in the viewport and cache their textures.
 	for coord := range w.chunks.IterViewportChunks(Viewport) {
 		if chunk, ok := w.chunks.GetChunk(coord); ok {
@@ -309,6 +376,8 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				W: src.W,
 				H: src.H,
 			}
+
+			// TODO: all this shit is in TrimBox(), make it DRY
 
 			// If the destination width will cause it to overflow the widget
 			// box, trim off the right edge of the destination rect.

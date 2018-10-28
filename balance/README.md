@@ -35,3 +35,7 @@ like `#FF00FF99` for 153 ($99) on the alpha channel.
   * `D_SCROLL_SPEED=8`: Canvas scroll speed when using the keyboard arrows
     in the Editor Mode, in pixels per tick.
   * `D_DOODAD_SIZE=100`: Default size when creating a new Doodad.
+
+Development booleans for unit tests (set to any non-empty value):
+
+* `T_WALLPAPER_PNG` for pkg/wallpaper to output PNG images.

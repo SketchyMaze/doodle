@@ -24,6 +24,7 @@ type EditorScene struct {
 	DoodadSize  int
 
 	UI *EditorUI
+	d  *Doodle
 
 	// The current level or doodad object being edited, based on the
 	// DrawingType.
@@ -43,6 +44,7 @@ func (s *EditorScene) Name() string {
 func (s *EditorScene) Setup(d *Doodle) error {
 	// Initialize the user interface. It references the palette and such so it
 	// must be initialized after those things.
+	s.d = d
 	s.UI = NewEditorUI(d, s)
 
 	// Were we given configuration data?
@@ -57,7 +59,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	case enum.LevelDrawing:
 		if s.Level != nil {
 			log.Debug("EditorScene.Setup: received level from scene caller")
-			s.UI.Canvas.LoadLevel(s.Level)
+			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
 			if err := s.LoadLevel(s.filename); err != nil {
@@ -70,7 +72,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			log.Debug("EditorScene.Setup: initializing a new Level")
 			s.Level = level.New()
 			s.Level.Palette = level.DefaultPalette()
-			s.UI.Canvas.LoadLevel(s.Level)
+			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
 			s.UI.Canvas.ScrollTo(render.Origin)
 			s.UI.Canvas.Scrollable = true
 		}
@@ -153,7 +155,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 
 	s.DrawingType = enum.LevelDrawing
 	s.Level = level
-	s.UI.Canvas.LoadLevel(s.Level)
+	s.UI.Canvas.LoadLevel(s.d.Engine, s.Level)
 
 	// TODO: debug
 	for i, actor := range level.Actors {

@@ -8,6 +8,11 @@ import (
 	"git.kirsle.net/apps/doodle/render"
 )
 
+// Useful variables.
+var (
+	DefaultWallpaper = "notebook.png"
+)
+
 // Base provides the common struct keys that are shared between Levels and
 // Doodads.
 type Base struct {
@@ -33,6 +38,12 @@ type Level struct {
 	// properties (solid, fire, slippery, etc.)
 	Palette *Palette `json:"palette"`
 
+	// Page boundaries and wallpaper settings.
+	PageType  PageType `json:"pageType"`
+	MaxWidth  int64    `json:"boundedWidth"` // only if bounded or bordered
+	MaxHeight int64    `json:"boundedHeight"`
+	Wallpaper string   `json:"wallpaper"`
+
 	// Actors keep a list of the doodad instances in this map.
 	Actors ActorMap `json:"actors"`
 }
@@ -46,6 +57,11 @@ func New() *Level {
 		Chunker: NewChunker(balance.ChunkSize),
 		Palette: &Palette{},
 		Actors:  ActorMap{},
+
+		PageType:  NoNegativeSpace,
+		Wallpaper: DefaultWallpaper,
+		MaxWidth:  2550,
+		MaxHeight: 3300,
 	}
 }
 

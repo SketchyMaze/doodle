@@ -7,6 +7,8 @@ import (
 	"git.kirsle.net/apps/doodle"
 	"git.kirsle.net/apps/doodle/balance"
 	"git.kirsle.net/apps/doodle/render/sdl"
+
+	_ "image/png"
 )
 
 // Build number is the git commit hash.
