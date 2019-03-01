@@ -28,7 +28,7 @@ func TestWallpaper(t *testing.T) {
 		img := image.NewRGBA(image.Rect(0, 0, width, height))
 		draw.Draw(
 			// Corner: red
-			img, // dst Image
+			img,                               // dst Image
 			image.Rect(0, 0, qWidth, qHeight), // r Rectangle
 			image.NewUniform(red),             // src Image
 			image.Point{0, 0},                 // sp Point

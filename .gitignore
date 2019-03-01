@@ -1,6 +1,9 @@
 fonts/
 maps/
 bin/
+dist/
+docker/ubuntu
+docker/debian
 screenshot-*.png
 map-*.json
 pkg/wallpaper/*.png
