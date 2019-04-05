@@ -44,7 +44,7 @@ func TestPointInside(t *testing.T) {
 				W: 490,
 			},
 			p:          render.NewPoint(509, 260),
-			shouldPass: true,
+			shouldPass: false,
 		},
 	}
 

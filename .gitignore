@@ -4,6 +4,7 @@ bin/
 dist/
 docker/ubuntu
 docker/debian
+docker/fedora
 screenshot-*.png
 map-*.json
 pkg/wallpaper/*.png

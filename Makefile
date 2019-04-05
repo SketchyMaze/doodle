@@ -44,18 +44,21 @@ dist: build
 	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
 
 # `make docker` to run the Docker builds
-.PHONY: docker docker.ubuntu docker.debian __docker.dist
+.PHONY: docker docker.ubuntu docker.debian docker.fedora __docker.dist
 docker.ubuntu:
 	mkdir -p docker/ubuntu
 	./docker/dist-ubuntu.sh
 docker.debian:
 	mkdir -p docker/debian
 	./docker/dist-debian.sh
-docker: docker.ubuntu docker.debian
+docker.fedora:
+	mkdir -p docker/fedora
+	./docker/dist-fedora.sh
+docker: docker.ubuntu docker.debian docker.fedora
 __docker.dist: dist
 	cp dist/*.tar.gz dist/*.zip /mnt/export/
 
 # `make clean` cleans everything up.
 .PHONY: clean
 clean:
-	rm -rf bin dist
+	rm -rf bin dist docker/ubuntu docker/debian docker/fedora

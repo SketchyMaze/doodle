@@ -1,12 +1,11 @@
-FROM ubuntu:latest
+FROM fedora:latest
 MAINTAINER Noah Petherbridge <root@kirsle.net>
 ENV GOPATH /home/builder/go
 
 # Update all the software and then install Go, git, SDL2 and other dependencies
-RUN apt update && \
-	apt -y upgrade && \
-	apt -y install git zip golang libsdl2-dev libsdl2-ttf-dev make && \
-	apt clean
+RUN dnf -y update && \
+	dnf -y install git zip golang SDL2-devel SDL2_ttf-devel make && \
+	dnf clean all
 
 # Create a user to build the packages.
 RUN useradd builder -u 1000 -m -G users

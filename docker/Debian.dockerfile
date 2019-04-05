@@ -8,8 +8,7 @@ RUN apt update && apt -y upgrade && \
 	apt clean
 
 # Create a user to build the packages.
-RUN useradd builder -u 1000 -m -G users && \
-	echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN useradd builder -u 1000 -m -G users
 
 # Add the project to the GOPATH
 ADD . /home/builder/go/src/git.kirsle.net/apps/doodle
@@ -19,5 +18,4 @@ RUN chown -R builder:builder /home/builder/go
 USER builder
 WORKDIR /home/builder/go/src/git.kirsle.net/apps/doodle
 RUN make setup
-RUN make dist
 CMD ["make", "__docker.dist"]
