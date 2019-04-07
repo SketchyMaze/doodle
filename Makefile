@@ -19,6 +19,18 @@ build:
 	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 
+# `make mingw` to cross-compile a Windows binary with mingw.
+.PHONY: mingw
+mingw:
+	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS) -i -o bin/doodle.exe cmd/doodle/main.go
+		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+			go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+
+
+
 # `make run` to run it in debug mode.
 .PHONY: run
 run:

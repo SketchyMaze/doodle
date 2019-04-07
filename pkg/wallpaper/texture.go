@@ -58,13 +58,17 @@ func texture(e render.Engine, img *image.RGBA, name string) (render.Texturer, er
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		fh, err := os.Create(filename)
 		if err != nil {
-			return nil, fmt.Errorf("CornerTexture: %s", err.Error())
+			return nil, fmt.Errorf("texture(%s): %s", name, err.Error())
 		}
-		defer fh.Close()
 
 		err = bmp.Encode(fh, img)
 		if err != nil {
-			return nil, fmt.Errorf("CornerTexture: bmp.Encode: %s", err.Error())
+			return nil, fmt.Errorf("texture(%s): bmp.Encode: %s", name, err.Error())
+		}
+
+		err = fh.Close()
+		if err != nil {
+			return nil, fmt.Errorf("texture(%s): fh.Close: %s", name, err.Error())
 		}
 	}
 
