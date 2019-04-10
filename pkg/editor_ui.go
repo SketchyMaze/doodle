@@ -164,11 +164,10 @@ func (u *EditorUI) Loop(ev *events.State) error {
 
 	// Update status bar labels.
 	{
-		debugWorldIndex = u.Canvas.WorldIndexAt(u.cursor)
 		u.StatusMouseText = fmt.Sprintf("Rel:(%d,%d)  Abs:(%s)",
 			ev.CursorX.Now,
 			ev.CursorY.Now,
-			debugWorldIndex,
+			*u.Scene.debWorldIndex,
 		)
 		u.StatusPaletteText = fmt.Sprintf("%s Tool",
 			u.Canvas.Tool,

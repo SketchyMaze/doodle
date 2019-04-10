@@ -32,6 +32,11 @@ type EditorScene struct {
 	Level  *level.Level
 	Doodad *doodads.Doodad
 
+	// Custom debug overlay values.
+	debTool       *string
+	debSwatch     *string
+	debWorldIndex *string
+
 	// Last saved filename by the user.
 	filename string
 }
@@ -43,6 +48,16 @@ func (s *EditorScene) Name() string {
 
 // Setup the editor scene.
 func (s *EditorScene) Setup(d *Doodle) error {
+	// Debug overlay values.
+	s.debTool = new(string)
+	s.debSwatch = new(string)
+	s.debWorldIndex = new(string)
+	customDebugLabels = []debugLabel{
+		{"Pixel", s.debWorldIndex},
+		{"Tool", s.debTool},
+		{"Swatch", s.debSwatch},
+	}
+
 	// Initialize the user interface. It references the palette and such so it
 	// must be initialized after those things.
 	s.d = d
@@ -107,6 +122,11 @@ func (s *EditorScene) Setup(d *Doodle) error {
 
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
+	// Update debug overlay values.
+	*s.debTool = s.UI.Canvas.Tool.String()
+	*s.debSwatch = s.UI.Canvas.Palette.ActiveSwatch.Name
+	*s.debWorldIndex = s.UI.Canvas.WorldIndexAt(s.UI.cursor).String()
+
 	// Has the window been resized?
 	if resized := ev.Resized.Read(); resized {
 		w, h := d.Engine.WindowSize()
@@ -262,6 +282,5 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 
 // Destroy the scene.
 func (s *EditorScene) Destroy() error {
-	debugWorldIndex = render.Origin
 	return nil
 }

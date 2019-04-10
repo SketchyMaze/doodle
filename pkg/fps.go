@@ -33,36 +33,71 @@ var (
 	fpsFrames       int
 	fpsSkipped      uint32
 	fpsInterval     uint32 = 1000
+	fpsDoNotCap     bool   // remove the FPS delay cap in main loop
 
-	// XXX: some opt-in WorldIndex variables for the debug overlay.
-	// This is the world pixel that the mouse cursor is over,
-	// the Cursor + Scroll position of the canvas.
-	debugWorldIndex render.Point
+	// Custom labels for individual Scenes to add debug info.
+	customDebugLabels []debugLabel
 )
+
+type debugLabel struct {
+	key      string
+	variable *string
+}
 
 // DrawDebugOverlay draws the debug FPS text on the SDL canvas.
 func (d *Doodle) DrawDebugOverlay() {
-	if !d.Debug || !DebugOverlay {
+	if !DebugOverlay {
 		return
+	}
+
+	var framesSkipped = fmt.Sprintf("(skip: %dms)", fpsSkipped)
+	if fpsDoNotCap {
+		framesSkipped = "uncapped"
 	}
 
 	var (
 		darken        = balance.DebugStrokeDarken
 		Yoffset int32 = 20 // leave room for the menu bar
-		Xoffset int32 = 5
+		Xoffset int32 = 20
 		keys          = []string{
-			"  FPS:",
+			"FPS:",
 			"Scene:",
-			"Pixel:",
 			"Mouse:",
 		}
 		values = []string{
-			fmt.Sprintf("%d   (skip: %dms)", fpsCurrent, fpsSkipped),
+			fmt.Sprintf("%d   %s", fpsCurrent, framesSkipped),
 			d.Scene.Name(),
-			debugWorldIndex.String(),
 			fmt.Sprintf("%d,%d", d.event.CursorX.Now, d.event.CursorY.Now),
 		}
 	)
+
+	// Insert custom keys.
+	for _, custom := range customDebugLabels {
+		keys = append(keys, custom.key)
+		if custom.variable == nil {
+			values = append(values, "<nil>")
+		} else if len(*custom.variable) == 0 {
+			values = append(values, `""`)
+		} else {
+			values = append(values, *custom.variable)
+		}
+	}
+
+	// Find the longest key to align the labels up.
+	var longest int
+	for _, key := range keys {
+		if len(key) > longest {
+			longest = len(key)
+		}
+	}
+
+	// Space pad the keys for alignment.
+	for i, key := range keys {
+		if len(key) < longest {
+			key = strings.Repeat(" ", longest-len(key)) + key
+			keys[i] = key
+		}
+	}
 
 	key := ui.NewLabel(ui.Label{
 		Text: strings.Join(keys, "\n"),
@@ -97,7 +132,7 @@ func (d *Doodle) DrawDebugOverlay() {
 
 // DrawCollisionBox draws the collision box around a Doodad.
 func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
-	if !d.Debug || !DebugCollision {
+	if !DebugCollision {
 		return
 	}
 

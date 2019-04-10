@@ -22,6 +22,17 @@ func (c Command) Run(d *Doodle) error {
 		return nil
 	}
 
+	// Cheat codes
+	if c.Raw == "unleash the beast" {
+		if fpsDoNotCap {
+			d.Flash("Reset frame rate throttle to factory default FPS")
+		} else {
+			d.Flash("Unleashing as many frames as we can render!")
+		}
+		fpsDoNotCap = !fpsDoNotCap
+		return nil
+	}
+
 	switch c.Command {
 	case "echo":
 		d.Flash(c.ArgsLiteral)

@@ -22,6 +22,12 @@ type PlayScene struct {
 	d       *Doodle
 	drawing *uix.Canvas
 
+	// Custom debug labels.
+	debPosition   *string
+	debViewport   *string
+	debScroll     *string
+	debWorldIndex *string
+
 	// Player character
 	Player doodads.Actor
 }
@@ -34,6 +40,20 @@ func (s *PlayScene) Name() string {
 // Setup the play scene.
 func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
+
+	// Initialize debug overlay values.
+	s.debPosition = new(string)
+	s.debViewport = new(string)
+	s.debScroll = new(string)
+	s.debWorldIndex = new(string)
+	customDebugLabels = []debugLabel{
+		{"Pixel:", s.debWorldIndex},
+		{"Player:", s.debPosition},
+		{"Viewport:", s.debViewport},
+		{"Scroll:", s.debScroll},
+	}
+
+	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.MoveTo(render.Origin)
 	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
@@ -63,6 +83,23 @@ func (s *PlayScene) Setup(d *Doodle) error {
 
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
+	// Update debug overlay values.
+	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)).String()
+	*s.debPosition = s.Player.Position().String()
+	*s.debViewport = s.drawing.Viewport().String()
+	*s.debScroll = s.drawing.Scroll.String()
+
+	// Has the window been resized?
+	if resized := ev.Resized.Read(); resized {
+		w, h := d.Engine.WindowSize()
+		if w != d.width || h != d.height {
+			d.width = w
+			d.height = h
+			s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
+			return nil
+		}
+	}
+
 	// Switching to Edit Mode?
 	if ev.KeyName.Read() == "e" {
 		log.Info("Edit Mode, Go!")

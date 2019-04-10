@@ -148,13 +148,15 @@ func (d *Doodle) Run() error {
 		}
 
 		// Delay to maintain the target frames per second.
-		elapsed := time.Now().Sub(start)
-		tmp := elapsed / time.Millisecond
 		var delay uint32
-		if TargetFPS-int(tmp) > 0 { // make sure it won't roll under
-			delay = uint32(TargetFPS - int(tmp))
+		if !fpsDoNotCap {
+			elapsed := time.Now().Sub(start)
+			tmp := elapsed / time.Millisecond
+			if TargetFPS-int(tmp) > 0 { // make sure it won't roll under
+				delay = uint32(TargetFPS - int(tmp))
+			}
+			d.Engine.Delay(delay)
 		}
-		d.Engine.Delay(delay)
 
 		// Track how long this frame took to measure FPS over time.
 		d.TrackFPS(delay)
