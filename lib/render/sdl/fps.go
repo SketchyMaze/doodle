@@ -1,7 +1,5 @@
 package sdl
 
-import "git.kirsle.net/apps/doodle/pkg/level"
-
 // Frames to cache for FPS calculation.
 const (
 	maxSamples = 100
@@ -16,5 +14,3 @@ var (
 	fpsSkipped      uint32
 	fpsInterval     uint32 = 1000
 )
-
-var pixelHistory []level.Pixel

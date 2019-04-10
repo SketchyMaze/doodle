@@ -4,7 +4,16 @@ import (
 	"errors"
 
 	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/veandco/go-sdl2/sdl"
+)
+
+// Debug certain SDL events
+var (
+	DebugWindowEvents = false
+	DebugMouseEvents  = false
+	DebugClickEvents  = false
+	DebugKeyEvents    = false
 )
 
 // Poll for events.
