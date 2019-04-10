@@ -6,8 +6,8 @@ import (
 	"os"
 	"sort"
 
-	"git.kirsle.net/apps/doodle"
 	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
+	doodle "git.kirsle.net/apps/doodle/pkg"
 	"github.com/urfave/cli"
 )
 

@@ -7,8 +7,8 @@ import (
 	"image"
 	"os"
 
+	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
-	"git.kirsle.net/apps/doodle/render"
 	"golang.org/x/image/bmp"
 )
 

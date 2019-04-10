@@ -11,10 +11,11 @@ import (
 
 	"image/png"
 
-	"git.kirsle.net/apps/doodle"
-	"git.kirsle.net/apps/doodle/doodads"
-	"git.kirsle.net/apps/doodle/level"
-	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/lib/render"
+	doodle "git.kirsle.net/apps/doodle/pkg"
+	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/urfave/cli"
 	"golang.org/x/image/bmp"
 )

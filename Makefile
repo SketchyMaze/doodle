@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VERSION=$(shell grep -e 'Version =' doodle.go | head -n 1 | cut -d '"' -f 2)
+VERSION=$(shell grep -e 'Version =' pkg/doodle.go | head -n 1 | cut -d '"' -f 2)
 BUILD=$(shell git describe --always)
 CURDIR=$(shell curdir)
 

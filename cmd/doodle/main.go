@@ -4,11 +4,11 @@ import (
 	"flag"
 	"runtime"
 
-	"git.kirsle.net/apps/doodle"
-	"git.kirsle.net/apps/doodle/balance"
-	"git.kirsle.net/apps/doodle/render/sdl"
-
 	_ "image/png"
+
+	"git.kirsle.net/apps/doodle/lib/render/sdl"
+	doodle "git.kirsle.net/apps/doodle/pkg"
+	"git.kirsle.net/apps/doodle/pkg/balance"
 )
 
 // Build number is the git commit hash.

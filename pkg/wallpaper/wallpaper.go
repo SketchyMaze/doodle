@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/render"
+	"git.kirsle.net/apps/doodle/lib/render"
 )
 
 // Wallpaper is a repeatable background image to go behind levels.
