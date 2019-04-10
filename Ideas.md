@@ -222,11 +222,14 @@ Probably mostly DRM free. Will want some sort of account server early-on though.
 * The texture file will be a square (rectangular maybe ok) with four quadrants
   from which the textures will be extracted. For example if the overall image
   size was 100x100 pixels, it will be divided into the four 50x50 quadrants.
-  1. `TL`: Top left corner is the top left edge of the "page" the level is on
-  2. `TR`: Top right corner is the repeated "top of page" texture.
-  3. `BL`: Bottom left corner is the repeated "left of page" texture.
-  4. `BR`: Bottom right corner is the repeated background texture that extends
+  1. `Corner`: Top left corner is the top left edge of the "page" the level is on
+  2. `Top`: Top right corner is the repeated "top of page" texture.
+  3. `Left`: Bottom left corner is the repeated "left of page" texture.
+  4. `Repeat`: Bottom right corner is the repeated background texture that extends
      infinitely in all directions.
+* The Repeat texture is used all the time, and the other three are used when the
+  level type has boundaries (on the top and left edges in particular) to draw
+  decorative borders instead of the Repeat texture.
 * Levels will be able to choose a "page type" which controls how the wallpaper
   will be drawn and how the level boundaries may be constrained. There will be
   four options:
@@ -241,8 +244,9 @@ Probably mostly DRM free. Will want some sort of account server early-on though.
      wall.
   3. **Bounded:** The map has a fixed width and height and is bounded on all
      four edges.
-  4. **Bounded, Mirrored Wallpaper:** same as Bounded but with a different
-     wallpaper behavior.
+  4. **Bordered:** same as Bounded but with a different wallpaper behavior.
+     The bottom and right edges are covered with mirror images of the top and
+     left edges.
 * The page types will have their own behaviors with how wallpapers are drawn:
   * **Unbounded:** only the `BR` texture from the wallpaper is used, repeated
     infinitely in the X and Y directions. The top-left, top, and left edge
@@ -263,6 +267,24 @@ Probably mostly DRM free. Will want some sort of account server early-on though.
   be used).
 * The map author can also attach their own custom texture that will be included
   inside the map file.
+
+### Default Wallpapers
+
+**notebook**: standard ruled notebook paper with a red line alone the Left
+dge and a blank margin along the Top, with a Corner and the blue lines
+aking up the Repeat in all directions.
+
+![notebook.png](../assets/wallpapers/notebook.png)
+
+**graph**: graph paper made up of a grid of light grey or blue lines.
+
+**dots**: graph paper made of dots at the intersections but not the lines in
+between.
+
+**legal**: yellow lined notebook paper (legal pad).
+
+**placemat**: a placemat texture with a wavy outline that emborders the map
+on all four sides. To be used with the Bordered level type.
 
 # Text Console
 

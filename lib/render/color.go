@@ -156,15 +156,15 @@ func (c *Color) UnmarshalJSON(b []byte) error {
 }
 
 // Add a relative color value to the color.
-func (c Color) Add(r, g, b, a int32) Color {
+func (c Color) Add(r, g, b, a int) Color {
 	var (
-		R = int32(c.Red) + r
-		G = int32(c.Green) + g
-		B = int32(c.Blue) + b
-		A = int32(c.Alpha) + a
+		R = int(c.Red) + r
+		G = int(c.Green) + g
+		B = int(c.Blue) + b
+		A = int(c.Alpha) + a
 	)
 
-	cap8 := func(v int32) uint8 {
+	cap8 := func(v int) uint8 {
 		if v > 255 {
 			v = 255
 		} else if v < 0 {
@@ -182,11 +182,22 @@ func (c Color) Add(r, g, b, a int32) Color {
 }
 
 // Lighten a color value.
-func (c Color) Lighten(v int32) Color {
+func (c Color) Lighten(v int) Color {
 	return c.Add(v, v, v, 0)
 }
 
 // Darken a color value.
-func (c Color) Darken(v int32) Color {
+func (c Color) Darken(v int) Color {
 	return c.Add(-v, -v, -v, 0)
+}
+
+// Transparentize adjusts the alpha value.
+func (c Color) Transparentize(v int) Color {
+	return c.Add(0, 0, 0, v)
+}
+
+// SetAlpha sets the alpha value to a specific setting.
+func (c Color) SetAlpha(v uint8) Color {
+	c.Alpha = v
+	return c
 }

@@ -16,11 +16,11 @@ var (
 	 ***************/
 
 	// Debug overlay (FPS etc.) settings.
-	DebugFontFilename       = "./fonts/DejaVuSans-Bold.ttf"
-	DebugFontSize           = 15
-	DebugLabelColor         = render.MustHexColor("#FF9900")
-	DebugValueColor         = render.MustHexColor("#00CCFF")
-	DebugStrokeDarken int32 = 80
+	DebugFontFilename = "./fonts/DejaVuSans-Bold.ttf"
+	DebugFontSize     = 16
+	DebugLabelColor   = render.MustHexColor("#FF9900")
+	DebugValueColor   = render.MustHexColor("#00CCFF")
+	DebugStrokeDarken = 80
 
 	// Background color to use when exporting a drawing Chunk as a bitmap image
 	// on disk. Default is white. Setting this to translucent yellow is a great

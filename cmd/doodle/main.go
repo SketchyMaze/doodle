@@ -1,59 +1,93 @@
 package main
 
 import (
-	"flag"
+	"fmt"
+	"log"
+	"os"
 	"runtime"
-
-	_ "image/png"
+	"sort"
+	"time"
 
 	"git.kirsle.net/apps/doodle/lib/render/sdl"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"github.com/urfave/cli"
+
+	_ "image/png"
 )
 
 // Build number is the git commit hash.
-var Build string
-
-// Command line args
 var (
-	debug   bool
-	edit    bool
-	guitest bool
+	Build     = "<dynamic>"
+	BuildDate string
 )
 
 func init() {
-	flag.BoolVar(&debug, "debug", false, "Debug mode")
-	flag.BoolVar(&edit, "edit", false, "Edit the map given on the command line. Default is to play the map.")
-	flag.BoolVar(&guitest, "guitest", false, "Enter the GUI Test scene.")
+	if BuildDate == "" {
+		BuildDate = time.Now().Format(time.RFC3339)
+	}
 }
 
 func main() {
 	runtime.LockOSThread()
-	flag.Parse()
 
-	args := flag.Args()
-	var filename string
-	if len(args) > 0 {
-		filename = args[0]
-	}
-
-	// SDL engine.
-	engine := sdl.New(
-		"Doodle v"+doodle.Version,
-		balance.Width,
-		balance.Height,
+	app := cli.NewApp()
+	app.Name = "doodle"
+	app.Usage = "command line interface for Doodle"
+	app.Version = fmt.Sprintf("%s build %s. Built on %s",
+		doodle.Version,
+		Build,
+		BuildDate,
 	)
 
-	app := doodle.New(debug, engine)
-	app.SetupEngine()
-	if guitest {
-		app.Goto(&doodle.GUITestScene{})
-	} else if filename != "" {
-		if edit {
-			app.EditFile(filename)
-		} else {
-			app.PlayLevel(filename)
-		}
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "debug, d",
+			Usage: "enable debug level logging",
+		},
+		cli.BoolFlag{
+			Name:  "edit, e",
+			Usage: "edit the map given on the command line (instead of play it)",
+		},
+		cli.BoolFlag{
+			Name:  "guitest",
+			Usage: "enter the GUI Test scene on startup",
+		},
 	}
-	app.Run()
+
+	app.Action = func(c *cli.Context) error {
+		var filename string
+		if c.NArg() > 0 {
+			filename = c.Args().Get(0)
+		}
+
+		// SDL engine.
+		engine := sdl.New(
+			"Doodle v"+doodle.Version,
+			balance.Width,
+			balance.Height,
+		)
+
+		game := doodle.New(c.Bool("debug"), engine)
+		game.SetupEngine()
+		if c.Bool("guitest") {
+			game.Goto(&doodle.GUITestScene{})
+		} else if filename != "" {
+			if c.Bool("edit") {
+				game.EditFile(filename)
+			} else {
+				game.PlayLevel(filename)
+			}
+		}
+		game.Run()
+		return nil
+	}
+
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

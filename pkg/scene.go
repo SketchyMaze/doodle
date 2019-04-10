@@ -23,6 +23,9 @@ type Scene interface {
 
 // Goto a scene. First it unloads the current scene.
 func (d *Doodle) Goto(scene Scene) error {
+	// Clear any debug labels.
+	customDebugLabels = []debugLabel{}
+
 	// Teardown existing scene.
 	if d.Scene != nil {
 		d.Scene.Destroy()

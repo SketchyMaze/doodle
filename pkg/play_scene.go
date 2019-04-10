@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
@@ -29,7 +30,7 @@ type PlayScene struct {
 	debWorldIndex *string
 
 	// Player character
-	Player doodads.Actor
+	Player *uix.Actor
 }
 
 // Name of the scene.
@@ -63,18 +64,24 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	if s.Level != nil {
 		log.Debug("PlayScene.Setup: received level from scene caller")
 		s.drawing.LoadLevel(d.Engine, s.Level)
+		s.drawing.InstallActors(s.Level.Actors)
 	} else if s.Filename != "" {
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
 		s.LoadLevel(s.Filename)
 	}
 
-	s.Player = doodads.NewPlayer()
-
 	if s.Level == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
 		s.Level = level.New()
 		s.drawing.LoadLevel(d.Engine, s.Level)
+		s.drawing.InstallActors(s.Level.Actors)
 	}
+
+	player := dummy.NewPlayer()
+	s.Player = uix.NewActor(player.ID(), &level.Actor{}, player.Doodad)
+	s.Player.MoveTo(render.NewPoint(128, 128))
+	s.drawing.AddActor(s.Player)
+	s.drawing.FollowActor = s.Player.ID()
 
 	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
 
@@ -112,6 +119,10 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 
 	// s.drawing.Loop(ev)
 	s.movePlayer(ev)
+	if err := s.drawing.Loop(ev); err != nil {
+		log.Error("Drawing loop error: %s", err.Error())
+	}
+
 	return nil
 }
 
@@ -124,7 +135,12 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	// Draw our hero.
-	s.Player.Draw(d.Engine)
+	d.Engine.DrawBox(render.RGBA(255, 255, 153, 255), render.Rect{
+		X: s.Player.Position().X,
+		Y: s.Player.Position().Y,
+		W: s.Player.Size().W,
+		H: s.Player.Size().H,
+	})
 
 	// Draw out bounding boxes.
 	d.DrawCollisionBox(s.Player)
@@ -135,20 +151,26 @@ func (s *PlayScene) Draw(d *Doodle) error {
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *events.State) {
 	delta := s.Player.Position()
-	var playerSpeed int32 = 8
-	var gravity int32 = 2
+	var playerSpeed = int32(balance.PlayerMaxVelocity)
+	var gravity = int32(balance.Gravity)
+
+	var velocity render.Point
 
 	if ev.Down.Now {
 		delta.Y += playerSpeed
+		velocity.Y = playerSpeed
 	}
 	if ev.Left.Now {
 		delta.X -= playerSpeed
+		velocity.X = -playerSpeed
 	}
 	if ev.Right.Now {
 		delta.X += playerSpeed
+		velocity.X = playerSpeed
 	}
 	if ev.Up.Now {
 		delta.Y -= playerSpeed
+		velocity.Y = -playerSpeed
 	}
 
 	// Apply gravity.
@@ -165,8 +187,10 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 		// Gravity has to pipe through the collision checker, too, so it
 		// can't give us a cheated downward boost.
 		delta.Y += gravity
+		velocity.Y += gravity
 	}
 
+	// s.Player.SetVelocity(velocity)
 	s.Player.MoveTo(delta)
 }
 
@@ -181,6 +205,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 
 	s.Level = level
 	s.drawing.LoadLevel(s.d.Engine, s.Level)
+	s.drawing.InstallActors(s.Level.Actors)
 
 	return nil
 }

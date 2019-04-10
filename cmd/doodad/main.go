@@ -2,22 +2,38 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sort"
+	"time"
 
 	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"github.com/urfave/cli"
 )
 
-var Build = "N/A"
+// Build variables.
+var (
+	Build     = "N/A"
+	BuildDate string
+)
+
+func init() {
+	if BuildDate == "" {
+		BuildDate = time.Now().Format(time.RFC3339)
+	}
+}
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "doodad"
 	app.Usage = "command line interface for Doodle"
-	app.Version = doodle.Version + " build " + Build
+	app.Version = fmt.Sprintf("%s build %s. Built on %s",
+		doodle.Version,
+		Build,
+		BuildDate,
+	)
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{

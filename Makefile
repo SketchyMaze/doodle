@@ -2,10 +2,11 @@ SHELL := /bin/bash
 
 VERSION=$(shell grep -e 'Version =' pkg/doodle.go | head -n 1 | cut -d '"' -f 2)
 BUILD=$(shell git describe --always)
+BUILD_DATE=$(shell date -Iseconds)
 CURDIR=$(shell curdir)
 
 # Inject the build version (commit hash) into the executable.
-LDFLAGS := -ldflags "-X main.Build=$(BUILD)"
+LDFLAGS := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE)"
 
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup

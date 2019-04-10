@@ -15,7 +15,7 @@ import (
 
 const (
 	// Version number.
-	Version = "0.0.1-alpha"
+	Version = "0.0.7-alpha"
 
 	// TargetFPS is the frame rate to cap the game to.
 	TargetFPS = 1000 / 60 // 60 FPS

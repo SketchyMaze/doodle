@@ -15,7 +15,7 @@ var (
 	ScrollMaxVelocity = 24
 
 	// Player speeds
-	PlayerMaxVelocity  = 12
+	PlayerMaxVelocity  = 8
 	PlayerAcceleration = 2
 	Gravity            = 2
 

@@ -20,9 +20,6 @@ type Actor interface {
 	// Movement commands.
 	MoveBy(render.Point) // Add {X,Y} to current Position.
 	MoveTo(render.Point) // Set current Position to {X,Y}.
-
-	// Implement the Draw function.
-	Draw(render.Engine)
 }
 
 // GetBoundingRect computes the full pairs of points for the collision box
