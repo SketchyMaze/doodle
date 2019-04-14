@@ -110,8 +110,7 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 	}
 
 	var (
-		P = w.Point()
-		S = w.Size()
+		VP = w.Viewport()
 	)
 
 	// Find the actor.
@@ -121,19 +120,18 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 		}
 
 		actor.Canvas.SetBorderSize(2)
-		actor.Canvas.SetBorderColor(render.Cyan)
+		actor.Canvas.SetBorderColor(render.Red)
 		actor.Canvas.SetBorderStyle(ui.BorderSolid)
 
 		var (
-			APosition = actor.Position() // relative to screen
-			APoint    = actor.Drawing.Position()
+			APosition = actor.Position() // absolute world position
 			ASize     = actor.Drawing.Size()
 			scrollBy  render.Point
 		)
 
 		// Scroll left
-		if APosition.X-P.X <= int32(balance.ScrollboxHoz) {
-			var delta = APoint.X - P.X
+		if APosition.X-VP.X <= int32(balance.ScrollboxHoz) {
+			var delta = APosition.X - VP.X
 			if delta > int32(balance.ScrollMaxVelocity) {
 				delta = int32(balance.ScrollMaxVelocity)
 			}
@@ -146,8 +144,8 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 		}
 
 		// Scroll right
-		if APosition.X >= S.W-ASize.W-int32(balance.ScrollboxHoz) {
-			var delta = S.W - ASize.W - int32(balance.ScrollboxHoz)
+		if APosition.X >= VP.W-ASize.W-int32(balance.ScrollboxHoz) {
+			var delta = VP.W - ASize.W - int32(balance.ScrollboxHoz)
 			if delta > int32(balance.ScrollMaxVelocity) {
 				delta = int32(balance.ScrollMaxVelocity)
 			}
@@ -155,8 +153,8 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 		}
 
 		// Scroll up
-		if APosition.Y-P.Y <= int32(balance.ScrollboxVert) {
-			var delta = APoint.Y - P.Y
+		if APosition.Y-VP.Y <= int32(balance.ScrollboxVert) {
+			var delta = APosition.Y - VP.Y
 			if delta > int32(balance.ScrollMaxVelocity) {
 				delta = int32(balance.ScrollMaxVelocity)
 			}
@@ -168,8 +166,8 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 		}
 
 		// Scroll down
-		if APosition.Y >= S.H-ASize.H-int32(balance.ScrollboxVert) {
-			var delta = S.H - ASize.H - int32(balance.ScrollboxVert)
+		if APosition.Y >= VP.H-ASize.H-int32(balance.ScrollboxVert) {
+			var delta = VP.H - ASize.H - int32(balance.ScrollboxVert)
 			if delta > int32(balance.ScrollMaxVelocity) {
 				delta = int32(balance.ScrollMaxVelocity)
 			}

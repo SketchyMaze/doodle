@@ -96,7 +96,11 @@ const (
 	Right
 )
 
-// CollidesWithGrid checks if a Doodad collides with level geometry.
+/*
+CollidesWithGrid checks if a Doodad collides with level geometry.
+
+The `target` is the point the actor wants to move to on this tick.
+*/
 func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P = d.Position()
@@ -109,10 +113,10 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		capHeight int32 // Stop vertical movement thru a ceiling
 		capLeft   int32 // Stop movement thru a wall
 		capRight  int32
-		hitLeft   bool // Has hit an obstacle on the left
-		hitRight  bool // or right
+		capFloor  int32 // Stop movement thru the floor
+		hitLeft   bool  // Has hit an obstacle on the left
+		hitRight  bool  // or right
 		hitFloor  bool
-		capFloor  int32
 	)
 
 	// Test all of the bounding boxes for a collision with level geometry.

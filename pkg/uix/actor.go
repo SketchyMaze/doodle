@@ -31,7 +31,6 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	size := int32(doodad.Layers[0].Chunker.Size)
 	can := NewCanvas(int(size), false)
 	can.Name = id
-	can.actor = levelActor
 
 	// TODO: if the Background is render.Invisible it gets defaulted to
 	// White somewhere and the Doodad masks the level drawing behind it.
@@ -40,9 +39,15 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	can.LoadDoodad(doodad)
 	can.Resize(render.NewRect(size, size))
 
-	return &Actor{
+	actor := &Actor{
 		Drawing: doodads.NewDrawing(id, doodad),
 		Actor:   levelActor,
 		Canvas:  can,
 	}
+
+	// Give the Canvas a pointer to its (parent) Actor so it can draw its debug
+	// label and show the World Position of the actor within the world.
+	can.actor = actor
+
+	return actor
 }

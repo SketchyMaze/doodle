@@ -20,7 +20,12 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 			return fmt.Errorf("InstallActors: %s", err)
 		}
 
-		w.actors = append(w.actors, NewActor(id, actor, doodad))
+		// Create the "live" Actor to exist in the world, and set its world
+		// position to the Point defined in the level data.
+		liveActor := NewActor(id, actor, doodad)
+		liveActor.MoveTo(actor.Point)
+
+		w.actors = append(w.actors, liveActor)
 	}
 	return nil
 }
@@ -46,10 +51,9 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			continue
 		}
 		var (
-			actor      = a.Actor     // Static Actor instance from Level file, DO NOT CHANGE
-			can        = a.Canvas    // Canvas widget that draws the actor
-			actorPoint = actor.Point // XXX TODO: DO NOT CHANGE
-			actorSize  = can.Size()
+			can        = a.Canvas // Canvas widget that draws the actor
+			actorPoint = a.Position()
+			actorSize  = a.Size()
 		)
 
 		// Create a box of World Coordinates that this actor occupies. The
@@ -87,7 +91,7 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			// Hitting the left edge. Cap the X coord and shrink the width.
 			delta := p.X - drawAt.X // positive number
 			drawAt.X = p.X
-			// scrollTo.X -= delta // TODO
+			// scrollTo.X -= delta / 2 // TODO
 			resizeTo.W -= delta
 		}
 

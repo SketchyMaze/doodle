@@ -75,6 +75,12 @@ func (p *Point) Add(other Point) {
 	p.Y += other.Y
 }
 
+// Subtract the other point from your current point.
+func (p *Point) Subtract(other Point) {
+	p.X -= other.X
+	p.Y -= other.Y
+}
+
 // MarshalText to convert the point into text so that a render.Point may be used
 // as a map key and serialized to JSON.
 func (p *Point) MarshalText() ([]byte, error) {

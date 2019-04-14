@@ -76,10 +76,13 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		if s.Level != nil {
 			log.Debug("EditorScene.Setup: received level from scene caller")
 			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
+			s.UI.Canvas.InstallActors(s.Level.Actors)
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
 			if err := s.LoadLevel(s.filename); err != nil {
 				d.Flash("LoadLevel error: %s", err)
+			} else {
+				s.UI.Canvas.InstallActors(s.Level.Actors)
 			}
 		}
 

@@ -149,11 +149,17 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// 	Viewport.W, Viewport.H,
 			// ),
 		}
+
+		// Draw the actor's position details.
+		// LP = Level Position, where the Actor starts at in the level data
+		// WP = World Position, the Actor's current position in the level
 		if w.actor != nil {
 			rows = append(rows,
-				fmt.Sprintf("WP=%s", w.actor.Point),
+				fmt.Sprintf("LP=%s", w.actor.Actor.Point),
+				fmt.Sprintf("WP=%s", w.actor.Position()),
 			)
 		}
+
 		label := ui.NewLabel(ui.Label{
 			Text: strings.Join(rows, "\n"),
 			Font: render.Text{

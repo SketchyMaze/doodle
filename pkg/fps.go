@@ -131,6 +131,10 @@ func (d *Doodle) DrawDebugOverlay() {
 }
 
 // DrawCollisionBox draws the collision box around a Doodad.
+//
+// TODO: move inside the Canvas. Currently it takes an actor's World Position
+// and draws the box as if it were a relative (to the window) position, so the
+// hitbox drifts off when the level scrolls away from 0,0
 func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 	if !DebugCollision {
 		return

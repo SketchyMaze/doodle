@@ -6,7 +6,6 @@ import (
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -56,6 +55,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 
 	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
+	s.drawing.Name = "play-canvas"
 	s.drawing.MoveTo(render.Origin)
 	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
 	s.drawing.Compute(d.Engine)
@@ -92,7 +92,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	// Update debug overlay values.
 	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)).String()
-	*s.debPosition = s.Player.Position().String()
+	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
 
@@ -134,8 +134,10 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	// Draw the level.
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
-	// Draw our hero.
-	d.Engine.DrawBox(render.RGBA(255, 255, 153, 255), render.Rect{
+	// Draw our hero. TODO: this draws a yellow box using the player's World
+	// Position as tho it were Screen Position. The player has its own canvas
+	// currently drawn in red
+	d.Engine.DrawBox(render.RGBA(255, 255, 153, 64), render.Rect{
 		X: s.Player.Position().X,
 		Y: s.Player.Position().Y,
 		W: s.Player.Size().W,
@@ -150,48 +152,37 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *events.State) {
-	delta := s.Player.Position()
 	var playerSpeed = int32(balance.PlayerMaxVelocity)
 	var gravity = int32(balance.Gravity)
 
 	var velocity render.Point
 
 	if ev.Down.Now {
-		delta.Y += playerSpeed
 		velocity.Y = playerSpeed
 	}
 	if ev.Left.Now {
-		delta.X -= playerSpeed
 		velocity.X = -playerSpeed
 	}
 	if ev.Right.Now {
-		delta.X += playerSpeed
 		velocity.X = playerSpeed
 	}
 	if ev.Up.Now {
-		delta.Y -= playerSpeed
 		velocity.Y = -playerSpeed
 	}
-
-	// Apply gravity.
-	// var onFloor bool
-
-	info, ok := doodads.CollidesWithGrid(s.Player, s.Level.Chunker, delta)
-	if ok {
-		// Collision happened with world.
-	}
-	delta = info.MoveTo
 
 	// Apply gravity if not grounded.
 	if !s.Player.Grounded() {
 		// Gravity has to pipe through the collision checker, too, so it
 		// can't give us a cheated downward boost.
-		delta.Y += gravity
 		velocity.Y += gravity
 	}
 
-	// s.Player.SetVelocity(velocity)
-	s.Player.MoveTo(delta)
+	s.Player.SetVelocity(velocity)
+}
+
+// Drawing returns the private world drawing, for debugging with the console.
+func (s *PlayScene) Drawing() *uix.Canvas {
+	return s.drawing
 }
 
 // LoadLevel loads a level from disk.

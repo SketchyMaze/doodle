@@ -135,6 +135,19 @@ func (r Rect) AddPoint(other Point) Rect {
 	}
 }
 
+// SubtractPoint is the inverse of AddPoint. Use this only if you need to invert
+// the Point being added.
+//
+// This does r.X - other.X, r.Y - other.Y and keeps the width/height the same.
+func (r Rect) SubtractPoint(other Point) Rect {
+	return Rect{
+		X: r.X - other.X,
+		Y: r.Y - other.Y,
+		W: r.W,
+		H: r.H,
+	}
+}
+
 // Text holds information for drawing text.
 type Text struct {
 	Text         string

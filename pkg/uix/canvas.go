@@ -45,8 +45,8 @@ type Canvas struct {
 	chunks *level.Chunker
 
 	// Actors to superimpose on top of the drawing.
-	actor  *level.Actor // if this canvas IS an actor
-	actors []*Actor
+	actor  *Actor   // if this canvas IS an actor
+	actors []*Actor // if this canvas CONTAINS actors (i.e., is a level)
 
 	// Wallpaper settings.
 	wallpaper *Wallpaper
@@ -163,20 +163,35 @@ func (w *Canvas) Loop(ev *events.State) error {
 	if err := w.loopFollowActor(ev); err != nil {
 		log.Error("Follow actor: %s", err) // not fatal but nice to know
 	}
-	w.loopConstrainScroll()
+	if err := w.loopConstrainScroll(); err != nil {
+		log.Debug("loopConstrainScroll: %s", err)
+	}
 
 	// Move any actors.
 	for _, a := range w.actors {
 		if v := a.Velocity(); v != render.Origin {
-			// orig := a.Drawing.Position()
-			a.MoveBy(v)
+			// Create a delta point from their current location to where they
+			// want to move to this tick.
+			delta := a.Position()
+			delta.Add(v)
+
+			// Check collision with level geometry.
+			info, ok := doodads.CollidesWithGrid(a, w.chunks, delta)
+			if ok {
+				// Collision happened with world.
+				log.Error("COLLIDE %+v", info)
+			}
+			delta = info.MoveTo // Move us back where the collision check put us
+
+			// Move the actor's World Position to the new location.
+			a.MoveTo(delta)
 
 			// Keep them contained inside the level.
 			if w.wallpaper.pageType > level.Unbounded {
 				var (
-					orig   = w.WorldIndexAt(a.Drawing.Position())
+					orig   = a.Position() // Actor's World Position
 					moveBy render.Point
-					size   = a.Canvas.Size()
+					size   = a.Size()
 				)
 
 				// Bound it on the top left edges.
