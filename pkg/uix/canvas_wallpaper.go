@@ -23,6 +23,47 @@ func (wp *Wallpaper) Valid() bool {
 	return wp.repeat != nil
 }
 
+// Canvas Loop() task that keeps mobile actors constrained inside the borders
+// of the world for bounded map types.
+func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
+	// Infinite maps do not need to constrain the actors.
+	if w.wallpaper.pageType == level.Unbounded {
+		return
+	}
+
+	var (
+		orig   = a.Position() // Actor's World Position
+		moveBy render.Point
+		size   = a.Size()
+	)
+
+	// Bound it on the top left edges.
+	if orig.X < 0 {
+		moveBy.X = -orig.X
+	}
+	if orig.Y < 0 {
+		moveBy.Y = -orig.Y
+	}
+
+	// Bound it on the right bottom edges. XXX: downcast from int64!
+	if w.wallpaper.maxWidth > 0 {
+		if int64(orig.X+size.W) > w.wallpaper.maxWidth {
+			var delta = int32(w.wallpaper.maxWidth - int64(orig.X+size.W))
+			moveBy.X = delta
+		}
+	}
+	if w.wallpaper.maxHeight > 0 {
+		if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
+			var delta = int32(w.wallpaper.maxHeight - int64(orig.Y+size.H))
+			moveBy.Y = delta
+		}
+	}
+
+	if !moveBy.IsZero() {
+		a.MoveBy(moveBy)
+	}
+}
+
 // PresentWallpaper draws the wallpaper.
 func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	var (

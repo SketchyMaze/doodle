@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -167,60 +168,48 @@ func (w *Canvas) Loop(ev *events.State) error {
 		log.Debug("loopConstrainScroll: %s", err)
 	}
 
-	// Move any actors.
-	for _, a := range w.actors {
-		if v := a.Velocity(); v != render.Origin {
-			// Create a delta point from their current location to where they
-			// want to move to this tick.
-			delta := a.Position()
-			delta.Add(v)
+	// Move any actors. As we iterate over all actors, track their bounding
+	// rectangles so we can later see if any pair of actors intersect each other.
+	boxes := make([]render.Rect, len(w.actors))
+	for i, a := range w.actors {
+		// Get the actor's velocity to see if it's moving this tick.
+		v := a.Velocity()
 
-			// Check collision with level geometry.
-			info, ok := doodads.CollidesWithGrid(a, w.chunks, delta)
-			if ok {
-				// Collision happened with world.
-				log.Error("COLLIDE %+v", info)
-			}
-			delta = info.MoveTo // Move us back where the collision check put us
-
-			// Move the actor's World Position to the new location.
-			a.MoveTo(delta)
-
-			// Keep them contained inside the level.
-			if w.wallpaper.pageType > level.Unbounded {
-				var (
-					orig   = a.Position() // Actor's World Position
-					moveBy render.Point
-					size   = a.Size()
-				)
-
-				// Bound it on the top left edges.
-				if orig.X < 0 {
-					moveBy.X = -orig.X
-				}
-				if orig.Y < 0 {
-					moveBy.Y = -orig.Y
-				}
-
-				// Bound it on the right bottom edges. XXX: downcast from int64!
-				if w.wallpaper.maxWidth > 0 {
-					if int64(orig.X+size.W) > w.wallpaper.maxWidth {
-						var delta = int32(w.wallpaper.maxWidth - int64(orig.X+size.W))
-						moveBy.X = delta
-					}
-				}
-				if w.wallpaper.maxHeight > 0 {
-					if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
-						var delta = int32(w.wallpaper.maxHeight - int64(orig.Y+size.H))
-						moveBy.Y = delta
-					}
-				}
-
-				if !moveBy.IsZero() {
-					a.MoveBy(moveBy)
-				}
-			}
+		// If not moving, grab the bounding box right now.
+		if v == render.Origin {
+			boxes[i] = doodads.GetBoundingRect(a)
+			continue
 		}
+
+		// Create a delta point from their current location to where they
+		// want to move to this tick.
+		delta := a.Position()
+		delta.Add(v)
+
+		// Check collision with level geometry.
+		info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
+		if ok {
+			// Collision happened with world.
+			log.Error("COLLIDE %+v", info)
+		}
+		delta = info.MoveTo // Move us back where the collision check put us
+
+		// Move the actor's World Position to the new location.
+		a.MoveTo(delta)
+
+		// Keep the actor from leaving the world borders of bounded maps.
+		w.loopContainActorsInsideLevel(a)
+
+		// Store this actor's bounding box after they've moved.
+		boxes[i] = doodads.GetBoundingRect(a)
+	}
+
+	// Check collisions between actors.
+	for tuple := range collision.BetweenBoxes(boxes) {
+		log.Error("Actor %s collides with %s",
+			w.actors[tuple[0]].ID(),
+			w.actors[tuple[1]].ID(),
+		)
 	}
 
 	// If the canvas is editable, only care if it's over our space.

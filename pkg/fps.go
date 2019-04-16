@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 )
 
@@ -142,7 +143,7 @@ func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 
 	var (
 		rect = doodads.GetBoundingRect(actor)
-		box  = doodads.GetCollisionBox(rect)
+		box  = collision.GetCollisionBox(rect)
 	)
 
 	d.Engine.DrawLine(render.DarkGreen, box.Top[0], box.Top[1])

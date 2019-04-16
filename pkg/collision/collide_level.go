@@ -1,7 +1,8 @@
-package doodads
+package collision
 
 import (
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 )
 
@@ -30,61 +31,6 @@ func (c *Collide) Reset() {
 	c.Bottom = false
 }
 
-// CollisionBox holds all of the coordinate pairs to draw the collision box
-// around a doodad.
-type CollisionBox struct {
-	Top    []render.Point
-	Bottom []render.Point
-	Left   []render.Point
-	Right  []render.Point
-}
-
-// GetCollisionBox returns a CollisionBox with the four coordinates.
-func GetCollisionBox(box render.Rect) CollisionBox {
-	return CollisionBox{
-		Top: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y,
-			},
-		},
-		Bottom: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y + box.H,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y + box.H,
-			},
-		},
-		Left: []render.Point{
-			{
-				X: box.X,
-				Y: box.Y + box.H - 1,
-			},
-			{
-				X: box.X,
-				Y: box.Y + 1,
-			},
-		},
-		Right: []render.Point{
-			{
-				X: box.X + box.W,
-				Y: box.Y + box.H - 1,
-			},
-			{
-				X: box.X + box.W,
-				Y: box.Y + 1,
-			},
-		},
-	}
-}
-
 // Side of the collision box (top, bottom, left, right)
 type Side uint8
 
@@ -101,7 +47,7 @@ CollidesWithGrid checks if a Doodad collides with level geometry.
 
 The `target` is the point the actor wants to move to on this tick.
 */
-func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
+func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P = d.Position()
 		S = d.Size()
@@ -120,7 +66,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	)
 
 	// Test all of the bounding boxes for a collision with level geometry.
-	if ok := result.ScanBoundingBox(GetBoundingRect(d), grid); ok {
+	if ok := result.ScanBoundingBox(doodads.GetBoundingRect(d), grid); ok {
 		// We've already collided! Try to wiggle free.
 		if result.Bottom {
 			if !d.Grounded() {
@@ -249,4 +195,41 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 // IsColliding returns whether any sort of collision has occurred.
 func (c *Collide) IsColliding() bool {
 	return c.Top || c.Bottom || c.Left || c.Right
+}
+
+// ScanBoundingBox scans all of the pixels in a bounding box on the grid and
+// returns if any of them intersect with level geometry.
+func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
+	col := GetCollisionBox(box)
+
+	c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
+	c.ScanGridLine(col.Bottom[0], col.Bottom[1], grid, Bottom)
+	c.ScanGridLine(col.Left[0], col.Left[1], grid, Left)
+	c.ScanGridLine(col.Right[0], col.Right[1], grid, Right)
+	return c.IsColliding()
+}
+
+// ScanGridLine scans all of the pixels between p1 and p2 on the grid and tests
+// for any pixels to be set, implying a collision between level geometry and the
+// bounding boxes of the doodad.
+func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
+	for point := range render.IterLine2(p1, p2) {
+		if _, err := grid.Get(point); err == nil {
+			// A hit!
+			switch side {
+			case Top:
+				c.Top = true
+				c.TopPoint = point
+			case Bottom:
+				c.Bottom = true
+				c.BottomPoint = point
+			case Left:
+				c.Left = true
+				c.LeftPoint = point
+			case Right:
+				c.Right = true
+				c.RightPoint = point
+			}
+		}
+	}
 }
