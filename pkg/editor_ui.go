@@ -317,6 +317,30 @@ func (u *EditorUI) ExpandCanvas(e render.Engine) {
 func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 	frame := ui.NewFrame("MenuBar")
 
+	// Save and Save As common menu handler
+	var saveFunc func(filename string)
+
+	switch u.Scene.DrawingType {
+	case enum.LevelDrawing:
+		saveFunc = func(filename string) {
+			if err := u.Scene.SaveLevel(filename); err != nil {
+				d.Flash("Error: %s", err)
+			} else {
+				d.Flash("Saved level: %s", filename)
+			}
+		}
+	case enum.DoodadDrawing:
+		saveFunc = func(filename string) {
+			if err := u.Scene.SaveDoodad(filename); err != nil {
+				d.Flash("Error: %s", err)
+			} else {
+				d.Flash("Saved doodad: %s", filename)
+			}
+		}
+	default:
+		d.Flash("Error: Scene.DrawingType is not a valid type")
+	}
+
 	type menuButton struct {
 		Text  string
 		Click func(render.Point)
@@ -348,29 +372,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		menuButton{
 			Text: "Save",
 			Click: func(render.Point) {
-				var saveFunc func(filename string)
-
-				switch u.Scene.DrawingType {
-				case enum.LevelDrawing:
-					saveFunc = func(filename string) {
-						if err := u.Scene.SaveLevel(filename); err != nil {
-							d.Flash("Error: %s", err)
-						} else {
-							d.Flash("Saved level: %s", filename)
-						}
-					}
-				case enum.DoodadDrawing:
-					saveFunc = func(filename string) {
-						if err := u.Scene.SaveDoodad(filename); err != nil {
-							d.Flash("Error: %s", err)
-						} else {
-							d.Flash("Saved doodad: %s", filename)
-						}
-					}
-				default:
-					d.Flash("Error: Scene.DrawingType is not a valid type")
-				}
-
 				if u.Scene.filename != "" {
 					saveFunc(u.Scene.filename)
 				} else {
@@ -387,8 +388,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 			Click: func(render.Point) {
 				d.Prompt("Save as filename>", func(answer string) {
 					if answer != "" {
-						u.Scene.SaveLevel("./maps/" + answer) // TODO: maps path
-						d.Flash("Saved: %s", answer)
+						saveFunc(answer)
 					}
 				})
 			},
@@ -398,7 +398,9 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 			Click: func(render.Point) {
 				d.Prompt("Open filename>", func(answer string) {
 					if answer != "" {
-						u.d.EditDrawing("./maps/" + answer) // TODO: maps path
+						if err := d.EditFile(answer); err != nil {
+							d.Flash("File not found: %s", answer)
+						}
 					}
 				})
 			},
