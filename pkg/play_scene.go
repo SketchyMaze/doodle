@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 )
 
@@ -19,8 +20,9 @@ type PlayScene struct {
 	Level    *level.Level
 
 	// Private variables.
-	d       *Doodle
-	drawing *uix.Canvas
+	d         *Doodle
+	drawing   *uix.Canvas
+	scripting *scripting.Supervisor
 
 	// Custom debug labels.
 	debPosition   *string
@@ -40,6 +42,7 @@ func (s *PlayScene) Name() string {
 // Setup the play scene.
 func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
+	s.scripting = scripting.NewSupervisor()
 
 	// Initialize debug overlay values.
 	s.debPosition = new(string)
@@ -67,6 +70,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.drawing.InstallActors(s.Level.Actors)
 	} else if s.Filename != "" {
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
+		// NOTE: s.LoadLevel also calls s.drawing.InstallActors
 		s.LoadLevel(s.Filename)
 	}
 
@@ -75,6 +79,15 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.Level = level.New()
 		s.drawing.LoadLevel(d.Engine, s.Level)
 		s.drawing.InstallActors(s.Level.Actors)
+	}
+
+	// Load all actor scripts.
+	s.drawing.SetScriptSupervisor(s.scripting)
+	if err := s.scripting.InstallScripts(s.Level); err != nil {
+		log.Error("PlayScene.Setup: failed to InstallScripts: %s", err)
+	}
+	if err := s.drawing.InstallScripts(); err != nil {
+		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
 	}
 
 	player := dummy.NewPlayer()
@@ -196,7 +209,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 
 	s.Level = level
 	s.drawing.LoadLevel(s.d.Engine, s.Level)
-	s.drawing.InstallActors(s.Level.Actors)
+	// s.drawing.InstallActors(s.Level.Actors)
 
 	return nil
 }

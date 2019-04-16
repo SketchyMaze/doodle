@@ -58,8 +58,8 @@ func New(debug bool, engine render.Engine) *Doodle {
 	}
 	d.shell = NewShell(d)
 
-	if !debug {
-		log.Logger.Config.Level = golog.InfoLevel
+	if debug {
+		log.Logger.Config.Level = golog.DebugLevel
 	}
 
 	return d

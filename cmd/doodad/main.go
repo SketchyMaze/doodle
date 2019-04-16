@@ -44,6 +44,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		commands.Convert,
+		commands.InstallScript,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))

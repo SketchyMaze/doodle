@@ -1,12 +1,14 @@
 package uix
 
 import (
+	"errors"
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
@@ -27,6 +29,39 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 
 		w.actors = append(w.actors, liveActor)
 	}
+	return nil
+}
+
+// SetScriptSupervisor assigns the Canvas scripting supervisor to enable
+// interaction with actor scripts.
+func (w *Canvas) SetScriptSupervisor(s *scripting.Supervisor) {
+	w.scripting = s
+}
+
+// InstallScripts loads all the current actors' scripts into the scripting
+// engine supervisor.
+func (w *Canvas) InstallScripts() error {
+	if w.scripting == nil {
+		return errors.New("no script supervisor is configured for this canvas")
+	}
+
+	if len(w.actors) == 0 {
+		return errors.New("no actors exist in this canvas to install scripts for")
+	}
+
+	for _, actor := range w.actors {
+		vm := w.scripting.To(actor.ID())
+		vm.Self = actor
+		vm.Set("Self", vm.Self)
+		vm.Run(actor.Drawing.Doodad.Script)
+
+		// Call the main() function.
+		log.Error("Calling Main() for %s", actor.ID())
+		if err := vm.Main(); err != nil {
+			log.Error("main() for actor %s errored: %s", actor.ID(), err)
+		}
+	}
+
 	return nil
 }
 

@@ -8,7 +8,7 @@ var Logger *golog.Logger
 func init() {
 	Logger = golog.GetLogger("doodle")
 	Logger.Configure(&golog.Config{
-		Level:      golog.DebugLevel,
+		Level:      golog.InfoLevel,
 		Theme:      golog.DarkTheme,
 		Colors:     golog.ExtendedColor,
 		TimeFormat: "2006-01-02 15:04:05.000000",

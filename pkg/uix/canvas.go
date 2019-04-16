@@ -13,6 +13,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 )
 
@@ -48,6 +49,10 @@ type Canvas struct {
 	// Actors to superimpose on top of the drawing.
 	actor  *Actor   // if this canvas IS an actor
 	actors []*Actor // if this canvas CONTAINS actors (i.e., is a level)
+
+	// Doodad scripting engine supervisor.
+	// NOTE: initialized and managed by the play_scene.
+	scripting *scripting.Supervisor
 
 	// Wallpaper settings.
 	wallpaper *Wallpaper
@@ -210,6 +215,13 @@ func (w *Canvas) Loop(ev *events.State) error {
 			w.actors[tuple[0]].ID(),
 			w.actors[tuple[1]].ID(),
 		)
+		a, b := w.actors[tuple[0]], w.actors[tuple[1]]
+
+		// Call the OnCollide handler.
+		if w.scripting != nil {
+			w.scripting.To(a.ID()).Events.RunCollide()
+			w.scripting.To(b.ID()).Events.RunCollide()
+		}
 	}
 
 	// If the canvas is editable, only care if it's over our space.

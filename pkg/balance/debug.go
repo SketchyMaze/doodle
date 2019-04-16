@@ -29,7 +29,7 @@ var (
 
 	// Put a border around all Canvas widgets.
 	DebugCanvasBorder = render.Invisible
-	DebugCanvasLabel  = true // Tag the canvas with a label.
+	DebugCanvasLabel  = false // Tag the canvas with a label.
 )
 
 func init() {
