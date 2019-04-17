@@ -35,11 +35,19 @@ func init() {
 				Usage: "chroma key color for transparency on input image files",
 				Value: "#ffffff",
 			},
+			cli.StringFlag{
+				Name:  "title, t",
+				Usage: "set the title of the level or doodad being created",
+			},
+			cli.StringFlag{
+				Name:  "palette, p",
+				Usage: "use a palette JSON to define color swatch properties",
+			},
 		},
 		Action: func(c *cli.Context) error {
-			if c.NArg() != 2 {
+			if c.NArg() < 2 {
 				return cli.NewExitError(
-					"Usage: doodad convert <input.png> <output.level>\n"+
+					"Usage: doodad convert <input.png...> <output.doodad>\n"+
 						"   Image file types: png, bmp\n"+
 						"   Drawing file types: level, doodad",
 					1,
@@ -57,15 +65,15 @@ func init() {
 
 			args := c.Args()
 			var (
-				inputFile  = args[0]
-				inputType  = strings.ToLower(filepath.Ext(inputFile))
-				outputFile = args[1]
+				inputFiles = args[:len(args)-1]
+				inputType  = strings.ToLower(filepath.Ext(inputFiles[0]))
+				outputFile = args[len(args)-1]
 				outputType = strings.ToLower(filepath.Ext(outputFile))
 			)
 
 			if inputType == extPNG || inputType == extBMP {
 				if outputType == extLevel || outputType == extDoodad {
-					if err := imageToDrawing(c, chroma, inputFile, outputFile); err != nil {
+					if err := imageToDrawing(c, chroma, inputFiles, outputFile); err != nil {
 						return cli.NewExitError(err.Error(), 1)
 					}
 					return nil
@@ -73,7 +81,7 @@ func init() {
 				return cli.NewExitError("Image inputs can only output to Doodle drawings", 1)
 			} else if inputType == extLevel || inputType == extDoodad {
 				if outputType == extPNG || outputType == extBMP {
-					if err := drawingToImage(c, chroma, inputFile, outputFile); err != nil {
+					if err := drawingToImage(c, chroma, inputFiles, outputFile); err != nil {
 						return cli.NewExitError(err.Error(), 1)
 					}
 					return nil
@@ -86,29 +94,45 @@ func init() {
 	}
 }
 
-func imageToDrawing(c *cli.Context, chroma render.Color, inputFile, outputFile string) error {
-	reader, err := os.Open(inputFile)
-	if err != nil {
-		return cli.NewExitError(err.Error(), 1)
-	}
-
-	img, format, err := image.Decode(reader)
-	log.Info("format: %s", format)
-	_ = img
-	if err != nil {
-		return cli.NewExitError(err.Error(), 1)
-	}
-
-	// Get the bounding box information of the source image.
+func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, outputFile string) error {
+	// Read the source images. Ensure they all have the same boundaries.
 	var (
-		bounds    = img.Bounds()
-		imageSize = bounds.Size()
-		chunkSize int // the square shape for Doodad chunk size
+		imageBounds image.Point
+		chunkSize   int // the square shape for the Doodad chunk size
+		images      []image.Image
 	)
-	if imageSize.X > imageSize.Y {
-		chunkSize = imageSize.X
-	} else {
-		chunkSize = imageSize.Y
+
+	for i, filename := range inputFiles {
+		reader, err := os.Open(filename)
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
+		}
+
+		img, format, err := image.Decode(reader)
+		log.Info("Parsed image %d of %d. Format: %s", i+1, len(inputFiles), format)
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
+		}
+
+		// Get the bounding box information of the source image.
+		var (
+			bounds    = img.Bounds()
+			imageSize = bounds.Size()
+		)
+
+		// Validate all images are the same size.
+		if i == 0 {
+			imageBounds = imageSize
+			if imageSize.X > imageSize.Y {
+				chunkSize = imageSize.X
+			} else {
+				chunkSize = imageSize.Y
+			}
+		} else if imageSize != imageBounds {
+			return cli.NewExitError("your source images are not all the same dimensions", 1)
+		}
+
+		images = append(images, img)
 	}
 
 	// Generate the output drawing file.
@@ -117,9 +141,27 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFile, outputFile s
 		log.Info("Output is a Doodad file (chunk size %d): %s", chunkSize, outputFile)
 		doodad := doodads.New(chunkSize)
 		doodad.GameVersion = doodle.Version
-		doodad.Title = "Converted Doodad"
+		doodad.Title = c.String("title")
+		if doodad.Title == "" {
+			doodad.Title = "Converted Doodad"
+		}
 		doodad.Author = os.Getenv("USER")
-		doodad.Palette = imageToChunker(img, chroma, doodad.Layers[0].Chunker)
+
+		// Write the first layer and gather its palette.
+		palette, layer0 := imageToChunker(images[0], chroma, chunkSize)
+		doodad.Palette = palette
+		doodad.Layers[0].Chunker = layer0
+
+		// Write any additional layers.
+		if len(images) > 1 {
+			for i, img := range images[1:] {
+				_, chunker := imageToChunker(img, chroma, chunkSize)
+				doodad.Layers = append(doodad.Layers, doodads.Layer{
+					Name:    fmt.Sprintf("layer-%d", i+1),
+					Chunker: chunker,
+				})
+			}
+		}
 
 		err := doodad.WriteJSON(outputFile)
 		if err != nil {
@@ -127,12 +169,20 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFile, outputFile s
 		}
 	case extLevel:
 		log.Info("Output is a Level file: %s", outputFile)
+		if len(images) > 1 {
+			log.Warn("Notice: levels only support one layer so only your first image will be used")
+		}
 
 		lvl := level.New()
 		lvl.GameVersion = doodle.Version
-		lvl.Title = "Converted Level"
+		lvl.Title = c.String("title")
+		if lvl.Title == "" {
+			lvl.Title = "Converted Level"
+		}
 		lvl.Author = os.Getenv("USER")
-		lvl.Palette = imageToChunker(img, chroma, lvl.Chunker)
+		palette, chunker := imageToChunker(images[0], chroma, lvl.Chunker.Size)
+		lvl.Palette = palette
+		lvl.Chunker = chunker
 
 		err := lvl.WriteJSON(outputFile)
 		if err != nil {
@@ -145,9 +195,10 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFile, outputFile s
 	return nil
 }
 
-func drawingToImage(c *cli.Context, chroma render.Color, inputFile, outputFile string) error {
+func drawingToImage(c *cli.Context, chroma render.Color, inputFiles []string, outputFile string) error {
 	var palette *level.Palette
 	var chunker *level.Chunker
+	inputFile := inputFiles[0]
 
 	switch strings.ToLower(filepath.Ext(inputFile)) {
 	case extLevel:
@@ -224,9 +275,10 @@ func drawingToImage(c *cli.Context, chroma render.Color, inputFile, outputFile s
 //
 // img: input image like a PNG
 // chroma: transparent color
-func imageToChunker(img image.Image, chroma render.Color, chunker *level.Chunker) *level.Palette {
+func imageToChunker(img image.Image, chroma render.Color, chunkSize int) (*level.Palette, *level.Chunker) {
 	var (
 		palette = level.NewPalette()
+		chunker = level.NewChunker(chunkSize)
 		bounds  = img.Bounds()
 	)
 
@@ -265,6 +317,7 @@ func imageToChunker(img image.Image, chroma render.Color, chunker *level.Chunker
 	for _, hex := range sortedColors {
 		palette.Swatches = append(palette.Swatches, uniqueColor[hex])
 	}
+	palette.Inflate()
 
-	return palette
+	return palette, chunker
 }

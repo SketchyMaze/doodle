@@ -22,7 +22,7 @@ func (a MapAccessor) Inflate(pal *Palette) error {
 	for point, swatch := range a {
 		if swatch.IsSparse() {
 			// Replace this with the correct swatch from the palette.
-			if len(pal.Swatches) < swatch.paletteIndex {
+			if swatch.paletteIndex >= len(pal.Swatches) {
 				return fmt.Errorf("MapAccessor.Inflate: swatch for point %s has paletteIndex %d but palette has only %d colors",
 					point,
 					swatch.paletteIndex,

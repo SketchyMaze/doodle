@@ -1,0 +1,35 @@
+{
+	"#000000": {
+		"name": "black"
+	},
+	"#666666": {
+		"name": "dark-grey"
+	},
+	"#999999": {
+		"name": "grey"
+	},
+	"#CCCCCC": {
+		"name": "light-grey"
+	},
+	"#FF0000": {
+		"name": "red"
+	},
+	"#0099FF": {
+		"name": "light-blue"
+	},
+	"#0000FF": {
+		"name": "blue"
+	},
+	"#009900": {
+		"name": "green"
+	},
+	"#999900": {
+		"name": "gold"
+	},
+	"#4D391B": {
+		"name": "brown"
+	},
+	"#8B652C": {
+		"name": "light-brown"
+	}
+}
