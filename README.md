@@ -40,8 +40,14 @@ Escape
   Exit the program otherwise.
 
 Enter
-  Open and close the developer console, and run commands while the console
-  is open.
+  Open and close the developer console, and run commands while the
+  console is open.
+
+F3
+  Toggle the Debug Overlay.
+
+F4
+  Toggle debug collision hitboxes.
 ```
 
 In Play Mode:
@@ -49,13 +55,6 @@ In Play Mode:
 ```
 Cursor Keys
   Move the player around.
-```
-
-In Edit Mode:
-
-```
-F12
-  Take a screenshot (generate a PNG based on level data)
 ```
 
 ## Developer Console
@@ -68,14 +67,14 @@ Commands supported:
 new
   Create a new map in Edit Mode.
 
-save [filename.json]
+save [filename]
   Save the current map in Edit Mode. The filename is required if the map has
   not been saved yet.
 
-edit [filename.json]
-  Open a map in Edit Mode.
+edit [filename]
+  Open a map or doodad in Edit Mode.
 
-play [filename.json]
+play [filename]
   Open a map in Play Mode.
 
 echo <text>

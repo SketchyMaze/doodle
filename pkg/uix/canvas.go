@@ -169,9 +169,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 	if err := w.loopFollowActor(ev); err != nil {
 		log.Error("Follow actor: %s", err) // not fatal but nice to know
 	}
-	if err := w.loopConstrainScroll(); err != nil {
-		log.Debug("loopConstrainScroll: %s", err)
-	}
+	_ = w.loopConstrainScroll()
 
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor

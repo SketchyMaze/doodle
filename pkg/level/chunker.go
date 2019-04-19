@@ -6,7 +6,6 @@ import (
 	"math"
 
 	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
 // Chunker is the data structure that manages the chunks of a level, and
@@ -30,7 +29,6 @@ func NewChunker(size int) *Chunker {
 // on disk) to connect references to the swatches in the palette.
 func (c *Chunker) Inflate(pal *Palette) error {
 	for coord, chunk := range c.Chunks {
-		log.Debug("Chunker.Inflate: expanding chunk %s", coord)
 		chunk.Point = coord
 		chunk.Size = c.Size
 		chunk.Inflate(pal)

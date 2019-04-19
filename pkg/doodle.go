@@ -118,6 +118,14 @@ func (d *Doodle) Run() error {
 				break
 			}
 
+			if ev.KeyName.Now == "F3" {
+				DebugOverlay = !DebugOverlay
+				ev.KeyName.Read()
+			} else if ev.KeyName.Now == "F4" {
+				DebugCollision = !DebugCollision
+				ev.KeyName.Read()
+			}
+
 			// Run the scene's logic.
 			err = d.Scene.Loop(d, ev)
 			if err != nil {

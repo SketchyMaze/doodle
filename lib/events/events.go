@@ -11,16 +11,14 @@ type State struct {
 	Button1 *BoolTick
 	Button2 *BoolTick
 
-	// Screenshot key.
-	ScreenshotKey *BoolTick
-	EscapeKey     *BoolTick
-	EnterKey      *BoolTick
-	ShiftActive   *BoolTick
-	KeyName       *StringTick
-	Up            *BoolTick
-	Left          *BoolTick
-	Right         *BoolTick
-	Down          *BoolTick
+	EscapeKey   *BoolTick
+	EnterKey    *BoolTick
+	ShiftActive *BoolTick
+	KeyName     *StringTick
+	Up          *BoolTick
+	Left        *BoolTick
+	Right       *BoolTick
+	Down        *BoolTick
 
 	// Cursor positions.
 	CursorX *Int32Tick
@@ -33,20 +31,19 @@ type State struct {
 // New creates a new event state manager.
 func New() *State {
 	return &State{
-		Button1:       &BoolTick{},
-		Button2:       &BoolTick{},
-		ScreenshotKey: &BoolTick{},
-		EscapeKey:     &BoolTick{},
-		EnterKey:      &BoolTick{},
-		ShiftActive:   &BoolTick{},
-		KeyName:       &StringTick{},
-		Up:            &BoolTick{},
-		Left:          &BoolTick{},
-		Right:         &BoolTick{},
-		Down:          &BoolTick{},
-		CursorX:       &Int32Tick{},
-		CursorY:       &Int32Tick{},
-		Resized:       &BoolTick{},
+		Button1:     &BoolTick{},
+		Button2:     &BoolTick{},
+		EscapeKey:   &BoolTick{},
+		EnterKey:    &BoolTick{},
+		ShiftActive: &BoolTick{},
+		KeyName:     &StringTick{},
+		Up:          &BoolTick{},
+		Left:        &BoolTick{},
+		Right:       &BoolTick{},
+		Down:        &BoolTick{},
+		CursorX:     &Int32Tick{},
+		CursorY:     &Int32Tick{},
+		Resized:     &BoolTick{},
 	}
 }
 

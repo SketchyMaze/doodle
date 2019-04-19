@@ -19,6 +19,14 @@ var (
 // Poll for events.
 func (r *Renderer) Poll() (*events.State, error) {
 	s := r.events
+
+	// helper function to push keyboard key names on keyDown events only.
+	pushKey := func(name string, state uint8) {
+		if state == 1 {
+			s.KeyName.Push(name)
+		}
+	}
+
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch t := event.(type) {
 		case *sdl.QuitEvent:
@@ -103,8 +111,30 @@ func (r *Renderer) Poll() (*events.State, error) {
 					continue
 				}
 				s.EnterKey.Push(t.State == 1)
+			case sdl.SCANCODE_F1:
+				pushKey("F1", t.State)
+			case sdl.SCANCODE_F2:
+				pushKey("F2", t.State)
+			case sdl.SCANCODE_F3:
+				pushKey("F3", t.State)
+			case sdl.SCANCODE_F4:
+				pushKey("F4", t.State)
+			case sdl.SCANCODE_F5:
+				pushKey("F5", t.State)
+			case sdl.SCANCODE_F6:
+				pushKey("F6", t.State)
+			case sdl.SCANCODE_F7:
+				pushKey("F7", t.State)
+			case sdl.SCANCODE_F8:
+				pushKey("F8", t.State)
+			case sdl.SCANCODE_F9:
+				pushKey("F9", t.State)
+			case sdl.SCANCODE_F10:
+				pushKey("F10", t.State)
+			case sdl.SCANCODE_F11:
+				pushKey("F11", t.State)
 			case sdl.SCANCODE_F12:
-				s.ScreenshotKey.Push(t.State == 1)
+				pushKey("F12", t.State)
 			case sdl.SCANCODE_UP:
 				s.Up.Push(t.State == 1)
 			case sdl.SCANCODE_LEFT:
