@@ -2,9 +2,9 @@ package sdl
 
 import (
 	"errors"
+	"fmt"
 
 	"git.kirsle.net/apps/doodle/lib/events"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -26,7 +26,7 @@ func (r *Renderer) Poll() (*events.State, error) {
 		case *sdl.WindowEvent:
 			if DebugWindowEvents {
 				if t.Event == sdl.WINDOWEVENT_RESIZED {
-					log.Debug("[%d ms] tick:%d Window Resized to %dx%d",
+					fmt.Printf("[%d ms] tick:%d Window Resized to %dx%d",
 						t.Timestamp,
 						r.ticks,
 						t.Data1,
@@ -37,7 +37,7 @@ func (r *Renderer) Poll() (*events.State, error) {
 			s.Resized.Push(true)
 		case *sdl.MouseMotionEvent:
 			if DebugMouseEvents {
-				log.Debug("[%d ms] tick:%d MouseMotion  type:%d  id:%d  x:%d  y:%d  xrel:%d  yrel:%d",
+				fmt.Printf("[%d ms] tick:%d MouseMotion  type:%d  id:%d  x:%d  y:%d  xrel:%d  yrel:%d",
 					t.Timestamp, r.ticks, t.Type, t.Which, t.X, t.Y, t.XRel, t.YRel,
 				)
 			}
@@ -48,7 +48,7 @@ func (r *Renderer) Poll() (*events.State, error) {
 			s.Button1.Push(t.State == 1)
 		case *sdl.MouseButtonEvent:
 			if DebugClickEvents {
-				log.Debug("[%d ms] tick:%d MouseButton  type:%d  id:%d  x:%d  y:%d  button:%d  state:%d",
+				fmt.Printf("[%d ms] tick:%d MouseButton  type:%d  id:%d  x:%d  y:%d  button:%d  state:%d",
 					t.Timestamp, r.ticks, t.Type, t.Which, t.X, t.Y, t.Button, t.State,
 				)
 			}
@@ -81,13 +81,13 @@ func (r *Renderer) Poll() (*events.State, error) {
 			}
 		case *sdl.MouseWheelEvent:
 			if DebugMouseEvents {
-				log.Debug("[%d ms] tick:%d MouseWheel  type:%d  id:%d  x:%d  y:%d",
+				fmt.Printf("[%d ms] tick:%d MouseWheel  type:%d  id:%d  x:%d  y:%d",
 					t.Timestamp, r.ticks, t.Type, t.Which, t.X, t.Y,
 				)
 			}
 		case *sdl.KeyboardEvent:
 			if DebugKeyEvents {
-				log.Debug("[%d ms] tick:%d Keyboard  type:%d  sym:%c  modifiers:%d  state:%d  repeat:%d\n",
+				fmt.Printf("[%d ms] tick:%d Keyboard  type:%d  sym:%c  modifiers:%d  state:%d  repeat:%d\n",
 					t.Timestamp, r.ticks, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat,
 				)
 			}

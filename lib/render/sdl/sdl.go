@@ -2,11 +2,11 @@
 package sdl
 
 import (
+	"fmt"
 	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -50,19 +50,16 @@ func (r *Renderer) Teardown() {
 // Setup the renderer.
 func (r *Renderer) Setup() error {
 	// Initialize SDL.
-	log.Info("Initializing SDL")
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		return err
+		return fmt.Errorf("sdl.Init: %s", err)
 	}
 
 	// Initialize SDL_TTF.
-	log.Info("Initializing SDL_TTF")
 	if err := ttf.Init(); err != nil {
-		return err
+		return fmt.Errorf("ttf.Init: %s", err)
 	}
 
 	// Create our window.
-	log.Info("Creating the Main Window")
 	window, err := sdl.CreateWindow(
 		r.title,
 		sdl.WINDOWPOS_CENTERED,
@@ -77,7 +74,6 @@ func (r *Renderer) Setup() error {
 	r.window = window
 
 	// Blank out the window in white.
-	log.Info("Creating the SDL Renderer")
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		panic(err)
