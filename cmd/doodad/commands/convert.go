@@ -148,14 +148,16 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		doodad.Author = os.Getenv("USER")
 
 		// Write the first layer and gather its palette.
-		palette, layer0 := imageToChunker(images[0], chroma, chunkSize)
+		log.Info("Converting first layer to drawing and getting the palette")
+		palette, layer0 := imageToChunker(images[0], chroma, nil, chunkSize)
 		doodad.Palette = palette
 		doodad.Layers[0].Chunker = layer0
 
 		// Write any additional layers.
 		if len(images) > 1 {
 			for i, img := range images[1:] {
-				_, chunker := imageToChunker(img, chroma, chunkSize)
+				log.Info("Converting extra layer %d", i+1)
+				_, chunker := imageToChunker(img, chroma, palette, chunkSize)
 				doodad.Layers = append(doodad.Layers, doodads.Layer{
 					Name:    fmt.Sprintf("layer-%d", i+1),
 					Chunker: chunker,
@@ -180,7 +182,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 			lvl.Title = "Converted Level"
 		}
 		lvl.Author = os.Getenv("USER")
-		palette, chunker := imageToChunker(images[0], chroma, lvl.Chunker.Size)
+		palette, chunker := imageToChunker(images[0], chroma, nil, lvl.Chunker.Size)
 		lvl.Palette = palette
 		lvl.Chunker = chunker
 
@@ -275,15 +277,21 @@ func drawingToImage(c *cli.Context, chroma render.Color, inputFiles []string, ou
 //
 // img: input image like a PNG
 // chroma: transparent color
-func imageToChunker(img image.Image, chroma render.Color, chunkSize int) (*level.Palette, *level.Chunker) {
+func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette, chunkSize int) (*level.Palette, *level.Chunker) {
 	var (
-		palette = level.NewPalette()
 		chunker = level.NewChunker(chunkSize)
 		bounds  = img.Bounds()
 	)
 
+	if palette == nil {
+		palette = level.NewPalette()
+	}
+
 	// Cache a palette of unique colors as we go.
 	var uniqueColor = map[string]*level.Swatch{}
+	for _, swatch := range palette.Swatches {
+		uniqueColor[swatch.Color.String()] = swatch
+	}
 
 	for x := bounds.Min.X; x < bounds.Max.X; x++ {
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {

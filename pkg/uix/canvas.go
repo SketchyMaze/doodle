@@ -173,6 +173,18 @@ func (w *Canvas) Loop(ev *events.State) error {
 		log.Debug("loopConstrainScroll: %s", err)
 	}
 
+	// Remove any actors that were destroyed the previous tick.
+	var newActors []*Actor
+	for _, a := range w.actors {
+		if a.flagDestroy {
+			continue
+		}
+		newActors = append(newActors, a)
+	}
+	if len(newActors) < len(w.actors) {
+		w.actors = newActors
+	}
+
 	// Move any actors. As we iterate over all actors, track their bounding
 	// rectangles so we can later see if any pair of actors intersect each other.
 	boxes := make([]render.Rect, len(w.actors))
@@ -195,7 +207,6 @@ func (w *Canvas) Loop(ev *events.State) error {
 		info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
 		if ok {
 			// Collision happened with world.
-			log.Error("COLLIDE %+v", info)
 		}
 		delta = info.MoveTo // Move us back where the collision check put us
 
@@ -211,7 +222,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 	// Check collisions between actors.
 	for tuple := range collision.BetweenBoxes(boxes) {
-		log.Error("Actor %s collides with %s",
+		log.Debug("Actor %s collides with %s",
 			w.actors[tuple[0]].ID(),
 			w.actors[tuple[1]].ID(),
 		)
@@ -219,8 +230,12 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 		// Call the OnCollide handler.
 		if w.scripting != nil {
-			w.scripting.To(a.ID()).Events.RunCollide()
-			w.scripting.To(b.ID()).Events.RunCollide()
+			if err := w.scripting.To(a.ID()).Events.RunCollide(); err != nil {
+				log.Error(err.Error())
+			}
+			if err := w.scripting.To(b.ID()).Events.RunCollide(); err != nil {
+				log.Error(err.Error())
+			}
 		}
 	}
 

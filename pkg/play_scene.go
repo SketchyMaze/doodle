@@ -130,7 +130,11 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 		return nil
 	}
 
-	// s.drawing.Loop(ev)
+	// Loop the script supervisor so timeouts/intervals can fire in scripts.
+	if err := s.scripting.Loop(); err != nil {
+		log.Error("PlayScene.Loop: scripting.Loop: %s", err)
+	}
+
 	s.movePlayer(ev)
 	if err := s.drawing.Loop(ev); err != nil {
 		log.Error("Drawing loop error: %s", err.Error())
@@ -146,16 +150,6 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 	// Draw the level.
 	s.drawing.Present(d.Engine, s.drawing.Point())
-
-	// Draw our hero. TODO: this draws a yellow box using the player's World
-	// Position as tho it were Screen Position. The player has its own canvas
-	// currently drawn in red
-	d.Engine.DrawBox(render.RGBA(255, 255, 153, 64), render.Rect{
-		X: s.Player.Position().X,
-		Y: s.Player.Position().Y,
-		W: s.Player.Size().W,
-		H: s.Player.Size().H,
-	})
 
 	// Draw out bounding boxes.
 	d.DrawCollisionBox(s.Player)

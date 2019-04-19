@@ -18,7 +18,7 @@ const maxSamples = 100
 // like: boolProp DebugOverlay true
 var (
 	DebugOverlay   = true
-	DebugCollision = true
+	DebugCollision = false
 
 	DebugTextPadding int32 = 8
 	DebugTextSize          = 24

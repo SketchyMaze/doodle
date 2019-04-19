@@ -1,8 +1,7 @@
 function main() {
-	console.log("Sticky Button initialized!");
+	console.log("%s initialized!", Self.Doodad.Title);
 
 	Events.OnCollide( function() {
-		console.log("Touched!");
-		Self.Canvas.SetBackground(RGBA(255, 153, 0, 153))
+		Self.ShowLayer(1);
 	})
 }

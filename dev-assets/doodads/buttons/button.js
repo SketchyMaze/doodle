@@ -1,8 +1,17 @@
 function main() {
-	console.log("Sticky Button initialized!");
+	console.log("%s initialized!", Self.Doodad.Title);
+
+	var timer = 0;
 
 	Events.OnCollide( function() {
-		console.log("Touched!");
-		Self.Canvas.SetBackground(RGBA(255, 153, 0, 153))
+		if (timer > 0) {
+			clearTimeout(timer);
+		}
+
+		Self.ShowLayer(1);
+		timer = setTimeout(function() {
+			Self.ShowLayer(0);
+			timer = 0;
+		}, 200);
 	})
 }

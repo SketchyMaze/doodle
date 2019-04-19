@@ -5,6 +5,7 @@ package scripting
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -21,6 +22,15 @@ func NewSupervisor() *Supervisor {
 	return &Supervisor{
 		scripts: map[string]*VM{},
 	}
+}
+
+// Loop the supervisor to invoke timer events in any running scripts.
+func (s *Supervisor) Loop() error {
+	now := time.Now()
+	for _, vm := range s.scripts {
+		vm.TickTimer(now)
+	}
+	return nil
 }
 
 // InstallScripts loads scripts for all actors in the level.
@@ -47,9 +57,11 @@ func (s *Supervisor) To(name string) *VM {
 		return vm
 	}
 
-	log.Error("scripting.Supervisor.To(%s): no such VM but returning blank VM",
-		name,
-	)
+	// TODO: put this log back in, but add PLAYER script so it doesn't spam
+	// the console for missing PLAYER.
+	// log.Error("scripting.Supervisor.To(%s): no such VM but returning blank VM",
+	// 	name,
+	// )
 	return NewVM(name)
 }
 

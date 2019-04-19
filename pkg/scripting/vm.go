@@ -1,7 +1,6 @@
 package scripting
 
 import (
-	"errors"
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -18,6 +17,10 @@ type VM struct {
 	Self   interface{}
 
 	vm *otto.Otto
+
+	// setTimeout and setInterval variables.
+	timerLastID int // becomes 1 when first timer is set
+	timers      map[int]*Timer
 }
 
 // NewVM creates a new JavaScript VM.
@@ -26,6 +29,7 @@ func NewVM(name string) *VM {
 		Name:   name,
 		Events: NewEvents(),
 		vm:     otto.New(),
+		timers: map[int]*Timer{},
 	}
 	return vm
 }
@@ -48,8 +52,14 @@ func (vm *VM) RegisterLevelHooks() error {
 		"log":    log.Logger,
 		"RGBA":   render.RGBA,
 		"Point":  render.NewPoint,
-		"Self":   vm.Self,
+		"Self":   vm.Self, // i.e., the uix.Actor object
 		"Events": vm.Events,
+
+		// Timer functions with APIs similar to the web browsers.
+		"setTimeout":    vm.SetTimeout,
+		"setInterval":   vm.SetInterval,
+		"clearTimeout":  vm.ClearTimer,
+		"clearInterval": vm.ClearTimer,
 	}
 	for name, v := range bindings {
 		err := vm.vm.Set(name, v)
@@ -59,7 +69,15 @@ func (vm *VM) RegisterLevelHooks() error {
 			)
 		}
 	}
-	vm.vm.Run(`console = {}; console.log = log.Info;`)
+
+	// Alias the console.log functions to the logger.
+	vm.vm.Run(`
+		console = {};
+		console.log = log.Info;
+		console.debug = log.Debug;
+		console.warn = log.Warn;
+		console.error = log.Error;
+	`)
 	return nil
 }
 
@@ -71,7 +89,7 @@ func (vm *VM) Main() error {
 	}
 
 	if !function.IsFunction() {
-		return errors.New("main is not a function")
+		return nil
 	}
 
 	_, err = function.Call(otto.Value{})

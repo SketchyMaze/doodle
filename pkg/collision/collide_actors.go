@@ -2,7 +2,6 @@ package collision
 
 import (
 	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
 // IndexTuple holds two integers used as array indexes.
@@ -21,7 +20,6 @@ func BetweenBoxes(boxes []render.Rect) chan IndexTuple {
 		for i, box := range boxes {
 			for j := i + 1; j < len(boxes); j++ {
 				if box.Intersects(boxes[j]) {
-					log.Info("Actor %d intersects %d", i, j)
 					generator <- IndexTuple{i, j}
 				}
 			}

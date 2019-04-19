@@ -1,6 +1,9 @@
 package uix
 
 import (
+	"errors"
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -19,6 +22,9 @@ type Actor struct {
 	doodads.Drawing
 	Actor  *level.Actor
 	Canvas *Canvas
+
+	activeLayer int  // active drawing frame for display
+	flagDestroy bool // flag the actor for destruction
 }
 
 // NewActor sets up a uix.Actor.
@@ -50,4 +56,27 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	can.actor = actor
 
 	return actor
+}
+
+// LayerCount returns the number of layers in this actor's drawing.
+func (a *Actor) LayerCount() int {
+	return len(a.Doodad.Layers)
+}
+
+// ShowLayer sets the actor's ActiveLayer to the index given.
+func (a *Actor) ShowLayer(index int) error {
+	if index < 0 {
+		return errors.New("layer index must be 0 or greater")
+	} else if index > len(a.Doodad.Layers) {
+		return fmt.Errorf("layer %d out of range for doodad's layers", index)
+	}
+
+	a.activeLayer = index
+	a.Canvas.Load(a.Doodad.Palette, a.Doodad.Layers[index].Chunker)
+	return nil
+}
+
+// Destroy deletes the actor from the running level.
+func (a *Actor) Destroy() {
+	a.flagDestroy = true
 }
