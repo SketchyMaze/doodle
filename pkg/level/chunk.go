@@ -31,10 +31,11 @@ type Chunk struct {
 	Size  int
 
 	// Texture cache properties so we don't redraw pixel-by-pixel every frame.
-	uuid          uuid.UUID
-	texture       render.Texturer
-	textureMasked render.Texturer
-	dirty         bool
+	uuid               uuid.UUID
+	texture            render.Texturer
+	textureMasked      render.Texturer
+	textureMaskedColor render.Color
+	dirty              bool
 }
 
 // JSONChunk holds a lightweight (interface-free) copy of the Chunk for
@@ -87,7 +88,7 @@ func (c *Chunk) Texture(e render.Engine) render.Texturer {
 
 // TextureMasked returns a cached texture with the ColorMask applied.
 func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texturer {
-	if c.textureMasked == nil {
+	if c.textureMasked == nil || c.textureMaskedColor != mask {
 		// Generate the normal bitmap and one with a color mask if applicable.
 		bitmap := c.toBitmap(mask)
 		defer os.Remove(bitmap)
@@ -97,6 +98,7 @@ func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texture
 		}
 
 		c.textureMasked = tex
+		c.textureMaskedColor = mask
 	}
 	return c.textureMasked
 }

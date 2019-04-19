@@ -159,6 +159,9 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 				delta = int32(balance.ScrollMaxVelocity)
 			}
 
+			// TODO: add gravity to counteract jitters on scrolling vertically
+			scrollBy.Y -= int32(balance.Gravity)
+
 			if delta < 0 {
 				delta = -delta
 			}
@@ -172,6 +175,9 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 				delta = int32(balance.ScrollMaxVelocity)
 			}
 			scrollBy.Y = -delta
+
+			// TODO: add gravity to counteract jitters on scrolling vertically
+			scrollBy.Y += int32(balance.Gravity * 3)
 		}
 
 		if scrollBy != render.Origin {

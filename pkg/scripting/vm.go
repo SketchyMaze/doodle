@@ -92,6 +92,13 @@ func (vm *VM) Main() error {
 		return nil
 	}
 
+	// Catch panics.
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error("Panic caught in JavaScript VM: %s", err)
+		}
+	}()
+
 	_, err = function.Call(otto.Value{})
 	return err
 }

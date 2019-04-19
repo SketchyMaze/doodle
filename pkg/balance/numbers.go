@@ -10,7 +10,7 @@ var (
 	CanvasScrollSpeed int32 = 8
 
 	// Window scrolling behavior in Play Mode.
-	ScrollboxHoz      = 64 // horizontal px from window border to start scrol
+	ScrollboxHoz      = 256 // horizontal px from window border to start scrol
 	ScrollboxVert     = 128
 	ScrollMaxVelocity = 8 // 24
 
