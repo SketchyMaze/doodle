@@ -53,9 +53,9 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	s.debSwatch = new(string)
 	s.debWorldIndex = new(string)
 	customDebugLabels = []debugLabel{
-		{"Pixel", s.debWorldIndex},
-		{"Tool", s.debTool},
-		{"Swatch", s.debSwatch},
+		{"Pixel:", s.debWorldIndex},
+		{"Tool:", s.debTool},
+		{"Swatch:", s.debSwatch},
 	}
 
 	// Initialize the user interface. It references the palette and such so it

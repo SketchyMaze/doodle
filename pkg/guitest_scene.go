@@ -17,11 +17,12 @@ type GUITestScene struct {
 	// Private widgets.
 	Frame  *ui.Frame
 	Window *ui.Frame
+	body   *ui.Frame
 }
 
 // Name of the scene.
 func (s *GUITestScene) Name() string {
-	return "Main"
+	return "GUITest"
 }
 
 // Setup the scene.
@@ -64,6 +65,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Anchor: ui.N,
 		Expand: true,
 	})
+	s.body = body
 
 	// Left Frame
 	leftFrame := ui.NewFrame("Left Frame")
