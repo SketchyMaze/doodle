@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 )
 
@@ -9,12 +11,13 @@ type Pack struct {
 	// Side of the parent to anchor the position to, like N, SE, W. Default
 	// is Center.
 	Anchor Anchor
+	Side   Side
 
 	// If the widget is smaller than its allocated space, grow the widget
 	// to fill its space in the Frame.
-	Fill  bool
-	FillX bool
-	FillY bool
+	Fill  string // "x", "y", "both" or "" for none
+	fillX bool
+	fillY bool
 
 	Padding int32 // Equal padding on X and Y.
 	PadX    int32
@@ -30,8 +33,8 @@ func (w *Frame) Pack(child Widget, config ...Pack) {
 	}
 
 	// Initialize the pack list for this anchor?
-	if _, ok := w.packs[C.Anchor]; !ok {
-		w.packs[C.Anchor] = []packedWidget{}
+	if _, ok := w.packs[C.Side]; !ok {
+		w.packs[C.Side] = []packedWidget{}
 	}
 
 	// Padding: if the user only provided Padding add it to both
@@ -40,16 +43,14 @@ func (w *Frame) Pack(child Widget, config ...Pack) {
 	C.PadX += C.Padding
 	C.PadY += C.Padding
 
-	// Fill: true implies both directions.
-	if C.Fill {
-		C.FillX = true
-		C.FillY = true
-	}
+	// Cache the full X and Y booleans.
+	C.fillX = C.Fill == FillX || C.Fill == FillBoth
+	C.fillY = C.Fill == FillY || C.Fill == FillBoth
 
 	// Adopt the child widget so it can access the Frame.
 	child.Adopt(w)
 
-	w.packs[C.Anchor] = append(w.packs[C.Anchor], packedWidget{
+	w.packs[C.Side] = append(w.packs[C.Side], packedWidget{
 		widget: child,
 		pack:   C,
 	})
@@ -72,10 +73,10 @@ func (w *Frame) computePacked(e render.Engine) {
 		expanded  = []packedWidget{}
 	)
 
-	// Iterate through all anchored directions and compute how much space to
+	// Iterate through all packed sides and compute how much space to
 	// reserve to contain all of their widgets.
-	for anchor := AnchorMin; anchor <= AnchorMax; anchor++ {
-		if _, ok := w.packs[anchor]; !ok {
+	for side := SideMin; side <= SideMax; side++ {
+		if _, ok := w.packs[side]; !ok {
 			continue
 		}
 
@@ -86,15 +87,15 @@ func (w *Frame) computePacked(e render.Engine) {
 			xDirection int32 = 1
 		)
 
-		if anchor.IsSouth() { // TODO: these need tuning
+		if side == Bottom { // TODO: these need tuning
 			y = frameSize.H - w.BoxThickness(4)
 			yDirection = -1 * w.BoxThickness(4) // parent + child BoxThickness(1) = 2
-		} else if anchor == E {
+		} else if side == Right {
 			x = frameSize.W - w.BoxThickness(4)
 			xDirection = -1 - w.BoxThickness(4) // - w.BoxThickness(2)
 		}
 
-		for _, packedWidget := range w.packs[anchor] {
+		for _, packedWidget := range w.packs[side] {
 
 			child := packedWidget.widget
 			pack := packedWidget.pack
@@ -121,19 +122,17 @@ func (w *Frame) computePacked(e render.Engine) {
 				maxHeight = yStep + size.H + (pack.PadY * 2)
 			}
 
-			if anchor.IsSouth() {
+			if side == Bottom {
 				y -= size.H - pack.PadY
-			}
-			if anchor.IsEast() {
+			} else if side == Right {
 				x -= size.W - pack.PadX
 			}
 
 			child.MoveTo(render.NewPoint(x, y))
 
-			if anchor.IsNorth() {
+			if side == Top {
 				y += size.H + pack.PadY
-			}
-			if anchor == W {
+			} else if side == Left {
 				x += size.W + pack.PadX
 			}
 
@@ -147,6 +146,13 @@ func (w *Frame) computePacked(e render.Engine) {
 	// If we have extra space in the Frame and any expanding widgets, let the
 	// expanding widgets grow and share the remaining space.
 	computedSize := render.NewRect(maxWidth, maxHeight)
+	if w.fixedWidth > 0 {
+		computedSize.W = w.fixedWidth
+	}
+	if w.fixedHeight > 0 {
+		computedSize.H = w.fixedHeight
+	}
+
 	if len(expanded) > 0 && !frameSize.IsZero() && frameSize.Bigger(computedSize) {
 		// Divy up the size available.
 		growBy := render.Rect{
@@ -154,7 +160,8 @@ func (w *Frame) computePacked(e render.Engine) {
 			H: ((frameSize.H - computedSize.H) / int32(len(expanded))), // - w.BoxThickness(2),
 		}
 		for _, pw := range expanded {
-			pw.widget.ResizeBy(growBy)
+			fmt.Printf("expand %s by %s (comp size %s)\n", pw.widget.ID(), growBy, computedSize)
+			pw.widget.ResizeAuto(growBy)
 			pw.widget.Compute(e)
 		}
 	}
@@ -172,7 +179,7 @@ func (w *Frame) computePacked(e render.Engine) {
 		}
 	}
 
-	// Rescan all the widgets in this anchor to re-center them
+	// Rescan all the widgets in this side to re-center them
 	// in their space.
 	innerFrameSize := render.NewRect(
 		frameSize.W-w.BoxThickness(2),
@@ -189,8 +196,8 @@ func (w *Frame) computePacked(e render.Engine) {
 			moved   bool
 		)
 
-		if pack.Anchor.IsNorth() || pack.Anchor.IsSouth() {
-			if pack.FillX && resize.W < innerFrameSize.W {
+		if pack.Side == Top || pack.Side == Bottom {
+			if pack.fillX && resize.W < innerFrameSize.W {
 				resize.W = innerFrameSize.W - w.BoxThickness(2)
 				resized = true
 			}
@@ -205,8 +212,8 @@ func (w *Frame) computePacked(e render.Engine) {
 
 				moved = true
 			}
-		} else if pack.Anchor.IsWest() || pack.Anchor.IsEast() {
-			if pack.FillY && resize.H < innerFrameSize.H {
+		} else if pack.Side == Left || pack.Side == Right {
+			if pack.fillY && resize.H < innerFrameSize.H {
 				resize.H = innerFrameSize.H - w.BoxThickness(2) // BoxThickness(2) for parent + child
 				// point.Y -= (w.BoxThickness(4) + child.BoxThickness(2))
 				moved = true
@@ -225,11 +232,12 @@ func (w *Frame) computePacked(e render.Engine) {
 				moved = true
 			}
 		} else {
-			panic("unsupported pack.Anchor")
+			panic("unsupported pack.Side")
 		}
 
 		if resized && size != resize {
-			child.Resize(resize)
+			fmt.Printf("fill: resize %s to %s\n", child.ID(), resize)
+			child.ResizeAuto(resize)
 			child.Compute(e)
 		}
 		if moved {
@@ -238,7 +246,7 @@ func (w *Frame) computePacked(e render.Engine) {
 	}
 
 	// if !w.FixedSize() {
-	w.Resize(render.NewRect(
+	w.ResizeAuto(render.NewRect(
 		frameSize.W-w.BoxThickness(2),
 		frameSize.H-w.BoxThickness(2),
 	))
@@ -248,7 +256,10 @@ func (w *Frame) computePacked(e render.Engine) {
 // Anchor is a cardinal direction.
 type Anchor uint8
 
-// Anchor values.
+// Side of a parent widget to pack children against.
+type Side uint8
+
+// Anchor and Side constants.
 const (
 	Center Anchor = iota
 	N
@@ -259,12 +270,20 @@ const (
 	SW
 	W
 	NW
+
+	Top Side = iota
+	Left
+	Right
+	Bottom
 )
 
-// Range of Anchor values.
+// Range of Anchor and Side values.
 const (
 	AnchorMin = Center
 	AnchorMax = NW
+
+	SideMin = Top
+	SideMax = Bottom
 )
 
 // IsNorth returns if the anchor is N, NE or NW.

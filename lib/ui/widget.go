@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui/theme"
 )
@@ -24,11 +26,13 @@ type Widget interface {
 	Point() render.Point
 	MoveTo(render.Point)
 	MoveBy(render.Point)
-	Size() render.Rect    // Return the Width and Height of the widget.
-	FixedSize() bool      // Return whether the size is fixed (true) or automatic (false)
-	BoxSize() render.Rect // Return the full size including the border and outline.
+	Size() render.Rect          // Return the Width and Height of the widget.
+	FixedSize() bool            // Return whether the size is fixed (true) or automatic (false)
+	FixedSizes() (int32, int32) // Return whether the W and H are fixed in size
+	BoxSize() render.Rect       // Return the full size including the border and outline.
 	Resize(render.Rect)
 	ResizeBy(render.Rect)
+	ResizeAuto(render.Rect)
 	Rect() render.Rect // Return the full absolute rect combining the Size() and Point()
 
 	Handle(Event, func(render.Point))
@@ -107,6 +111,8 @@ type BaseWidget struct {
 	hidden       bool
 	width        int32
 	height       int32
+	fixedWidth   int32 // values manually configured by the user,
+	fixedHeight  int32 // and do not change
 	point        render.Point
 	margin       int32
 	background   render.Color
@@ -152,9 +158,11 @@ func (w *BaseWidget) Configure(c Config) {
 		w.fixedSize = !c.AutoResize
 		if c.Width != 0 {
 			w.width = c.Width
+			w.fixedWidth = w.width
 		}
 		if c.Height != 0 {
 			w.height = c.Height
+			w.fixedHeight = w.height
 		}
 	}
 
@@ -235,6 +243,12 @@ func (w *BaseWidget) FixedSize() bool {
 	return w.fixedSize
 }
 
+// FixedSizes returns whether the widget's Width or Height were manually set
+// to hard-coded values, respectively.
+func (w *BaseWidget) FixedSizes() (int32, int32) {
+	return w.fixedWidth, w.fixedHeight
+}
+
 // Resize sets the size of the widget to the .W and .H attributes of a rect.
 func (w *BaseWidget) Resize(v render.Rect) {
 	w.fixedSize = true
@@ -249,10 +263,17 @@ func (w *BaseWidget) ResizeBy(v render.Rect) {
 	w.height += v.H
 }
 
-// resizeAuto sets the size of the widget but doesn't set the fixedSize flag.
-func (w *BaseWidget) resizeAuto(v render.Rect) {
-	w.width = v.W
-	w.height = v.H
+// ResizeAuto sets the size of the widget but doesn't set the fixedSize flag.
+func (w *BaseWidget) ResizeAuto(v render.Rect) {
+	if w.fixedWidth == 0 {
+		w.width = v.W
+	}
+	if w.fixedHeight == 0 {
+		w.height = v.H
+	}
+	fmt.Printf("ResizeAuto(%s): fixed size=%d,%d new size=%s\n",
+		w.ID(), w.fixedWidth, w.fixedHeight, w.Size(),
+	)
 }
 
 // BoxThickness returns the full sum of the padding, border and outline.

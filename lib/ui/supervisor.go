@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"sync"
+	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -29,12 +30,13 @@ const (
 // interaction events such as mouse hovers and clicks in their general
 // vicinity.
 type Supervisor struct {
-	lock     sync.RWMutex
-	serial   int                 // ID number of each widget added in order
-	widgets  map[int]WidgetSlot  // map of widget ID to WidgetSlot
-	hovering map[int]interface{} // map of widgets under the cursor
-	clicked  map[int]interface{} // map of widgets being clicked
-	dd       *DragDrop
+	lock      sync.RWMutex
+	targetFPS int
+	serial    int                 // ID number of each widget added in order
+	widgets   map[int]WidgetSlot  // map of widget ID to WidgetSlot
+	hovering  map[int]interface{} // map of widgets under the cursor
+	clicked   map[int]interface{} // map of widgets being clicked
+	dd        *DragDrop
 }
 
 // WidgetSlot holds a widget with a unique ID number in a sorted list.
@@ -46,10 +48,11 @@ type WidgetSlot struct {
 // NewSupervisor creates a supervisor.
 func NewSupervisor() *Supervisor {
 	return &Supervisor{
-		widgets:  map[int]WidgetSlot{},
-		hovering: map[int]interface{}{},
-		clicked:  map[int]interface{}{},
-		dd:       NewDragDrop(),
+		targetFPS: 1000 / 60,
+		widgets:   map[int]WidgetSlot{},
+		hovering:  map[int]interface{}{},
+		clicked:   map[int]interface{}{},
+		dd:        NewDragDrop(),
 	}
 }
 
@@ -74,6 +77,43 @@ var (
 	// other handles for the remainder of this tick.
 	ErrStopPropagation = errors.New("stop all event propagation")
 )
+
+// MainLoop starts the UI main loop, for UI-only applications.
+func (s *Supervisor) MainLoop(e render.Engine) error {
+	for true {
+		start := time.Now()
+		e.Clear(render.Green)
+
+		// Poll for events.
+		ev, err := e.Poll()
+		if err != nil {
+			return err
+		}
+
+		// TODO: escape key to exit the main loop
+		if ev.EscapeKey.Now {
+			return nil
+		}
+
+		s.Loop(ev)
+
+		// Render the widgets under our care.
+		s.Present(e)
+
+		// Commit the pixels to screen.
+		e.Present()
+
+		// Delay to maintain the target FPS.
+		var delay uint32
+		elapsed := time.Now().Sub(start)
+		tmp := elapsed / time.Millisecond
+		if s.targetFPS-int(tmp) > 0 {
+			delay = uint32(s.targetFPS - int(tmp))
+		}
+		e.Delay(delay)
+	}
+	return nil
+}
 
 // Loop to check events and pass them to managed widgets.
 //
@@ -211,12 +251,15 @@ func (s *Supervisor) Present(e render.Engine) {
 }
 
 // Add a widget to be supervised.
-func (s *Supervisor) Add(w Widget) {
+func (s *Supervisor) Add(w ...Widget) {
 	s.lock.Lock()
-	s.widgets[s.serial] = WidgetSlot{
-		id:     s.serial,
-		widget: w,
+
+	for _, child := range w {
+		s.widgets[s.serial] = WidgetSlot{
+			id:     s.serial,
+			widget: child,
+		}
+		s.serial++
 	}
-	s.serial++
 	s.lock.Unlock()
 }

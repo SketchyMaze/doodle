@@ -16,7 +16,7 @@ type GUITestScene struct {
 
 	// Private widgets.
 	Frame  *ui.Frame
-	Window *ui.Frame
+	Window *ui.Window
 }
 
 // Name of the scene.
@@ -28,8 +28,7 @@ func (s *GUITestScene) Name() string {
 func (s *GUITestScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
 
-	window := ui.NewFrame("window")
-	s.Window = window
+	window := ui.NewWindow("Widget Toolkit")
 	window.Configure(ui.Config{
 		Width:       750,
 		Height:      450,
@@ -37,33 +36,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		BorderStyle: ui.BorderRaised,
 		BorderSize:  2,
 	})
-
-	// Title Bar
-	titleBar := ui.NewLabel(ui.Label{
-		Text: "Widget Toolkit",
-		Font: render.Text{
-			Size:   12,
-			Color:  render.White,
-			Stroke: render.DarkBlue,
-		},
-	})
-	titleBar.Configure(ui.Config{
-		Background: render.Blue,
-	})
-	window.Pack(titleBar, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-	})
-
-	// Window Body
-	body := ui.NewFrame("Window Body")
-	body.Configure(ui.Config{
-		Background: render.Yellow,
-	})
-	window.Pack(body, ui.Pack{
-		Anchor: ui.N,
-		Expand: true,
-	})
+	s.Window = window
 
 	// Left Frame
 	leftFrame := ui.NewFrame("Left Frame")
@@ -73,9 +46,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		BorderSize:  4,
 		Width:       100,
 	})
-	body.Pack(leftFrame, ui.Pack{
-		Anchor: ui.W,
-		FillY:  true,
+	window.Pack(leftFrame, ui.Pack{
+		Side:  ui.Left,
+		FillY: true,
 	})
 
 	// Some left frame buttons.
@@ -89,9 +62,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		})
 		s.Supervisor.Add(btn)
 		leftFrame.Pack(btn, ui.Pack{
-			Anchor: ui.N,
-			FillX:  true,
-			PadY:   2,
+			Side:  ui.Top,
+			FillX: true,
+			PadY:  2,
 		})
 	}
 
@@ -101,8 +74,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Background: render.White,
 		BorderSize: 0,
 	})
-	body.Pack(frame, ui.Pack{
-		Anchor: ui.W,
+	window.Pack(frame, ui.Pack{
+		Side:   ui.Left,
 		Expand: true,
 		Fill:   true,
 	})
@@ -115,9 +88,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		BorderSize:  2,
 		Width:       80,
 	})
-	body.Pack(rightFrame, ui.Pack{
-		Anchor: ui.W,
-		Fill:   true,
+	window.Pack(rightFrame, ui.Pack{
+		Side: ui.Right,
+		Fill: true,
 	})
 
 	// A grid of buttons.
@@ -139,7 +112,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 					d.Flash("%s clicked", btn)
 				})
 				rowFrame.Pack(btn, ui.Pack{
-					Anchor: ui.W,
+					Side:   ui.Left,
 					Expand: true,
 					FillX:  true,
 				})
@@ -147,8 +120,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			})(row, col, rowFrame)
 		}
 		rightFrame.Pack(rowFrame, ui.Pack{
-			Anchor: ui.N,
-			Fill:   true,
+			Side: ui.Top,
+			Fill: true,
 		})
 	}
 
@@ -160,7 +133,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Black,
 		},
 	}), ui.Pack{
-		Anchor:  ui.NW,
+		Side:    ui.Top,
+		Anchor:  ui.W,
 		Padding: 2,
 	})
 
@@ -172,7 +146,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		}),
 	)
 	frame.Pack(cb, ui.Pack{
-		Anchor:  ui.NW,
+		Side:    ui.Top,
+		Anchor:  ui.W,
 		Padding: 4,
 	})
 	cb.Supervise(s.Supervisor)
@@ -184,7 +159,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Red,
 		},
 	}), ui.Pack{
-		Anchor:  ui.SE,
+		Side:    ui.Bottom,
+		Anchor:  ui.E,
 		Padding: 8,
 	})
 	frame.Pack(ui.NewLabel(ui.Label{
@@ -194,7 +170,8 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Blue,
 		},
 	}), ui.Pack{
-		Anchor:  ui.SE,
+		Side:    ui.Bottom,
+		Anchor:  ui.E,
 		Padding: 8,
 	})
 
@@ -204,7 +181,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Background: render.Grey,
 	})
 	window.Pack(btnFrame, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.Top,
 	})
 
 	button1 := ui.NewButton("Button1", ui.NewLabel(ui.Label{
@@ -228,13 +205,12 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		})
 	})
 
-	var align = ui.W
 	btnFrame.Pack(button1, ui.Pack{
-		Anchor:  align,
+		Side:    ui.Left,
 		Padding: 20,
 	})
 	btnFrame.Pack(button2, ui.Pack{
-		Anchor:  align,
+		Side:    ui.Left,
 		Padding: 20,
 	})
 

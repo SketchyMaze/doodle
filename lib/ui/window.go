@@ -50,8 +50,8 @@ func NewWindow(title string) *Window {
 		Background: render.Blue,
 	})
 	w.body.Pack(titleBar, Pack{
-		Anchor: N,
-		Fill:   true,
+		Side: Top,
+		Fill: FillX,
 	})
 	w.titleBar = titleBar
 
@@ -61,8 +61,8 @@ func NewWindow(title string) *Window {
 		Background: render.Grey,
 	})
 	w.body.Pack(content, Pack{
-		Anchor: N,
-		Fill:   true,
+		Side: Top,
+		Fill: FillBoth,
 	})
 	w.content = content
 
@@ -79,6 +79,11 @@ func (w *Window) Children() []Widget {
 // TitleBar returns the title bar widget.
 func (w *Window) TitleBar() *Label {
 	return w.titleBar
+}
+
+// Frame returns the content frame of the window.
+func (w *Window) Frame() *Frame {
+	return w.content
 }
 
 // Configure the widget. Color and style changes are passed down to the inner
@@ -100,7 +105,23 @@ func (w *Window) ConfigureTitle(C Config) {
 
 // Compute the window.
 func (w *Window) Compute(e render.Engine) {
+	var size = w.Size()
+
 	w.body.Compute(e)
+
+	// Assign a manual Height to the title bar using its naturally computed
+	// height, but leave the Width empty so the frame packer can stretch it
+	// horizontally.
+	w.titleBar.Configure(Config{
+		Height: w.titleBar.Size().H,
+	})
+
+	// Shrink down the content frame to leave room for the title bar.
+	w.content.Resize(render.Rect{
+		W: size.W - w.BoxThickness(2) - w.titleBar.BoxThickness(2),
+		H: size.H - w.titleBar.Size().H - w.BoxThickness(4) -
+			((w.titleBar.Font.Padding + w.titleBar.Font.PadY) * 2),
+	})
 }
 
 // Present the window.
