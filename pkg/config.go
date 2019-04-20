@@ -48,7 +48,5 @@ func (d *Doodle) EditFile(filename string) error {
 		}
 	}
 
-	d.EditDrawing(absPath)
-
-	return nil
+	return d.EditDrawing(absPath)
 }

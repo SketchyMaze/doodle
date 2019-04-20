@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"github.com/robertkrimen/otto"
 )
 
 // Command is a parsed shell command.
@@ -60,7 +61,7 @@ func (c Command) Run(d *Doodle) error {
 		return nil
 	case "eval":
 	case "$":
-		out, err := d.shell.js.Run(c.ArgsLiteral)
+		out, err := c.RunScript(d, c.ArgsLiteral)
 		d.Flash("%+v", out)
 		return err
 	case "repl":
@@ -163,8 +164,7 @@ func (c Command) Edit(d *Doodle) error {
 
 	filename := c.Args[0]
 	d.shell.Write("Editing file: " + filename)
-	d.EditFile(filename)
-	return nil
+	return d.EditFile(filename)
 }
 
 // Play a map.
@@ -218,6 +218,17 @@ func (c Command) BoolProp(d *Doodle) error {
 	}
 
 	return nil
+}
+
+// RunScript evaluates some JavaScript code safely.
+func (c Command) RunScript(d *Doodle, code interface{}) (otto.Value, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			d.Flash("Panic: %s", err)
+		}
+	}()
+	out, err := d.shell.js.Run(code)
+	return out, err
 }
 
 // Default command.

@@ -20,6 +20,13 @@ build:
 	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 
+# `make build-free` to build the binary in free mode.
+.PHONY: build-free
+build-free:
+	gofmt -w .
+	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad cmd/doodad/main.go
+
 # `make mingw` to cross-compile a Windows binary with mingw.
 .PHONY: mingw
 mingw:

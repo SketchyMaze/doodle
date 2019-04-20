@@ -34,9 +34,16 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "doodle"
 	app.Usage = "command line interface for Doodle"
-	app.Version = fmt.Sprintf("%s build %s. Built on %s",
+
+	var freeLabel string
+	if balance.FreeVersion {
+		freeLabel = " (shareware)"
+	}
+
+	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
 		doodle.Version,
 		Build,
+		freeLabel,
 		BuildDate,
 	)
 

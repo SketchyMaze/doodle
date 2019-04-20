@@ -399,7 +399,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 				d.Prompt("Open filename>", func(answer string) {
 					if answer != "" {
 						if err := d.EditFile(answer); err != nil {
-							d.Flash("File not found: %s", answer)
+							d.Flash(err.Error())
 						}
 					}
 				})
@@ -408,6 +408,12 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 	}
 
 	for _, btn := range buttons {
+		if balance.FreeVersion {
+			if btn.Text == "New Doodad" {
+				continue
+			}
+		}
+
 		w := ui.NewButton(btn.Text, ui.NewLabel(ui.Label{
 			Text: btn.Text,
 			Font: balance.MenuFont,

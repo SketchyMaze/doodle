@@ -186,6 +186,11 @@ func (d *Doodle) NewMap() {
 
 // NewDoodad loads a new Doodad in Edit Mode.
 func (d *Doodle) NewDoodad(size int) {
+	if balance.FreeVersion {
+		d.Flash("Doodad editor is not available in your version of the game.")
+		return
+	}
+
 	log.Info("Starting a new doodad")
 	scene := &EditorScene{
 		DrawingType: enum.DoodadDrawing,
@@ -214,6 +219,9 @@ func (d *Doodle) EditDrawing(filename string) error {
 		log.Info("is a Level type")
 		scene.DrawingType = enum.LevelDrawing
 	case "doodad":
+		if balance.FreeVersion {
+			return fmt.Errorf("Doodad editor not supported in your version of the game")
+		}
 		scene.DrawingType = enum.DoodadDrawing
 	default:
 		return fmt.Errorf("file extension '%s' doesn't indicate its drawing type", ext)
