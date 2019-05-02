@@ -2,6 +2,7 @@ fonts/
 maps/
 bin/
 dist/
+*.doodad
 docker/ubuntu
 docker/debian
 docker/fedora
