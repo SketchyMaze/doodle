@@ -6,7 +6,6 @@ import (
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 )
@@ -118,10 +117,6 @@ func (w *Canvas) loopFollowActor(ev *events.State) error {
 		if actor.ID() != w.FollowActor {
 			continue
 		}
-
-		actor.Canvas.SetBorderSize(2)
-		actor.Canvas.SetBorderColor(render.Red)
-		actor.Canvas.SetBorderStyle(ui.BorderSolid)
 
 		var (
 			APosition = actor.Position() // absolute world position

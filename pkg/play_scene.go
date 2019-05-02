@@ -6,7 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
+	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
@@ -86,15 +86,28 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	if err := s.scripting.InstallScripts(s.Level); err != nil {
 		log.Error("PlayScene.Setup: failed to InstallScripts: %s", err)
 	}
-	if err := s.drawing.InstallScripts(); err != nil {
-		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
+
+	// Load in the player character.
+	player, err := doodads.LoadJSON("./assets/doodads/azu-blu.doodad")
+	if err != nil {
+		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
+		player = doodads.NewDummy(32)
 	}
 
-	player := dummy.NewPlayer()
-	s.Player = uix.NewActor(player.ID(), &level.Actor{}, player.Doodad)
+	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
 	s.Player.MoveTo(render.NewPoint(128, 128))
 	s.drawing.AddActor(s.Player)
 	s.drawing.FollowActor = s.Player.ID()
+
+	// Set up the player character's script in the VM.
+	if err := s.scripting.AddLevelScript(s.Player.ID()); err != nil {
+		log.Error("PlayScene.Setup: scripting.InstallActor(player) failed: %s", err)
+	}
+
+	// Run all the actor scripts' main() functions.
+	if err := s.drawing.InstallScripts(); err != nil {
+		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
+	}
 
 	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
 

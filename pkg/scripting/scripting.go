@@ -36,18 +36,26 @@ func (s *Supervisor) Loop() error {
 // InstallScripts loads scripts for all actors in the level.
 func (s *Supervisor) InstallScripts(level *level.Level) error {
 	for _, actor := range level.Actors {
-		id := actor.ID()
-		log.Debug("InstallScripts: load script from Actor %s", id)
-
-		if _, ok := s.scripts[id]; ok {
-			return fmt.Errorf("duplicate actor ID %s in level", id)
-		}
-
-		s.scripts[id] = NewVM(id)
-		if err := s.scripts[id].RegisterLevelHooks(); err != nil {
+		if err := s.AddLevelScript(actor.ID()); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+// AddLevelScript adds a script to the supervisor with level hooks.
+func (s *Supervisor) AddLevelScript(id string) error {
+	log.Debug("InstallScripts: load script from Actor %s", id)
+
+	if _, ok := s.scripts[id]; ok {
+		return fmt.Errorf("duplicate actor ID %s in level", id)
+	}
+
+	s.scripts[id] = NewVM(id)
+	if err := s.scripts[id].RegisterLevelHooks(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
