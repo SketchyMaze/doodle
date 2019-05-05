@@ -27,6 +27,13 @@ build-free:
 	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad cmd/doodad/main.go
 
+# `make build-debug` to build the binary in developer mode.
+.PHONY: build-debug
+build-debug:
+	gofmt -w .
+	go build $(LDFLAGS) -tags="developer" -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="developer" -i -o bin/doodad cmd/doodad/main.go
+
 # `make doodads` to build the doodads from the dev-assets folder.
 .PHONY: doodads
 doodads:

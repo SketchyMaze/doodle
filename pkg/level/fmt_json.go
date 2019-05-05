@@ -6,30 +6,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"git.kirsle.net/apps/doodle/pkg/balance"
 )
 
 // ToJSON serializes the level as JSON.
 func (m *Level) ToJSON() ([]byte, error) {
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
-	encoder.SetIndent("", "\t")
+	if balance.JSONIndent {
+		encoder.SetIndent("", "\t")
+	}
 	err := encoder.Encode(m)
 	return out.Bytes(), err
-}
-
-// WriteJSON writes a level to JSON on disk.
-func (m *Level) WriteJSON(filename string) error {
-	json, err := m.ToJSON()
-	if err != nil {
-		return fmt.Errorf("Level.WriteJSON: JSON encode error: %s", err)
-	}
-
-	err = ioutil.WriteFile(filename, json, 0755)
-	if err != nil {
-		return fmt.Errorf("Level.WriteJSON: WriteFile error: %s", err)
-	}
-
-	return nil
 }
 
 // LoadJSON loads a map from JSON file.
@@ -60,4 +49,19 @@ func LoadJSON(filename string) (*Level, error) {
 	// Inflate the private instance values.
 	m.Palette.Inflate()
 	return m, err
+}
+
+// WriteJSON writes a level to JSON on disk.
+func (m *Level) WriteJSON(filename string) error {
+	json, err := m.ToJSON()
+	if err != nil {
+		return fmt.Errorf("Level.WriteJSON: JSON encode error: %s", err)
+	}
+
+	err = ioutil.WriteFile(filename, json, 0755)
+	if err != nil {
+		return fmt.Errorf("Level.WriteJSON: WriteFile error: %s", err)
+	}
+
+	return nil
 }

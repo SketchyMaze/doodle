@@ -1,6 +1,7 @@
 package scripting
 
 import (
+	"git.kirsle.net/apps/doodle/lib/events"
 	"github.com/robertkrimen/otto"
 )
 
@@ -34,6 +35,16 @@ func (e *Events) OnCollide(call otto.FunctionCall) otto.Value {
 // RunCollide invokes the OnCollide handler function.
 func (e *Events) RunCollide() error {
 	return e.run(CollideEvent)
+}
+
+// OnKeypress fires when another actor collides with yours.
+func (e *Events) OnKeypress(call otto.FunctionCall) otto.Value {
+	return e.register(KeypressEvent, call.Argument(0))
+}
+
+// RunKeypress invokes the OnCollide handler function.
+func (e *Events) RunKeypress(ev *events.State) error {
+	return e.run(KeypressEvent, ev)
 }
 
 // register a named event.

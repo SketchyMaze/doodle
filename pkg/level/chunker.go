@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"git.kirsle.net/apps/doodle/lib/render"
+	"github.com/vmihailenco/msgpack"
 )
 
 // Chunker is the data structure that manages the chunks of a level, and
@@ -238,5 +239,16 @@ func (c ChunkMap) MarshalJSON() ([]byte, error) {
 	}
 
 	out, err := json.Marshal(dict)
+	return out, err
+}
+
+// MarshalMsgpack to convert the chunk map to binary.
+func (c ChunkMap) MarshalMsgpack() ([]byte, error) {
+	dict := map[string]*Chunk{}
+	for point, chunk := range c {
+		dict[point.String()] = chunk
+	}
+
+	out, err := msgpack.Marshal(dict)
 	return out, err
 }

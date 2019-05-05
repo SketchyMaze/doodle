@@ -3,7 +3,6 @@ package doodle
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -171,7 +170,7 @@ func (s *EditorScene) Draw(d *Doodle) error {
 func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
 
-	level, err := level.LoadJSON(filename)
+	level, err := level.LoadFile(filename)
 	fmt.Printf("%+v\n", level)
 	if err != nil {
 		return fmt.Errorf("EditorScene.LoadLevel(%s): %s", filename, err)
@@ -213,20 +212,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 	m.Palette = s.UI.Canvas.Palette
 	m.Chunker = s.UI.Canvas.Chunker()
 
-	json, err := m.ToJSON()
-	if err != nil {
-		return fmt.Errorf("SaveLevel error: %s", err)
-	}
-
-	// Save it to their profile directory.
-	filename = userdir.LevelPath(filename)
-	log.Info("Write Level: %s", filename)
-	err = ioutil.WriteFile(filename, json, 0644)
-	if err != nil {
-		return fmt.Errorf("Create map file error: %s", err)
-	}
-
-	return nil
+	return m.WriteFile(filename)
 }
 
 // LoadDoodad loads a doodad from disk.

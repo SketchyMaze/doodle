@@ -30,6 +30,9 @@ var (
 	// Put a border around all Canvas widgets.
 	DebugCanvasBorder = render.Invisible
 	DebugCanvasLabel  = false // Tag the canvas with a label.
+
+	// Pretty-print JSON files when writing.
+	JSONIndent = false
 )
 
 func init() {

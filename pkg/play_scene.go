@@ -198,6 +198,11 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 	}
 
 	s.Player.SetVelocity(velocity)
+
+	// TODO: invoke the player OnKeypress for animation testing
+	// if velocity != render.Origin {
+	s.scripting.To(s.Player.ID()).Events.RunKeypress(ev)
+	// }
 }
 
 // Drawing returns the private world drawing, for debugging with the console.

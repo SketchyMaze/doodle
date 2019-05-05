@@ -4,6 +4,10 @@ Makefile commands for Linux:
 
 * `make setup`: install Go dependencies and set up the build environment
 * `make build`: build the Doodle and Doodad binaries to the `bin/` folder.
+* `make build-free`: build the shareware binaries to the `bin/` folder. See
+  Build Tags below.
+* `make build-debug`: build a debug binary (not release-mode) to the `bin/`
+  folder. See Build Tags below.
 * `make run`: run a local dev build of Doodle in debug mode
 * `make guitest`: run a local dev build in the GUITest scene
 * `make test`: run the test suite
@@ -16,6 +20,33 @@ Makefile commands for Linux:
   * `make docker.debian`
   * `make docker.fedora`
 * `make clean`: clean all build artifacts
+
+## Build Tags
+
+### shareware
+
+> Files ending with `_free.go` are for the shareware release as opposed to
+> `_paid.go` for the full version.
+
+Builds the game in the free shareware release mode.
+
+Run `make build-free` to build the shareware binary.
+
+Shareware releases of the game have the following changes compared to the default
+(release) mode:
+
+* No access to the Doodad Editor scene in-game (soft toggle)
+
+### developer
+
+> Files ending with `_developer.go` are for the developer build as opposed to
+> `_release.go` for the public version.
+
+Developer builds support extra features over the standard release version:
+
+* Ability to write the JSON file format for Levels and Doodads.
+
+Run `make build-debug` to build a developer version of the program.
 
 ## Linux
 
