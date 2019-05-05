@@ -14,7 +14,6 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
 // Width of the panel frame.
@@ -261,7 +260,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// mode when you click an existing Doodad and it "pops" out of the canvas
 	// and onto the cursor to be repositioned.
 	drawing.OnDragStart = func(filename string) {
-		doodad, err := doodads.LoadJSON(userdir.DoodadPath(filename))
+		doodad, err := doodads.LoadFile(filename)
 		if err != nil {
 			log.Error("drawing.OnDragStart: %s", err.Error())
 		}
@@ -293,7 +292,10 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 				Filename: actor.doodad.Filename,
 			})
 
-			drawing.InstallActors(u.Scene.Level.Actors)
+			err := drawing.InstallActors(u.Scene.Level.Actors)
+			if err != nil {
+				log.Error("Error installing actor onDrop to canvas: %s", err)
+			}
 		}
 	})
 	u.Supervisor.Add(drawing)

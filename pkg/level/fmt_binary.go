@@ -6,13 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"github.com/vmihailenco/msgpack"
 )
 
 // ToBinary serializes the level to binary format.
 func (m *Level) ToBinary() ([]byte, error) {
-	header := balance.MakeHeader(balance.BinLevelType)
+	header := filesystem.MakeHeader(filesystem.BinLevelType)
 	out := bytes.NewBuffer(header)
 	encoder := msgpack.NewEncoder(out)
 	err := encoder.Encode(m)
@@ -43,7 +43,7 @@ func LoadBinary(filename string) (*Level, error) {
 	defer fh.Close()
 
 	// Read and verify the file header from the binary format.
-	err = balance.ReadHeader(balance.BinLevelType, fh)
+	err = filesystem.ReadHeader(filesystem.BinLevelType, fh)
 	if err != nil {
 		return nil, err
 	}

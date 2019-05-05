@@ -9,7 +9,6 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
 // InstallActors adds external Actors to the canvas to be superimposed on top
@@ -17,7 +16,7 @@ import (
 func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	w.actors = make([]*Actor, 0)
 	for id, actor := range actors {
-		doodad, err := doodads.LoadJSON(userdir.DoodadPath(actor.Filename))
+		doodad, err := doodads.LoadFile(actor.Filename)
 		if err != nil {
 			return fmt.Errorf("InstallActors: %s", err)
 		}

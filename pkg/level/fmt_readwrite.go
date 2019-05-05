@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -19,7 +19,7 @@ func LoadFile(filename string) (*Level, error) {
 	}
 
 	// Search the system and user paths for this level.
-	filename, err := balance.FindFile(filename)
+	filename, err := filesystem.FindFile(filename)
 	if err != nil {
 		return nil, err
 	}

@@ -219,7 +219,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 func (s *EditorScene) LoadDoodad(filename string) error {
 	s.filename = filename
 
-	doodad, err := doodads.LoadJSON(filename)
+	doodad, err := doodads.LoadFile(filename)
 	if err != nil {
 		return fmt.Errorf("EditorScene.LoadDoodad(%s): %s", filename, err)
 	}

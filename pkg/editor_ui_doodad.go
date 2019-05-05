@@ -13,7 +13,6 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
 // DraggableActor is a Doodad being dragged from the Doodad palette.
@@ -50,10 +49,10 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		perRow = balance.UIDoodadsPerRow
 	)
 
-	doodadsAvailable, err := userdir.ListDoodads()
+	doodadsAvailable, err := doodads.ListDoodads()
 	if err != nil {
 		return frame, fmt.Errorf(
-			"setupDoodadFrame: userdir.ListDoodads: %s",
+			"setupDoodadFrame: doodads.ListDoodads: %s",
 			err,
 		)
 	}
@@ -77,7 +76,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		}
 
 		func(filename string) {
-			doodad, err := doodads.LoadJSON(userdir.DoodadPath(filename))
+			doodad, err := doodads.LoadFile(filename)
 			if err != nil {
 				log.Error(err.Error())
 				doodad = doodads.New(balance.DoodadSize)

@@ -1,4 +1,4 @@
-package balance
+package filesystem
 
 import (
 	"errors"
@@ -20,6 +20,12 @@ const (
 	BinVersion    uint8 = 1 // version of the file format we support
 	BinLevelType  uint8 = 1
 	BinDoodadType uint8 = 2
+)
+
+// Paths to system-level assets bundled with the application.
+var (
+	SystemDoodadsPath = filepath.Join(".", "assets", "doodads")
+	SystemLevelsPath  = filepath.Join(".", "assets", "levels")
 )
 
 // MakeHeader creates the binary file header.
@@ -87,7 +93,7 @@ func FindFile(filename string) (string, error) {
 	// Search level directories.
 	if filetype == enum.LevelExt || filetype == "" {
 		// system levels
-		candidate := filepath.Join(".", "assets", "levels", filename)
+		candidate := filepath.Join(SystemLevelsPath, filename)
 		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
 			return candidate, nil
 		}
@@ -102,7 +108,7 @@ func FindFile(filename string) (string, error) {
 	// Search doodad directories.
 	if filetype == enum.DoodadExt || filetype == "" {
 		// system doodads
-		candidate := filepath.Join(".", "assets", "doodads", filename)
+		candidate := filepath.Join(SystemDoodadsPath, filename)
 		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
 			return candidate, nil
 		}
@@ -114,5 +120,5 @@ func FindFile(filename string) (string, error) {
 		}
 	}
 
-	return "", errors.New("file not found")
+	return filename, errors.New("file not found")
 }
