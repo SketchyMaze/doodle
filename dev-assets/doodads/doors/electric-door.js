@@ -1,35 +1,16 @@
 function main() {
 	console.log("%s initialized!", Self.Doodad.Title);
 
-	var timer = 0;
+	var err = Self.AddAnimation("open", 100, [0, 1, 2, 3]);
+	console.error("door error: %s", err)
+	var animating = false;
 
-	// Animation frames.
-	var frame = 0;
-	var frames = Self.LayerCount();
-	var animationDirection = 1; // forward or backward
-	var animationSpeed = 100;   // interval between frames when animating
-	var animating      = false; // true if animation is actively happening
-
-	console.warn("Electric Door has %d frames", frames);
-
-	// Animation interval function.
-	setInterval(function() {
-		if (!animating) {
+	Events.OnCollide(function() {
+		if (animating) {
 			return;
 		}
 
-		// Advance the frame forwards or backwards.
-		frame += animationDirection;
-		if (frame >= frames) {
-			// Reached the last frame, start the pause and reverse direction.
-			animating = false;
-			frame = frames - 1;
-		}
-
-		Self.ShowLayer(frame);
-	}, animationSpeed);
-
-	Events.OnCollide( function() {
-		animating = true; // start the animation
-	})
+		animating = true;
+		Self.PlayAnimation("open", null);
+	});
 }

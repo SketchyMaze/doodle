@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -15,6 +16,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
+	"github.com/robertkrimen/otto"
 )
 
 // Canvas is a custom ui.Widget that manages a single drawing.
@@ -171,6 +173,9 @@ func (w *Canvas) Loop(ev *events.State) error {
 	}
 	_ = w.loopConstrainScroll()
 
+	// Current time of this loop so we can advance animations.
+	now := time.Now()
+
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor
 	for _, a := range w.actors {
@@ -187,6 +192,19 @@ func (w *Canvas) Loop(ev *events.State) error {
 	// rectangles so we can later see if any pair of actors intersect each other.
 	boxes := make([]render.Rect, len(w.actors))
 	for i, a := range w.actors {
+		// Advance any animations for this actor.
+		if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
+			if done := a.TickAnimation(a.activeAnimation); done {
+				// Animation has finished, run the callback script.
+				if a.animationCallback.IsFunction() {
+					a.animationCallback.Call(otto.NullValue())
+				}
+
+				// Clean up the animation state.
+				a.StopAnimation()
+			}
+		}
+
 		// Get the actor's velocity to see if it's moving this tick.
 		v := a.Velocity()
 

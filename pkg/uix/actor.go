@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"github.com/robertkrimen/otto"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -25,6 +26,11 @@ type Actor struct {
 
 	activeLayer int  // active drawing frame for display
 	flagDestroy bool // flag the actor for destruction
+
+	// Animation variables.
+	animations        map[string]*Animation
+	activeAnimation   *Animation
+	animationCallback otto.Value
 }
 
 // NewActor sets up a uix.Actor.
@@ -46,9 +52,10 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	can.Resize(render.NewRect(size, size))
 
 	actor := &Actor{
-		Drawing: doodads.NewDrawing(id, doodad),
-		Actor:   levelActor,
-		Canvas:  can,
+		Drawing:    doodads.NewDrawing(id, doodad),
+		Actor:      levelActor,
+		Canvas:     can,
+		animations: map[string]*Animation{},
 	}
 
 	// Give the Canvas a pointer to its (parent) Actor so it can draw its debug

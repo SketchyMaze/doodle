@@ -135,6 +135,12 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		images = append(images, img)
 	}
 
+	// Helper function to translate image filenames into layer names.
+	toLayerName := func(filename string) string {
+		ext := filepath.Ext(filename)
+		return strings.TrimSuffix(filepath.Base(filename), ext)
+	}
+
 	// Generate the output drawing file.
 	switch strings.ToLower(filepath.Ext(outputFile)) {
 	case extDoodad:
@@ -152,14 +158,16 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		palette, layer0 := imageToChunker(images[0], chroma, nil, chunkSize)
 		doodad.Palette = palette
 		doodad.Layers[0].Chunker = layer0
+		doodad.Layers[0].Name = toLayerName(inputFiles[0])
 
 		// Write any additional layers.
 		if len(images) > 1 {
-			for i, img := range images[1:] {
-				log.Info("Converting extra layer %d", i+1)
+			for i := 1; i < len(images); i++ {
+				img := images[i]
+				log.Info("Converting extra layer %d", i)
 				_, chunker := imageToChunker(img, chroma, palette, chunkSize)
 				doodad.Layers = append(doodad.Layers, doodads.Layer{
-					Name:    fmt.Sprintf("layer-%d", i+1),
+					Name:    toLayerName(inputFiles[i]),
 					Chunker: chunker,
 				})
 			}
@@ -289,6 +297,7 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 
 	// Cache a palette of unique colors as we go.
 	var uniqueColor = map[string]*level.Swatch{}
+	var newColors = map[string]*level.Swatch{} // new ones discovered this time
 	for _, swatch := range palette.Swatches {
 		uniqueColor[swatch.Color.String()] = swatch
 	}
@@ -310,6 +319,7 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 					Color: color,
 				}
 				uniqueColor[color.String()] = swatch
+				newColors[color.String()] = swatch
 			}
 
 			chunker.Set(render.NewPoint(int32(x), int32(y)), swatch)
@@ -323,7 +333,9 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 	}
 	sort.Strings(sortedColors)
 	for _, hex := range sortedColors {
-		palette.Swatches = append(palette.Swatches, uniqueColor[hex])
+		if _, ok := newColors[hex]; ok {
+			palette.Swatches = append(palette.Swatches, uniqueColor[hex])
+		}
 	}
 	palette.Inflate()
 
