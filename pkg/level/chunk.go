@@ -123,6 +123,8 @@ func (c *Chunk) toBitmap(mask render.Color) string {
 		)
 	}
 
+	log.Info("Chunk<%d>.toBitmap() called", c.Size)
+
 	// Get the temp bitmap image.
 	bitmap := userdir.CacheFilename("chunk", filename+".bmp")
 	err := c.ToBitmap(bitmap, mask)

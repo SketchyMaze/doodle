@@ -60,6 +60,7 @@ func New(debug bool, engine render.Engine) *Doodle {
 
 	if debug {
 		log.Logger.Config.Level = golog.DebugLevel
+		DebugOverlay = true // on by default in debug mode, F3 to disable
 	}
 
 	return d

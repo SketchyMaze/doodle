@@ -173,7 +173,7 @@ func (s *PlayScene) Draw(d *Doodle) error {
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *events.State) {
 	var playerSpeed = int32(balance.PlayerMaxVelocity)
-	var gravity = int32(balance.Gravity)
+	// var gravity = int32(balance.Gravity)
 
 	var velocity render.Point
 
@@ -190,12 +190,12 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 		velocity.Y = -playerSpeed
 	}
 
-	// Apply gravity if not grounded.
-	if !s.Player.Grounded() {
-		// Gravity has to pipe through the collision checker, too, so it
-		// can't give us a cheated downward boost.
-		velocity.Y += gravity
-	}
+	// // Apply gravity if not grounded.
+	// if !s.Player.Grounded() {
+	// 	// Gravity has to pipe through the collision checker, too, so it
+	// 	// can't give us a cheated downward boost.
+	// 	velocity.Y += gravity
+	// }
 
 	s.Player.SetVelocity(velocity)
 

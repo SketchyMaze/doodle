@@ -34,12 +34,10 @@ frames left to animate.
 func (a *Actor) TickAnimation(an *Animation) bool {
 	an.activeLayer++
 	if an.activeLayer < len(an.Layers) {
-		log.Warn("TickAnimation(%s): new layer=%d", a.activeAnimation.Name, an.Layers[an.activeLayer])
 		a.ShowLayer(an.Layers[an.activeLayer])
 	} else if an.activeLayer >= len(an.Layers) {
 		// final layer has been shown for 2 ticks, return that the animation has
 		// been concluded.
-		log.Warn("TickAnimation(%s): finished", a.activeAnimation.Name)
 		return true
 	}
 

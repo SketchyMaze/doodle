@@ -207,6 +207,9 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 		// Get the actor's velocity to see if it's moving this tick.
 		v := a.Velocity()
+		if a.hasGravity {
+			v.Y += int32(balance.Gravity)
+		}
 
 		// If not moving, grab the bounding box right now.
 		if v == render.Origin {

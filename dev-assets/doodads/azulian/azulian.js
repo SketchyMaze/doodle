@@ -9,42 +9,27 @@ function main() {
 	var animStart = animEnd = 0;
 	var animFrame = animStart;
 
-	setInterval(function() {
-		if (animating) {
-			if (animFrame < animStart || animFrame > animEnd) {
-				animFrame = animStart;
-			}
-
-			animFrame++;
-			if (animFrame === animEnd) {
-				animFrame = animStart;
-			}
-			Self.ShowLayer(animFrame);
-		} else {
-			Self.ShowLayer(animStart);
-		}
-	}, 100);
+	Self.SetGravity(true);
+	Self.AddAnimation("walk-left", 100, ["blu-wl1", "blu-wl2", "blu-wl3", "blu-wl4"]);
+	Self.AddAnimation("walk-right", 100, ["blu-wr1", "blu-wr2", "blu-wr3", "blu-wr4"]);
 
 	Events.OnKeypress(function(ev) {
 		Vx = 0;
 		Vy = 0;
 
 		if (ev.Right.Now) {
-			animStart = 2;
-			animEnd = animStart+4;
-			animating = true;
+			if (!Self.IsAnimating()) {
+				Self.PlayAnimation("walk-right", null);
+			}
 			Vx = playerSpeed;
 		} else if (ev.Left.Now) {
-			animStart = 6;
-			animEnd = animStart+4;
-			animating = true;
+			if (!Self.IsAnimating()) {
+				Self.PlayAnimation("walk-left", null);
+			}
 			Vx = -playerSpeed;
 		} else {
+			Self.StopAnimation();
 			animating = false;
-		}
-
-		if (!Self.Grounded()) {
-			Vy += gravity;
 		}
 
 		// Self.SetVelocity(Point(Vx, Vy));

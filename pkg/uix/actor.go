@@ -27,6 +27,9 @@ type Actor struct {
 	activeLayer int  // active drawing frame for display
 	flagDestroy bool // flag the actor for destruction
 
+	// Actor runtime variables.
+	hasGravity bool
+
 	// Animation variables.
 	animations        map[string]*Animation
 	activeAnimation   *Animation
@@ -63,6 +66,11 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	can.actor = actor
 
 	return actor
+}
+
+// SetGravity configures whether the actor is affected by gravity.
+func (a *Actor) SetGravity(v bool) {
+	a.hasGravity = v
 }
 
 // LayerCount returns the number of layers in this actor's drawing.

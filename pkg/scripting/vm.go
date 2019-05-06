@@ -2,6 +2,8 @@ package scripting
 
 import (
 	"fmt"
+	"reflect"
+	"time"
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -54,6 +56,14 @@ func (vm *VM) RegisterLevelHooks() error {
 		"Point":  render.NewPoint,
 		"Self":   vm.Self, // i.e., the uix.Actor object
 		"Events": vm.Events,
+
+		"TypeOf": reflect.TypeOf,
+		"time": map[string]interface{}{
+			"Now": time.Now,
+			"Add": func(t time.Time, ms int64) time.Time {
+				return t.Add(time.Duration(ms) * time.Millisecond)
+			},
+		},
 
 		// Timer functions with APIs similar to the web browsers.
 		"setTimeout":    vm.SetTimeout,
