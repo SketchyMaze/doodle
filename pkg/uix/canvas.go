@@ -53,6 +53,9 @@ type Canvas struct {
 	actor  *Actor   // if this canvas IS an actor
 	actors []*Actor // if this canvas CONTAINS actors (i.e., is a level)
 
+	// Collision memory for the actors.
+	collidingActors map[string]string // mapping their IDs to each other
+
 	// Doodad scripting engine supervisor.
 	// NOTE: initialized and managed by the play_scene.
 	scripting *scripting.Supervisor
@@ -248,23 +251,33 @@ func (w *Canvas) Loop(ev *events.State) error {
 	}
 
 	// Check collisions between actors.
+	var collidingActors = map[string]string{}
 	for tuple := range collision.BetweenBoxes(boxes) {
-		log.Debug("Actor %s collides with %s",
-			w.actors[tuple[0]].ID(),
-			w.actors[tuple[1]].ID(),
-		)
-		a, b := w.actors[tuple[0]], w.actors[tuple[1]]
+		a, b := w.actors[tuple.A], w.actors[tuple.B]
+
+		collidingActors[a.ID()] = b.ID()
 
 		// Call the OnCollide handler.
 		if w.scripting != nil {
-			if err := w.scripting.To(a.ID()).Events.RunCollide(); err != nil {
-				log.Error(err.Error())
-			}
-			if err := w.scripting.To(b.ID()).Events.RunCollide(); err != nil {
+			// Tell actor A about the collision with B.
+			if err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
+				Actor:   b,
+				Overlap: tuple.Overlap,
+			}); err != nil {
 				log.Error(err.Error())
 			}
 		}
 	}
+
+	// Check for lacks of collisions since last frame.
+	for sourceID, targetID := range w.collidingActors {
+		if _, ok := collidingActors[sourceID]; !ok {
+			w.scripting.To(sourceID).Events.RunLeave(targetID)
+		}
+	}
+
+	// Store this frame's colliding actors for next frame.
+	w.collidingActors = collidingActors
 
 	// If the canvas is editable, only care if it's over our space.
 	if w.Editable {

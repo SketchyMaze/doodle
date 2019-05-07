@@ -1,6 +1,8 @@
 package scripting
 
 import (
+	"errors"
+
 	"git.kirsle.net/apps/doodle/lib/events"
 	"github.com/robertkrimen/otto"
 )
@@ -13,6 +15,11 @@ const (
 
 	// Controllable (player character) doodad events
 	KeypressEvent = "OnKeypress" // i.e. arrow keys
+)
+
+// Event return errors.
+var (
+	ErrReturnFalse = errors.New("JS callback function returned false")
 )
 
 // Events API for Doodad scripts.
@@ -33,8 +40,18 @@ func (e *Events) OnCollide(call otto.FunctionCall) otto.Value {
 }
 
 // RunCollide invokes the OnCollide handler function.
-func (e *Events) RunCollide() error {
-	return e.run(CollideEvent)
+func (e *Events) RunCollide(v interface{}) error {
+	return e.run(CollideEvent, v)
+}
+
+// OnLeave fires when another actor stops colliding with yours.
+func (e *Events) OnLeave(call otto.FunctionCall) otto.Value {
+	return e.register(LeaveEvent, call.Argument(0))
+}
+
+// RunLeave invokes the OnLeave handler function.
+func (e *Events) RunLeave(v interface{}) error {
+	return e.run(LeaveEvent, v)
 }
 
 // OnKeypress fires when another actor collides with yours.
@@ -69,9 +86,17 @@ func (e *Events) run(name string, args ...interface{}) error {
 	}
 
 	for _, callback := range e.registry[name] {
-		_, err := callback.Call(otto.Value{}, args...)
+		value, err := callback.Call(otto.Value{}, args...)
 		if err != nil {
 			return err
+		}
+
+		// If the event handler returned a boolean false, stop all other
+		// callbacks and return the boolean.
+		if value.IsBoolean() {
+			if b, err := value.ToBoolean(); err == nil && b == false {
+				return ErrReturnFalse
+			}
 		}
 	}
 

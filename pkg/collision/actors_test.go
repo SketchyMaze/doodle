@@ -10,6 +10,9 @@ import (
 func TestActorCollision(t *testing.T) {
 	boxes := []render.Rect{
 		// 0: intersects with 1
+		// Expected intersection rect would be
+		//   X,Y   = 90,10
+		//   X2,Y2 = 100,99
 		render.Rect{
 			X: 0,
 			Y: 0,
@@ -18,6 +21,9 @@ func TestActorCollision(t *testing.T) {
 		},
 
 		// 1: intersects with 0
+		// Expected intersection rect would be
+		//   X,Y   = 90,10
+		//   X2,Y2 = 100,99
 		render.Rect{
 			X: 90,
 			Y: 10,
@@ -34,6 +40,9 @@ func TestActorCollision(t *testing.T) {
 		},
 
 		// 3: intersects with 4
+		// Expected intersection rect would be
+		//   X,Y   = 240,200
+		//   X2,Y2 = 264,231
 		render.Rect{
 			X: 233,
 			Y: 200,
@@ -70,22 +79,22 @@ func TestActorCollision(t *testing.T) {
 		},
 	}
 
-	assert := func(i int, result collision.IndexTuple, expectA, expectB int) {
-		if result[0] != expectA || result[1] != expectB {
+	assert := func(i int, result collision.BoxCollision, expectA, expectB int) {
+		if result.A != expectA || result.B != expectB {
 			t.Errorf(
 				"unexpected collision at index %d of BetweenBoxes() generator\n"+
 					"expected: (%d,%d)\n"+
 					" but got: (%d,%d)",
 				i,
 				expectA, expectB,
-				result[0], result[1],
+				result.A, result.B,
 			)
 		}
 	}
 
 	var i int
 	for overlap := range collision.BetweenBoxes(boxes) {
-		a, b := overlap[0], overlap[1]
+		a, b := overlap.A, overlap.B
 
 		// Ensure expected collisions happened.
 		switch i {

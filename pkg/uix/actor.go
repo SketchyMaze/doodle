@@ -73,6 +73,11 @@ func (a *Actor) SetGravity(v bool) {
 	a.hasGravity = v
 }
 
+// GetBoundingRect gets the bounding box of the actor's doodad.
+func (a *Actor) GetBoundingRect() render.Rect {
+	return doodads.GetBoundingRect(a)
+}
+
 // LayerCount returns the number of layers in this actor's drawing.
 func (a *Actor) LayerCount() int {
 	return len(a.Doodad.Layers)
