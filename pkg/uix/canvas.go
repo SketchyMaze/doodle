@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
@@ -191,52 +192,59 @@ func (w *Canvas) Loop(ev *events.State) error {
 	// Move any actors. As we iterate over all actors, track their bounding
 	// rectangles so we can later see if any pair of actors intersect each other.
 	boxes := make([]render.Rect, len(w.actors))
+	var wg sync.WaitGroup
 	for i, a := range w.actors {
-		// Advance any animations for this actor.
-		if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
-			if done := a.TickAnimation(a.activeAnimation); done {
-				// Animation has finished, run the callback script.
-				if a.animationCallback.IsFunction() {
-					a.animationCallback.Call(otto.NullValue())
+		wg.Add(1)
+		go func(i int, a *Actor) {
+			defer wg.Done()
+
+			// Advance any animations for this actor.
+			if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
+				if done := a.TickAnimation(a.activeAnimation); done {
+					// Animation has finished, run the callback script.
+					if a.animationCallback.IsFunction() {
+						a.animationCallback.Call(otto.NullValue())
+					}
+
+					// Clean up the animation state.
+					a.StopAnimation()
 				}
-
-				// Clean up the animation state.
-				a.StopAnimation()
 			}
-		}
 
-		// Get the actor's velocity to see if it's moving this tick.
-		v := a.Velocity()
-		if a.hasGravity {
-			v.Y += int32(balance.Gravity)
-		}
+			// Get the actor's velocity to see if it's moving this tick.
+			v := a.Velocity()
+			if a.hasGravity {
+				v.Y += int32(balance.Gravity)
+			}
 
-		// If not moving, grab the bounding box right now.
-		if v == render.Origin {
+			// If not moving, grab the bounding box right now.
+			if v == render.Origin {
+				boxes[i] = doodads.GetBoundingRect(a)
+				return
+			}
+
+			// Create a delta point from their current location to where they
+			// want to move to this tick.
+			delta := a.Position()
+			delta.Add(v)
+
+			// Check collision with level geometry.
+			info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
+			if ok {
+				// Collision happened with world.
+			}
+			delta = info.MoveTo // Move us back where the collision check put us
+
+			// Move the actor's World Position to the new location.
+			a.MoveTo(delta)
+
+			// Keep the actor from leaving the world borders of bounded maps.
+			w.loopContainActorsInsideLevel(a)
+
+			// Store this actor's bounding box after they've moved.
 			boxes[i] = doodads.GetBoundingRect(a)
-			continue
-		}
-
-		// Create a delta point from their current location to where they
-		// want to move to this tick.
-		delta := a.Position()
-		delta.Add(v)
-
-		// Check collision with level geometry.
-		info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
-		if ok {
-			// Collision happened with world.
-		}
-		delta = info.MoveTo // Move us back where the collision check put us
-
-		// Move the actor's World Position to the new location.
-		a.MoveTo(delta)
-
-		// Keep the actor from leaving the world borders of bounded maps.
-		w.loopContainActorsInsideLevel(a)
-
-		// Store this actor's bounding box after they've moved.
-		boxes[i] = doodads.GetBoundingRect(a)
+		}(i, a)
+		wg.Wait()
 	}
 
 	// Check collisions between actors.

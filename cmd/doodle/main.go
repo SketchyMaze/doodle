@@ -26,6 +26,10 @@ func init() {
 	if BuildDate == "" {
 		BuildDate = time.Now().Format(time.RFC3339)
 	}
+
+	// Use all the CPU cores for collision detection and other load balanced
+	// goroutine work in the app.
+	runtime.GOMAXPROCS(runtime.NumCPU())
 }
 
 func main() {

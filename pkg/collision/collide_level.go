@@ -1,6 +1,8 @@
 package collision
 
 import (
+	"sync"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -202,10 +204,34 @@ func (c *Collide) IsColliding() bool {
 func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 	col := GetCollisionBox(box)
 
-	c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
-	c.ScanGridLine(col.Bottom[0], col.Bottom[1], grid, Bottom)
-	c.ScanGridLine(col.Left[0], col.Left[1], grid, Left)
-	c.ScanGridLine(col.Right[0], col.Right[1], grid, Right)
+	// Check all four edges of the box in parallel on different CPU cores.
+	type jobSide struct {
+		p1   render.Point
+		p2   render.Point
+		side Side
+	}
+	jobs := []jobSide{
+		jobSide{col.Top[0], col.Top[1], Top},
+		jobSide{col.Bottom[0], col.Bottom[1], Bottom},
+		jobSide{col.Left[0], col.Left[1], Left},
+		jobSide{col.Right[0], col.Right[1], Right},
+	}
+	var wg sync.WaitGroup
+	for _, job := range jobs {
+		wg.Add(1)
+		go func(job jobSide) {
+			defer wg.Done()
+			c.ScanGridLine(job.p1, job.p2, grid, job.side)
+		}(job)
+	}
+
+	wg.Wait()
+
+	// TODO: the old synchronous version of the above.
+	// c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
+	// c.ScanGridLine(col.Bottom[0], col.Bottom[1], grid, Bottom)
+	// c.ScanGridLine(col.Left[0], col.Left[1], grid, Left)
+	// c.ScanGridLine(col.Right[0], col.Right[1], grid, Right)
 	return c.IsColliding()
 }
 
