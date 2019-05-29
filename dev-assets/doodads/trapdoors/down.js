@@ -3,6 +3,8 @@ function main() {
 
 	var timer = 0;
 
+	Self.SetHitbox(0, 0, 72, 9);
+
 	var animationSpeed = 100;
 	var opened = false;
 	Self.AddAnimation("open", animationSpeed, ["down1", "down2", "down3", "down4"]);
@@ -13,18 +15,24 @@ function main() {
 			return;
 		}
 
-		// Not touching the top of the door means door doesn't open.
-		if (e.Overlap.Y > 9) {
-			return;
+		// Is the actor colliding our solid part?
+		if (e.InHitbox) {
+			// Touching the top or the bottom?
+			if (e.Overlap.Y > 0) {
+				return false; // solid wall when touched from below
+			} else {
+				opened = true;
+				Self.PlayAnimation("open", function() {
+				});
+			}
 		}
-
-		opened = true;
-		Self.PlayAnimation("open", function() {
-		});
 	});
+
 	Events.OnLeave(function() {
-		Self.PlayAnimation("close", function() {
-			opened = false;
-		});
+		if (opened) {
+			Self.PlayAnimation("close", function() {
+				opened = false;
+			});
+		}
 	})
 }

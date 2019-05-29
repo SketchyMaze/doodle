@@ -54,6 +54,16 @@ func TestIntersection(t *testing.T) {
 			B:      newRect(0, -240, 874, 490),
 			Expect: false, // XXX: must be true
 		},
+		{
+			A:      newRect(0, 30, 9, 62),
+			B:      newRect(16, 0, 32, 64),
+			Expect: false,
+		},
+		{
+			A:      newRect(0, 30, 11, 62),
+			B:      newRect(7, 4, 17, 28),
+			Expect: false,
+		},
 	}
 
 	for _, test := range tests {

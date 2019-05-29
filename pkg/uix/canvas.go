@@ -4,20 +4,16 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
-	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
-	"github.com/robertkrimen/otto"
 )
 
 // Canvas is a custom ui.Widget that manages a single drawing.
@@ -178,7 +174,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 	_ = w.loopConstrainScroll()
 
 	// Current time of this loop so we can advance animations.
-	now := time.Now()
+	// now := time.Now()
 
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor
@@ -192,92 +188,10 @@ func (w *Canvas) Loop(ev *events.State) error {
 		w.actors = newActors
 	}
 
-	// Move any actors. As we iterate over all actors, track their bounding
-	// rectangles so we can later see if any pair of actors intersect each other.
-	boxes := make([]render.Rect, len(w.actors))
-	var wg sync.WaitGroup
-	for i, a := range w.actors {
-		wg.Add(1)
-		go func(i int, a *Actor) {
-			defer wg.Done()
-
-			// Advance any animations for this actor.
-			if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
-				if done := a.TickAnimation(a.activeAnimation); done {
-					// Animation has finished, run the callback script.
-					if a.animationCallback.IsFunction() {
-						a.animationCallback.Call(otto.NullValue())
-					}
-
-					// Clean up the animation state.
-					a.StopAnimation()
-				}
-			}
-
-			// Get the actor's velocity to see if it's moving this tick.
-			v := a.Velocity()
-			if a.hasGravity {
-				v.Y += int32(balance.Gravity)
-			}
-
-			// If not moving, grab the bounding box right now.
-			if v == render.Origin {
-				boxes[i] = doodads.GetBoundingRect(a)
-				return
-			}
-
-			// Create a delta point from their current location to where they
-			// want to move to this tick.
-			delta := a.Position()
-			delta.Add(v)
-
-			// Check collision with level geometry.
-			info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
-			if ok {
-				// Collision happened with world.
-			}
-			delta = info.MoveTo // Move us back where the collision check put us
-
-			// Move the actor's World Position to the new location.
-			a.MoveTo(delta)
-
-			// Keep the actor from leaving the world borders of bounded maps.
-			w.loopContainActorsInsideLevel(a)
-
-			// Store this actor's bounding box after they've moved.
-			boxes[i] = doodads.GetBoundingRect(a)
-		}(i, a)
-		wg.Wait()
-	}
-
 	// Check collisions between actors.
-	var collidingActors = map[string]string{}
-	for tuple := range collision.BetweenBoxes(boxes) {
-		a, b := w.actors[tuple.A], w.actors[tuple.B]
-
-		collidingActors[a.ID()] = b.ID()
-
-		// Call the OnCollide handler.
-		if w.scripting != nil {
-			// Tell actor A about the collision with B.
-			if err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
-				Actor:   b,
-				Overlap: tuple.Overlap,
-			}); err != nil {
-				log.Error(err.Error())
-			}
-		}
+	if err := w.loopActorCollision(); err != nil {
+		log.Error("loopActorCollision: %s", err)
 	}
-
-	// Check for lacks of collisions since last frame.
-	for sourceID, targetID := range w.collidingActors {
-		if _, ok := collidingActors[sourceID]; !ok {
-			w.scripting.To(sourceID).Events.RunLeave(targetID)
-		}
-	}
-
-	// Store this frame's colliding actors for next frame.
-	w.collidingActors = collidingActors
 
 	// If the canvas is editable, only care if it's over our space.
 	if w.Editable {

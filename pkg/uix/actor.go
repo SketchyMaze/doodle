@@ -29,6 +29,8 @@ type Actor struct {
 
 	// Actor runtime variables.
 	hasGravity bool
+	hitbox     render.Rect
+	data       map[string]string
 
 	// Animation variables.
 	animations        map[string]*Animation
@@ -76,6 +78,41 @@ func (a *Actor) SetGravity(v bool) {
 // GetBoundingRect gets the bounding box of the actor's doodad.
 func (a *Actor) GetBoundingRect() render.Rect {
 	return doodads.GetBoundingRect(a)
+}
+
+// SetHitbox sets the actor's elected hitbox.
+func (a *Actor) SetHitbox(x, y, w, h int) {
+	a.hitbox = render.Rect{
+		X: int32(x),
+		Y: int32(y),
+		W: int32(w),
+		H: int32(h),
+	}
+}
+
+// Hitbox returns the actor's elected hitbox.
+func (a *Actor) Hitbox() render.Rect {
+	return a.hitbox
+}
+
+// SetData sets an arbitrary field in the actor's K/V storage.
+func (a *Actor) SetData(key, value string) {
+	if a.data == nil {
+		a.data = map[string]string{}
+	}
+	a.data[key] = value
+}
+
+// GetData gets an arbitrary field from the actor's K/V storage.
+// Missing keys just return a blank string (friendly to the JavaScript
+// environment).
+func (a *Actor) GetData(key string) string {
+	if a.data == nil {
+		return ""
+	}
+
+	v, _ := a.data[key]
+	return v
 }
 
 // LayerCount returns the number of layers in this actor's drawing.

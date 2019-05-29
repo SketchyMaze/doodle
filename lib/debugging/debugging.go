@@ -102,3 +102,10 @@ func PrintCallers() {
 		fmt.Printf("%d: %s\n", i, caller)
 	}
 }
+
+// Pause until the user hits enter in the console.
+func Pause() {
+	var x string
+	fmt.Print("Press enter to continue . . .")
+	fmt.Scanf("%s", &x)
+}

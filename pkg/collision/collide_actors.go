@@ -1,6 +1,7 @@
 package collision
 
 import (
+	"errors"
 	"math"
 
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -32,22 +33,11 @@ func BetweenBoxes(boxes []render.Rect) chan BoxCollision {
 		for i, box := range boxes {
 			for j := i + 1; j < len(boxes); j++ {
 				other := boxes[j]
-				if box.Intersects(other) {
-					var (
-						overlap     = OverlapRelative(box, other)
-						topLeft     = overlap.TopLeft()
-						bottomRight = overlap.BottomRight()
-					)
-					generator <- BoxCollision{
-						A: i,
-						B: j,
-						Overlap: render.Rect{
-							X: topLeft.X,
-							Y: topLeft.Y,
-							W: bottomRight.X,
-							H: bottomRight.Y,
-						},
-					}
+				collision, err := CompareBoxes(box, other)
+				if err == nil {
+					collision.A = i
+					collision.B = j
+					generator <- collision
 				}
 			}
 		}
@@ -56,6 +46,28 @@ func BetweenBoxes(boxes []render.Rect) chan BoxCollision {
 	}()
 
 	return generator
+}
+
+// CompareBoxes checks if two boxes overlaps and returns information about
+// the overlap. The boxes are bounding rectangles like those given to
+// BetweenBoxes().
+func CompareBoxes(box, other render.Rect) (BoxCollision, error) {
+	if box.Intersects(other) {
+		var (
+			overlap     = OverlapRelative(box, other)
+			topLeft     = overlap.TopLeft()
+			bottomRight = overlap.BottomRight()
+		)
+		return BoxCollision{
+			Overlap: render.Rect{
+				X: topLeft.X,
+				Y: topLeft.Y,
+				W: bottomRight.X,
+				H: bottomRight.Y,
+			},
+		}, nil
+	}
+	return BoxCollision{}, errors.New("boxes do not intersect")
 }
 
 /*

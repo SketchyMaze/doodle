@@ -10,6 +10,7 @@ function main() {
 	var animFrame = animStart;
 
 	Self.SetGravity(true);
+	Self.SetHitbox(7, 4, 17, 28);
 	Self.AddAnimation("walk-left", 100, ["blu-wl1", "blu-wl2", "blu-wl3", "blu-wl4"]);
 	Self.AddAnimation("walk-right", 100, ["blu-wr1", "blu-wr2", "blu-wr3", "blu-wr4"]);
 

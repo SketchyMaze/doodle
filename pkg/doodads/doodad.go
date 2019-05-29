@@ -9,10 +9,11 @@ import (
 // Doodad is a reusable component for Levels that have scripts and graphics.
 type Doodad struct {
 	level.Base
-	Filename string         `json:"-"` // used internally, not saved in json
-	Palette  *level.Palette `json:"palette"`
-	Script   string         `json:"script"`
-	Layers   []Layer        `json:"layers"`
+	Filename string            `json:"-"` // used internally, not saved in json
+	Palette  *level.Palette    `json:"palette"`
+	Script   string            `json:"script"`
+	Layers   []Layer           `json:"layers"`
+	Tags     map[string]string `json:"data"` // arbitrary key/value data storage
 }
 
 // Layer holds a layer of drawing data for a Doodad.
@@ -38,6 +39,7 @@ func New(size int) *Doodad {
 				Chunker: level.NewChunker(size),
 			},
 		},
+		Tags: map[string]string{},
 	}
 }
 

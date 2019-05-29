@@ -16,6 +16,10 @@ type Actor interface {
 	Grounded() bool
 	SetGrounded(bool)
 
+	// Actor's elected hitbox set by their script.
+	SetHitbox(x, y, w, h int)
+	Hitbox() render.Rect
+
 	// Movement commands.
 	MoveBy(render.Point) // Add {X,Y} to current Position.
 	MoveTo(render.Point) // Set current Position to {X,Y}.
