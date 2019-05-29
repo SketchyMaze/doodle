@@ -32,6 +32,22 @@ func (c Command) Run(d *Doodle) error {
 		}
 		fpsDoNotCap = !fpsDoNotCap
 		return nil
+	} else if c.Raw == "don't edit and drive" {
+		if playScene, ok := d.Scene.(*PlayScene); ok {
+			playScene.drawing.Editable = true
+			d.Flash("Level canvas is now editable. Don't edit and drive!")
+		} else {
+			d.Flash("Use this cheat in Play Mode to make the level canvas editable.")
+		}
+		return nil
+	} else if c.Raw == "scroll scroll scroll your boat" {
+		if playScene, ok := d.Scene.(*PlayScene); ok {
+			playScene.drawing.Scrollable = true
+			d.Flash("Level canvas is now scrollable with the arrow keys.")
+		} else {
+			d.Flash("Use this cheat in Play Mode to make the level scrollable.")
+		}
+		return nil
 	}
 
 	switch c.Command {
