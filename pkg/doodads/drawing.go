@@ -76,20 +76,20 @@ func (d *Drawing) SetGrounded(v bool) {
 	d.grounded = v
 }
 
-// SetHitbox sets the actor's elected hitbox.
-func (d *Drawing) SetHitbox(x, y, w, h int) {
-	d.hitbox = render.Rect{
-		X: int32(x),
-		Y: int32(y),
-		W: int32(w),
-		H: int32(h),
-	}
-}
-
-// Hitbox returns the actor's elected hitbox.
-func (d *Drawing) Hitbox() render.Rect {
-	return d.hitbox
-}
+// // SetHitbox sets the actor's elected hitbox.
+// func (d *Drawing) SetHitbox(x, y, w, h int) {
+// 	d.hitbox = render.Rect{
+// 		X: int32(x),
+// 		Y: int32(y),
+// 		W: int32(w),
+// 		H: int32(h),
+// 	}
+// }
+//
+// // Hitbox returns the actor's elected hitbox.
+// func (d *Drawing) Hitbox() render.Rect {
+// 	return d.hitbox
+// }
 
 // MoveBy a relative value.
 func (d *Drawing) MoveBy(by render.Point) {

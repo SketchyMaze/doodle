@@ -83,7 +83,7 @@ func (r *Renderer) Poll() (*events.State, error) {
 				return false
 			}
 
-			if checkDown(1, s.Button1) || checkDown(3, s.Button2) {
+			if checkDown(1, s.Button1) || checkDown(3, s.Button2) || checkDown(2, s.Button3) {
 				// Return the event immediately.
 				return s, nil
 			}

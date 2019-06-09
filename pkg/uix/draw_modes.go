@@ -7,11 +7,13 @@ type Tool int
 const (
 	PencilTool Tool = iota // draw pixels where the mouse clicks
 	ActorTool              // drag and move actors
+	LinkTool
 )
 
 var toolNames = []string{
 	"Pencil",
 	"Doodad", // readable name for ActorTool
+	"Link",
 }
 
 func (t Tool) String() string {

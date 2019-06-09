@@ -8,8 +8,9 @@ import (
 // State keeps track of event states.
 type State struct {
 	// Mouse buttons.
-	Button1 *BoolTick
-	Button2 *BoolTick
+	Button1 *BoolTick // left
+	Button2 *BoolTick // right
+	Button3 *BoolTick // middle
 
 	EscapeKey   *BoolTick
 	EnterKey    *BoolTick
@@ -33,6 +34,7 @@ func New() *State {
 	return &State{
 		Button1:     &BoolTick{},
 		Button2:     &BoolTick{},
+		Button3:     &BoolTick{},
 		EscapeKey:   &BoolTick{},
 		EnterKey:    &BoolTick{},
 		ShiftActive: &BoolTick{},

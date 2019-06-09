@@ -17,8 +17,8 @@ type Actor interface {
 	SetGrounded(bool)
 
 	// Actor's elected hitbox set by their script.
-	SetHitbox(x, y, w, h int)
-	Hitbox() render.Rect
+	// SetHitbox(x, y, w, h int)
+	// Hitbox() render.Rect
 
 	// Movement commands.
 	MoveBy(render.Point) // Add {X,Y} to current Position.
@@ -39,3 +39,12 @@ func GetBoundingRect(d Actor) render.Rect {
 		H: S.H,
 	}
 }
+
+// GetBoundingRectWithHitbox is like GetBoundingRect but adjusts it for the
+// relative hitbox of the actor.
+// func GetBoundingRectWithHitbox(d Actor, hitbox render.Rect) render.Rect {
+// 	rect := GetBoundingRect(d)
+// 	rect.W = hitbox.W
+// 	rect.H = hitbox.H
+// 	return rect
+// }

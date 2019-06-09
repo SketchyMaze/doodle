@@ -2,6 +2,8 @@ function main() {
 	Self.AddAnimation("open", 0, [1]);
 	var unlocked = false;
 
+	Self.Canvas.SetBackground(RGBA(0, 255, 255, 100));
+
 	// Map our door names to key names.
 	var KeyMap = {
 		"Blue Door": "Blue Key",
@@ -32,6 +34,5 @@ function main() {
 	});
 	Events.OnLeave(function(e) {
 		console.log("%s has stopped touching %s", e, Self.Doodad.Title)
-		Self.Canvas.SetBackground(RGBA(0, 0, 1, 0));
 	})
 }

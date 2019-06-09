@@ -49,6 +49,68 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		perRow = balance.UIDoodadsPerRow
 	)
 
+	frame.SetBackground(render.RGBA(0, 153, 255, 153))
+
+	// Toolbar on top of the Doodad panel.
+	toolbar := ui.NewFrame("Doodad Palette Toolbar")
+	toolbar.Configure(ui.Config{
+		Background:  render.Grey,
+		BorderSize:  2,
+		BorderStyle: ui.BorderRaised,
+		Height:      20,
+	})
+	{
+		// Link button.
+		linkButton := ui.NewButton("Link", ui.NewLabel(ui.Label{
+			Text: "Link Doodads",
+		}))
+		linkButton.Handle(ui.Click, func(p render.Point) {
+			u.d.Flash("Hello world")
+		})
+		u.Supervisor.Add(linkButton)
+
+		toolbar.Pack(linkButton, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+		})
+	}
+	frame.Pack(toolbar, ui.Pack{
+		Anchor: ui.N,
+		Fill:   true,
+	})
+
+	// Pager buttons on top of the doodad list.
+	pager := ui.NewFrame("Doodad Pager")
+	{
+		leftBtn := ui.NewButton("Prev Page", ui.NewLabel(ui.Label{
+			Text: "<",
+		}))
+		u.Supervisor.Add(leftBtn)
+		pager.Pack(leftBtn, ui.Pack{
+			Anchor: ui.W,
+		})
+
+		pageLabel := ui.NewLabel(ui.Label{
+			Text: "    Page 1 of 20",
+		})
+		pager.Pack(pageLabel, ui.Pack{
+			Anchor: ui.W,
+			Expand: true,
+		})
+
+		rightBtn := ui.NewButton("Next Page", ui.NewLabel(ui.Label{
+			Text: ">",
+		}))
+		u.Supervisor.Add(rightBtn)
+		pager.Pack(rightBtn, ui.Pack{
+			Anchor: ui.W,
+		})
+	}
+	frame.Pack(pager, ui.Pack{
+		Anchor: ui.N,
+		Fill:   true,
+	})
+
 	doodadsAvailable, err := doodads.ListDoodads()
 	if err != nil {
 		return frame, fmt.Errorf(

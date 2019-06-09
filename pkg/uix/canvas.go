@@ -65,6 +65,10 @@ type Canvas struct {
 	OnDeleteActors func([]*level.Actor)
 	OnDragStart    func(filename string)
 
+	// When the Canvas wants to link two actors together. Arguments are the IDs
+	// of the two actors.
+	OnLinkActors func(a, b string)
+
 	// Tracking pixels while editing. TODO: get rid of pixelHistory?
 	pixelHistory []*level.Pixel
 	lastPixel    *level.Pixel

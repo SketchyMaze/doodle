@@ -548,9 +548,12 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		}
 	}
 
-	// TODO: right-aligned labels clip out of bounds
+	var shareware string
+	if balance.FreeVersion {
+		shareware = " (shareware)"
+	}
 	extraLabel := ui.NewLabel(ui.Label{
-		Text: "blah",
+		Text: "Doodle v" + Version + shareware,
 		Font: balance.StatusFont,
 	})
 	extraLabel.Configure(ui.Config{

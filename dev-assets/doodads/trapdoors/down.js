@@ -3,7 +3,7 @@ function main() {
 
 	var timer = 0;
 
-	Self.SetHitbox(0, 0, 72, 9);
+	Self.SetHitbox(0, 0, 72, 6);
 
 	var animationSpeed = 100;
 	var opened = false;

@@ -88,19 +88,19 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	// from the Origin (0,0) we find out by how far (subtract full tile sizes)
 	// and use the remainder as an offset for drawing the tiles.
 	var dx, dy int32
-	if origin.X > 0 {
-		for origin.X > 0 && origin.X > size.W {
+	if origin.X > p.X {
+		for origin.X > p.X && origin.X > size.W {
 			origin.X -= size.W
 		}
 		dx = origin.X
-		origin.X = 0
+		origin.X = p.X
 	}
-	if origin.Y > 0 {
-		for origin.Y > 0 && origin.Y > size.H {
+	if origin.Y > p.Y {
+		for origin.Y > p.Y && origin.Y > size.H {
 			origin.Y -= size.H
 		}
 		dy = origin.Y
-		origin.Y = 0
+		origin.Y = p.Y
 	}
 
 	// And capping the scroll delta in the other direction.
