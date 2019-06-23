@@ -39,9 +39,21 @@ type Actor struct {
 	id       string       // NOTE: read only, use ID() to access.
 	Filename string       `json:"filename"` // like "exit.doodad"
 	Point    render.Point `json:"point"`
+	Links    []string     `json:"links,omitempty"` // IDs of linked actors
 }
 
 // ID returns the actor's ID.
 func (a *Actor) ID() string {
 	return a.id
+}
+
+// AddLink adds a linked Actor to an Actor. Add the linked actor by its ID.
+func (a *Actor) AddLink(id string) {
+	// Don't add a duplicate ID to the links array.
+	for _, exist := range a.Links {
+		if exist == id {
+			return
+		}
+	}
+	a.Links = append(a.Links, id)
 }

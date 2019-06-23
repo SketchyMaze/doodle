@@ -58,7 +58,6 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 	case ActorTool:
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
-		_ = WP
 
 		var deleteActors = []*level.Actor{}
 		for _, actor := range w.actors {
@@ -99,6 +98,47 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		// Change in actor count?
 		if len(deleteActors) > 0 && w.OnDeleteActors != nil {
 			w.OnDeleteActors(deleteActors)
+		}
+	case LinkTool:
+		// See if any of the actors are below the mouse cursor.
+		var WP = w.WorldIndexAt(cursor)
+
+		for _, actor := range w.actors {
+			// Permanently color the actor if it's the current subject of the
+			// Link Tool (after 1st click, until 2nd click of other actor)
+			if w.linkFirst == actor {
+				actor.Canvas.Configure(ui.Config{
+					Background: render.RGBA(255, 153, 255, 153),
+				})
+				continue
+			}
+
+			box := render.Rect{
+				X: actor.Actor.Point.X - P.X - w.Scroll.X,
+				Y: actor.Actor.Point.Y - P.Y - w.Scroll.Y,
+				W: actor.Canvas.Size().W,
+				H: actor.Canvas.Size().H,
+			}
+
+			if WP.Inside(box) {
+				actor.Canvas.Configure(ui.Config{
+					BorderSize:  1,
+					BorderColor: render.RGBA(255, 153, 255, 255),
+					BorderStyle: ui.BorderSolid,
+					Background:  render.White, // TODO: cuz the border draws a bgcolor
+				})
+
+				// Click handler to start linking this actor.
+				if ev.Button1.Read() {
+					if err := w.LinkAdd(actor); err != nil {
+						return err
+					}
+					break
+				}
+			} else {
+				actor.Canvas.SetBorderSize(0)
+				actor.Canvas.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO
+			}
 		}
 	}
 

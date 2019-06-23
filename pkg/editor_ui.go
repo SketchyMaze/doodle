@@ -267,6 +267,17 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		u.startDragActor(doodad)
 	}
 
+	// A link event to connect two actors together.
+	drawing.OnLinkActors = func(a, b *level.Actor) {
+		d.Flash("Link %s and %s", a.Filename, b.Filename)
+		idA, idB := a.ID(), b.ID()
+		a.AddLink(idB)
+		b.AddLink(idA)
+
+		// Reset the Link tool.
+		drawing.Tool = uix.ActorTool
+	}
+
 	// Set up the drop handler for draggable doodads.
 	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
 	// Doodad Palette buttons.

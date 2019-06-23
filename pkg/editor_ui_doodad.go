@@ -57,7 +57,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		Background:  render.Grey,
 		BorderSize:  2,
 		BorderStyle: ui.BorderRaised,
-		Height:      20,
+		Height:      24,
 	})
 	{
 		// Link button.
@@ -65,7 +65,8 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Text: "Link Doodads",
 		}))
 		linkButton.Handle(ui.Click, func(p render.Point) {
-			u.d.Flash("Hello world")
+			u.Canvas.LinkStart()
+			u.d.Flash("Click on the first Doodad to link to another one.")
 		})
 		u.Supervisor.Add(linkButton)
 
@@ -81,6 +82,9 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 
 	// Pager buttons on top of the doodad list.
 	pager := ui.NewFrame("Doodad Pager")
+	pager.SetBackground(render.RGBA(255, 0, 0, 20)) // TODO: if I don't set a background color,
+	// this frame will light up the same color as the Link button on mouse
+	// over. somewhere some memory might be shared between the recent widgets
 	{
 		leftBtn := ui.NewButton("Prev Page", ui.NewLabel(ui.Label{
 			Text: "<",
@@ -109,6 +113,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 	frame.Pack(pager, ui.Pack{
 		Anchor: ui.N,
 		Fill:   true,
+		PadY:   5,
 	})
 
 	doodadsAvailable, err := doodads.ListDoodads()
