@@ -40,6 +40,20 @@ func (s *Supervisor) InstallScripts(level *level.Level) error {
 			return err
 		}
 	}
+
+	// Loop again to bridge channels together for linked VMs.
+	for _, actor := range level.Actors {
+		// Add linked actor IDs.
+		if len(actor.Links) > 0 {
+			// Bridge the links up.
+			var thisVM = s.scripts[actor.ID()]
+			for _, id := range actor.Links {
+				// Assign this target actor's Inbound channel to the source
+				// actor's array of Outbound channels.
+				thisVM.Outbound = append(thisVM.Outbound, s.scripts[id].Inbound)
+			}
+		}
+	}
 	return nil
 }
 
@@ -52,6 +66,7 @@ func (s *Supervisor) AddLevelScript(id string) error {
 	}
 
 	s.scripts[id] = NewVM(id)
+	RegisterPublishHooks(s.scripts[id])
 	if err := s.scripts[id].RegisterLevelHooks(); err != nil {
 		return err
 	}

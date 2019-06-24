@@ -2,7 +2,7 @@ function main() {
 	Self.AddAnimation("open", 0, [1]);
 	var unlocked = false;
 
-	Self.Canvas.SetBackground(RGBA(0, 255, 255, 100));
+	// Self.Canvas.SetBackground(RGBA(0, 255, 255, 100));
 
 	// Map our door names to key names.
 	var KeyMap = {
@@ -12,8 +12,8 @@ function main() {
 		"Yellow Door": "Yellow Key"
 	}
 
-	log.Warn("%s loaded!", Self.Doodad.Title);
-	console.log("%s Setting hitbox", Self.Doodad.Title);
+	// log.Warn("%s loaded!", Self.Doodad.Title);
+	// console.log("%s Setting hitbox", Self.Doodad.Title);
 	Self.SetHitbox(16, 0, 32, 64);
 
 	Events.OnCollide(function(e) {
@@ -32,7 +32,7 @@ function main() {
 			Self.PlayAnimation("open", null);
 		}
 	});
-	Events.OnLeave(function(e) {
-		console.log("%s has stopped touching %s", e, Self.Doodad.Title)
-	})
+	// Events.OnLeave(function(e) {
+	// 	console.log("%s has stopped touching %s", e, Self.Doodad.Title)
+	// })
 }

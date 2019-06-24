@@ -6,24 +6,42 @@ function main() {
 	var animating = false;
 	var opened = false;
 
-	Events.OnCollide(function(e) {
-		if (animating || opened) {
-			return;
-		}
+	Self.SetHitbox(16, 0, 32, 64);
 
-		if (e.Overlap.X + e.Overlap.W >= 16 && e.Overlap.X < 48) {
+	Message.Subscribe("power", function(powered) {
+		console.log("%s got power=%+v", Self.Doodad.Title, powered);
+
+		if (powered) {
+			if (animating || opened) {
+				return;
+			}
+
 			animating = true;
 			Self.PlayAnimation("open", function() {
 				opened = true;
 				animating = false;
 			});
+		} else {
+			animating = true;
+			Self.PlayAnimation("close", function() {
+				opened = false;
+				animating = false;
+			})
+		}
+	});
+
+	Events.OnCollide(function(e) {
+		if (e.InHitbox) {
+			if (!opened) {
+				return false;
+			}
 		}
 	});
 	Events.OnLeave(function() {
-		if (opened) {
-			Self.PlayAnimation("close", function() {
-				opened = false;
-			});
-		}
+		// if (opened) {
+		// 	Self.PlayAnimation("close", function() {
+		// 		opened = false;
+		// 	});
+		// }
 	})
 }

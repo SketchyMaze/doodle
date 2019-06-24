@@ -1,9 +1,6 @@
 function main() {
 	log.Info("Azulian '%s' initialized!", Self.Doodad.Title);
 
-
-		Self.Canvas.SetBackground(RGBA(0, 153, 255, 100));
-
 	var playerSpeed = 12;
 	var gravity = 4;
 	var Vx = Vy = 0;

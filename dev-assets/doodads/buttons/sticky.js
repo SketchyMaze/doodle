@@ -3,6 +3,15 @@ function main() {
 
 	var pressed = false;
 
+	// When a sticky button receives power, it pops back up.
+	Message.Subscribe("power", function(powered) {
+		if (powered && pressed) {
+			Self.ShowLayer(0);
+			pressed = false;
+			Message.Publish("power", false);
+		}
+	})
+
 	Events.OnCollide(function(e) {
 		if (pressed) {
 			return;
@@ -15,5 +24,6 @@ function main() {
 
 		Self.ShowLayer(1);
 		pressed = true;
+		Message.Publish("power", true);
 	});
 }

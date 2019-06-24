@@ -18,6 +18,16 @@ type VM struct {
 	Events *Events
 	Self   interface{}
 
+	// Channels for inbound and outbound PubSub messages.
+	// Each VM has a single Inbound channel that watches for received messages
+	//     and invokes the Message.Subscribe() handlers for relevant ones.
+	// Each VM also has an array of Outbound channels which map to the Inbound
+	//     channel of the VMs it is linked to, for pushing out Message.Publish()
+	//     messages.
+	Inbound   chan Message
+	Outbound  []chan Message
+	subscribe map[string][]otto.Value // Subscribed message handlers by name.
+
 	vm *otto.Otto
 
 	// setTimeout and setInterval variables.
@@ -32,6 +42,11 @@ func NewVM(name string) *VM {
 		Events: NewEvents(),
 		vm:     otto.New(),
 		timers: map[int]*Timer{},
+
+		// Pub/sub structs.
+		Inbound:   make(chan Message),
+		Outbound:  []chan Message{},
+		subscribe: map[string][]otto.Value{},
 	}
 	return vm
 }
