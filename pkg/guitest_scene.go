@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
@@ -258,7 +259,7 @@ func (s *GUITestScene) Draw(d *Doodle) error {
 	d.Engine.Clear(render.White)
 
 	label := ui.NewLabel(ui.Label{
-		Text: "GUITest Doodle v" + Version,
+		Text: fmt.Sprintf("GUITest %s v%s", branding.AppName, branding.Version),
 		Font: render.Text{
 			Size:   26,
 			Color:  render.Pink,

@@ -12,7 +12,7 @@ import (
 	"image/png"
 
 	"git.kirsle.net/apps/doodle/lib/render"
-	doodle "git.kirsle.net/apps/doodle/pkg"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -146,7 +146,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	case extDoodad:
 		log.Info("Output is a Doodad file (chunk size %d): %s", chunkSize, outputFile)
 		doodad := doodads.New(chunkSize)
-		doodad.GameVersion = doodle.Version
+		doodad.GameVersion = branding.Version
 		doodad.Title = c.String("title")
 		if doodad.Title == "" {
 			doodad.Title = "Converted Doodad"
@@ -184,7 +184,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		}
 
 		lvl := level.New()
-		lvl.GameVersion = doodle.Version
+		lvl.GameVersion = branding.Version
 		lvl.Title = c.String("title")
 		if lvl.Title == "" {
 			lvl.Title = "Converted Level"

@@ -5,6 +5,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 )
 
 // MainScene implements the main menu of Doodle.
@@ -67,7 +68,7 @@ func (s *MainScene) Draw(d *Doodle) error {
 	d.Engine.Clear(render.White)
 
 	label := ui.NewLabel(ui.Label{
-		Text: "Doodle v" + Version,
+		Text: branding.AppName,
 		Font: render.Text{
 			Size:   26,
 			Color:  render.Pink,

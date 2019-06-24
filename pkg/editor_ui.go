@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -564,7 +565,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		shareware = " (shareware)"
 	}
 	extraLabel := ui.NewLabel(ui.Label{
-		Text: "Doodle v" + Version + shareware,
+		Text: fmt.Sprintf("%s v%s%s", branding.AppName, branding.Version, shareware),
 		Font: balance.StatusFont,
 	})
 	extraLabel.Configure(ui.Config{

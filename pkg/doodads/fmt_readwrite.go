@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -61,6 +62,10 @@ func (d *Doodad) WriteFile(filename string) error {
 	if !strings.HasSuffix(filename, enum.DoodadExt) {
 		filename += enum.DoodadExt
 	}
+
+	// Set the version information.
+	d.Version = 1
+	d.GameVersion = branding.Version
 
 	// bin, err := m.ToBinary()
 	bin, err := d.ToJSON()

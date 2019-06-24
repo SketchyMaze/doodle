@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
-	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"github.com/urfave/cli"
 )
 
@@ -37,7 +37,7 @@ func main() {
 	}
 
 	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
-		doodle.Version,
+		branding.Version,
 		Build,
 		freeLabel,
 		BuildDate,

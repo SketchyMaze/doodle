@@ -257,8 +257,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 	// Save it to their profile directory.
 	filename = userdir.DoodadPath(filename)
 	log.Info("Write Doodad: %s", filename)
-	err := d.WriteJSON(filename)
-	return err
+	return d.WriteFile(filename)
 }
 
 // Destroy the scene.

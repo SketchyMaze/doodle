@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render/sdl"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"github.com/urfave/cli"
 
 	_ "image/png"
@@ -37,7 +38,7 @@ func main() {
 
 	app := cli.NewApp()
 	app.Name = "doodle"
-	app.Usage = "command line interface for Doodle"
+	app.Usage = fmt.Sprintf("%s - %s", branding.AppName, branding.Summary)
 
 	var freeLabel string
 	if balance.FreeVersion {
@@ -45,7 +46,7 @@ func main() {
 	}
 
 	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
-		doodle.Version,
+		branding.Version,
 		Build,
 		freeLabel,
 		BuildDate,
@@ -74,7 +75,7 @@ func main() {
 
 		// SDL engine.
 		engine := sdl.New(
-			"Doodle v"+doodle.Version,
+			fmt.Sprintf("%s v%s", branding.AppName, branding.Version),
 			balance.Width,
 			balance.Height,
 		)
