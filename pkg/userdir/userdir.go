@@ -84,6 +84,25 @@ func ListDoodads() ([]string, error) {
 	return names, nil
 }
 
+// ListLevels returns a listing of all available levels.
+func ListLevels() ([]string, error) {
+	var names []string
+
+	files, err := ioutil.ReadDir(LevelDirectory)
+	if err != nil {
+		return names, err
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(strings.ToLower(name), extLevel) {
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
+}
+
 // resolvePath is the inner logic for LevelPath and DoodadPath.
 func resolvePath(directory, filename, extension string) string {
 	if strings.Contains(filename, "/") {

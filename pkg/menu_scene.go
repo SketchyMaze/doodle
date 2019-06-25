@@ -1,6 +1,8 @@
 package doodle
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
@@ -8,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
 /*
@@ -252,6 +255,161 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 
 // setupLoadWindow sets up the UI for the "New" window.
 func (s *MenuScene) setupLoadWindow(d *Doodle) error {
+	window := ui.NewWindow("Open Drawing")
+	window.Configure(ui.Config{
+		Width:      int32(float64(d.width) * 0.8),
+		Height:     int32(float64(d.height) * 0.8),
+		Background: render.Grey,
+	})
+	window.Compute(d.Engine)
+
+	{
+		frame := ui.NewFrame("Open Drawing Frame")
+		window.Pack(frame, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+			Expand: true,
+		})
+
+		/******************
+		 * Frame for selecting User Levels
+		 ******************/
+
+		label1 := ui.NewLabel(ui.Label{
+			Text: "Levels",
+			Font: balance.LabelFont,
+		})
+		frame.Pack(label1, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+		})
+
+		levels, _ := userdir.ListLevels()
+		lvlRow := ui.NewFrame("Level Row 0")
+		frame.Pack(lvlRow, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+			PadY:   1,
+		})
+		for i, lvl := range levels {
+			func(i int, lvl string) {
+				log.Info("Add file %s to row %s", lvl, lvlRow.Name)
+				btn := ui.NewButton("Level Btn", ui.NewLabel(ui.Label{
+					Text: lvl,
+					Font: balance.MenuFont,
+				}))
+				btn.Handle(ui.Click, func(p render.Point) {
+					d.EditFile(lvl)
+				})
+				s.Supervisor.Add(btn)
+				lvlRow.Pack(btn, ui.Pack{
+					Anchor: ui.W,
+					Expand: true,
+					Fill:   true,
+				})
+
+				if i > 0 && (i+1)%4 == 0 {
+					log.Warn("i=%d wrapped at mod 4", i)
+					lvlRow = ui.NewFrame(fmt.Sprintf("Level Row %d", i))
+					frame.Pack(lvlRow, ui.Pack{
+						Anchor: ui.N,
+						FillX:  true,
+						PadY:   1,
+					})
+				}
+			}(i, lvl)
+		}
+
+		/******************
+		 * Frame for selecting User Doodads
+		 ******************/
+
+		if !balance.FreeVersion {
+			label2 := ui.NewLabel(ui.Label{
+				Text: "Doodads",
+				Font: balance.LabelFont,
+			})
+			frame.Pack(label2, ui.Pack{
+				Anchor: ui.N,
+				FillX:  true,
+			})
+
+			files, _ := userdir.ListDoodads()
+			ddRow := ui.NewFrame("Doodad Row 0")
+			frame.Pack(ddRow, ui.Pack{
+				Anchor: ui.N,
+				FillX:  true,
+				PadY:   1,
+			})
+			for i, dd := range files {
+				func(i int, dd string) {
+					btn := ui.NewButton("Doodad Btn", ui.NewLabel(ui.Label{
+						Text: dd,
+						Font: balance.MenuFont,
+					}))
+					btn.Handle(ui.Click, func(p render.Point) {
+						d.EditFile(dd)
+					})
+					s.Supervisor.Add(btn)
+					ddRow.Pack(btn, ui.Pack{
+						Anchor: ui.W,
+						Expand: true,
+						Fill:   true,
+					})
+
+					if i > 0 && (i+1)%4 == 0 {
+						ddRow = ui.NewFrame(fmt.Sprintf("Doodad Row %d", i))
+						frame.Pack(ddRow, ui.Pack{
+							Anchor: ui.N,
+							FillX:  true,
+							PadY:   1,
+						})
+					}
+				}(i, dd)
+			}
+		}
+
+		/******************
+		 * Confirm/cancel buttons.
+		 ******************/
+
+		bottomFrame := ui.NewFrame("Button Frame")
+		// bottomFrame.Configure(ui.Config{
+		// 	BorderSize:  1,
+		// 	BorderStyle: ui.BorderSunken,
+		// 	BorderColor: render.Black,
+		// })
+		// bottomFrame.SetBackground(render.Grey)
+		frame.Pack(bottomFrame, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+			PadY:   8,
+		})
+
+		var buttons = []struct {
+			Label string
+			F     func(render.Point)
+		}{
+			{"Cancel", func(p render.Point) {
+				d.Goto(&MainScene{})
+			}},
+		}
+		for _, t := range buttons {
+			btn := ui.NewButton(t.Label, ui.NewLabel(ui.Label{
+				Text: t.Label,
+				Font: balance.MenuFont,
+			}))
+			btn.Handle(ui.Click, t.F)
+			s.Supervisor.Add(btn)
+			bottomFrame.Pack(btn, ui.Pack{
+				Anchor: ui.W,
+				PadX:   4,
+				PadY:   8,
+			})
+		}
+	}
+
+	s.window = window
 	return nil
 }
 

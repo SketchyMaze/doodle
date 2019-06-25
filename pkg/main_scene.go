@@ -58,6 +58,9 @@ func (s *MainScene) Setup(d *Doodle) error {
 		Text: "Load Map",
 		Font: balance.StatusFont,
 	}))
+	button2.Handle(ui.Click, func(p render.Point) {
+		d.GotoLoadMenu()
+	})
 
 	frame.Pack(button1, ui.Pack{
 		Anchor: ui.N,

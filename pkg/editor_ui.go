@@ -410,13 +410,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		menuButton{
 			Text: "Load",
 			Click: func(render.Point) {
-				d.Prompt("Open filename>", func(answer string) {
-					if answer != "" {
-						if err := d.EditFile(answer); err != nil {
-							d.Flash(err.Error())
-						}
-					}
-				})
+				d.GotoLoadMenu()
 			},
 		},
 	}
