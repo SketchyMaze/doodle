@@ -123,7 +123,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	*s.debScroll = s.drawing.Scroll.String()
 
 	// Has the window been resized?
-	if resized := ev.Resized.Read(); resized {
+	if resized := ev.Resized.Now; resized {
 		w, h := d.Engine.WindowSize()
 		if w != d.width || h != d.height {
 			d.width = w

@@ -93,8 +93,7 @@ func (c Command) Run(d *Doodle) error {
 
 // New opens a new map in the editor mode.
 func (c Command) New(d *Doodle) error {
-	d.Flash("Starting a new map")
-	d.NewMap()
+	d.GotoNewMenu()
 	return nil
 }
 

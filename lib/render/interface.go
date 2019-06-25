@@ -22,6 +22,7 @@ type Engine interface {
 
 	// Clear the full canvas and set this color.
 	Clear(Color)
+	SetTitle(string)
 	DrawPoint(Color, Point)
 	DrawLine(Color, Point, Point)
 	DrawRect(Color, Rect)

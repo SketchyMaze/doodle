@@ -153,6 +153,8 @@ func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 }
 
 // TrackFPS shows the current FPS once per second.
+//
+// In debug mode, changes the window title to include the FPS counter.
 func (d *Doodle) TrackFPS(skipped uint32) {
 	fpsFrames++
 	fpsCurrentTicks = d.Engine.GetTicks()
@@ -167,5 +169,9 @@ func (d *Doodle) TrackFPS(skipped uint32) {
 		fpsCurrent = fpsFrames
 		fpsFrames = 0
 		fpsSkipped = skipped
+	}
+
+	if d.Debug {
+		d.Engine.SetTitle(fmt.Sprintf("%s (%d FPS)", d.Title(), fpsCurrent))
 	}
 }

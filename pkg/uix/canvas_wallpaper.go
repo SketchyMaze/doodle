@@ -46,16 +46,18 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 	}
 
 	// Bound it on the right bottom edges. XXX: downcast from int64!
-	if w.wallpaper.maxWidth > 0 {
-		if int64(orig.X+size.W) > w.wallpaper.maxWidth {
-			var delta = int32(w.wallpaper.maxWidth - int64(orig.X+size.W))
-			moveBy.X = delta
+	if w.wallpaper.pageType >= level.Bounded {
+		if w.wallpaper.maxWidth > 0 {
+			if int64(orig.X+size.W) > w.wallpaper.maxWidth {
+				var delta = int32(w.wallpaper.maxWidth - int64(orig.X+size.W))
+				moveBy.X = delta
+			}
 		}
-	}
-	if w.wallpaper.maxHeight > 0 {
-		if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
-			var delta = int32(w.wallpaper.maxHeight - int64(orig.Y+size.H))
-			moveBy.Y = delta
+		if w.wallpaper.maxHeight > 0 {
+			if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
+				var delta = int32(w.wallpaper.maxHeight - int64(orig.Y+size.H))
+				moveBy.Y = delta
+			}
 		}
 	}
 

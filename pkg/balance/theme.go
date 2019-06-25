@@ -37,6 +37,21 @@ var (
 		Color:   render.Black,
 	}
 
+	// UIFont is the main font for UI labels.
+	UIFont = render.Text{
+		Size:    12,
+		Padding: 4,
+		Color:   render.Black,
+	}
+
+	// LabelFont is the font for strong labels in UI.
+	LabelFont = render.Text{
+		Size:         12,
+		FontFilename: "./fonts/DejaVuSans-Bold.ttf",
+		Padding:      4,
+		Color:        render.Black,
+	}
+
 	// Color for draggable doodad.
 	DragColor = render.MustHexColor("#0099FF")
 )

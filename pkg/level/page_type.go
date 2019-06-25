@@ -1,5 +1,7 @@
 package level
 
+import "fmt"
+
 // PageType configures the bounds and wallpaper behavior of a Level.
 type PageType int
 
@@ -29,4 +31,32 @@ const (
 	// - The wallpaper vert mirrors Top along the Y=Width plane
 	// - The wallpaper 180 rotates the Corner for opposite corners
 	Bordered
+
+	// If you add new PageType, also update the two functions below.
 )
+
+// String converts the PageType to a string label.
+func (p PageType) String() string {
+	switch p {
+	case Unbounded:
+		return "Unbounded"
+	case NoNegativeSpace:
+		return "NoNegativeSpace"
+	case Bounded:
+		return "Bounded"
+	case Bordered:
+		return "Bordered"
+	}
+	return fmt.Sprintf("PageType<%d>", p)
+}
+
+// PageTypeFromString returns a PageType from its string version.
+func PageTypeFromString(name string) (PageType, bool) {
+	// The min and max PageType value.
+	for i := Unbounded; i <= Bordered; i++ {
+		if name == i.String() {
+			return PageType(i), true
+		}
+	}
+	return 0, false
+}

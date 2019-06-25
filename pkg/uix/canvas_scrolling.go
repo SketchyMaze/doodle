@@ -69,7 +69,8 @@ func (w *Canvas) loopConstrainScroll() error {
 	}
 
 	// Constrain the bottom and right for limited world sizes.
-	if w.wallpaper.maxWidth+w.wallpaper.maxHeight > 0 {
+	if w.wallpaper.pageType >= level.Bounded &&
+		w.wallpaper.maxWidth+w.wallpaper.maxHeight > 0 {
 		var (
 			// TODO: downcast from int64!
 			mw       = int32(w.wallpaper.maxWidth)

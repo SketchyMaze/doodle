@@ -363,7 +363,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		menuButton{
 			Text: "New Level",
 			Click: func(render.Point) {
-				d.NewMap()
+				d.GotoNewMenu()
 			},
 		},
 		menuButton{

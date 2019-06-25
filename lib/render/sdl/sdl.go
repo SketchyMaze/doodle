@@ -84,6 +84,12 @@ func (r *Renderer) Setup() error {
 	return nil
 }
 
+// SetTitle sets the SDL window title.
+func (r *Renderer) SetTitle(title string) {
+	r.title = title
+	r.window.SetTitle(title)
+}
+
 // GetTicks gets SDL's current tick count.
 func (r *Renderer) GetTicks() uint32 {
 	return sdl.GetTicks()

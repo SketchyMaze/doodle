@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/kirsle/golog"
@@ -57,10 +58,15 @@ func New(debug bool, engine render.Engine) *Doodle {
 
 	if debug {
 		log.Logger.Config.Level = golog.DebugLevel
-		DebugOverlay = true // on by default in debug mode, F3 to disable
+		// DebugOverlay = true // on by default in debug mode, F3 to disable
 	}
 
 	return d
+}
+
+// Title returns the game's preferred window title.
+func (d *Doodle) Title() string {
+	return fmt.Sprintf("%s v%s", branding.AppName, branding.Version)
 }
 
 // SetupEngine sets up the rendering engine.
@@ -83,8 +89,8 @@ func (d *Doodle) Run() error {
 	// Set up the default scene.
 	if d.Scene == nil {
 		// d.Goto(&GUITestScene{})
-		d.NewMap()
-		// d.Goto(&MainScene{})
+		// d.NewMap()
+		d.Goto(&MainScene{})
 	}
 
 	log.Info("Enter Main Loop")
