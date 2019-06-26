@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VERSION=$(shell grep -e 'Version =' pkg/doodle.go | head -n 1 | cut -d '"' -f 2)
+VERSION=$(shell grep -e 'Version =' pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2)
 BUILD=$(shell git describe --always)
 BUILD_DATE=$(shell date -Iseconds)
 CURDIR=$(shell curdir)

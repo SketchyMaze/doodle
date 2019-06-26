@@ -154,15 +154,19 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			{"Unbounded", level.Unbounded},
 			{"Bounded", level.Bounded},
 			{"No Negative Space", level.NoNegativeSpace},
-			{"Bordered", level.Bordered},
+			// {"Bordered (TODO)", level.Bordered},
 		}
 		for _, t := range types {
-			// Hide some options for the free version of the game.
-			if balance.FreeVersion {
-				if t.Value != level.Bounded {
-					continue
-				}
-			}
+			// TODO: Hide some options for the free version of the game.
+			// - At launch only Bounded and Bordered will be available
+			//   in the shareware version.
+			// - For now, only hide Bordered as it's not yet implemented.
+			// --------
+			// if balance.FreeVersion {
+			// 	if t.Value == level.Bordered {
+			// 		continue
+			// 	}
+			// }
 
 			func(t typeObj) {
 				radio := ui.NewRadioButton(t.Name,
@@ -211,7 +215,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			{"Notebook", "notebook.png"},
 			{"Blueprint", "blueprint.png"},
 			{"Legal Pad", "legal.png"},
-			{"Placemat", "placemat.png"},
+			{"Pure White", "white.png"},
+			// {"Placemat", "placemat.png"},
 		}
 		for _, t := range wallpapers {
 			func(t wallpaperObj) {
