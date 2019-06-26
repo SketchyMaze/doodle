@@ -54,4 +54,12 @@ var (
 
 	// Color for draggable doodad.
 	DragColor = render.MustHexColor("#0099FF")
+
+	PlayButtonFont = render.Text{
+		FontFilename: "./fonts/DejaVuSans-Bold.ttf",
+		Size:         16,
+		Padding:      4,
+		Color:        render.RGBA(255, 255, 0, 255),
+		Stroke:       render.RGBA(100, 100, 0, 255),
+	}
 )

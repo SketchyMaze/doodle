@@ -5,6 +5,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -23,6 +24,10 @@ type PlayScene struct {
 	d         *Doodle
 	drawing   *uix.Canvas
 	scripting *scripting.Supervisor
+
+	// UI widgets.
+	supervisor *ui.Supervisor
+	editButton *ui.Button
 
 	// Custom debug labels.
 	debPosition   *string
@@ -43,6 +48,7 @@ func (s *PlayScene) Name() string {
 func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
 	s.scripting = scripting.NewSupervisor()
+	s.supervisor = ui.NewSupervisor()
 
 	// Initialize debug overlay values.
 	s.debPosition = new(string)
@@ -55,6 +61,16 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		{"Viewport:", s.debViewport},
 		{"Scroll:", s.debScroll},
 	}
+
+	// Initialize the "Edit Map" button.
+	s.editButton = ui.NewButton("Edit", ui.NewLabel(ui.Label{
+		Text: "Edit (E)",
+		Font: balance.PlayButtonFont,
+	}))
+	s.editButton.Handle(ui.Click, func(p render.Point) {
+		s.EditLevel()
+	})
+	s.supervisor.Add(s.editButton)
 
 	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
@@ -114,6 +130,15 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	return nil
 }
 
+// EditLevel toggles out of Play Mode to edit the level.
+func (s *PlayScene) EditLevel() {
+	log.Info("Edit Mode, Go!")
+	s.d.Goto(&EditorScene{
+		Filename: s.Filename,
+		Level:    s.Level,
+	})
+}
+
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	// Update debug overlay values.
@@ -121,6 +146,8 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
+
+	s.supervisor.Loop(ev)
 
 	// Has the window been resized?
 	if resized := ev.Resized.Now; resized {
@@ -135,11 +162,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 
 	// Switching to Edit Mode?
 	if ev.KeyName.Read() == "e" {
-		log.Info("Edit Mode, Go!")
-		d.Goto(&EditorScene{
-			Filename: s.Filename,
-			Level:    s.Level,
-		})
+		s.EditLevel()
 		return nil
 	}
 
@@ -166,6 +189,17 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 	// Draw out bounding boxes.
 	d.DrawCollisionBox(s.Player)
+
+	// Draw the Edit button.
+	var (
+		canSize       = s.drawing.Size()
+		size          = s.editButton.Size()
+		padding int32 = 8
+	)
+	s.editButton.Present(d.Engine, render.Point{
+		X: canSize.W - size.W - padding,
+		Y: canSize.H - size.H - padding,
+	})
 
 	return nil
 }

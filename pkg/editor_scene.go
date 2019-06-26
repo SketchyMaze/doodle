@@ -125,6 +125,15 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	return nil
 }
 
+// Playtest switches the level into Play Mode.
+func (s *EditorScene) Playtest() {
+	log.Info("Play Mode, Go!")
+	s.d.Goto(&PlayScene{
+		Filename: s.filename,
+		Level:    s.Level,
+	})
+}
+
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	// Update debug overlay values.
@@ -148,11 +157,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 
 	// Switching to Play Mode?
 	if ev.KeyName.Read() == "p" {
-		log.Info("Play Mode, Go!")
-		d.Goto(&PlayScene{
-			Filename: s.filename,
-			Level:    s.Level,
-		})
+		s.Playtest()
 		return nil
 	}
 

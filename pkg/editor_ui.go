@@ -40,6 +40,7 @@ type EditorUI struct {
 	Workspace  *ui.Frame
 	MenuBar    *ui.Frame
 	StatusBar  *ui.Frame
+	PlayButton *ui.Button
 
 	// Palette window.
 	Palette    *ui.Window
@@ -77,6 +78,15 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.MenuBar = u.SetupMenuBar(d)
 	u.StatusBar = u.SetupStatusBar(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
+
+	u.PlayButton = ui.NewButton("Play", ui.NewLabel(ui.Label{
+		Text: "Play (P)",
+		Font: balance.PlayButtonFont,
+	}))
+	u.PlayButton.Handle(ui.Click, func(p render.Point) {
+		u.Scene.Playtest()
+	})
+	u.Supervisor.Add(u.PlayButton)
 
 	// Position the Canvas inside the frame.
 	u.Workspace.Pack(u.Canvas, ui.Pack{
@@ -151,6 +161,23 @@ func (u *EditorUI) Resized(d *Doodle) {
 
 		u.ExpandCanvas(d.Engine)
 	}
+
+	// Position the Play button over the workspace.
+	{
+		btn := u.PlayButton
+		btn.Compute(d.Engine)
+
+		var (
+			wsP           = u.Workspace.Point()
+			wsSize        = u.Workspace.Size()
+			btnSize       = btn.Size()
+			padding int32 = 8
+		)
+		btn.MoveTo(render.NewPoint(
+			wsP.X+wsSize.W-btnSize.W-padding,
+			wsP.Y+wsSize.H-btnSize.H-padding,
+		))
+	}
 }
 
 // Loop to process events and update the UI.
@@ -221,6 +248,7 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
 	u.Workspace.Present(e, u.Workspace.Point())
+	u.PlayButton.Present(e, u.PlayButton.Point())
 
 	// Are we dragging a Doodad canvas?
 	if u.Supervisor.IsDragging() {
