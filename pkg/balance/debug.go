@@ -32,7 +32,7 @@ var (
 	DebugCanvasLabel  = false // Tag the canvas with a label.
 
 	// Pretty-print JSON files when writing.
-	JSONIndent = false
+	JSONIndent = true
 )
 
 func init() {

@@ -76,10 +76,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.Canvas = u.SetupCanvas(d)
 	u.MenuBar = u.SetupMenuBar(d)
 	u.StatusBar = u.SetupStatusBar(d)
-	u.Palette = u.SetupPalette(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
-
-	u.Resized(d)
 
 	// Position the Canvas inside the frame.
 	u.Workspace.Pack(u.Canvas, ui.Pack{
@@ -93,6 +90,14 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		u.selectedSwatch = u.Canvas.Palette.ActiveSwatch.Name
 	}
 	return u
+}
+
+// FinishSetup runs the Setup tasks that must be postponed til the end, such
+// as rendering the Palette window so that it can accurately show the palette
+// loaded from a level.
+func (u *EditorUI) FinishSetup(d *Doodle) {
+	u.Palette = u.SetupPalette(d)
+	u.Resized(d)
 }
 
 // Resized handles the window being resized so we can recompute the widgets.
@@ -440,84 +445,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 
 	frame.Compute(d.Engine)
 	return frame
-}
-
-// SetupPalette sets up the palette panel.
-func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
-	window := ui.NewWindow("Palette")
-	window.ConfigureTitle(balance.TitleConfig)
-	window.TitleBar().Font = balance.TitleFont
-	window.Configure(ui.Config{
-		Background:  balance.WindowBackground,
-		BorderColor: balance.WindowBorder,
-	})
-
-	// Frame that holds the tab buttons in Level Edit mode.
-	tabFrame := ui.NewFrame("Palette Tabs")
-	for _, name := range []string{"Palette", "Doodads"} {
-		if u.paletteTab == "" {
-			u.paletteTab = name
-		}
-
-		tab := ui.NewRadioButton("Palette Tab", &u.paletteTab, name, ui.NewLabel(ui.Label{
-			Text: name,
-		}))
-		tab.Handle(ui.Click, func(p render.Point) {
-			if u.paletteTab == "Palette" {
-				u.Canvas.Tool = uix.PencilTool
-				u.PaletteTab.Show()
-				u.DoodadTab.Hide()
-			} else {
-				u.Canvas.Tool = uix.ActorTool
-				u.PaletteTab.Hide()
-				u.DoodadTab.Show()
-			}
-			window.Compute(d.Engine)
-		})
-		u.Supervisor.Add(tab)
-		tabFrame.Pack(tab, ui.Pack{
-			Anchor: ui.W,
-			Fill:   true,
-			Expand: true,
-		})
-	}
-	window.Pack(tabFrame, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-		PadY:   4,
-	})
-
-	// Only show the tab frame in Level drawing mode!
-	if u.Scene.DrawingType != enum.LevelDrawing {
-		tabFrame.Hide()
-	}
-
-	// Doodad frame.
-	{
-		frame, err := u.setupDoodadFrame(d.Engine, window)
-		if err != nil {
-			d.Flash(err.Error())
-		}
-
-		// Even if there was an error (userdir.ListDoodads couldn't read the
-		// config folder on disk or whatever) the Frame is still valid but
-		// empty, which is still the intended behavior.
-		u.DoodadTab = frame
-		u.DoodadTab.Hide()
-		window.Pack(u.DoodadTab, ui.Pack{
-			Anchor: ui.N,
-			Fill:   true,
-		})
-	}
-
-	// Color Palette Frame.
-	u.PaletteTab = u.setupPaletteFrame(window)
-	window.Pack(u.PaletteTab, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-	})
-
-	return window
 }
 
 // SetupStatusBar sets up the status bar widget along the bottom of the window.

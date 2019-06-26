@@ -117,6 +117,9 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		s.UI.Workspace.Compute(d.Engine)
 	}
 
+	// Recompute the UI Palette window for the level's palette.
+	s.UI.FinishSetup(d)
+
 	d.Flash("Editor Mode. Press 'P' to play this map.")
 
 	return nil

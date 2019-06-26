@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
@@ -28,6 +29,9 @@ type MenuScene struct {
 
 	// Private widgets.
 	window *ui.Window
+
+	// Background wallpaper canvas.
+	canvas *uix.Canvas
 
 	// Values for the New menu
 	newPageType  string
@@ -61,6 +65,19 @@ func (d *Doodle) GotoLoadMenu() {
 func (s *MenuScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
 
+	// Set up the background wallpaper canvas.
+	s.canvas = uix.NewCanvas(100, false)
+	s.canvas.Resize(render.Rect{
+		W: int32(d.width),
+		H: int32(d.height),
+	})
+	s.canvas.LoadLevel(d.Engine, &level.Level{
+		Chunker:   level.NewChunker(100),
+		Palette:   level.NewPalette(),
+		PageType:  level.Bounded,
+		Wallpaper: "notebook.png",
+	})
+
 	switch s.StartupMenu {
 	case "new":
 		if err := s.setupNewWindow(d); err != nil {
@@ -77,6 +94,17 @@ func (s *MenuScene) Setup(d *Doodle) error {
 	return nil
 }
 
+// configureCanvas updates the settings of the background canvas, so a live
+// preview of the wallpaper and wrapping type can be shown.
+func (s *MenuScene) configureCanvas(e render.Engine, pageType level.PageType, wallpaper string) {
+	s.canvas.LoadLevel(e, &level.Level{
+		Chunker:   level.NewChunker(100),
+		Palette:   level.NewPalette(),
+		PageType:  pageType,
+		Wallpaper: wallpaper,
+	})
+}
+
 // setupNewWindow sets up the UI for the "New" window.
 func (s *MenuScene) setupNewWindow(d *Doodle) error {
 	// Default scene options.
@@ -85,8 +113,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 
 	window := ui.NewWindow("New Drawing")
 	window.Configure(ui.Config{
-		Width:      int32(float64(d.width) * 0.8),
-		Height:     int32(float64(d.height) * 0.8),
+		Width:      int32(float64(d.width) * 0.75),
+		Height:     int32(float64(d.height) * 0.75),
 		Background: render.Grey,
 	})
 	window.Compute(d.Engine)
@@ -118,10 +146,11 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			FillX:  true,
 		})
 
-		var types = []struct {
+		type typeObj struct {
 			Name  string
 			Value level.PageType
-		}{
+		}
+		var types = []typeObj{
 			{"Unbounded", level.Unbounded},
 			{"Bounded", level.Bounded},
 			{"No Negative Space", level.NoNegativeSpace},
@@ -135,19 +164,24 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				}
 			}
 
-			radio := ui.NewRadioButton(t.Name,
-				&s.newPageType,
-				t.Value.String(),
-				ui.NewLabel(ui.Label{
-					Text: t.Name,
-					Font: balance.MenuFont,
-				}),
-			)
-			s.Supervisor.Add(radio)
-			typeFrame.Pack(radio, ui.Pack{
-				Anchor: ui.W,
-				PadX:   4,
-			})
+			func(t typeObj) {
+				radio := ui.NewRadioButton(t.Name,
+					&s.newPageType,
+					t.Value.String(),
+					ui.NewLabel(ui.Label{
+						Text: t.Name,
+						Font: balance.MenuFont,
+					}),
+				)
+				radio.Handle(ui.Click, func(p render.Point) {
+					s.configureCanvas(d.Engine, t.Value, s.newWallpaper)
+				})
+				s.Supervisor.Add(radio)
+				typeFrame.Pack(radio, ui.Pack{
+					Anchor: ui.W,
+					PadX:   4,
+				})
+			}(t)
 		}
 
 		/******************
@@ -169,25 +203,34 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			FillX:  true,
 		})
 
-		var wallpapers = []struct {
+		type wallpaperObj struct {
 			Name  string
 			Value string
-		}{
+		}
+		var wallpapers = []wallpaperObj{
 			{"Notebook", "notebook.png"},
 			{"Blueprint", "blueprint.png"},
 			{"Legal Pad", "legal.png"},
 			{"Placemat", "placemat.png"},
 		}
 		for _, t := range wallpapers {
-			radio := ui.NewRadioButton(t.Name, &s.newWallpaper, t.Value, ui.NewLabel(ui.Label{
-				Text: t.Name,
-				Font: balance.MenuFont,
-			}))
-			s.Supervisor.Add(radio)
-			wpFrame.Pack(radio, ui.Pack{
-				Anchor: ui.W,
-				PadX:   4,
-			})
+			func(t wallpaperObj) {
+				radio := ui.NewRadioButton(t.Name, &s.newWallpaper, t.Value, ui.NewLabel(ui.Label{
+					Text: t.Name,
+					Font: balance.MenuFont,
+				}))
+				radio.Handle(ui.Click, func(p render.Point) {
+					log.Info("Set wallpaper to %s", t.Value)
+					if pageType, ok := level.PageTypeFromString(s.newPageType); ok {
+						s.configureCanvas(d.Engine, pageType, t.Value)
+					}
+				})
+				s.Supervisor.Add(radio)
+				wpFrame.Pack(radio, ui.Pack{
+					Anchor: ui.W,
+					PadX:   4,
+				})
+			}(t)
 		}
 
 		/******************
@@ -224,6 +267,11 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				lvl.Wallpaper = s.newWallpaper
 				lvl.PageType = pageType
 
+				// Blueprint theme palette for the dark wallpaper color.
+				if lvl.Wallpaper == "blueprint.png" {
+					lvl.Palette = level.NewBlueprintPalette()
+				}
+
 				d.Goto(&EditorScene{
 					DrawingType: enum.LevelDrawing,
 					Level:       lvl,
@@ -257,8 +305,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 	window := ui.NewWindow("Open Drawing")
 	window.Configure(ui.Config{
-		Width:      int32(float64(d.width) * 0.8),
-		Height:     int32(float64(d.height) * 0.8),
+		Width:      int32(float64(d.width) * 0.75),
+		Height:     int32(float64(d.height) * 0.75),
 		Background: render.Grey,
 	})
 	window.Compute(d.Engine)
@@ -423,6 +471,9 @@ func (s *MenuScene) Loop(d *Doodle, ev *events.State) error {
 func (s *MenuScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
+
+	// Draw the background canvas.
+	s.canvas.Present(d.Engine, render.Origin)
 
 	s.window.Compute(d.Engine)
 	s.window.MoveTo(render.Point{

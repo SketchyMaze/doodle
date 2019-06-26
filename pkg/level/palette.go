@@ -29,6 +29,38 @@ func DefaultPalette() *Palette {
 	}
 }
 
+// NewBlueprintPalette returns the blueprint theme's color palette.
+func NewBlueprintPalette() *Palette {
+	return &Palette{
+		Swatches: []*Swatch{
+			&Swatch{
+				Name:  "solid",
+				Color: render.RGBA(254, 254, 254, 255),
+				Solid: true,
+			},
+			&Swatch{
+				Name:  "decoration",
+				Color: render.Grey,
+			},
+			&Swatch{
+				Name:  "fire",
+				Color: render.RGBA(255, 80, 0, 255),
+				Fire:  true,
+			},
+			&Swatch{
+				Name:  "water",
+				Color: render.RGBA(0, 153, 255, 255),
+				Water: true,
+			},
+			&Swatch{
+				Name:  "electric",
+				Color: render.RGBA(255, 255, 0, 255),
+				Solid: true,
+			},
+		},
+	}
+}
+
 // NewPalette initializes a blank palette.
 func NewPalette() *Palette {
 	return &Palette{
