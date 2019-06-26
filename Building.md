@@ -1,5 +1,24 @@
 # Building Doodle
 
+## Fonts
+
+The `fonts/` folder is git-ignored. The app currently uses font files here
+named:
+
+* `DejaVuSans.ttf` for sans-serif font.
+* `DejaVuSans-Bold.ttf` for bold sans-serif font.
+* `DejaVuSansMono.ttf` for monospace font.
+
+These are the open source **DejaVu Sans [Mono]** fonts, so copy them in from
+your `/usr/share/fonts/dejavu` folder or provide alternative fonts.
+
+```bash
+mkdir fonts
+cp /usr/share/fonts/dejavu/{DejaVuSans.ttf,DejaVuSans-Bold.ttf,DejaVuSansMono.ttf} fonts/
+```
+
+## Makefile
+
 Makefile commands for Linux:
 
 * `make setup`: install Go dependencies and set up the build environment

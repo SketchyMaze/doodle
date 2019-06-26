@@ -76,7 +76,7 @@ test:
 dist: build
 	mkdir -p dist/doodle-$(VERSION)
 	cp bin/* dist/doodle-$(VERSION)/
-	cp -r assets fonts README.md Changes.md dist/doodle-$(VERSION)/
+	cp -r assets fonts README.md dist/doodle-$(VERSION)/
 	cd dist && tar -czvf doodle-$(VERSION).tar.gz doodle-$(VERSION)
 	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
 
