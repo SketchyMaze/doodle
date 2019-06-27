@@ -1,5 +1,5 @@
 function main() {
-	log.Info("Azulian '%s' initialized!", Self.Doodad.Title);
+	Flash("Azulian '%s' initialized!", Self.Doodad.Title);
 
 	var playerSpeed = 12;
 	var gravity = 4;

@@ -15,6 +15,7 @@ const (
 	ClickEvent
 	KeyEvent
 	ResizeEvent
+	WindowEvent
 )
 
 // Event object queues up asynchronous JavaScript events to be processed linearly.
@@ -36,6 +37,19 @@ type Event struct {
 
 // AddEventListeners sets up bindings to collect events from the browser.
 func (e *Engine) AddEventListeners() {
+	// Window resize.
+	js.Global().Get("window").Call(
+		"addEventListener",
+		"resize",
+		js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+			e.queue <- Event{
+				Name:  "resize",
+				Class: WindowEvent,
+			}
+			return nil
+		}),
+	)
+
 	// Mouse movement.
 	e.canvas.Value.Call(
 		"addEventListener",
@@ -149,6 +163,8 @@ func (e *Engine) Poll() (*events.State, error) {
 
 	for event := e.PollEvent(); event != nil; event = e.PollEvent() {
 		switch event.Class {
+		case WindowEvent:
+			s.Resized.Push(true)
 		case MouseEvent:
 			s.CursorX.Push(int32(event.X))
 			s.CursorY.Push(int32(event.Y))

@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"github.com/robertkrimen/otto"
 )
 
@@ -67,6 +68,7 @@ func (vm *VM) Set(name string, v interface{}) error {
 func (vm *VM) RegisterLevelHooks() error {
 	bindings := map[string]interface{}{
 		"log":    log.Logger,
+		"Flash":  shmem.Flash,
 		"RGBA":   render.RGBA,
 		"Point":  render.NewPoint,
 		"Self":   vm.Self, // i.e., the uix.Actor object

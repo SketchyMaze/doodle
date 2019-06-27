@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"github.com/kirsle/golog"
 )
 
@@ -55,6 +56,10 @@ func New(debug bool, engine render.Engine) *Doodle {
 		height:    balance.Height,
 	}
 	d.shell = NewShell(d)
+
+	// Make the render engine globally available. TODO: for wasm/ToBitmap
+	shmem.CurrentRenderEngine = engine
+	shmem.Flash = d.Flash
 
 	if debug {
 		log.Logger.Config.Level = golog.DebugLevel

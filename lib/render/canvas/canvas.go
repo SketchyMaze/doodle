@@ -28,10 +28,12 @@ func GetCanvas(id string) Canvas {
 
 // ClientW returns the client width.
 func (c Canvas) ClientW() int {
-	return c.Value.Get("clientWidth").Int()
+	return js.Global().Get("window").Get("innerWidth").Int()
+	// return c.Value.Get("clientWidth").Int()
 }
 
 // ClientH returns the client height.
 func (c Canvas) ClientH() int {
-	return c.Value.Get("clientHeight").Int()
+	return js.Global().Get("window").Get("innerHeight").Int()
+	// return c.Value.Get("clientHeight").Int()
 }

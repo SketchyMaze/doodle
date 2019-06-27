@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"image"
 	"math"
 
 	"git.kirsle.net/apps/doodle/lib/events"
@@ -32,6 +33,7 @@ type Engine interface {
 
 	// Texture caching.
 	NewBitmap(filename string) (Texturer, error)
+	NewTexture(filename string, img image.Image) (Texturer, error)
 	Copy(t Texturer, src, dst Rect)
 
 	// Delay for a moment using the render engine's delay method,

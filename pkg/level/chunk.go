@@ -11,8 +11,8 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
-	"git.kirsle.net/apps/doodle/pkg/wasm"
 	"github.com/satori/go.uuid"
 	"github.com/vmihailenco/msgpack"
 )
@@ -187,8 +187,9 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) error {
 		)
 	}
 
-	// Write the image to bitmap file.
-	return wasm.StoreBitmap(filename, img)
+	// Cache the texture data with the current renderer.
+	_, err := shmem.CurrentRenderEngine.NewTexture(filename, img)
+	return err
 }
 
 // Set proxies to the accessor and flags the texture as dirty.
