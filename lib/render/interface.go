@@ -32,8 +32,8 @@ type Engine interface {
 	ComputeTextRect(Text) (Rect, error)
 
 	// Texture caching.
-	NewBitmap(filename string) (Texturer, error)
-	NewTexture(filename string, img image.Image) (Texturer, error)
+	StoreTexture(name string, img image.Image) (Texturer, error)
+	LoadTexture(name string) (Texturer, error)
 	Copy(t Texturer, src, dst Rect)
 
 	// Delay for a moment using the render engine's delay method,

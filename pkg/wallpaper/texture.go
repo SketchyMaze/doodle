@@ -58,6 +58,6 @@ func (wp *Wallpaper) RepeatTexture(e render.Engine) (render.Texturer, error) {
 // texture creates or returns a cached texture for a wallpaper.
 func texture(e render.Engine, img *image.RGBA, name string) (render.Texturer, error) {
 	filename := userdir.CacheFilename("wallpaper", name+".bmp")
-	texture, err := shmem.CurrentRenderEngine.NewTexture(filename, img)
+	texture, err := shmem.CurrentRenderEngine.StoreTexture(filename, img)
 	return texture, err
 }

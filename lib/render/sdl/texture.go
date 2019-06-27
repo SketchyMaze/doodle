@@ -28,8 +28,8 @@ type Texture struct {
 	height int32
 }
 
-// NewTexture caches an SDL texture from a bitmap.
-func (r *Renderer) NewTexture(filename string, img image.Image) (render.Texturer, error) {
+// StoreTexture caches an SDL texture from a bitmap.
+func (r *Renderer) StoreTexture(name string, img image.Image) (render.Texturer, error) {
 	var (
 		fh = bytes.NewBuffer([]byte{})
 	)
@@ -65,7 +65,7 @@ func (r *Renderer) NewTexture(filename string, img image.Image) (render.Texturer
 		height: surface.H,
 		tex:    texture,
 	}
-	r.textures[filename] = tex
+	r.textures[name] = tex
 
 	return tex, nil
 }
@@ -75,10 +75,10 @@ func (t *Texture) Size() render.Rect {
 	return render.NewRect(t.width, t.height)
 }
 
-// NewBitmap initializes a texture from a bitmap image.
-func (r *Renderer) NewBitmap(filename string) (render.Texturer, error) {
-	if tex, ok := r.textures[filename]; ok {
+// LoadTexture initializes a texture from a bitmap image.
+func (r *Renderer) LoadTexture(name string) (render.Texturer, error) {
+	if tex, ok := r.textures[name]; ok {
 		return tex, nil
 	}
-	return nil, fmt.Errorf("NewBitmap(%s): not found in texture cache", filename)
+	return nil, fmt.Errorf("LoadTexture(%s): not found in texture cache", name)
 }
