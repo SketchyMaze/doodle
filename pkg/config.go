@@ -43,12 +43,8 @@ func (d *Doodle) EditFile(filename string) error {
 			return d.EditDrawing(filename)
 		}
 
-		// WASM: no filesystem access, can go no further.
-		if runtime.GOOS == "js" {
-			return fmt.Errorf("EditFile(%s): not found for WASM and can go no further", filename)
-		}
-
-		// Check the user's levels directory.
+		// Check the user's levels directory. In WASM this will check in
+		// localStorage.
 		if foundFilename := userdir.ResolvePath(filename, extension, false); foundFilename != "" {
 			log.Info("EditFile: resolved name '%s' to path %s", filename, foundFilename)
 			absPath = foundFilename

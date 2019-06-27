@@ -105,7 +105,7 @@ func FindFile(filename string) (string, error) {
 		// WASM: can't check the filesystem. Let the caller go ahead and try
 		// loading via ajax request.
 		if runtime.GOOS == "js" {
-			return candidate, nil
+			return filename, nil
 		}
 
 		// external system level?
@@ -133,7 +133,7 @@ func FindFile(filename string) (string, error) {
 		// WASM: can't check the filesystem. Let the caller go ahead and try
 		// loading via ajax request.
 		if runtime.GOOS == "js" {
-			return candidate, nil
+			return filename, nil
 		}
 
 		// external system doodad?

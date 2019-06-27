@@ -6,6 +6,7 @@ dist/
 wasm/assets/
 *.wasm
 *.doodad
+*.level
 docker/ubuntu
 docker/debian
 docker/fedora

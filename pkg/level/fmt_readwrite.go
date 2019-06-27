@@ -61,8 +61,14 @@ func LoadFile(filename string) (*Level, error) {
 		return FromJSON(filename, jsonData)
 	}
 
-	// WASM: try the file over HTTP ajax request.
+	// WASM: try the file from localStorage or HTTP ajax request.
 	if runtime.GOOS == "js" {
+		if result, ok := wasm.GetSession(filename); ok {
+			log.Info("recall level data from localStorage")
+			return FromJSON(filename, []byte(result))
+		}
+
+		// Ajax request.
 		jsonData, err := wasm.HTTPGet(filename)
 		if err != nil {
 			return nil, err
@@ -98,7 +104,6 @@ func (m *Level) WriteFile(filename string) error {
 	m.Version = 1
 	m.GameVersion = branding.Version
 
-	// bin, err := m.ToBinary()
 	bin, err := m.ToJSON()
 	if err != nil {
 		return err
@@ -107,6 +112,15 @@ func (m *Level) WriteFile(filename string) error {
 	// Save it to their profile directory.
 	filename = userdir.LevelPath(filename)
 	log.Info("Write Level: %s", filename)
+
+	// WASM: place in localStorage.
+	if runtime.GOOS == "js" {
+		log.Info("wasm: write %s to localStorage", filename)
+		wasm.SetSession(filename, string(bin))
+		return nil
+	}
+
+	// Desktop: write to disk.
 	err = ioutil.WriteFile(filename, bin, 0644)
 	if err != nil {
 		return fmt.Errorf("level.WriteFile: %s", err)

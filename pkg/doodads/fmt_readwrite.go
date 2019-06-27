@@ -68,6 +68,14 @@ func LoadFile(filename string) (*Doodad, error) {
 
 	// WASM: try the file over HTTP ajax request.
 	if runtime.GOOS == "js" {
+		if result, ok := wasm.GetSession(filename); ok {
+			log.Info("recall doodad data from localStorage")
+			return FromJSON(filename, []byte(result))
+		}
+
+		// TODO: ajax load for doodads might not work, filesystem.FindFile returns
+		// the base file for WASM but for now force it to system doodads path
+		filename = "assets/doodads/" + filename
 		jsonData, err := wasm.HTTPGet(filename)
 		if err != nil {
 			return nil, err
@@ -90,13 +98,19 @@ func (d *Doodad) WriteFile(filename string) error {
 	d.Version = 1
 	d.GameVersion = branding.Version
 
-	// bin, err := m.ToBinary()
 	bin, err := d.ToJSON()
 	if err != nil {
 		return err
 	}
 
-	// Save it to their profile directory.
+	// WASM: place in localStorage.
+	if runtime.GOOS == "js" {
+		log.Info("wasm: write %s to localStorage", filename)
+		wasm.SetSession(filename, string(bin))
+		return nil
+	}
+
+	// Desktop: write to disk.
 	filename = userdir.DoodadPath(filename)
 	log.Info("Write Doodad: %s", filename)
 	err = ioutil.WriteFile(filename, bin, 0644)

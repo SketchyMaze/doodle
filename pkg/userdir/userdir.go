@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/wasm"
 	"github.com/kirsle/configdir"
 )
 
@@ -77,6 +77,11 @@ func CacheFilename(filename ...string) string {
 func ListDoodads() ([]string, error) {
 	var names []string
 
+	// WASM: list from localStorage.
+	if runtime.GOOS == "js" {
+		return wasm.StorageKeys(DoodadDirectory + "/"), nil
+	}
+
 	files, err := ioutil.ReadDir(DoodadDirectory)
 	if err != nil {
 		return names, err
@@ -95,6 +100,11 @@ func ListDoodads() ([]string, error) {
 // ListLevels returns a listing of all available levels.
 func ListLevels() ([]string, error) {
 	var names []string
+
+	// WASM: list from localStorage.
+	if runtime.GOOS == "js" {
+		return wasm.StorageKeys(LevelDirectory + "/"), nil
+	}
 
 	files, err := ioutil.ReadDir(LevelDirectory)
 	if err != nil {
@@ -133,15 +143,11 @@ func resolvePath(directory, filename, extension string) string {
 // existed. So the filename should have a ".level" or ".doodad" extension and
 // then this path will resolve the ProfileDirectory of the file.
 func ResolvePath(filename, extension string, one bool) string {
-	// WASM has no file system.
-	if runtime.GOOS == "js" {
-		log.Error("userdir.ResolvePath: not supported in WASM build")
-		return ""
-	}
-
 	// If the filename exists outright, return it.
-	if _, err := os.Stat(filename); !os.IsNotExist(err) {
-		return filename
+	if !(runtime.GOOS == "js") {
+		if _, err := os.Stat(filename); !os.IsNotExist(err) {
+			return filename
+		}
 	}
 
 	var paths []string
@@ -157,6 +163,15 @@ func ResolvePath(filename, extension string, one bool) string {
 	}
 
 	for _, test := range paths {
+		// WASM: check the path in localStorage.
+		if runtime.GOOS == "js" {
+			if _, ok := wasm.GetSession(test); ok {
+				return test
+			}
+			continue
+		}
+
+		// Desktop: test the filesystem.
 		if _, err := os.Stat(test); os.IsNotExist(err) {
 			continue
 		}
