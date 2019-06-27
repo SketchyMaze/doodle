@@ -104,7 +104,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	}
 
 	// Load in the player character.
-	player, err := doodads.LoadFile("./assets/doodads/azu-blu.doodad")
+	player, err := doodads.LoadFile("azu-blu.doodad")
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)

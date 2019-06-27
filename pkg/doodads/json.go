@@ -18,6 +18,18 @@ func (d *Doodad) ToJSON() ([]byte, error) {
 	return out.Bytes(), err
 }
 
+// FromJSON loads a doodad from JSON string.
+func FromJSON(filename string, data []byte) (*Doodad, error) {
+	var doodad = &Doodad{}
+	err := json.Unmarshal(data, doodad)
+
+	// Inflate the chunk metadata to map the pixels to their palette indexes.
+	doodad.Filename = filepath.Base(filename)
+	doodad.Inflate()
+
+	return doodad, err
+}
+
 // WriteJSON writes a Doodad to JSON on disk.
 func (d *Doodad) WriteJSON(filename string) error {
 	json, err := d.ToJSON()

@@ -1,3 +1,4 @@
+pkg/bindata/bindata.go
 fonts/
 maps/
 bin/

@@ -1,22 +1,36 @@
 package doodads
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"runtime"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/apps/doodle/pkg/wasm"
 )
 
 // ListDoodads returns a listing of all available doodads between all locations,
 // including user doodads.
 func ListDoodads() ([]string, error) {
 	var names []string
+
+	// List doodads embedded into the binary.
+	if files, err := bindata.AssetDir("assets/doodads"); err == nil {
+		names = append(names, files...)
+	}
+
+	// WASM
+	if runtime.GOOS == "js" {
+		// Return the array of doodads embedded in the bindata.
+		// TODO: append user doodads to the list.
+		return names, nil
+	}
 
 	// Read system-level doodads first. Ignore errors, if the system path is
 	// empty we still go on to read the user directory.
@@ -47,14 +61,23 @@ func LoadFile(filename string) (*Doodad, error) {
 		return nil, fmt.Errorf("doodads.LoadFile(%s): %s", filename, err)
 	}
 
-	// Load the JSON format.
-	if doodad, err := LoadJSON(filename); err == nil {
-		return doodad, nil
-	} else {
-		log.Warn(err.Error())
+	// Do we have the file in bindata?
+	if jsonData, err := bindata.Asset(filename); err == nil {
+		return FromJSON(filename, jsonData)
 	}
 
-	return nil, errors.New("invalid file type")
+	// WASM: try the file over HTTP ajax request.
+	if runtime.GOOS == "js" {
+		jsonData, err := wasm.HTTPGet(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		return FromJSON(filename, jsonData)
+	}
+
+	// Load the JSON file from the filesystem.
+	return LoadJSON(filename)
 }
 
 // WriteFile saves a doodad to disk in the user's config directory.

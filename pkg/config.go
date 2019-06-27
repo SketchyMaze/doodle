@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -34,14 +36,35 @@ func (d *Doodle) EditFile(filename string) error {
 	if m := reSimpleFilename.FindStringSubmatch(filename); len(m) > 0 {
 		log.Debug("EditFile: simple filename %s", filename)
 		extension := strings.ToLower(filepath.Ext(filename))
+
+		// Check the system level storage. TODO: no editing of system levels
+		if _, err := bindata.Asset("assets/levels/" + filename); err == nil {
+			log.Info("Found level %s in bindata", filename)
+			return d.EditDrawing(filename)
+		}
+
+		// WASM: no filesystem access, can go no further.
+		if runtime.GOOS == "js" {
+			return fmt.Errorf("EditFile(%s): not found for WASM and can go no further", filename)
+		}
+
+		// Check the user's levels directory.
 		if foundFilename := userdir.ResolvePath(filename, extension, false); foundFilename != "" {
 			log.Info("EditFile: resolved name '%s' to path %s", filename, foundFilename)
 			absPath = foundFilename
 		} else {
 			return fmt.Errorf("EditFile: %s: no level or doodad found", filename)
 		}
+
 	} else {
 		log.Debug("Not a simple: %s %+v", filename, reSimpleFilename)
+
+		// WASM: no filesystem access.
+		if runtime.GOOS == "js" {
+			log.Error("EditFile(%s): wasm can't open file paths", filename)
+			return fmt.Errorf("EditFile(%s): wasm can't open file paths", filename)
+		}
+
 		if _, err := os.Stat(filename); !os.IsNotExist(err) {
 			log.Debug("EditFile: verified path %s exists", filename)
 			absPath = filename

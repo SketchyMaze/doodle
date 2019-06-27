@@ -337,7 +337,13 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 			FillX:  true,
 		})
 
+		// Get the user's levels.
 		levels, _ := userdir.ListLevels()
+
+		// Embedded levels, TODO
+		sysLevels, _ := level.ListSystemLevels()
+		levels = append(levels, sysLevels...)
+
 		lvlRow := ui.NewFrame("Level Row 0")
 		frame.Pack(lvlRow, ui.Pack{
 			Anchor: ui.N,

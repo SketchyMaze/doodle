@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/kirsle/configdir"
 )
 
@@ -132,6 +133,12 @@ func resolvePath(directory, filename, extension string) string {
 // existed. So the filename should have a ".level" or ".doodad" extension and
 // then this path will resolve the ProfileDirectory of the file.
 func ResolvePath(filename, extension string, one bool) string {
+	// WASM has no file system.
+	if runtime.GOOS == "js" {
+		log.Error("userdir.ResolvePath: not supported in WASM build")
+		return ""
+	}
+
 	// If the filename exists outright, return it.
 	if _, err := os.Stat(filename); !os.IsNotExist(err) {
 		return filename

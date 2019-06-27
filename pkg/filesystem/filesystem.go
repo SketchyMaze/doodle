@@ -6,8 +6,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -24,8 +26,8 @@ const (
 
 // Paths to system-level assets bundled with the application.
 var (
-	SystemDoodadsPath = filepath.Join(".", "assets", "doodads")
-	SystemLevelsPath  = filepath.Join(".", "assets", "levels")
+	SystemDoodadsPath = filepath.Join("assets", "doodads")
+	SystemLevelsPath  = filepath.Join("assets", "levels")
 )
 
 // MakeHeader creates the binary file header.
@@ -94,6 +96,19 @@ func FindFile(filename string) (string, error) {
 	if filetype == enum.LevelExt || filetype == "" {
 		// system levels
 		candidate := filepath.Join(SystemLevelsPath, filename)
+
+		// embedded system doodad?
+		if _, err := bindata.Asset(candidate); err == nil {
+			return candidate, nil
+		}
+
+		// WASM: can't check the filesystem. Let the caller go ahead and try
+		// loading via ajax request.
+		if runtime.GOOS == "js" {
+			return candidate, nil
+		}
+
+		// external system level?
 		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
 			return candidate, nil
 		}
@@ -107,8 +122,21 @@ func FindFile(filename string) (string, error) {
 
 	// Search doodad directories.
 	if filetype == enum.DoodadExt || filetype == "" {
-		// system doodads
+		// system doodads path
 		candidate := filepath.Join(SystemDoodadsPath, filename)
+
+		// embedded system doodad?
+		if _, err := bindata.Asset(candidate); err == nil {
+			return candidate, nil
+		}
+
+		// WASM: can't check the filesystem. Let the caller go ahead and try
+		// loading via ajax request.
+		if runtime.GOOS == "js" {
+			return candidate, nil
+		}
+
+		// external system doodad?
 		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
 			return candidate, nil
 		}

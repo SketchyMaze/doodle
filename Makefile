@@ -34,6 +34,16 @@ build-debug:
 	go build $(LDFLAGS) -tags="developer" -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -tags="developer" -i -o bin/doodad cmd/doodad/main.go
 
+# `make bindata` generates the embedded binary assets package.
+.PHONY: bindata
+bindata:
+	go-bindata -pkg bindata -o pkg/bindata/bindata.go assets/... fonts/
+
+# `make bindata-dev` generates the debug version of bindata package.
+.PHONY: bindata-dev
+bindata-dev:
+	go-bindata -debug -pkg bindata -o pkg/bindata/bindata.go assets/... fonts/
+
 # `make wasm` builds the WebAssembly port.
 .PHONY: wasm
 wasm:

@@ -15,9 +15,14 @@ var (
 
 	// Globally available Flash() function so we can emit text to the Doodle UI.
 	Flash func(string, ...interface{})
+
+	// Ajax file cache for WASM use.
+	AjaxCache map[string][]byte
 )
 
 func init() {
+	AjaxCache = map[string][]byte{}
+
 	// Default Flash function in case the app misconfigures it. Output to the
 	// console in an obvious way.
 	Flash = func(tmpl string, v ...interface{}) {

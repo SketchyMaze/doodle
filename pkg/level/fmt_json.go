@@ -10,6 +10,26 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 )
 
+// FromJSON loads a level from JSON string.
+func FromJSON(filename string, data []byte) (*Level, error) {
+	var m = &Level{}
+	err := json.Unmarshal(data, m)
+
+	// Fill in defaults.
+	if m.Wallpaper == "" {
+		m.Wallpaper = DefaultWallpaper
+	}
+
+	// Inflate the chunk metadata to map the pixels to their palette indexes.
+	m.Chunker.Inflate(m.Palette)
+	m.Actors.Inflate()
+
+	// Inflate the private instance values.
+	m.Palette.Inflate()
+
+	return m, err
+}
+
 // ToJSON serializes the level as JSON.
 func (m *Level) ToJSON() ([]byte, error) {
 	out := bytes.NewBuffer([]byte{})

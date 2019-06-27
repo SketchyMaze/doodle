@@ -167,6 +167,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			// NOTE: The drag target is the EditorUI.Canvas in
 			// editor_ui.go#SetupCanvas()
 			btn.Handle(ui.MouseDown, func(e render.Point) {
+				log.Warn("MouseDown on doodad %s (%s)", doodad.Filename, doodad.Title)
 				u.startDragActor(doodad)
 			})
 			u.Supervisor.Add(btn)
