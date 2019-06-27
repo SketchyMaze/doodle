@@ -106,7 +106,7 @@ func (s *MainScene) Draw(d *Doodle) error {
 	label := ui.NewLabel(ui.Label{
 		Text: branding.AppName,
 		Font: render.Text{
-			Size:   26,
+			Size:   46,
 			Color:  render.Pink,
 			Stroke: render.SkyBlue,
 			Shadow: render.Black,
@@ -122,7 +122,7 @@ func (s *MainScene) Draw(d *Doodle) error {
 	s.frame.Compute(d.Engine)
 	s.frame.MoveTo(render.Point{
 		X: (int32(d.width) / 2) - (s.frame.Size().W / 2),
-		Y: 200,
+		Y: 260,
 	})
 	s.frame.Present(d.Engine, s.frame.Point())
 

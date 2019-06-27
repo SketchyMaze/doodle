@@ -113,6 +113,14 @@ func (c Color) String() string {
 	)
 }
 
+// ToHex converts a render.Color to standard #RRGGBB hexadecimal format.
+func (c Color) ToHex() string {
+	return fmt.Sprintf(
+		"#%02x%02x%02x",
+		c.Red, c.Green, c.Blue,
+	)
+}
+
 // ToColor converts a render.Color into a Go standard color.Color
 func (c Color) ToColor() color.RGBA {
 	return color.RGBA{

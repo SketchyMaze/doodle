@@ -3,6 +3,7 @@ package wallpaper
 // The methods that deal in cached Textures for Doodle.
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"os"
@@ -14,7 +15,10 @@ import (
 
 // CornerTexture returns the Texture.
 func (wp *Wallpaper) CornerTexture(e render.Engine) (render.Texturer, error) {
-	fmt.Println("CornerTex")
+	if !wp.ready {
+		return nil, errors.New("wallpaper not ready")
+	}
+
 	if wp.tex.corner == nil {
 		tex, err := texture(e, wp.corner, wp.Name+"c")
 		wp.tex.corner = tex

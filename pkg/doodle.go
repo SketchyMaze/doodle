@@ -64,6 +64,12 @@ func New(debug bool, engine render.Engine) *Doodle {
 	return d
 }
 
+// SetWindowSize sets the size of the Doodle window.
+func (d *Doodle) SetWindowSize(width, height int) {
+	d.width = width
+	d.height = height
+}
+
 // Title returns the game's preferred window title.
 func (d *Doodle) Title() string {
 	return fmt.Sprintf("%s v%s", branding.AppName, branding.Version)

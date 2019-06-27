@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/kirsle/configdir"
@@ -38,9 +39,12 @@ func init() {
 	FontDirectory = configdir.LocalCache(ConfigDirectoryName, "fonts")
 
 	// Ensure all the directories exist.
-	configdir.MakePath(LevelDirectory)
-	configdir.MakePath(DoodadDirectory)
-	configdir.MakePath(FontDirectory)
+	// WASM: do not make paths in wasm.
+	if runtime.GOOS != "js" {
+		configdir.MakePath(LevelDirectory)
+		configdir.MakePath(DoodadDirectory)
+		configdir.MakePath(FontDirectory)
+	}
 }
 
 // LevelPath will turn a "simple" filename into an absolute path in the user's

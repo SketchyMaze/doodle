@@ -2,6 +2,8 @@ fonts/
 maps/
 bin/
 dist/
+wasm/assets/
+*.wasm
 *.doodad
 docker/ubuntu
 docker/debian

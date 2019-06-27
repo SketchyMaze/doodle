@@ -27,6 +27,8 @@ Makefile commands for Linux:
   Build Tags below.
 * `make build-debug`: build a debug binary (not release-mode) to the `bin/`
   folder. See Build Tags below.
+* `make wasm`: build the WebAssembly output
+* `make wasm-serve`: build the WASM output and then run the server.
 * `make run`: run a local dev build of Doodle in debug mode
 * `make guitest`: run a local dev build in the GUITest scene
 * `make test`: run the test suite

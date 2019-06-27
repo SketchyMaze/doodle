@@ -34,6 +34,17 @@ build-debug:
 	go build $(LDFLAGS) -tags="developer" -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -tags="developer" -i -o bin/doodad cmd/doodad/main.go
 
+# `make wasm` builds the WebAssembly port.
+.PHONY: wasm
+wasm:
+	cd wasm && make
+
+# `make wasm-serve` builds and launches the WebAssembly server.
+.PHONY: wasm-serve
+wasm-serve: wasm
+	sh -c 'sleep 1; xdg-open http://localhost:8080/' &
+	cd wasm && go run server.go
+
 # `make install` to install the Go binaries to your GOPATH.
 .PHONY: install
 install:

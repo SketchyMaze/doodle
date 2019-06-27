@@ -3,6 +3,7 @@ package uix
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/lib/events"
@@ -127,9 +128,11 @@ func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 
 	// TODO: wallpaper paths
 	filename := "assets/wallpapers/" + level.Wallpaper
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		log.Error("LoadLevel: %s", err)
-		filename = "assets/wallpapers/notebook.png" // XXX TODO
+	if runtime.GOOS != "js" {
+		if _, err := os.Stat(filename); os.IsNotExist(err) {
+			log.Error("LoadLevel: %s", err)
+			filename = "assets/wallpapers/notebook.png" // XXX TODO
+		}
 	}
 
 	wp, err := wallpaper.FromFile(e, filename)

@@ -5,6 +5,7 @@ import (
 	"image/draw"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -15,6 +16,10 @@ type Wallpaper struct {
 	Name   string
 	Format string // image file format
 	Image  *image.RGBA
+
+	// Ready status is set to true if the wallpaper loaded itself properly.
+	// Notably in WASM, wallpapers don't load currently.
+	ready bool
 
 	// Parsed values.
 	quarterWidth  int
@@ -51,6 +56,14 @@ func FromImage(e render.Engine, img *image.RGBA, name string) (*Wallpaper, error
 // If the renger.Engine is nil it will compute images but not pre-cache any
 // textures yet.
 func FromFile(e render.Engine, filename string) (*Wallpaper, error) {
+	// WASM: no support yet for wallpapers.
+	if runtime.GOOS == "js" {
+		return &Wallpaper{
+			Name:  strings.Split(filepath.Base(filename), ".")[0],
+			ready: false,
+		}, nil
+	}
+
 	fh, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -75,6 +88,7 @@ func FromFile(e render.Engine, filename string) (*Wallpaper, error) {
 		Name:   strings.Split(filepath.Base(filename), ".")[0],
 		Format: format,
 		Image:  rgba,
+		ready:  true,
 	}
 	wp.cache(e)
 	return wp, nil
