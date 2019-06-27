@@ -25,6 +25,7 @@ type Renderer struct {
 	renderer *sdl.Renderer
 	running  bool
 	ticks    uint64
+	textures map[string]*Texture // cached textures
 
 	// Optimizations to minimize SDL calls.
 	lastColor render.Color
@@ -33,10 +34,11 @@ type Renderer struct {
 // New creates the SDL renderer.
 func New(title string, width, height int) *Renderer {
 	return &Renderer{
-		events: events.New(),
-		title:  title,
-		width:  int32(width),
-		height: int32(height),
+		events:   events.New(),
+		title:    title,
+		width:    int32(width),
+		height:   int32(height),
+		textures: map[string]*Texture{},
 	}
 }
 

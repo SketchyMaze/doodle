@@ -4,13 +4,11 @@ package wallpaper
 
 import (
 	"errors"
-	"fmt"
 	"image"
-	"os"
 
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
-	"golang.org/x/image/bmp"
 )
 
 // CornerTexture returns the Texture.
@@ -57,28 +55,9 @@ func (wp *Wallpaper) RepeatTexture(e render.Engine) (render.Texturer, error) {
 	return wp.tex.repeat, nil
 }
 
+// texture creates or returns a cached texture for a wallpaper.
 func texture(e render.Engine, img *image.RGBA, name string) (render.Texturer, error) {
 	filename := userdir.CacheFilename("wallpaper", name+".bmp")
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		fh, err := os.Create(filename)
-		if err != nil {
-			return nil, fmt.Errorf("texture(%s): %s", name, err.Error())
-		}
-
-		err = bmp.Encode(fh, img)
-		if err != nil {
-			return nil, fmt.Errorf("texture(%s): bmp.Encode: %s", name, err.Error())
-		}
-
-		err = fh.Close()
-		if err != nil {
-			return nil, fmt.Errorf("texture(%s): fh.Close: %s", name, err.Error())
-		}
-	}
-
-	texture, err := e.NewBitmap(filename)
-	if err != nil {
-		return nil, fmt.Errorf("CornerTexture: NewBitmap(%s): %s", filename, err.Error())
-	}
-	return texture, nil
+	texture, err := shmem.CurrentRenderEngine.NewTexture(filename, img)
+	return texture, err
 }
