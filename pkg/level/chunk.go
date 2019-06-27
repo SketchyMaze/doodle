@@ -6,14 +6,15 @@ import (
 	"image"
 	"math"
 	"os"
+	"runtime"
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/apps/doodle/pkg/wasm"
 	"github.com/satori/go.uuid"
 	"github.com/vmihailenco/msgpack"
-	"golang.org/x/image/bmp"
 )
 
 // Types of chunks.
@@ -80,7 +81,9 @@ func (c *Chunk) Texture(e render.Engine) render.Texturer {
 	if c.texture == nil || c.dirty {
 		// Generate the normal bitmap and one with a color mask if applicable.
 		bitmap := c.toBitmap(render.Invisible)
-		defer os.Remove(bitmap)
+		if runtime.GOOS != "js" { // WASM
+			defer os.Remove(bitmap)
+		}
 		tex, err := e.NewBitmap(bitmap)
 		if err != nil {
 			log.Error("Texture: %s", err)
@@ -98,7 +101,9 @@ func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texture
 	if c.textureMasked == nil || c.textureMaskedColor != mask {
 		// Generate the normal bitmap and one with a color mask if applicable.
 		bitmap := c.toBitmap(mask)
-		defer os.Remove(bitmap)
+		if runtime.GOOS != "js" { // WASM
+			defer os.Remove(bitmap)
+		}
 		tex, err := e.NewBitmap(bitmap)
 		if err != nil {
 			log.Error("Texture: %s", err)
@@ -124,8 +129,6 @@ func (c *Chunk) toBitmap(mask render.Color) string {
 			mask.Red, mask.Green, mask.Blue, mask.Alpha,
 		)
 	}
-
-	log.Info("Chunk<%d>.toBitmap() called", c.Size)
 
 	// Get the temp bitmap image.
 	bitmap := userdir.CacheFilename("chunk", filename+".bmp")
@@ -184,13 +187,8 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) error {
 		)
 	}
 
-	fh, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer fh.Close()
-
-	return bmp.Encode(fh, img)
+	// Write the image to bitmap file.
+	return wasm.StoreBitmap(filename, img)
 }
 
 // Set proxies to the accessor and flags the texture as dirty.

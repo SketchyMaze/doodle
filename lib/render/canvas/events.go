@@ -4,7 +4,6 @@ import (
 	"syscall/js"
 
 	"git.kirsle.net/apps/doodle/lib/events"
-	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
 // EventClass to categorize JavaScript events.
@@ -13,6 +12,7 @@ type EventClass int
 // EventClass values.
 const (
 	MouseEvent EventClass = iota
+	ClickEvent
 	KeyEvent
 	ResizeEvent
 )
@@ -69,8 +69,6 @@ func (e *Engine) AddEventListeners() {
 					which = args[0].Get("which").Int()
 				)
 
-				log.Info("Clicked at %d,%d", x, y)
-
 				// Is a mouse button pressed down?
 				checkDown := func(number int) bool {
 					if which == number {
@@ -81,7 +79,7 @@ func (e *Engine) AddEventListeners() {
 
 				e.queue <- Event{
 					Name:       ev,
-					Class:      MouseEvent,
+					Class:      ClickEvent,
 					X:          x,
 					Y:          y,
 					LeftClick:  checkDown(1),
@@ -149,22 +147,26 @@ func (e *Engine) PollEvent() *Event {
 func (e *Engine) Poll() (*events.State, error) {
 	s := e.events
 
-	if e.events.EnterKey.Now {
-		log.Info("saw enter key here, good")
-	}
-	if e.events.KeyName.Now == "h" {
-		log.Info("saw letter h here, good")
-	}
-
 	for event := e.PollEvent(); event != nil; event = e.PollEvent() {
 		switch event.Class {
 		case MouseEvent:
+			s.CursorX.Push(int32(event.X))
+			s.CursorY.Push(int32(event.Y))
+		case ClickEvent:
 			s.CursorX.Push(int32(event.X))
 			s.CursorY.Push(int32(event.Y))
 			s.Button1.Push(event.LeftClick)
 			s.Button2.Push(event.RightClick)
 		case KeyEvent:
 			switch event.KeyName {
+			case "Escape":
+				if event.Repeat {
+					continue
+				}
+
+				if event.State {
+					s.EscapeKey.Push(true)
+				}
 			case "Enter":
 				if event.Repeat {
 					continue
@@ -196,15 +198,12 @@ func (e *Engine) Poll() (*events.State, error) {
 					s.KeyName.Push(`\b`)
 				}
 			default:
-				log.Info("default handler, push key %s", event.KeyName)
 				if event.State {
 					s.KeyName.Push(event.KeyName)
 				} else {
 					s.KeyName.Push("")
 				}
 			}
-
-			log.Info("event end, stored key=%s", s.KeyName.Now)
 		}
 	}
 

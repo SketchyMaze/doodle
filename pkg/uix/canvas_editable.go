@@ -35,6 +35,15 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 				Swatch: w.Palette.ActiveSwatch,
 			}
 
+			// If the user is holding the mouse down over one spot and not
+			// moving, don't do anything. The pixel has already been set and
+			// needless writes to the map cause needless cache rewrites etc.
+			if lastPixel != nil {
+				if pixel.X == lastPixel.X && pixel.Y == lastPixel.Y {
+					break
+				}
+			}
+
 			// Append unique new pixels.
 			if len(w.pixelHistory) == 0 || w.pixelHistory[len(w.pixelHistory)-1] != pixel {
 				if lastPixel != nil {

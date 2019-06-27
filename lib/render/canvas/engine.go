@@ -1,10 +1,13 @@
 package canvas
 
 import (
+	"errors"
+	"syscall/js"
 	"time"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/wasm"
 )
 
 // Engine implements a rendering engine targeting an HTML canvas for
@@ -63,12 +66,53 @@ func (e *Engine) Present() error {
 	return nil
 }
 
-func (e *Engine) NewBitmap(filename string) (render.Texturer, error) {
-	return nil, nil
+// Texture can hold on to cached image textures.
+type Texture struct {
+	data   string   // data:image/png URI
+	image  js.Value // DOM image element
+	width  int
+	height int
 }
 
-func (e *Engine) Copy(t render.Texturer, src, dist render.Rect) {
+// Size returns the dimensions of the texture.
+func (t *Texture) Size() render.Rect {
+	return render.NewRect(int32(t.width), int32(t.height))
+}
 
+// NewBitmap initializes a texture from a bitmap image. The image is stored
+// in HTML5 Session Storage.
+func (e *Engine) NewBitmap(filename string) (render.Texturer, error) {
+	if data, ok := wasm.GetSession(filename); ok {
+		img := js.Global().Get("document").Call("createElement", "img")
+		img.Set("src", data)
+		return &Texture{
+			data:   data,
+			image:  img,
+			width:  60, // TODO
+			height: 60,
+		}, nil
+	}
+
+	return nil, errors.New("no bitmap data stored for " + filename)
+
+}
+
+var TODO int
+
+// Copy a texturer bitmap onto the canvas.
+func (e *Engine) Copy(t render.Texturer, src, dist render.Rect) {
+	tex := t.(*Texture)
+
+	// image := js.Global().Get("document").Call("createElement", "img")
+	// image.Set("src", tex.data)
+
+	// log.Info("drawing image just this once")
+	e.canvas.ctx2d.Call("drawImage", tex.image, dist.X, dist.Y)
+	// TODO++
+	// if TODO > 200 {
+	// 	log.Info("I exited at engine.Copy for canvas engine")
+	// 	os.Exit(0)
+	// }
 }
 
 // Delay for a moment.

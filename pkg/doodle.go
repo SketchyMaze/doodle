@@ -105,9 +105,6 @@ func (d *Doodle) Run() error {
 
 		start := time.Now() // Record how long this frame took.
 		d.ticks++
-		if d.ticks%100 == 0 {
-			log.Info("...tick...%d", d.ticks)
-		}
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()

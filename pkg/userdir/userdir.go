@@ -65,7 +65,10 @@ func DoodadPath(filename string) string {
 func CacheFilename(filename ...string) string {
 	paths := append([]string{CacheDirectory}, filename...)
 	dir := paths[:len(paths)-1]
-	configdir.MakePath(filepath.Join(dir...))
+
+	if runtime.GOOS != "js" {
+		configdir.MakePath(filepath.Join(dir...))
+	}
 	return filepath.Join(paths[0], filepath.Join(paths[1:]...))
 }
 

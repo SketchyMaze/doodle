@@ -5,6 +5,8 @@ package main
 import (
 	"fmt"
 
+	"syscall/js"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/render/canvas"
 	doodle "git.kirsle.net/apps/doodle/pkg"
@@ -19,6 +21,7 @@ func main() {
 
 	// Enable workarounds.
 	balance.DisableChunkTextureCache = true
+	js.Global().Get("sessionStorage").Call("clear")
 
 	// HTML5 Canvas engine.
 	engine, _ := canvas.New("canvas")
@@ -35,7 +38,7 @@ func main() {
 	game.SetWindowSize(w, h)
 
 	// game.Goto(&doodle.GUITestScene{})
-	// game.Goto(&doodle.EditorScene{})
+	game.Goto(&doodle.EditorScene{})
 
 	game.Run()
 }
