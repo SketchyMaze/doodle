@@ -19,6 +19,11 @@ type Engine struct {
 	// Private fields.
 	events  *events.State
 	running bool
+
+	// Event channel. WASM subscribes to events asynchronously using the
+	// JavaScript APIs, whereas SDL2 polls the event queue which orders them
+	// all up for processing. This channel will order and queue the events.
+	queue chan Event
 }
 
 // New creates the Canvas Engine.
@@ -31,6 +36,7 @@ func New(canvasID string) (*Engine, error) {
 		events:    events.New(),
 		width:     canvas.ClientW(),
 		height:    canvas.ClientH(),
+		queue:     make(chan Event, 1024),
 	}
 
 	return engine, nil
@@ -41,9 +47,10 @@ func (e *Engine) WindowSize() (w, h int) {
 	return e.canvas.ClientW(), e.canvas.ClientH()
 }
 
-// GetTicks returns the current tick count.
+// GetTicks returns the number of milliseconds since the engine started.
 func (e *Engine) GetTicks() uint32 {
-	return e.ticks
+	ms := time.Since(e.startTime) * time.Millisecond
+	return uint32(ms)
 }
 
 // TO BE IMPLEMENTED...

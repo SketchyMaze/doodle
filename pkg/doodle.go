@@ -105,9 +105,18 @@ func (d *Doodle) Run() error {
 
 		start := time.Now() // Record how long this frame took.
 		d.ticks++
+		if d.ticks%100 == 0 {
+			log.Info("...tick...%d", d.ticks)
+		}
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()
+		if ev.EnterKey.Now {
+			log.Info("MainLoop sees enter key now")
+		}
+		if ev.KeyName.Now != "" {
+			log.Info("MainLoop sees key %s", ev.KeyName.Now)
+		}
 		if err != nil {
 			log.Error("event poll error: %s", err)
 			d.running = false

@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/render/canvas"
 	doodle "git.kirsle.net/apps/doodle/pkg"
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
@@ -16,12 +17,17 @@ func main() {
 	fmt.Printf("Hello world\n")
 	// testRawCanvas()
 
+	// Enable workarounds.
+	balance.DisableChunkTextureCache = true
+
 	// HTML5 Canvas engine.
 	engine, _ := canvas.New("canvas")
 	engine.AddEventListeners()
 
 	game := doodle.New(true, engine)
 	game.SetupEngine()
+
+	doodle.DebugOverlay = true
 
 	// Manually inform Doodle of the canvas size since it can't control
 	// the size on its own.

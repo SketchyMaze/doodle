@@ -7,10 +7,35 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
+// EventClass to categorize JavaScript events.
+type EventClass int
+
+// EventClass values.
+const (
+	MouseEvent EventClass = iota
+	KeyEvent
+	ResizeEvent
+)
+
+// Event object queues up asynchronous JavaScript events to be processed linearly.
+type Event struct {
+	Name  string // mouseup, keydown, etc.
+	Class EventClass
+
+	// Mouse events.
+	X          int
+	Y          int
+	LeftClick  bool
+	RightClick bool
+
+	// Key events.
+	KeyName string
+	State   bool
+	Repeat  bool
+}
+
 // AddEventListeners sets up bindings to collect events from the browser.
 func (e *Engine) AddEventListeners() {
-	s := e.events
-
 	// Mouse movement.
 	e.canvas.Value.Call(
 		"addEventListener",
@@ -21,8 +46,12 @@ func (e *Engine) AddEventListeners() {
 				y = args[0].Get("pageY").Int()
 			)
 
-			s.CursorX.Push(int32(x))
-			s.CursorY.Push(int32(y))
+			e.queue <- Event{
+				Name:  "mousemove",
+				Class: MouseEvent,
+				X:     x,
+				Y:     y,
+			}
 			return nil
 		}),
 	)
@@ -42,9 +71,6 @@ func (e *Engine) AddEventListeners() {
 
 				log.Info("Clicked at %d,%d", x, y)
 
-				s.CursorX.Push(int32(x))
-				s.CursorY.Push(int32(y))
-
 				// Is a mouse button pressed down?
 				checkDown := func(number int) bool {
 					if which == number {
@@ -53,8 +79,14 @@ func (e *Engine) AddEventListeners() {
 					return false
 				}
 
-				s.Button1.Push(checkDown(1))
-				s.Button2.Push(checkDown(3))
+				e.queue <- Event{
+					Name:       ev,
+					Class:      MouseEvent,
+					X:          x,
+					Y:          y,
+					LeftClick:  checkDown(1),
+					RightClick: checkDown(3),
+				}
 				return false
 			}),
 		)
@@ -71,32 +103,110 @@ func (e *Engine) AddEventListeners() {
 	)
 
 	// Keyboard keys
-	// js.Global().Get("document").Call(
-	// 	"addEventListener",
-	// 	"keydown",
-	// 	js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-	// 		log.Info("key: %+v", args)
-	// 		var (
-	// 			event    = args[0]
-	// 			charCode = event.Get("charCode")
-	// 			key      = event.Get("key").String()
-	// 		)
-	//
-	// 		switch key {
-	// 		case "Enter":
-	// 			s.EnterKey.Push(true)
-	// 			// default:
-	// 			// 	s.KeyName.Push(key)
-	// 		}
-	//
-	// 		log.Info("keypress: code=%s  key=%s", charCode, key)
-	//
-	// 		return nil
-	// 	}),
-	// )
+	for _, ev := range []string{"keydown", "keyup"} {
+		ev := ev
+		js.Global().Get("document").Call(
+			"addEventListener",
+			ev,
+			js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+				var (
+					event  = args[0]
+					key    = event.Get("key").String()
+					repeat = event.Get("repeat").Bool()
+
+					pressed = ev == "keydown"
+				)
+
+				if key == "F3" {
+					args[0].Call("preventDefault")
+				}
+
+				e.queue <- Event{
+					Name:    ev,
+					Class:   KeyEvent,
+					KeyName: key,
+					Repeat:  repeat,
+					State:   pressed,
+				}
+				return nil
+			}),
+		)
+	}
+}
+
+// PollEvent returns the next event in the queue, or null.
+func (e *Engine) PollEvent() *Event {
+	select {
+	case event := <-e.queue:
+		return &event
+	default:
+		return nil
+	}
+	return nil
 }
 
 // Poll for events.
 func (e *Engine) Poll() (*events.State, error) {
+	s := e.events
+
+	if e.events.EnterKey.Now {
+		log.Info("saw enter key here, good")
+	}
+	if e.events.KeyName.Now == "h" {
+		log.Info("saw letter h here, good")
+	}
+
+	for event := e.PollEvent(); event != nil; event = e.PollEvent() {
+		switch event.Class {
+		case MouseEvent:
+			s.CursorX.Push(int32(event.X))
+			s.CursorY.Push(int32(event.Y))
+			s.Button1.Push(event.LeftClick)
+			s.Button2.Push(event.RightClick)
+		case KeyEvent:
+			switch event.KeyName {
+			case "Enter":
+				if event.Repeat {
+					continue
+				}
+
+				if event.State {
+					s.EnterKey.Push(true)
+				}
+			case "F3":
+				if event.State {
+					s.KeyName.Push("F3")
+				}
+			case "ArrowUp":
+				s.Up.Push(event.State)
+			case "ArrowLeft":
+				s.Left.Push(event.State)
+			case "ArrowRight":
+				s.Right.Push(event.State)
+			case "ArrowDown":
+				s.Down.Push(event.State)
+			case "Shift":
+				s.ShiftActive.Push(event.State)
+				continue
+			case "Alt":
+			case "Control":
+				continue
+			case "Backspace":
+				if event.State {
+					s.KeyName.Push(`\b`)
+				}
+			default:
+				log.Info("default handler, push key %s", event.KeyName)
+				if event.State {
+					s.KeyName.Push(event.KeyName)
+				} else {
+					s.KeyName.Push("")
+				}
+			}
+
+			log.Info("event end, stored key=%s", s.KeyName.Now)
+		}
+	}
+
 	return e.events, nil
 }

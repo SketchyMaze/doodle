@@ -74,6 +74,8 @@ func NewChunk() *Chunk {
 
 // Texture will return a cached texture for the rendering engine for this
 // chunk's pixel data. If the cache is dirty it will be rebuilt in this func.
+//
+// Texture cache can be disabled with balance.DisableChunkTextureCache=true.
 func (c *Chunk) Texture(e render.Engine) render.Texturer {
 	if c.texture == nil || c.dirty {
 		// Generate the normal bitmap and one with a color mask if applicable.

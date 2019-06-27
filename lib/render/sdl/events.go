@@ -13,7 +13,7 @@ var (
 	DebugWindowEvents = false
 	DebugMouseEvents  = false
 	DebugClickEvents  = false
-	DebugKeyEvents    = false
+	DebugKeyEvents    = true
 )
 
 // Poll for events.
