@@ -123,7 +123,7 @@ func ListLevels() ([]string, error) {
 
 // resolvePath is the inner logic for LevelPath and DoodadPath.
 func resolvePath(directory, filename, extension string) string {
-	if strings.Contains(filename, "/") {
+	if strings.Contains(filename, string(filepath.Separator)) {
 		return filename
 	}
 

@@ -1,6 +1,10 @@
 package log
 
-import "github.com/kirsle/golog"
+import (
+	"runtime"
+
+	"github.com/kirsle/golog"
+)
 
 // Logger is the public golog.Logger object.
 var Logger *golog.Logger
@@ -13,6 +17,11 @@ func init() {
 		Colors:     golog.ExtendedColor,
 		TimeFormat: "2006-01-02 15:04:05.000000",
 	})
+
+	// TODO: Disable ANSI colors in logs on Windows.
+	if runtime.GOOS == "windows" {
+		Logger.Config.Colors = golog.NoColor
+	}
 }
 
 // Debug logger function.

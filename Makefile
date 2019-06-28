@@ -11,6 +11,7 @@ LDFLAGS := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE)"
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup
 setup: clean
+	go get -u github.com/go-bindata/go-bindata/...
 	go get ./...
 
 # `make build` to build the binary.
@@ -19,6 +20,10 @@ build:
 	gofmt -w .
 	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
+
+# `make buildall` to run all build steps including doodads and bindata.
+.PHONY: buildall
+buildall: doodads bindata build
 
 # `make build-free` to build the binary in free mode.
 .PHONY: build-free
@@ -67,7 +72,7 @@ doodads:
 
 # `make mingw` to cross-compile a Windows binary with mingw.
 .PHONY: mingw
-mingw:
+mingw: doodads bindata
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS) -i -o bin/doodle.exe cmd/doodle/main.go
@@ -94,7 +99,7 @@ test:
 
 # `make dist` builds and tars up a release.
 .PHONY: dist
-dist: build
+dist: doodads bindata build
 	mkdir -p dist/doodle-$(VERSION)
 	cp bin/* dist/doodle-$(VERSION)/
 	cp -r assets fonts README.md dist/doodle-$(VERSION)/

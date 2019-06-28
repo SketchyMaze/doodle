@@ -22,7 +22,12 @@ cp /usr/share/fonts/dejavu/{DejaVuSans.ttf,DejaVuSans-Bold.ttf,DejaVuSansMono.tt
 Makefile commands for Linux:
 
 * `make setup`: install Go dependencies and set up the build environment
+* `make doodads`: build the default Doodads from sources in `dev-assets/`
+* `make bindata`: embed the default doodads, levels and other assets into the
+  Go program. `make bindata-dev` for lightweight dev versions that will read
+  from the filesystem at runtime instead.
 * `make build`: build the Doodle and Doodad binaries to the `bin/` folder.
+* `make buildall`: runs all build steps: doodads, bindata, build.
 * `make build-free`: build the shareware binaries to the `bin/` folder. See
   Build Tags below.
 * `make build-debug`: build a debug binary (not release-mode) to the `bin/`
