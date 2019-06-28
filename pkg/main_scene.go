@@ -6,8 +6,10 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 )
 
@@ -17,7 +19,8 @@ type MainScene struct {
 	frame      *ui.Frame
 
 	// Background wallpaper canvas.
-	canvas *uix.Canvas
+	scripting *scripting.Supervisor
+	canvas    *uix.Canvas
 }
 
 // Name of the scene.
@@ -29,18 +32,9 @@ func (s *MainScene) Name() string {
 func (s *MainScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
 
-	// Set up the background wallpaper canvas.
-	s.canvas = uix.NewCanvas(100, false)
-	s.canvas.Resize(render.Rect{
-		W: int32(d.width),
-		H: int32(d.height),
-	})
-	s.canvas.LoadLevel(d.Engine, &level.Level{
-		Chunker:   level.NewChunker(100),
-		Palette:   level.NewPalette(),
-		PageType:  level.Bounded,
-		Wallpaper: "notebook.png",
-	})
+	if err := s.SetupDemoLevel(d); err != nil {
+		return err
+	}
 
 	// Main UI button frame.
 	frame := ui.NewFrame("frame")
@@ -78,9 +72,51 @@ func (s *MainScene) Setup(d *Doodle) error {
 	return nil
 }
 
+// SetupDemoLevel configures the wallpaper behind the New screen,
+// which demos a title screen demo level.
+func (s *MainScene) SetupDemoLevel(d *Doodle) error {
+	// Set up the background wallpaper canvas.
+	s.canvas = uix.NewCanvas(100, false)
+	s.canvas.Scrollable = true
+	s.canvas.Resize(render.Rect{
+		W: int32(d.width),
+		H: int32(d.height),
+	})
+
+	// Title screen level to load.
+	lvlName, _ := filesystem.FindFile("example1.level")
+	lvl, err := level.LoadJSON(lvlName)
+	if err != nil {
+		log.Error("Error loading title-screen.level: %s", err)
+	}
+
+	s.canvas.LoadLevel(d.Engine, lvl)
+	s.canvas.InstallActors(lvl.Actors)
+
+	// Load all actor scripts.
+	s.scripting = scripting.NewSupervisor()
+	s.canvas.SetScriptSupervisor(s.scripting)
+	if err := s.scripting.InstallScripts(lvl); err != nil {
+		log.Error("Error with title screen level scripts: %s", err)
+	}
+
+	// Run all actors scripts main function to start them off.
+	if err := s.canvas.InstallScripts(); err != nil {
+		log.Error("Error running actor main() functions: %s", err)
+	}
+
+	return nil
+}
+
 // Loop the editor scene.
 func (s *MainScene) Loop(d *Doodle, ev *events.State) error {
 	s.Supervisor.Loop(ev)
+
+	if err := s.scripting.Loop(); err != nil {
+		log.Error("MainScene.Loop: scripting.Loop: %s", err)
+	}
+
+	s.canvas.Loop(ev)
 
 	if resized := ev.Resized.Read(); resized {
 		w, h := d.Engine.WindowSize()
@@ -102,6 +138,14 @@ func (s *MainScene) Draw(d *Doodle) error {
 	d.Engine.Clear(render.White)
 
 	s.canvas.Present(d.Engine, render.Origin)
+
+	// Draw a sheen over the level for clarity.
+	d.Engine.DrawBox(render.RGBA(255, 255, 254, 128), render.Rect{
+		X: 0,
+		Y: 0,
+		W: int32(d.width),
+		H: int32(d.height),
+	})
 
 	label := ui.NewLabel(ui.Label{
 		Text: branding.AppName,

@@ -46,7 +46,18 @@ func ListDoodads() ([]string, error) {
 	// Append user doodads.
 	userFiles, err := userdir.ListDoodads()
 	names = append(names, userFiles...)
-	return names, err
+
+	// Deduplicate names.
+	var uniq = map[string]interface{}{}
+	var result []string
+	for _, name := range names {
+		if _, ok := uniq[name]; !ok {
+			uniq[name] = nil
+			result = append(result, name)
+		}
+	}
+
+	return result, err
 }
 
 // LoadFile reads a doodad file from disk, checking a few locations.

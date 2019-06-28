@@ -16,7 +16,7 @@ var (
 	 ***************/
 
 	// Debug overlay (FPS etc.) settings.
-	DebugFontFilename = "./fonts/DejaVuSans-Bold.ttf"
+	DebugFontFilename = "DejaVuSans-Bold.ttf"
 	DebugFontSize     = 16
 	DebugLabelColor   = render.MustHexColor("#FF9900")
 	DebugValueColor   = render.MustHexColor("#00CCFF")

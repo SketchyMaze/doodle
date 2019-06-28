@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render/sdl"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"github.com/urfave/cli"
 
@@ -79,6 +80,20 @@ func main() {
 			balance.Width,
 			balance.Height,
 		)
+
+		// Load the SDL fonts in from bindata storage.
+		if fonts, err := bindata.AssetDir("assets/fonts"); err == nil {
+			for _, file := range fonts {
+				data, err := bindata.Asset("assets/fonts/" + file)
+				if err != nil {
+					panic(err)
+				}
+
+				sdl.InstallFont(file, data)
+			}
+		} else {
+			panic(err)
+		}
 
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()

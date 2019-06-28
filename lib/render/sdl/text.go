@@ -3,6 +3,7 @@ package sdl
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
@@ -11,9 +12,29 @@ import (
 )
 
 // TODO: font filenames
-var defaultFontFilename = "./fonts/DejaVuSans.ttf"
+var defaultFontFilename = "DejaVuSans.ttf"
 
-var fonts = map[string]*ttf.Font{}
+// Font holds cached SDL_TTF structures for loaded fonts. They are created
+// automatically when fonts are either preinstalled (InstallFont) or loaded for
+// the first time as demanded by the DrawText method.
+type Font struct {
+	Filename string
+	data     []byte // raw binary data of font
+	ttf      *ttf.Font
+}
+
+var (
+	fonts         = map[string]*ttf.Font{} // keys like "DejaVuSans@14" by font size
+	installedFont = map[string][]byte{}    // installed font files' binary handles
+	fontsMu       sync.RWMutex
+)
+
+// InstallFont preloads the font cache using TTF binary data in memory.
+func InstallFont(filename string, binary []byte) {
+	fontsMu.Lock()
+	installedFont[filename] = binary
+	fontsMu.Unlock()
+}
 
 // LoadFont loads and caches the font at a given size.
 func LoadFont(filename string, size int) (*ttf.Font, error) {
@@ -27,10 +48,30 @@ func LoadFont(filename string, size int) (*ttf.Font, error) {
 		return font, nil
 	}
 
-	font, err := ttf.OpenFont(filename, size)
-	if err != nil {
-		return nil, err
+	// Do we have this font in memory?
+	var (
+		font *ttf.Font
+		err  error
+	)
+
+	if binary, ok := installedFont[filename]; ok {
+		var RWops *sdl.RWops
+		RWops, err = sdl.RWFromMem(binary)
+		if err != nil {
+			return nil, fmt.Errorf("LoadFont(%s): RWFromMem: %s", filename, err)
+		}
+
+		font, err = ttf.OpenFontRW(RWops, 0, size)
+	} else {
+		font, err = ttf.OpenFont(filename, size)
 	}
+
+	// Error opening the font?
+	if err != nil {
+		return nil, fmt.Errorf("LoadFont(%s): %s", filename, err)
+	}
+
+	// Cache this font name and size.
 	fonts[keyName] = font
 
 	return font, nil

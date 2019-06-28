@@ -14,7 +14,7 @@ var (
 		OutlineColor: render.Black,
 	}
 	TitleFont = render.Text{
-		FontFilename: "./fonts/DejaVuSans-Bold.ttf",
+		FontFilename: "DejaVuSans-Bold.ttf",
 		Size:         12,
 		Padding:      4,
 		Color:        render.White,
@@ -47,7 +47,7 @@ var (
 	// LabelFont is the font for strong labels in UI.
 	LabelFont = render.Text{
 		Size:         12,
-		FontFilename: "./fonts/DejaVuSans-Bold.ttf",
+		FontFilename: "DejaVuSans-Bold.ttf",
 		Padding:      4,
 		Color:        render.Black,
 	}
@@ -56,7 +56,7 @@ var (
 	DragColor = render.MustHexColor("#0099FF")
 
 	PlayButtonFont = render.Text{
-		FontFilename: "./fonts/DejaVuSans-Bold.ttf",
+		FontFilename: "DejaVuSans-Bold.ttf",
 		Size:         16,
 		Padding:      4,
 		Color:        render.RGBA(255, 255, 0, 255),

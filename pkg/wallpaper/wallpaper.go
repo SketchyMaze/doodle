@@ -1,6 +1,7 @@
 package wallpaper
 
 import (
+	"bytes"
 	"image"
 	"image/draw"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 )
 
 // Wallpaper is a repeatable background image to go behind levels.
@@ -64,14 +66,28 @@ func FromFile(e render.Engine, filename string) (*Wallpaper, error) {
 		}, nil
 	}
 
-	fh, err := os.Open(filename)
-	if err != nil {
-		return nil, err
+	// Try and get an image object by any means.
+	var (
+		img    image.Image
+		format string
+		imgErr error
+	)
+
+	// Try the bindata store.
+	if data, err := bindata.Asset(filename); err == nil {
+		fh := bytes.NewBuffer(data)
+		img, format, imgErr = image.Decode(fh)
+	} else {
+		fh, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		img, format, imgErr = image.Decode(fh)
 	}
 
-	img, format, err := image.Decode(fh)
-	if err != nil {
-		return nil, err
+	// Image loading error?
+	if imgErr != nil {
+		return nil, imgErr
 	}
 
 	// Ugly hack: make it an image.RGBA because the thing we get tends to be

@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -69,7 +70,7 @@ type Canvas struct {
 	// -- WHEN Canvas.Tool is "Link" --
 	// When the Canvas wants to link two actors together. Arguments are the IDs
 	// of the two actors.
-	OnLinkActors func(a, b *level.Actor)
+	OnLinkActors func(a, b *Actor)
 	linkFirst    *Actor
 
 	// Tracking pixels while editing. TODO: get rid of pixelHistory?
@@ -129,9 +130,12 @@ func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 	// TODO: wallpaper paths
 	filename := "assets/wallpapers/" + level.Wallpaper
 	if runtime.GOOS != "js" {
-		if _, err := os.Stat(filename); os.IsNotExist(err) {
-			log.Error("LoadLevel: %s", err)
-			filename = "assets/wallpapers/notebook.png" // XXX TODO
+		// Check if the wallpaper wasn't found. Check bindata and file system.
+		if _, err := bindata.Asset(filename); err != nil {
+			if _, err := os.Stat(filename); os.IsNotExist(err) {
+				log.Error("LoadLevel: wallpaper %s did not appear to exist, default to notebook.png", filename)
+				filename = "assets/wallpapers/notebook.png"
+			}
 		}
 	}
 

@@ -302,14 +302,16 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	}
 
 	// A link event to connect two actors together.
-	drawing.OnLinkActors = func(a, b *level.Actor) {
-		d.Flash("Link %s and %s", a.Filename, b.Filename)
-		idA, idB := a.ID(), b.ID()
-		a.AddLink(idB)
-		b.AddLink(idA)
+	drawing.OnLinkActors = func(a, b *uix.Actor) {
+		// The actors are a uix.Actor which houses a level.Actor which we
+		// want to update to map each other's IDs.
+		idA, idB := a.Actor.ID(), b.Actor.ID()
+		a.Actor.AddLink(idB)
+		b.Actor.AddLink(idA)
 
 		// Reset the Link tool.
 		drawing.Tool = uix.ActorTool
+		d.Flash("Linked '%s' and '%s' together", a.Doodad.Title, b.Doodad.Title)
 	}
 
 	// Set up the drop handler for draggable doodads.

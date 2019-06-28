@@ -20,7 +20,6 @@ func main() {
 	go watchChanges()
 
 	http.Handle("/", http.FileServer(http.Dir(".")))
-	http.Handle("/fonts", http.FileServer(http.Dir("../fonts/")))
 	http.HandleFunc(wasm, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/wasm")
 		http.ServeFile(w, r, "."+wasm)
