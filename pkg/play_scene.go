@@ -19,15 +19,26 @@ type PlayScene struct {
 	// Configuration attributes.
 	Filename string
 	Level    *level.Level
+	CanEdit  bool // i.e. you came from the Editor Mode
+	HasNext  bool // has a next level to load next
 
 	// Private variables.
 	d         *Doodle
 	drawing   *uix.Canvas
 	scripting *scripting.Supervisor
+	running   bool
 
 	// UI widgets.
 	supervisor *ui.Supervisor
 	editButton *ui.Button
+
+	// The alert box shows up when the level goal is reached and includes
+	// buttons what to do next.
+	alertBox          *ui.Window
+	alertReplayButton *ui.Button // Replay level
+	alertEditButton   *ui.Button // Edit Level
+	alertNextButton   *ui.Button // Next Level
+	alertExitButton   *ui.Button // Exit to menu
 
 	// Custom debug labels.
 	debPosition   *string
@@ -49,6 +60,30 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
 	s.scripting = scripting.NewSupervisor()
 	s.supervisor = ui.NewSupervisor()
+
+	// Level Exit handler.
+	s.SetupAlertbox()
+	s.scripting.OnLevelExit(func() {
+		d.Flash("Hurray!")
+
+		// Pause the simulation.
+		s.running = false
+
+		// Toggle the relevant buttons on.
+		if s.CanEdit {
+			s.alertEditButton.Show()
+		}
+		if s.HasNext {
+			s.alertNextButton.Show()
+		}
+
+		// Always-visible buttons.
+		s.alertReplayButton.Show()
+		s.alertExitButton.Show()
+
+		// Show the alert box.
+		s.alertBox.Show()
+	})
 
 	// Initialize debug overlay values.
 	s.debPosition = new(string)
@@ -126,8 +161,88 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	}
 
 	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
+	s.running = true
 
 	return nil
+}
+
+// SetupAlertbox configures the alert box UI.
+func (s *PlayScene) SetupAlertbox() {
+	window := ui.NewWindow("Level Completed")
+	window.Configure(ui.Config{
+		Width:      320,
+		Height:     160,
+		Background: render.Grey,
+	})
+	window.Compute(s.d.Engine)
+
+	{
+		frame := ui.NewFrame("Open Drawing Frame")
+		window.Pack(frame, ui.Pack{
+			Anchor: ui.N,
+			Fill:   true,
+			Expand: true,
+		})
+
+		/******************
+		 * Frame for selecting User Levels
+		 ******************/
+
+		label1 := ui.NewLabel(ui.Label{
+			Text: "Congratulations on clearing the level!",
+			Font: balance.LabelFont,
+		})
+		frame.Pack(label1, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+			PadY:   16,
+		})
+
+		/******************
+		 * Confirm/cancel buttons.
+		 ******************/
+
+		bottomFrame := ui.NewFrame("Button Frame")
+		frame.Pack(bottomFrame, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+			PadY:   8,
+		})
+
+		// Button factory for the various options.
+		makeButton := func(text string, handler func()) *ui.Button {
+			btn := ui.NewButton(text, ui.NewLabel(ui.Label{
+				Font: balance.LabelFont,
+				Text: text,
+			}))
+			btn.Handle(ui.Click, func(p render.Point) {
+				handler()
+			})
+			bottomFrame.Pack(btn, ui.Pack{
+				Anchor: ui.W,
+				PadX:   2,
+			})
+			s.supervisor.Add(btn)
+			btn.Hide() // all buttons hidden by default
+			return btn
+		}
+
+		s.alertReplayButton = makeButton("Play Again", func() {
+			s.RestartLevel()
+		})
+		s.alertEditButton = makeButton("Edit Level", func() {
+			s.EditLevel()
+		})
+		s.alertNextButton = makeButton("Next Level", func() {
+			s.d.Flash("Not Implemented")
+		})
+		s.alertExitButton = makeButton("Exit to Menu", func() {
+			s.d.Goto(&MainScene{})
+		})
+	}
+
+	s.alertBox = window
+	s.alertBox.Hide()
 }
 
 // EditLevel toggles out of Play Mode to edit the level.
@@ -136,6 +251,16 @@ func (s *PlayScene) EditLevel() {
 	s.d.Goto(&EditorScene{
 		Filename: s.Filename,
 		Level:    s.Level,
+	})
+}
+
+// RestartLevel starts the level over again.
+func (s *PlayScene) RestartLevel() {
+	log.Info("Restart Level")
+	s.d.Goto(&PlayScene{
+		Filename: s.Filename,
+		Level:    s.Level,
+		CanEdit:  s.CanEdit,
 	})
 }
 
@@ -166,14 +291,17 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 		return nil
 	}
 
-	// Loop the script supervisor so timeouts/intervals can fire in scripts.
-	if err := s.scripting.Loop(); err != nil {
-		log.Error("PlayScene.Loop: scripting.Loop: %s", err)
-	}
+	// Is the simulation still running?
+	if s.running {
+		// Loop the script supervisor so timeouts/intervals can fire in scripts.
+		if err := s.scripting.Loop(); err != nil {
+			log.Error("PlayScene.Loop: scripting.Loop: %s", err)
+		}
 
-	s.movePlayer(ev)
-	if err := s.drawing.Loop(ev); err != nil {
-		log.Error("Drawing loop error: %s", err.Error())
+		s.movePlayer(ev)
+		if err := s.drawing.Loop(ev); err != nil {
+			log.Error("Drawing loop error: %s", err.Error())
+		}
 	}
 
 	return nil
@@ -200,6 +328,16 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		X: canSize.W - size.W - padding,
 		Y: canSize.H - size.H - padding,
 	})
+
+	// Draw the alert box window.
+	if !s.alertBox.Hidden() {
+		s.alertBox.Compute(d.Engine)
+		s.alertBox.MoveTo(render.Point{
+			X: int32(d.width/2) - (s.alertBox.Size().W / 2),
+			Y: int32(d.height/2) - (s.alertBox.Size().H / 2),
+		})
+		s.alertBox.Present(d.Engine, s.alertBox.Point())
+	}
 
 	return nil
 }
@@ -248,14 +386,14 @@ func (s *PlayScene) Drawing() *uix.Canvas {
 func (s *PlayScene) LoadLevel(filename string) error {
 	s.Filename = filename
 
-	level, err := level.LoadJSON(filename)
+	level, err := level.LoadFile(filename)
 	if err != nil {
 		return fmt.Errorf("PlayScene.LoadLevel(%s): %s", filename, err)
 	}
 
 	s.Level = level
 	s.drawing.LoadLevel(s.d.Engine, s.Level)
-	// s.drawing.InstallActors(s.Level.Actors)
+	s.drawing.InstallActors(s.Level.Actors)
 
 	return nil
 }

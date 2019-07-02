@@ -131,6 +131,7 @@ func (s *EditorScene) Playtest() {
 	s.d.Goto(&PlayScene{
 		Filename: s.filename,
 		Level:    s.Level,
+		CanEdit:  true,
 	})
 }
 
@@ -167,7 +168,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with magenta so it's clear if any spots are missed.
-	d.Engine.Clear(render.Magenta)
+	d.Engine.Clear(render.RGBA(160, 120, 160, 255))
 
 	s.UI.Present(d.Engine)
 

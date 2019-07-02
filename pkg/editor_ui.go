@@ -148,6 +148,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 
 	// Position the workspace around with the other widgets.
 	{
+
 		frame := u.Workspace
 		frame.MoveTo(render.NewPoint(
 			0,

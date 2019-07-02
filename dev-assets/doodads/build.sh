@@ -86,7 +86,19 @@ azulians() {
 	cd ..
 }
 
+objects() {
+	cd objects/
+
+	doodad convert -t "Exit Flag" exit-flag.png exit-flag.doodad
+	doodad install-script exit-flag.js exit-flag.doodad
+
+	cp *.doodad ../../../assets/doodads/
+
+	cd ..
+}
+
 buttons
 doors
 trapdoors
 azulians
+objects

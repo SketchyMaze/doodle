@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -223,11 +224,7 @@ func (d *Doodle) NewDoodad(size int) {
 // EditDrawing loads a drawing (Level or Doodad) in Edit Mode.
 func (d *Doodle) EditDrawing(filename string) error {
 	log.Info("Loading drawing from file: %s", filename)
-	parts := strings.Split(filename, ".")
-	if len(parts) < 2 {
-		return fmt.Errorf("filename `%s` has no file extension", filename)
-	}
-	ext := strings.ToLower(parts[len(parts)-1])
+	ext := strings.ToLower(filepath.Ext(filename))
 
 	scene := &EditorScene{
 		Filename: filename,
@@ -235,11 +232,11 @@ func (d *Doodle) EditDrawing(filename string) error {
 	}
 
 	switch ext {
-	case "level":
-	case "map":
+	case ".level":
+	case ".map":
 		log.Info("is a Level type")
 		scene.DrawingType = enum.LevelDrawing
-	case "doodad":
+	case ".doodad":
 		if balance.FreeVersion {
 			return fmt.Errorf("Doodad editor not supported in your version of the game")
 		}

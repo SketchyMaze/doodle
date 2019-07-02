@@ -15,6 +15,9 @@ import (
 // unique ID.
 type Supervisor struct {
 	scripts map[string]*VM
+
+	// Global event handlers.
+	onLevelExit func()
 }
 
 // NewSupervisor creates a new JavaScript Supervior.
@@ -67,6 +70,7 @@ func (s *Supervisor) AddLevelScript(id string) error {
 
 	s.scripts[id] = NewVM(id)
 	RegisterPublishHooks(s.scripts[id])
+	RegisterEventHooks(s, s.scripts[id])
 	if err := s.scripts[id].RegisterLevelHooks(); err != nil {
 		return err
 	}
