@@ -53,6 +53,14 @@ func (s *Supervisor) InstallScripts(level *level.Level) error {
 			for _, id := range actor.Links {
 				// Assign this target actor's Inbound channel to the source
 				// actor's array of Outbound channels.
+				if _, ok := s.scripts[id]; !ok {
+					log.Error("scripting.InstallScripts: actor %s is linked to %s but %s was not found",
+						actor.ID(),
+						id,
+						id,
+					)
+					continue
+				}
 				thisVM.Outbound = append(thisVM.Outbound, s.scripts[id].Inbound)
 			}
 		}
