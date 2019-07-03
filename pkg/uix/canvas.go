@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
@@ -45,6 +46,7 @@ type Canvas struct {
 	NoLimitScroll bool
 
 	// Underlying chunk data for the drawing.
+	level  *level.Level
 	chunks *level.Chunker
 
 	// Actors to superimpose on top of the drawing.
@@ -73,6 +75,14 @@ type Canvas struct {
 	OnLinkActors func(a, b *Actor)
 	linkFirst    *Actor
 
+	/********
+	 * Editable canvas private variables.
+	 ********/
+	// The current stroke actively being drawn by the user, during a
+	// mousedown-and-dragging event.
+	currentStroke *drawtool.Stroke
+	strokes       map[int]*drawtool.Stroke // active stroke mapped by ID
+
 	// Tracking pixels while editing. TODO: get rid of pixelHistory?
 	pixelHistory []*level.Pixel
 	lastPixel    *level.Pixel
@@ -93,6 +103,8 @@ func NewCanvas(size int, editable bool) *Canvas {
 		chunks:     level.NewChunker(size),
 		actors:     make([]*Actor, 0),
 		wallpaper:  &Wallpaper{},
+
+		strokes: map[int]*drawtool.Stroke{},
 	}
 	w.setup()
 	w.IDFunc(func() string {
@@ -125,6 +137,7 @@ func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 
 // LoadLevel initializes a Canvas from a Level object.
 func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
+	w.level = level
 	w.Load(level.Palette, level.Chunker)
 
 	// TODO: wallpaper paths

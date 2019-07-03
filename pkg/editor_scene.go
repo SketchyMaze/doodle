@@ -154,6 +154,16 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 		}
 	}
 
+	// Undo/Redo key bindings.
+	if ev.ControlActive.Now {
+		key := ev.KeyName.Read()
+		if key == "z" {
+			s.UI.Canvas.UndoStroke()
+		} else if key == "y" {
+			s.UI.Canvas.RedoStroke()
+		}
+	}
+
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?

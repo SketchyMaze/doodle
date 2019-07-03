@@ -12,7 +12,7 @@ import (
 
 // FromJSON loads a level from JSON string.
 func FromJSON(filename string, data []byte) (*Level, error) {
-	var m = &Level{}
+	var m = New()
 	err := json.Unmarshal(data, m)
 
 	// Fill in defaults.

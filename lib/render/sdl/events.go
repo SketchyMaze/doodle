@@ -146,12 +146,13 @@ func (r *Renderer) Poll() (*events.State, error) {
 			case sdl.SCANCODE_LSHIFT:
 			case sdl.SCANCODE_RSHIFT:
 				s.ShiftActive.Push(t.State == 1)
-				continue
 			case sdl.SCANCODE_LALT:
 			case sdl.SCANCODE_RALT:
-			case sdl.SCANCODE_LCTRL:
-			case sdl.SCANCODE_RCTRL:
 				continue
+			case sdl.SCANCODE_LCTRL:
+				s.ControlActive.Push(t.State == 1)
+			case sdl.SCANCODE_RCTRL:
+				s.ControlActive.Push(t.State == 1)
 			case sdl.SCANCODE_BACKSPACE:
 				// Make it a key event with "\b" as the sequence.
 				if t.State == 1 || t.Repeat == 1 {

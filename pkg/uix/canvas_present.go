@@ -133,6 +133,8 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 
 	w.drawActors(e, p)
 
+	w.presentStrokes(e)
+
 	// XXX: Debug, show label in canvas corner.
 	if balance.DebugCanvasLabel {
 		rows := []string{

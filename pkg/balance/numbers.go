@@ -24,6 +24,9 @@ var (
 
 	// Default size for a new Doodad.
 	DoodadSize = 100
+
+	// Size of Undo/Redo history for map editor.
+	UndoHistory = 20
 )
 
 // Edit Mode Values

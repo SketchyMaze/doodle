@@ -31,6 +31,10 @@ var (
 	DebugCanvasBorder = render.Invisible
 	DebugCanvasLabel  = false // Tag the canvas with a label.
 
+	// Set to a color other than Invisible to force the uix.Canvas to color ALL
+	// Stroke pixels in this color.
+	DebugCanvasStrokeColor = render.Invisible
+
 	// Pretty-print JSON files when writing.
 	JSONIndent = true
 )

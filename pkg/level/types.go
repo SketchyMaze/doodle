@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 )
 
 // Useful variables.
@@ -46,6 +47,9 @@ type Level struct {
 
 	// Actors keep a list of the doodad instances in this map.
 	Actors ActorMap `json:"actors" msgpack:"18"`
+
+	// Undo history, temporary live data not persisted to the level file.
+	UndoHistory *drawtool.History `json:"-" msgpack:"-"`
 }
 
 // New creates a blank level object with all its members initialized.
@@ -62,6 +66,8 @@ func New() *Level {
 		Wallpaper: DefaultWallpaper,
 		MaxWidth:  2550,
 		MaxHeight: 3300,
+
+		UndoHistory: drawtool.NewHistory(balance.UndoHistory),
 	}
 }
 

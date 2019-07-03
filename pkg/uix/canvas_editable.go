@@ -4,6 +4,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 )
 
@@ -28,6 +29,13 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 
 		// Clicking? Log all the pixels while doing so.
 		if ev.Button1.Now {
+			// Initialize a new Stroke for this atomic drawing operation?
+			if w.currentStroke == nil {
+				w.currentStroke = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
+				w.AddStroke(w.currentStroke)
+			}
+
 			lastPixel := w.lastPixel
 			pixel := &level.Pixel{
 				X:      cursor.X,
@@ -50,7 +58,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 					// Draw the pixels in between.
 					if lastPixel != pixel {
 						for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
-							w.chunks.Set(point, lastPixel.Swatch)
+							w.currentStroke.AddPoint(point)
 						}
 					}
 				}
@@ -58,10 +66,28 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 				w.lastPixel = pixel
 				w.pixelHistory = append(w.pixelHistory, pixel)
 
-				// Save in the pixel canvas map.
-				w.chunks.Set(cursor, pixel.Swatch)
+				// Save the pixel in the current stroke.
+				w.currentStroke.AddPoint(render.Point{
+					X: cursor.X,
+					Y: cursor.Y,
+				})
 			}
 		} else {
+			// Mouse released, commit the points to the drawing.
+			if w.currentStroke != nil {
+				for _, pt := range w.currentStroke.Points {
+					w.chunks.Set(pt, w.Palette.ActiveSwatch)
+				}
+
+				// Add the stroke to level history.
+				if w.level != nil {
+					w.level.UndoHistory.AddStroke(w.currentStroke)
+				}
+
+				w.RemoveStroke(w.currentStroke)
+				w.currentStroke = nil
+			}
+
 			w.lastPixel = nil
 		}
 	case ActorTool:

@@ -286,7 +286,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	}
 
 	// Switching to Edit Mode?
-	if ev.KeyName.Read() == "e" {
+	if s.CanEdit && ev.KeyName.Read() == "e" {
 		s.EditLevel()
 		return nil
 	}
