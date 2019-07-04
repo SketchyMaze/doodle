@@ -326,7 +326,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		// Otherwise, just draw flashed messages.
 		valid := false // Did we actually draw any?
 
-		outputY := int32(d.height - (lineHeight * 2))
+		outputY := int32(d.height - (lineHeight * 2) - 16)
 		for i := len(s.Flashes); i > 0; i-- {
 			flash := s.Flashes[i-1]
 			if d.ticks >= flash.Expires {
@@ -342,7 +342,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 					Shadow: render.Black,
 				},
 				render.Point{
-					X: balance.ShellPadding,
+					X: balance.ShellPadding + toolbarWidth,
 					Y: outputY,
 				},
 			)

@@ -41,12 +41,16 @@ type EditorUI struct {
 	Workspace  *ui.Frame
 	MenuBar    *ui.Frame
 	StatusBar  *ui.Frame
+	ToolBar    *ui.Frame
 	PlayButton *ui.Button
 
 	// Palette window.
 	Palette    *ui.Window
 	PaletteTab *ui.Frame
 	DoodadTab  *ui.Frame
+
+	// ToolBar window.
+	activeTool *string
 
 	// Draggable Doodad canvas.
 	DraggableActor *DraggableActor
@@ -67,6 +71,10 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		StatusScrollText:   "Hello world",
 	}
 
+	// Default tool in the toolbox.
+	activeTool := drawtool.PencilTool.String()
+	u.activeTool = &activeTool
+
 	// Bind the StatusBoxes arrays to the text variables.
 	u.StatusBoxes = []*string{
 		&u.StatusMouseText,
@@ -78,6 +86,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.Canvas = u.SetupCanvas(d)
 	u.MenuBar = u.SetupMenuBar(d)
 	u.StatusBar = u.SetupStatusBar(d)
+	u.ToolBar = u.SetupToolbar(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
 
 	u.PlayButton = ui.NewButton("Play", ui.NewLabel(ui.Label{
@@ -147,16 +156,31 @@ func (u *EditorUI) Resized(d *Doodle) {
 		u.Palette.Compute(d.Engine)
 	}
 
+	var innerHeight = int32(u.d.height) - u.MenuBar.Size().H - u.StatusBar.Size().H
+
+	// Tool Bar.
+	{
+		u.ToolBar.Configure(ui.Config{
+			Width:  toolbarWidth,
+			Height: innerHeight,
+		})
+		u.ToolBar.MoveTo(render.NewPoint(
+			0,
+			u.MenuBar.BoxSize().H,
+		))
+		u.ToolBar.Compute(d.Engine)
+	}
+
 	// Position the workspace around with the other widgets.
 	{
 
 		frame := u.Workspace
 		frame.MoveTo(render.NewPoint(
-			0,
+			u.ToolBar.Size().W,
 			u.MenuBar.Size().H,
 		))
 		frame.Resize(render.NewRect(
-			int32(d.width)-u.Palette.Size().W,
+			int32(d.width)-u.Palette.Size().W-u.ToolBar.Size().W,
 			int32(d.height)-u.MenuBar.Size().H-u.StatusBar.Size().H,
 		))
 		frame.Compute(d.Engine)
@@ -227,9 +251,14 @@ func (u *EditorUI) Loop(ev *events.State) error {
 	}
 
 	// Recompute widgets.
+	// Explanation: if I don't, the UI packing algorithm somehow causes widgets
+	// to creep away every frame and fly right off the screen. For example the
+	// ToolBar's buttons would start packed at the top of the bar but then just
+	// move themselves every frame downward and away.
 	u.MenuBar.Compute(u.d.Engine)
 	u.StatusBar.Compute(u.d.Engine)
 	u.Palette.Compute(u.d.Engine)
+	u.ToolBar.Compute(u.d.Engine)
 
 	// Only forward events to the Canvas if the UI hasn't stopped them.
 	if !stopPropagation {
@@ -249,6 +278,7 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.Palette.Present(e, u.Palette.Point())
 	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
+	u.ToolBar.Present(e, u.ToolBar.Point())
 	u.Workspace.Present(e, u.Workspace.Point())
 	u.PlayButton.Present(e, u.PlayButton.Point())
 

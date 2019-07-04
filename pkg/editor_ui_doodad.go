@@ -51,35 +51,6 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 
 	frame.SetBackground(render.RGBA(0, 153, 255, 153))
 
-	// Toolbar on top of the Doodad panel.
-	toolbar := ui.NewFrame("Doodad Palette Toolbar")
-	toolbar.Configure(ui.Config{
-		Background:  render.Grey,
-		BorderSize:  2,
-		BorderStyle: ui.BorderRaised,
-		Height:      24,
-	})
-	{
-		// Link button.
-		linkButton := ui.NewButton("Link", ui.NewLabel(ui.Label{
-			Text: "Link Doodads",
-		}))
-		linkButton.Handle(ui.Click, func(p render.Point) {
-			u.Canvas.LinkStart()
-			u.d.Flash("Click on the first Doodad to link to another one.")
-		})
-		u.Supervisor.Add(linkButton)
-
-		toolbar.Pack(linkButton, ui.Pack{
-			Anchor: ui.N,
-			FillX:  true,
-		})
-	}
-	frame.Pack(toolbar, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-	})
-
 	// Pager buttons on top of the doodad list.
 	pager := ui.NewFrame("Doodad Pager")
 	pager.SetBackground(render.RGBA(255, 0, 0, 20)) // TODO: if I don't set a background color,

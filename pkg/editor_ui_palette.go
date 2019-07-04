@@ -4,8 +4,6 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/drawtool"
-	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
@@ -18,46 +16,6 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		Background:  balance.WindowBackground,
 		BorderColor: balance.WindowBorder,
 	})
-
-	// Frame that holds the tab buttons in Level Edit mode.
-	tabFrame := ui.NewFrame("Palette Tabs")
-	for _, name := range []string{"Palette", "Doodads"} {
-		if u.paletteTab == "" {
-			u.paletteTab = name
-		}
-
-		tab := ui.NewRadioButton("Palette Tab", &u.paletteTab, name, ui.NewLabel(ui.Label{
-			Text: name,
-		}))
-		tab.Handle(ui.Click, func(p render.Point) {
-			if u.paletteTab == "Palette" {
-				u.Canvas.Tool = drawtool.PencilTool
-				u.PaletteTab.Show()
-				u.DoodadTab.Hide()
-			} else {
-				u.Canvas.Tool = drawtool.ActorTool
-				u.PaletteTab.Hide()
-				u.DoodadTab.Show()
-			}
-			window.Compute(d.Engine)
-		})
-		u.Supervisor.Add(tab)
-		tabFrame.Pack(tab, ui.Pack{
-			Anchor: ui.W,
-			Fill:   true,
-			Expand: true,
-		})
-	}
-	window.Pack(tabFrame, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-		PadY:   4,
-	})
-
-	// Only show the tab frame in Level drawing mode!
-	if u.Scene.DrawingType != enum.LevelDrawing {
-		tabFrame.Hide()
-	}
 
 	// Doodad frame.
 	{
