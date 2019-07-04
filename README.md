@@ -69,6 +69,16 @@ Cursor Keys
   Scroll the view of the map around.
 "P" Key
   Playtest the current map you're working on.
+"F" Key
+  Switch to the Pencil (Freehand) Tool
+"L" Key
+  Switch to the Line Tool
+"R" Key
+  Switch to the Rectangle Tool
+Ctrl-Z
+  Undo
+Ctrl-Y
+  Redo
 ```
 
 # Built-In Doodads

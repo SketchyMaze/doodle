@@ -21,7 +21,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 	)
 
 	switch w.Tool {
-	case PencilTool:
+	case drawtool.PencilTool:
 		// If no swatch is active, do nothing with mouse clicks.
 		if w.Palette.ActiveSwatch == nil {
 			return nil
@@ -90,7 +90,73 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 
 			w.lastPixel = nil
 		}
-	case ActorTool:
+	case drawtool.LineTool:
+		// If no swatch is active, do nothing with mouse clicks.
+		if w.Palette.ActiveSwatch == nil {
+			return nil
+		}
+
+		// Clicking? Log all the pixels while doing so.
+		if ev.Button1.Now {
+			// Initialize a new Stroke for this atomic drawing operation?
+			if w.currentStroke == nil {
+				w.currentStroke = drawtool.NewStroke(drawtool.Line, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
+				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
+				w.AddStroke(w.currentStroke)
+			}
+
+			w.currentStroke.PointB = render.NewPoint(cursor.X, cursor.Y)
+		} else {
+			// Mouse released, commit the points to the drawing.
+			if w.currentStroke != nil {
+				for pt := range render.IterLine2(w.currentStroke.PointA, w.currentStroke.PointB) {
+					w.chunks.Set(pt, w.Palette.ActiveSwatch)
+				}
+
+				// Add the stroke to level history.
+				if w.level != nil {
+					w.level.UndoHistory.AddStroke(w.currentStroke)
+				}
+
+				w.RemoveStroke(w.currentStroke)
+				w.currentStroke = nil
+			}
+		}
+	case drawtool.RectTool:
+		// If no swatch is active, do nothing with mouse clicks.
+		if w.Palette.ActiveSwatch == nil {
+			return nil
+		}
+
+		// Clicking? Log all the pixels while doing so.
+		if ev.Button1.Now {
+			// Initialize a new Stroke for this atomic drawing operation?
+			if w.currentStroke == nil {
+				w.currentStroke = drawtool.NewStroke(drawtool.Rectangle, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
+				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
+				w.AddStroke(w.currentStroke)
+			}
+
+			w.currentStroke.PointB = render.NewPoint(cursor.X, cursor.Y)
+		} else {
+			// Mouse released, commit the points to the drawing.
+			if w.currentStroke != nil {
+				for pt := range render.IterRect(w.currentStroke.PointA, w.currentStroke.PointB) {
+					w.chunks.Set(pt, w.Palette.ActiveSwatch)
+				}
+
+				// Add the stroke to level history.
+				if w.level != nil {
+					w.level.UndoHistory.AddStroke(w.currentStroke)
+				}
+
+				w.RemoveStroke(w.currentStroke)
+				w.currentStroke = nil
+			}
+		}
+	case drawtool.ActorTool:
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
 
@@ -134,7 +200,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		if len(deleteActors) > 0 && w.OnDeleteActors != nil {
 			w.OnDeleteActors(deleteActors)
 		}
-	case LinkTool:
+	case drawtool.LinkTool:
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
 

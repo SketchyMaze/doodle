@@ -61,6 +61,10 @@ func (s *Stroke) IterPoints() chan render.Point {
 			for point := range render.IterLine2(s.PointA, s.PointB) {
 				ch <- point
 			}
+		case Rectangle:
+			for point := range render.IterRect(s.PointA, s.PointB) {
+				ch <- point
+			}
 		}
 		close(ch)
 	}()

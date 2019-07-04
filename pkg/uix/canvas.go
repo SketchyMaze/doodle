@@ -30,7 +30,7 @@ type Canvas struct {
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 
 	// Selected draw tool/mode, default Pencil, for editable canvases.
-	Tool Tool
+	Tool drawtool.Tool
 
 	// MaskColor will force every pixel to render as this color regardless of
 	// the palette index of that pixel. Otherwise pixels behave the same and

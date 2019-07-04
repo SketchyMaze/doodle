@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -311,7 +312,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		b.Actor.AddLink(idA)
 
 		// Reset the Link tool.
-		drawing.Tool = uix.ActorTool
+		drawing.Tool = drawtool.ActorTool
 		d.Flash("Linked '%s' and '%s' together", a.Doodad.Title, b.Doodad.Title)
 	}
 

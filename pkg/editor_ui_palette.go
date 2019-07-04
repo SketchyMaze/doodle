@@ -4,9 +4,9 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/uix"
 )
 
 // SetupPalette sets up the palette panel.
@@ -31,11 +31,11 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		}))
 		tab.Handle(ui.Click, func(p render.Point) {
 			if u.paletteTab == "Palette" {
-				u.Canvas.Tool = uix.PencilTool
+				u.Canvas.Tool = drawtool.PencilTool
 				u.PaletteTab.Show()
 				u.DoodadTab.Hide()
 			} else {
-				u.Canvas.Tool = uix.ActorTool
+				u.Canvas.Tool = drawtool.ActorTool
 				u.PaletteTab.Hide()
 				u.DoodadTab.Show()
 			}

@@ -235,3 +235,44 @@ func IterLine(x1, y1, x2, y2 int32) chan Point {
 func IterLine2(p1 Point, p2 Point) chan Point {
 	return IterLine(p1.X, p1.Y, p2.X, p2.Y)
 }
+
+// IterRect loops through all the points forming a rectangle between the
+// top-left point and the bottom-right point.
+func IterRect(p1, p2 Point) chan Point {
+	generator := make(chan Point)
+
+	go func() {
+		var (
+			TopLeft     = p1
+			BottomRight = p2
+			TopRight    = Point{
+				X: BottomRight.X,
+				Y: TopLeft.Y,
+			}
+			BottomLeft = Point{
+				X: TopLeft.X,
+				Y: BottomRight.Y,
+			}
+		)
+
+		// Trace all four edges and yield it.
+		var edges = []struct {
+			A Point
+			B Point
+		}{
+			{TopLeft, TopRight},
+			{TopLeft, BottomLeft},
+			{BottomLeft, BottomRight},
+			{TopRight, BottomRight},
+		}
+		for _, edge := range edges {
+			for pt := range IterLine2(edge.A, edge.B) {
+				generator <- pt
+			}
+		}
+
+		close(generator)
+	}()
+
+	return generator
+}

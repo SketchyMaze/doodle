@@ -3,12 +3,13 @@ package uix
 import (
 	"errors"
 
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 )
 
 // LinkStart initializes the Link tool.
 func (w *Canvas) LinkStart() {
-	w.Tool = LinkTool
+	w.Tool = drawtool.LinkTool
 	w.linkFirst = nil
 }
 

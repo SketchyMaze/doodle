@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -167,9 +168,18 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?
-	if ev.KeyName.Read() == "p" {
+	switch ev.KeyName.Read() {
+	case "p":
 		s.Playtest()
-		return nil
+	case "l":
+		d.Flash("Line Tool selected.")
+		s.UI.Canvas.Tool = drawtool.LineTool
+	case "f":
+		d.Flash("Pencil Tool selected.")
+		s.UI.Canvas.Tool = drawtool.PencilTool
+	case "r":
+		d.Flash("Rectangle Tool selected.")
+		s.UI.Canvas.Tool = drawtool.RectTool
 	}
 
 	return nil

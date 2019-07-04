@@ -1,4 +1,4 @@
-package uix
+package drawtool
 
 // Tool is a draw mode for an editable Canvas.
 type Tool int
@@ -6,12 +6,16 @@ type Tool int
 // Draw modes for editable Canvas.
 const (
 	PencilTool Tool = iota // draw pixels where the mouse clicks
-	ActorTool              // drag and move actors
+	LineTool
+	RectTool
+	ActorTool // drag and move actors
 	LinkTool
 )
 
 var toolNames = []string{
 	"Pencil",
+	"Line",
+	"Rectangle",
 	"Doodad", // readable name for ActorTool
 	"Link",
 }

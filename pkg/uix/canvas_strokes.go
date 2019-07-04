@@ -94,7 +94,7 @@ func (w *Canvas) presentStrokes(e render.Engine) {
 	w.drawStrokes(e, strokes)
 
 	// Dynamic actor links visible in the ActorTool and LinkTool.
-	if w.Tool == ActorTool || w.Tool == LinkTool {
+	if w.Tool == drawtool.ActorTool || w.Tool == drawtool.LinkTool {
 		w.presentActorLinks(e)
 	}
 }
