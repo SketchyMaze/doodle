@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"runtime"
+	"sort"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/bindata"
@@ -56,6 +57,8 @@ func ListDoodads() ([]string, error) {
 			result = append(result, name)
 		}
 	}
+
+	sort.Strings(result)
 
 	return result, err
 }

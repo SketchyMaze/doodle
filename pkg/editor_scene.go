@@ -174,12 +174,15 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	case "l":
 		d.Flash("Line Tool selected.")
 		s.UI.Canvas.Tool = drawtool.LineTool
+		s.UI.activeTool = s.UI.Canvas.Tool.String()
 	case "f":
 		d.Flash("Pencil Tool selected.")
 		s.UI.Canvas.Tool = drawtool.PencilTool
+		s.UI.activeTool = s.UI.Canvas.Tool.String()
 	case "r":
 		d.Flash("Rectangle Tool selected.")
 		s.UI.Canvas.Tool = drawtool.RectTool
+		s.UI.activeTool = s.UI.Canvas.Tool.String()
 	}
 
 	return nil

@@ -49,8 +49,15 @@ type EditorUI struct {
 	PaletteTab *ui.Frame
 	DoodadTab  *ui.Frame
 
+	// Doodad Palette window variables.
+	doodadSkip       int
+	doodadRows       []*ui.Frame
+	doodadPager      *ui.Frame
+	doodadButtonSize int32
+	doodadScroller   *ui.Frame
+
 	// ToolBar window.
-	activeTool *string
+	activeTool string
 
 	// Draggable Doodad canvas.
 	DraggableActor *DraggableActor
@@ -72,8 +79,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	}
 
 	// Default tool in the toolbox.
-	activeTool := drawtool.PencilTool.String()
-	u.activeTool = &activeTool
+	u.activeTool = drawtool.PencilTool.String()
 
 	// Bind the StatusBoxes arrays to the text variables.
 	u.StatusBoxes = []*string{
@@ -154,6 +160,8 @@ func (u *EditorUI) Resized(d *Doodle) {
 			u.MenuBar.BoxSize().H,
 		))
 		u.Palette.Compute(d.Engine)
+
+		u.scrollDoodadFrame(0)
 	}
 
 	var innerHeight = int32(u.d.height) - u.MenuBar.Size().H - u.StatusBar.Size().H

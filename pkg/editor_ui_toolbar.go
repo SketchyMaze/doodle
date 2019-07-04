@@ -97,7 +97,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 		btn := ui.NewRadioButton(
 			button.Value,
-			u.activeTool,
+			&u.activeTool,
 			button.Value,
 			image,
 		)
