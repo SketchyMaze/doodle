@@ -67,7 +67,7 @@ type Canvas struct {
 	// that controls the actors. Upstream should delete them and then reinstall
 	// the actor list from scratch.
 	OnDeleteActors func([]*level.Actor)
-	OnDragStart    func(filename string)
+	OnDragStart    func(*level.Actor)
 
 	// -- WHEN Canvas.Tool is "Link" --
 	// When the Canvas wants to link two actors together. Arguments are the IDs

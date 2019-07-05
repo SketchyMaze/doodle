@@ -36,7 +36,6 @@ type Doodle struct {
 
 	startTime time.Time
 	running   bool
-	ticks     uint64
 	width     int
 	height    int
 
@@ -110,7 +109,7 @@ func (d *Doodle) Run() error {
 		d.Engine.Clear(render.White)
 
 		start := time.Now() // Record how long this frame took.
-		d.ticks++
+		shmem.Tick++
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()

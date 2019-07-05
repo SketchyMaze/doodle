@@ -3,8 +3,7 @@
 ## Alpha Launch Minimum Checklist
 
 - [ ] Open Source Licenses
-- [ ] Doodad Scripts: an "end level" function for a level goalpost.
-
+- [x] Doodad Scripts: an "end level" function for a level goalpost.
 
 **Blocker Bugs:**
 
@@ -16,7 +15,7 @@
 
 - Doodads Palette:
   - [ ] Hide some doodads like the player character.
-  - [ ] Pagination or scrolling UI for long lists of doodads.
+  - [x] Pagination or scrolling UI for long lists of doodads.
 
 **Nice to haves:**
 
@@ -27,8 +26,8 @@
 - [ ] Single-player "campaign mode" of built-in levels.
   - campaign.json file format configuring the level order
 - [ ] Level Editor Improvements
-  - [ ] Undo/Redo Function
-  - [ ] Lines and Boxes
+  - [x] Undo/Redo Function
+  - [x] Lines and Boxes
   - [ ] Eraser Tool
   - [ ] Brush size and/or shape
 - [ ] Doodad CLI Tool Features
@@ -52,7 +51,7 @@
 - [ ] Doors
   - [x] Locked Doors and Keys
   - [x] Electric Doors
-  - [ ] Trapdoors (1 of 4)
+  - [x] Trapdoors (all 4 directions)
 
 ## Doodad Ideas
 

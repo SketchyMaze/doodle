@@ -55,6 +55,11 @@ var (
 	// Color for draggable doodad.
 	DragColor = render.MustHexColor("#0099FF")
 
+	// Link lines drawn between connected doodads.
+	LinkLineColor        = render.Magenta
+	LinkLighten          = 128
+	LinkAnimSpeed uint64 = 30 // ticks
+
 	PlayButtonFont = render.Text{
 		FontFilename: "DejaVuSans-Bold.ttf",
 		Size:         16,

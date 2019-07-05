@@ -10,7 +10,6 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -333,12 +332,8 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// A drag event initiated inside the Canvas. This happens in the ActorTool
 	// mode when you click an existing Doodad and it "pops" out of the canvas
 	// and onto the cursor to be repositioned.
-	drawing.OnDragStart = func(filename string) {
-		doodad, err := doodads.LoadFile(filename)
-		if err != nil {
-			log.Error("drawing.OnDragStart: %s", err.Error())
-		}
-		u.startDragActor(doodad)
+	drawing.OnDragStart = func(actor *level.Actor) {
+		u.startDragActor(nil, actor)
 	}
 
 	// A link event to connect two actors together.
@@ -350,7 +345,6 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		b.Actor.AddLink(idA)
 
 		// Reset the Link tool.
-		drawing.Tool = drawtool.ActorTool
 		d.Flash("Linked '%s' and '%s' together", a.Doodad.Title, b.Doodad.Title)
 	}
 
@@ -369,15 +363,25 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 				return
 			}
 
-			size := actor.canvas.Size()
-			u.Scene.Level.Actors.Add(&level.Actor{
+			var (
 				// Uncenter the drawing from the cursor.
-				Point: render.Point{
+				size     = actor.canvas.Size()
+				position = render.Point{
 					X: (u.cursor.X - drawing.Scroll.X - (size.W / 2)) - P.X,
 					Y: (u.cursor.Y - drawing.Scroll.Y - (size.H / 2)) - P.Y,
-				},
-				Filename: actor.doodad.Filename,
-			})
+				}
+			)
+
+			// Was it an already existing actor to re-add to the map?
+			if actor.actor != nil {
+				actor.actor.Point = position
+				u.Scene.Level.Actors.Add(actor.actor)
+			} else {
+				u.Scene.Level.Actors.Add(&level.Actor{
+					Point:    position,
+					Filename: actor.doodad.Filename,
+				})
+			}
 
 			err := drawing.InstallActors(u.Scene.Level.Actors)
 			if err != nil {

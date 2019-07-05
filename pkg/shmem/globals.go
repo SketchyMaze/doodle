@@ -9,6 +9,9 @@ import (
 // Shared globals for easy access throughout the app.
 // Not an ideal place to keep things but *shrug*
 var (
+	// Tick is incremented by the main game loop each frame.
+	Tick uint64
+
 	// Current render engine (i.e. SDL2 or HTML5 Canvas)
 	// The level.Chunk.ToBitmap() uses this to cache a texture image.
 	CurrentRenderEngine render.Engine

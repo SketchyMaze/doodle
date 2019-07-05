@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 )
 
 // canvas_strokes.go: functions related to drawtool.Stroke and the Canvas.
@@ -115,6 +116,27 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 		}
 	}
 
+	// If no links, stop.
+	if len(actorMap) == 0 {
+		return
+	}
+
+	// The glow colored line. Huge hacky block of code but makes for some
+	// basic visualization for now.
+	var color = balance.LinkLineColor
+	var lightenStep = float64(balance.LinkLighten) / 16
+	var step = shmem.Tick % balance.LinkAnimSpeed
+	if step < 32 {
+		for i := uint64(0); i < step; i++ {
+			color = color.Lighten(int(lightenStep))
+		}
+		if step > 16 {
+			for i := uint64(0); i < step-16; i++ {
+				color = color.Darken(int(lightenStep))
+			}
+		}
+	}
+
 	// Loop over the linked actors and draw stroke lines.
 	for _, actor := range actorMap {
 		for _, linkID := range actor.Actor.Links {
@@ -130,7 +152,7 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 			)
 
 			// Draw a line connecting the centers of each actor together.
-			stroke := drawtool.NewStroke(drawtool.Line, render.Magenta)
+			stroke := drawtool.NewStroke(drawtool.Line, color)
 			stroke.PointA = render.Point{
 				X: aP.X + (aS.W / 2),
 				Y: aP.Y + (aS.H / 2),
@@ -141,6 +163,16 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 			}
 
 			strokes = append(strokes, stroke)
+
+			// Make it double thick.
+			double := stroke.Copy()
+			double.PointA = render.NewPoint(stroke.PointA.X, stroke.PointA.Y+1)
+			double.PointB = render.NewPoint(stroke.PointB.X, stroke.PointB.Y+1)
+			strokes = append(strokes, double)
+			double = stroke.Copy()
+			double.PointA = render.NewPoint(stroke.PointA.X+1, stroke.PointA.Y)
+			double.PointB = render.NewPoint(stroke.PointB.X+1, stroke.PointB.Y)
+			strokes = append(strokes, double)
 		}
 	}
 

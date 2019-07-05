@@ -189,6 +189,7 @@ var (
 	Cyan       = RGBA(0, 255, 255, 255)
 	DarkCyan   = RGBA(0, 153, 153, 255)
 	Yellow     = RGBA(255, 255, 0, 255)
+	Orange     = RGBA(255, 153, 0, 255)
 	DarkYellow = RGBA(153, 153, 0, 255)
 	Magenta    = RGBA(255, 0, 255, 255)
 	Purple     = RGBA(153, 0, 153, 255)

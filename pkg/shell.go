@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"github.com/robertkrimen/otto"
 )
 
@@ -146,7 +147,7 @@ func (s *Shell) Write(line string) {
 	s.Output = append(s.Output, line)
 	s.Flashes = append(s.Flashes, Flash{
 		Text:    line,
-		Expires: s.parent.ticks + balance.FlashTTL,
+		Expires: shmem.Tick + balance.FlashTTL,
 	})
 }
 
@@ -253,8 +254,8 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		}
 
 		// Cursor flip?
-		if d.ticks > s.cursorFlip {
-			s.cursorFlip = d.ticks + s.cursorRate
+		if shmem.Tick > s.cursorFlip {
+			s.cursorFlip = shmem.Tick + s.cursorRate
 			if s.cursor == ' ' {
 				s.cursor = '_'
 			} else {
@@ -329,7 +330,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		outputY := int32(d.height - (lineHeight * 2) - 16)
 		for i := len(s.Flashes); i > 0; i-- {
 			flash := s.Flashes[i-1]
-			if d.ticks >= flash.Expires {
+			if shmem.Tick >= flash.Expires {
 				continue
 			}
 

@@ -183,7 +183,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 					// Pop this canvas out for the drag/drop.
 					if w.OnDragStart != nil {
 						deleteActors = append(deleteActors, actor.Actor)
-						w.OnDragStart(actor.Actor.Filename)
+						w.OnDragStart(actor.Actor)
 					}
 					break
 				} else if ev.Button2.Read() {

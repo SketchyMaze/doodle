@@ -45,6 +45,19 @@ func NewStroke(shape Shape, color render.Color) *Stroke {
 	}
 }
 
+// Copy returns a duplicate of the Stroke reference.
+func (s *Stroke) Copy() *Stroke {
+	nextStrokeID++
+	return &Stroke{
+		ID:    nextStrokeID,
+		Shape: s.Shape,
+		Color: s.Color,
+
+		Points:    []render.Point{},
+		uniqPoint: map[render.Point]interface{}{},
+	}
+}
+
 // IterPoints returns an iterator of points represented by the stroke.
 //
 // For a Line, returns all of the points between PointA and PointB. For freehand,

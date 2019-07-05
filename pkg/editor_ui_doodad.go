@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 )
@@ -18,12 +19,28 @@ import (
 // DraggableActor is a Doodad being dragged from the Doodad palette.
 type DraggableActor struct {
 	canvas *uix.Canvas
-	doodad *doodads.Doodad
+	doodad *doodads.Doodad // if a new one from the palette
+	actor  *level.Actor    // if a level actor
 }
 
 // startDragActor begins the drag event for a Doodad onto a level.
-func (u *EditorUI) startDragActor(doodad *doodads.Doodad) {
+// actor may be nil (if you drag a new doodad from the palette) or otherwise
+// is an existing actor from the level.
+func (u *EditorUI) startDragActor(doodad *doodads.Doodad, actor *level.Actor) {
 	u.Supervisor.DragStart()
+
+	if doodad == nil {
+		if actor != nil {
+			obj, err := doodads.LoadFile(actor.Filename)
+			if err != nil {
+				log.Error("startDragExistingActor: actor doodad name %s not found: %s", actor.Filename, err)
+				return
+			}
+			doodad = obj
+		} else {
+			panic("EditorUI.startDragActor: doodad AND/OR actor is required, but neither were given")
+		}
+	}
 
 	// Create the canvas to render on the mouse cursor.
 	drawing := uix.NewCanvas(doodad.Layers[0].Chunker.Size, false)
@@ -34,6 +51,7 @@ func (u *EditorUI) startDragActor(doodad *doodads.Doodad) {
 	u.DraggableActor = &DraggableActor{
 		canvas: drawing,
 		doodad: doodad,
+		actor:  actor,
 	}
 }
 
@@ -153,7 +171,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		// editor_ui.go#SetupCanvas()
 		btn.Handle(ui.MouseDown, func(e render.Point) {
 			log.Warn("MouseDown on doodad %s (%s)", doodad.Filename, doodad.Title)
-			u.startDragActor(doodad)
+			u.startDragActor(doodad, nil)
 		})
 		u.Supervisor.Add(btn)
 
