@@ -1,6 +1,8 @@
 package doodle
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -66,15 +68,41 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	// Draw the radio buttons for the palette.
 	if u.Canvas != nil && u.Canvas.Palette != nil {
 		for _, swatch := range u.Canvas.Palette.Swatches {
+			swFrame := ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
+
+			colorFrame := ui.NewFrame(fmt.Sprintf("Swatch(%s) Color Box", swatch.Name))
+			colorFrame.Configure(ui.Config{
+				Width:       16,
+				Height:      16,
+				Background:  swatch.Color,
+				BorderSize:  1,
+				BorderStyle: ui.BorderSunken,
+			})
+			swFrame.Pack(colorFrame, ui.Pack{
+				Anchor: ui.W,
+			})
+
 			label := ui.NewLabel(ui.Label{
 				Text: swatch.Name,
 				Font: balance.StatusFont,
 			})
 			label.Font.Color = swatch.Color.Darken(128)
+			swFrame.Pack(label, ui.Pack{
+				Anchor: ui.W,
+			})
 
-			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, label)
+			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, swFrame)
 			btn.Handle(ui.Click, onClick)
 			u.Supervisor.Add(btn)
+
+			btn.Compute(u.d.Engine)
+			swFrame.Configure(ui.Config{
+				Height: label.Size().H,
+
+				// TODO: magic number, trying to left-align
+				// the label by making the frame as wide as possible.
+				Width: paletteWidth - 16,
+			})
 
 			frame.Pack(btn, ui.Pack{
 				Anchor: ui.N,

@@ -63,7 +63,13 @@ trapdoors() {
 	cd trapdoors/
 
 	doodad convert -t "Trapdoor" down{1,2,3,4}.png trapdoor-down.doodad
-	doodad install-script down.js trapdoor-down.doodad
+	doodad convert -t "Trapdoor Left" left{1,2,3,4}.png trapdoor-left.doodad
+	doodad convert -t "Trapdoor Right" right{1,2,3,4}.png trapdoor-right.doodad
+	doodad convert -t "Trapdoor Up" up{1,2,3,4}.png trapdoor-up.doodad
+	doodad install-script trapdoor.js trapdoor-down.doodad
+	doodad install-script trapdoor.js trapdoor-left.doodad
+	doodad install-script trapdoor.js trapdoor-right.doodad
+	doodad install-script trapdoor.js trapdoor-up.doodad
 
 	cp trapdoor-*.doodad ../../../assets/doodads/
 

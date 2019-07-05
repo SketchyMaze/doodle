@@ -215,8 +215,10 @@ func (w *Canvas) Loop(ev *events.State) error {
 	}
 
 	// Check collisions between actors.
-	if err := w.loopActorCollision(); err != nil {
-		log.Error("loopActorCollision: %s", err)
+	if w.scripting != nil {
+		if err := w.loopActorCollision(); err != nil {
+			log.Error("loopActorCollision: %s", err)
+		}
 	}
 
 	// If the canvas is editable, only care if it's over our space.

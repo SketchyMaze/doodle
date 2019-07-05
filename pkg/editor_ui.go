@@ -19,7 +19,7 @@ import (
 )
 
 // Width of the panel frame.
-var paletteWidth int32 = 150
+var paletteWidth int32 = 160
 
 // EditorUI manages the user interface for the Editor Scene.
 type EditorUI struct {

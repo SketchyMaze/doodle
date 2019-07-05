@@ -47,7 +47,8 @@ type PlayScene struct {
 	debWorldIndex *string
 
 	// Player character
-	Player *uix.Actor
+	Player            *uix.Actor
+	playerJumpCounter int // limit jump length
 }
 
 // Name of the scene.
@@ -349,17 +350,22 @@ func (s *PlayScene) movePlayer(ev *events.State) {
 
 	var velocity render.Point
 
-	if ev.Down.Now {
-		velocity.Y = playerSpeed
-	}
 	if ev.Left.Now {
 		velocity.X = -playerSpeed
 	}
 	if ev.Right.Now {
 		velocity.X = playerSpeed
 	}
-	if ev.Up.Now {
+	if ev.Up.Now && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
 		velocity.Y = -playerSpeed
+
+		if s.Player.Grounded() {
+			s.playerJumpCounter = 20
+		}
+	}
+
+	if !s.Player.Grounded() {
+		s.playerJumpCounter--
 	}
 
 	// // Apply gravity if not grounded.

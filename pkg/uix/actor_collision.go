@@ -1,6 +1,7 @@
 package uix
 
 import (
+	"errors"
 	"sync"
 	"time"
 
@@ -16,9 +17,11 @@ import (
 // loopActorCollision is the Loop function that checks if pairs of
 // actors are colliding with each other, and handles their scripting
 // responses to such collisions.
-//
-// boxes: array of Actor bounding box rects.
 func (w *Canvas) loopActorCollision() error {
+	if w.scripting == nil {
+		return errors.New("Canvas.loopActorCollision: scripting engine not attached to Canvas")
+	}
+
 	var (
 		// Current time of this tick so we can advance animations.
 		now = time.Now()
