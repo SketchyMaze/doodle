@@ -188,6 +188,24 @@ func (w *Canvas) drawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 	)
 
 	for _, stroke := range strokes {
+		// If none of this stroke is in our viewport, don't waste time
+		// looping through it.
+		if stroke.Shape == drawtool.Freehand {
+			if len(stroke.Points) >= 2 {
+				if !stroke.Points[0].Inside(VP) && !stroke.Points[len(stroke.Points)-1].Inside(VP) {
+					continue
+				}
+			}
+		} else {
+			// TODO: a very long line that starts and ends outside the viewport
+			// but passes thru it would disappear when both ends are out of
+			// view.
+			if !stroke.PointA.Inside(VP) && !stroke.PointB.Inside(VP) {
+				continue
+			}
+		}
+
+		// Iter the points and draw what's visible.
 		for point := range stroke.IterPoints() {
 			if !point.Inside(VP) {
 				continue

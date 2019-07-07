@@ -104,6 +104,9 @@ func (m *Level) WriteFile(filename string) error {
 	m.Version = 1
 	m.GameVersion = branding.Version
 
+	// Maintenance functions, clean up cruft before save.
+	m.PruneLinks()
+
 	bin, err := m.ToJSON()
 	if err != nil {
 		return err

@@ -85,6 +85,11 @@ Returns the file path and an error if not found anywhere.
 func FindFile(filename string) (string, error) {
 	var filetype string
 
+	// If the filename has path separators, return it as-is.
+	if strings.ContainsRune(filename, filepath.Separator) {
+		return filename, nil
+	}
+
 	// Any hint on what type of file we're looking for?
 	if strings.HasSuffix(filename, enum.LevelExt) {
 		filetype = enum.LevelExt

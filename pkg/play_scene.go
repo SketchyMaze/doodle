@@ -36,6 +36,7 @@ type PlayScene struct {
 	// The alert box shows up when the level goal is reached and includes
 	// buttons what to do next.
 	alertBox          *ui.Window
+	alertBoxLabel     *ui.Label
 	alertReplayButton *ui.Button // Replay level
 	alertEditButton   *ui.Button // Edit Level
 	alertNextButton   *ui.Button // Next Level
@@ -120,6 +121,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.drawing.OnLevelCollision = func(a *uix.Actor, col *collision.Collide) {
 		if col.InFire {
 			a.Canvas.MaskColor = render.Black
+			s.DieByFire()
 		} else if col.InWater {
 			a.Canvas.MaskColor = render.DarkBlue
 		} else {
@@ -201,11 +203,11 @@ func (s *PlayScene) SetupAlertbox() {
 		 * Frame for selecting User Levels
 		 ******************/
 
-		label1 := ui.NewLabel(ui.Label{
+		s.alertBoxLabel = ui.NewLabel(ui.Label{
 			Text: "Congratulations on clearing the level!",
 			Font: balance.LabelFont,
 		})
-		frame.Pack(label1, ui.Pack{
+		frame.Pack(s.alertBoxLabel, ui.Pack{
 			Anchor: ui.N,
 			FillX:  true,
 			PadY:   16,
@@ -275,6 +277,24 @@ func (s *PlayScene) RestartLevel() {
 		Level:    s.Level,
 		CanEdit:  s.CanEdit,
 	})
+}
+
+// DieByFire ends the level by fire.
+func (s *PlayScene) DieByFire() {
+	log.Info("Watch out for fire!")
+	s.alertBox.Title = "You've died!"
+	s.alertBoxLabel.Text = "Watch out for fire!"
+
+	s.alertReplayButton.Show()
+	if s.CanEdit {
+		s.alertEditButton.Show()
+	}
+	s.alertExitButton.Show()
+
+	s.alertBox.Show()
+
+	// Stop the simulation.
+	s.running = false
 }
 
 // Loop the editor scene.

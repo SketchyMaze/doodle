@@ -6,7 +6,6 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
@@ -89,26 +88,25 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 		H: int32(d.height),
 	})
 
-	// Title screen level to load.
-	lvlName, _ := filesystem.FindFile("example1.level")
-	lvl, err := level.LoadJSON(lvlName)
-	if err != nil {
-		log.Error("Error loading title-screen.level: %s", err)
-	}
-
-	s.canvas.LoadLevel(d.Engine, lvl)
-	s.canvas.InstallActors(lvl.Actors)
-
-	// Load all actor scripts.
 	s.scripting = scripting.NewSupervisor()
 	s.canvas.SetScriptSupervisor(s.scripting)
-	if err := s.scripting.InstallScripts(lvl); err != nil {
-		log.Error("Error with title screen level scripts: %s", err)
-	}
 
-	// Run all actors scripts main function to start them off.
-	if err := s.canvas.InstallScripts(); err != nil {
-		log.Error("Error running actor main() functions: %s", err)
+	// Title screen level to load.
+	if lvl, err := level.LoadFile("example1.level"); err == nil {
+		s.canvas.LoadLevel(d.Engine, lvl)
+		s.canvas.InstallActors(lvl.Actors)
+
+		// Load all actor scripts.
+		if err := s.scripting.InstallScripts(lvl); err != nil {
+			log.Error("Error with title screen level scripts: %s", err)
+		}
+
+		// Run all actors scripts main function to start them off.
+		if err := s.canvas.InstallScripts(); err != nil {
+			log.Error("Error running actor main() functions: %s", err)
+		}
+	} else {
+		log.Error("Error loading title-screen.level: %s", err)
 	}
 
 	return nil
