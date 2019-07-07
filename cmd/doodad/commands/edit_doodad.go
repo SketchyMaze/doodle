@@ -17,6 +17,10 @@ func init() {
 		Usage:     "update metadata for a Doodad file",
 		ArgsUsage: "<filename.doodad>",
 		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "quiet, q",
+				Usage: "limit output (don't show doodad data at the end)",
+			},
 			cli.StringFlag{
 				Name:  "title",
 				Usage: "set the doodad title",
@@ -70,7 +74,7 @@ func editDoodad(c *cli.Context, filename string) error {
 		return fmt.Errorf("Failed to load %s: %s", filename, err)
 	}
 
-	log.Info("File: %s", filename)
+	log.Info("Edit Doodad: %s", filename)
 
 	/***************************
 	* Update level properties *
@@ -118,6 +122,10 @@ func editDoodad(c *cli.Context, filename string) error {
 		}
 	} else {
 		log.Warn("Note: No changes made to level")
+	}
+
+	if c.Bool("quiet") {
+		return nil
 	}
 
 	return showDoodad(c, filename)

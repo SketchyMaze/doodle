@@ -126,7 +126,7 @@ func (d *Doodad) WriteFile(filename string) error {
 
 	// Desktop: write to disk.
 	filename = userdir.DoodadPath(filename)
-	log.Info("Write Doodad: %s", filename)
+	log.Debug("Write Doodad: %s", filename)
 	err = ioutil.WriteFile(filename, bin, 0644)
 	if err != nil {
 		return fmt.Errorf("doodads.WriteFile: %s", err)

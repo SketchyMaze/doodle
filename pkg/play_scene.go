@@ -175,7 +175,12 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
 	}
 
-	d.Flash("Entered Play Mode. Press 'E' to edit this map.")
+	if s.CanEdit {
+		d.Flash("Entered Play Mode. Press 'E' to edit this map.")
+	} else {
+		d.Flash("%s", s.Level.Title)
+	}
+
 	s.running = true
 
 	return nil

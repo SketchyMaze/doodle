@@ -98,6 +98,7 @@ azulians() {
 
 	doodad convert -t "Blue Azulian" blu-front.png blu-back.png \
 		blu-wr{1,2,3,4}.png blu-wl{1,2,3,4}.png azu-blu.doodad
+	doodad edit-doodad -hide azu-blu.doodad
 	doodad install-script azulian.js azu-blu.doodad
 
 	doodad convert -t "Red Azulian" red-front.png red-back.png \
@@ -126,3 +127,4 @@ doors
 trapdoors
 azulians
 objects
+doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad

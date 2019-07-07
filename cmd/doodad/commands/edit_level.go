@@ -18,6 +18,10 @@ func init() {
 		Usage:     "update metadata for a Level file",
 		ArgsUsage: "<filename.level>",
 		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "quiet, q",
+				Usage: "limit output (don't show doodad data at the end)",
+			},
 			cli.StringFlag{
 				Name:  "title",
 				Usage: "set the level title",
@@ -150,6 +154,10 @@ func editLevel(c *cli.Context, filename string) error {
 		}
 	} else {
 		log.Warn("Note: No changes made to level")
+	}
+
+	if c.Bool("quiet") {
+		return nil
 	}
 
 	return showLevel(c, filename)
