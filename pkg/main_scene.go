@@ -40,34 +40,40 @@ func (s *MainScene) Setup(d *Doodle) error {
 	frame := ui.NewFrame("frame")
 	s.frame = frame
 
-	button1 := ui.NewButton("Button1", ui.NewLabel(ui.Label{
-		Text: "New Map",
-		Font: balance.StatusFont,
-	}))
-	button1.Handle(ui.Click, func(p render.Point) {
-		d.GotoNewMenu()
-	})
-
-	button2 := ui.NewButton("Button2", ui.NewLabel(ui.Label{
-		Text: "Load Map",
-		Font: balance.StatusFont,
-	}))
-	button2.Handle(ui.Click, func(p render.Point) {
-		d.GotoLoadMenu()
-	})
-
-	frame.Pack(button1, ui.Pack{
-		Anchor: ui.N,
-		Fill:   true,
-	})
-	frame.Pack(button2, ui.Pack{
-		Anchor: ui.N,
-		PadY:   12,
-		Fill:   true,
-	})
-
-	s.Supervisor.Add(button1)
-	s.Supervisor.Add(button2)
+	var buttons = []struct {
+		Name string
+		Func func()
+	}{
+		{
+			Name: "Play a Level",
+			Func: d.GotoPlayMenu,
+		},
+		{
+			Name: "Create a New Level",
+			Func: d.GotoNewMenu,
+		},
+		{
+			Name: "Edit a Level",
+			Func: d.GotoLoadMenu,
+		},
+	}
+	for _, button := range buttons {
+		button := button
+		btn := ui.NewButton(button.Name, ui.NewLabel(ui.Label{
+			Text: button.Name,
+			Font: balance.StatusFont,
+		}))
+		btn.Handle(ui.Click, func(p render.Point) {
+			button.Func()
+		})
+		s.Supervisor.Add(btn)
+		frame.Pack(btn, ui.Pack{
+			Anchor: ui.N,
+			PadY:   8,
+			// Fill:   true,
+			FillX: true,
+		})
+	}
 
 	return nil
 }

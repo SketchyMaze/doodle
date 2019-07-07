@@ -211,6 +211,11 @@ func (c Color) DecodeMsgpack(dec *msgpack.Decoder) error {
 // 	return nil
 // }
 
+// IsZero returns if the color is all zeroes (invisible).
+func (c Color) IsZero() bool {
+	return c.Red+c.Green+c.Blue+c.Alpha == 0
+}
+
 // Add a relative color value to the color.
 func (c Color) Add(r, g, b, a int) Color {
 	var (
@@ -235,6 +240,16 @@ func (c Color) Add(r, g, b, a int) Color {
 		Blue:  cap8(B),
 		Alpha: cap8(A),
 	}
+}
+
+// AddColor adds another Color to your Color.
+func (c Color) AddColor(other Color) Color {
+	return c.Add(
+		int(other.Red),
+		int(other.Green),
+		int(other.Blue),
+		int(other.Alpha),
+	)
 }
 
 // Lighten a color value.

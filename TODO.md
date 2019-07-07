@@ -47,8 +47,8 @@
 - [x] Buttons
   - [x] Press Button
   - [x] Sticky Button
-- [ ] Switches
-- [ ] Doors
+- [x] Switches (4 varieties)
+- [x] Doors
   - [x] Locked Doors and Keys
   - [x] Electric Doors
   - [x] Trapdoors (all 4 directions)
@@ -66,6 +66,7 @@ In addition to those listed above:
     as a level goal and ends the level.
   - Doodads "Warp Door A" through "Warp Door D"
   - The campaign.json would link levels together.
+- [ ] Conveyor Belt
 
 ## New Ideas
 
@@ -75,3 +76,13 @@ In addition to those listed above:
     keys only get picked up by player characters and not "any doodad that
     touches them"
   - [ ] ``
+
+## Path to Multiplayer
+
+* Add a Player abstraction between events and player characters.
+  * Keyboard keys would update PlayerOne's state with actions (move left, right, jump, etc)
+  * Possible to have multiple local players (i.e. bound to different keyboard keys, bound to joypads, etc.)
+* A NetworkPlayer provides a Player's inputs from over a network.
+* Client/server negotiation, protocol
+  * Client can request chunks from server for local rendering.
+  * Players send inputs over network sockets.

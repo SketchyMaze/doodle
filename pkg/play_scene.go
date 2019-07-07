@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -114,6 +115,17 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.drawing.MoveTo(render.Origin)
 	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
 	s.drawing.Compute(d.Engine)
+
+	// Handler when an actor touches water or fire.
+	s.drawing.OnLevelCollision = func(a *uix.Actor, col *collision.Collide) {
+		if col.InFire {
+			a.Canvas.MaskColor = render.Black
+		} else if col.InWater {
+			a.Canvas.MaskColor = render.DarkBlue
+		} else {
+			a.Canvas.MaskColor = render.Invisible
+		}
+	}
 
 	// Given a filename or map data to play?
 	if s.Level != nil {

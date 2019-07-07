@@ -114,6 +114,9 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 		limit.Y = S.H
 	}
 
+	limit.X += size.W
+	limit.Y += size.H
+
 	// Tile the repeat texture.
 	for x := origin.X - size.W; x < limit.X; x += size.W {
 		for y := origin.Y - size.H; y < limit.Y; y += size.H {

@@ -161,7 +161,12 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 	for px := range c.Iter() {
 		var color = px.Swatch.Color
 		if mask != render.Invisible {
-			color = mask
+			// A semi-transparent mask will overlay on top of the actual color.
+			if mask.Alpha < 255 {
+				color = color.AddColor(mask)
+			} else {
+				color = mask
+			}
 		}
 		img.Set(
 			int(px.X-pointOffset.X),

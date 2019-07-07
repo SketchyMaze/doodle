@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -74,6 +75,9 @@ type Canvas struct {
 	// of the two actors.
 	OnLinkActors func(a, b *Actor)
 	linkFirst    *Actor
+
+	// Collision handlers for level geometry.
+	OnLevelCollision func(*Actor, *collision.Collide)
 
 	/********
 	 * Editable canvas private variables.

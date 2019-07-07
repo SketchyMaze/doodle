@@ -76,10 +76,10 @@ The major milestones of the game are roughly:
   * Colors are not tied to behaviors. Each "Swatch" on the palette has its own
     color and a set of boolean flags for `solid`, `fire` and `water` behaviors.
   * [ ] User interface to edit (add/remove) swatches from the palette.
-* [ ] A Toolbox window with radio buttons to select between various drawing tools.
+* [x] A Toolbox window with radio buttons to select between various drawing tools.
   * [x] Pencil (the default) draws single pixels on the level.
-  * [ ] Rectangle would draw a rectangular outline.
-  * [ ] Line would draw a line from point to point.
+  * [x] Rectangle would draw a rectangular outline.
+  * [x] Line would draw a line from point to point.
 * [ ] A way to adjust brush properties:
   * [ ] Brush size, shape (round or square).
 * [ ] Tools to toggle "layers" of visibility into your level:
@@ -98,11 +98,11 @@ The major milestones of the game are roughly:
 
 For creating Doodads in particular:
 
-* [ ] Make a way to enter Edit Mode in either "Level Mode" or "Doodad Mode",
+* [x] Make a way to enter Edit Mode in either "Level Mode" or "Doodad Mode",
   i.e. by a "New Level" or "New Doodad" button.
 * [ ] Create a "frame manager" window to see and page between the frames of the
   drawing.
-* [ ] Ability to work on canvases with constrained size (including smaller than
+* [x] Ability to work on canvases with constrained size (including smaller than
   your window). This will use a Canvas widget in the UI toolkit as an abstraction
   layer. Small canvases will be useful for drawing doodads of a fixed size.
 

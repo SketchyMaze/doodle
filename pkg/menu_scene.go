@@ -36,6 +36,9 @@ type MenuScene struct {
 	// Values for the New menu
 	newPageType  string
 	newWallpaper string
+
+	// Values for the Load/Play menu.
+	loadForPlay bool // false = load for edit
 }
 
 // Name of the scene.
@@ -54,9 +57,20 @@ func (d *Doodle) GotoNewMenu() {
 
 // GotoLoadMenu loads the MenuScene and shows the "Load" window.
 func (d *Doodle) GotoLoadMenu() {
-	log.Info("Loading the MenuScene to the Load window")
+	log.Info("Loading the MenuScene to the Load window for Edit Mode")
 	scene := &MenuScene{
 		StartupMenu: "load",
+	}
+	d.Goto(scene)
+}
+
+// GotoPlayMenu loads the MenuScene and shows the "Load" window for playing a
+// level, not editing it.
+func (d *Doodle) GotoPlayMenu() {
+	log.Info("Loading the MenuScene to the Load window for Play Mode")
+	scene := &MenuScene{
+		StartupMenu: "load",
+		loadForPlay: true,
 	}
 	d.Goto(scene)
 }
@@ -358,7 +372,11 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 					Font: balance.MenuFont,
 				}))
 				btn.Handle(ui.Click, func(p render.Point) {
-					d.EditFile(lvl)
+					if s.loadForPlay {
+						d.PlayLevel(lvl)
+					} else {
+						d.EditFile(lvl)
+					}
 				})
 				s.Supervisor.Add(btn)
 				lvlRow.Pack(btn, ui.Pack{
@@ -383,7 +401,9 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 		 * Frame for selecting User Doodads
 		 ******************/
 
-		if !balance.FreeVersion {
+		// Doodads not shown if we're loading a map to play, nor are they
+		// available to the free version.
+		if !s.loadForPlay && !balance.FreeVersion {
 			label2 := ui.NewLabel(ui.Label{
 				Text: "Doodads",
 				Font: balance.LabelFont,

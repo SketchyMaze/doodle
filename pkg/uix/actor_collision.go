@@ -77,6 +77,9 @@ func (w *Canvas) loopActorCollision() error {
 			info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
 			if ok {
 				// Collision happened with world.
+				if w.OnLevelCollision != nil {
+					w.OnLevelCollision(a, info)
+				}
 			}
 			delta = info.MoveTo // Move us back where the collision check put us
 

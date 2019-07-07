@@ -23,6 +23,10 @@ type Collide struct {
 	BottomPoint render.Point
 	BottomPixel *level.Swatch
 	MoveTo      render.Point
+
+	// Swatch attributes affecting the collision at this time.
+	InFire  bool
+	InWater bool
 }
 
 // Reset a Collide struct flipping all the bools off, but keeping MoveTo.
@@ -196,7 +200,8 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 
 // IsColliding returns whether any sort of collision has occurred.
 func (c *Collide) IsColliding() bool {
-	return c.Top || c.Bottom || c.Left || c.Right
+	return c.Top || c.Bottom || c.Left || c.Right ||
+		c.InFire || c.InWater
 }
 
 // ScanBoundingBox scans all of the pixels in a bounding box on the grid and
@@ -235,21 +240,39 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 // bounding boxes of the doodad.
 func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
 	for point := range render.IterLine2(p1, p2) {
-		if _, err := grid.Get(point); err == nil {
-			// A hit!
+		if swatch, err := grid.Get(point); err == nil {
+			// We're intersecting a pixel! If it's a solid one we'll return it
+			// in our result. If non-solid, we'll collect attributes from it
+			// and return them in the final result for gameplay behavior.
+			if swatch.Fire {
+				c.InFire = true
+			}
+			if swatch.Water {
+				c.InWater = true
+			}
+
+			// Non-solid swatches don't collide so don't pay them attention.
+			if !swatch.Solid {
+				continue
+			}
+
 			switch side {
 			case Top:
 				c.Top = true
 				c.TopPoint = point
+				c.TopPixel = swatch
 			case Bottom:
 				c.Bottom = true
 				c.BottomPoint = point
+				c.BottomPixel = swatch
 			case Left:
 				c.Left = true
 				c.LeftPoint = point
+				c.LeftPixel = swatch
 			case Right:
 				c.Right = true
 				c.RightPoint = point
+				c.RightPixel = swatch
 			}
 		}
 	}
