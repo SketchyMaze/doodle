@@ -34,9 +34,6 @@ var (
 	// Set to a color other than Invisible to force the uix.Canvas to color ALL
 	// Stroke pixels in this color.
 	DebugCanvasStrokeColor = render.Invisible
-
-	// Pretty-print JSON files when writing.
-	JSONIndent = true
 )
 
 func init() {

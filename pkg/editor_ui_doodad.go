@@ -126,14 +126,33 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 	var buttonSize = (paletteWidth - window.BoxThickness(2)) / int32(perRow)
 	u.doodadButtonSize = buttonSize
 
+	// Load all the doodads, skip hidden ones.
+	var items []*doodads.Doodad
+	for _, filename := range doodadsAvailable {
+		doodad, err := doodads.LoadFile(filename)
+		if err != nil {
+			log.Error(err.Error())
+			doodad = doodads.New(balance.DoodadSize)
+		}
+
+		// Skip hidden doodads.
+		if doodad.Hidden && !balance.ShowHiddenDoodads {
+			log.Info("skip %s: hidden doodad", filename)
+			continue
+		}
+
+		doodad.Filename = filename
+		items = append(items, doodad)
+	}
+
 	// Draw the doodad buttons in a grid `perRow` buttons wide.
 	var (
 		row      *ui.Frame
 		rowCount int             // for labeling the ui.Frame for each row
 		btnRows  = []*ui.Frame{} // Collect the row frames for the buttons.
 	)
-	for i, filename := range doodadsAvailable {
-		filename := filename
+	for i, doodad := range items {
+		doodad := doodad
 
 		if row == nil || i%perRow == 0 {
 			rowCount++
@@ -146,18 +165,12 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			})
 		}
 
-		doodad, err := doodads.LoadFile(filename)
-		if err != nil {
-			log.Error(err.Error())
-			doodad = doodads.New(balance.DoodadSize)
-		}
-
 		can := uix.NewCanvas(int(buttonSize), true)
-		can.Name = filename
+		can.Name = doodad.Title
 		can.SetBackground(render.White)
 		can.LoadDoodad(doodad)
 
-		btn := ui.NewButton(filename, can)
+		btn := ui.NewButton(doodad.Title, can)
 		btn.Resize(render.NewRect(
 			buttonSize-2, // TODO: without the -2 the button border
 			buttonSize-2, // rests on top of the window border.

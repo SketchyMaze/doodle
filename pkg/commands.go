@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"github.com/robertkrimen/otto"
 )
@@ -201,8 +202,19 @@ func (c Command) Quit() error {
 
 // BoolProp command sets available boolean variables.
 func (c Command) BoolProp(d *Doodle) error {
+	if len(c.Args) == 1 {
+		// Showing the value of a boolProp. Only supported for those defined
+		// in balance/boolprops.go
+		value, err := balance.GetBoolProp(c.Args[0])
+		if err != nil {
+			return err
+		}
+		d.Flash("%s: %+v", c.Args[0], value)
+		return nil
+	}
+
 	if len(c.Args) != 2 {
-		return errors.New("Usage: boolProp <name> <true or false>")
+		return errors.New("Usage: boolProp <name> [true or false]")
 	}
 
 	var (
@@ -229,7 +241,12 @@ func (c Command) BoolProp(d *Doodle) error {
 	if ok {
 		d.Flash("Set boolProp %s=%s", name, strconv.FormatBool(truthy))
 	} else {
-		d.Flash("Unknown boolProp name %s", name)
+		// Try the global boolProps in balance package.
+		if err := balance.BoolProp(name, truthy); err != nil {
+			d.Flash("%s", err)
+		} else {
+			d.Flash("%s: %+v", name, truthy)
+		}
 	}
 
 	return nil

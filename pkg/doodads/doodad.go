@@ -10,6 +10,7 @@ import (
 type Doodad struct {
 	level.Base
 	Filename string            `json:"-"` // used internally, not saved in json
+	Hidden   bool              `json:"hidden,omitempty"`
 	Palette  *level.Palette    `json:"palette"`
 	Script   string            `json:"script"`
 	Layers   []Layer           `json:"layers"`

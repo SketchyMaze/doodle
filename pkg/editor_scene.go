@@ -8,6 +8,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -86,6 +87,18 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			}
 		}
 
+		// Write locked level?
+		if s.Level != nil && s.Level.Locked {
+			if balance.WriteLockOverride {
+				d.Flash("Note: write lock has been overridden")
+			} else {
+				d.Flash("That level is write-protected and cannot be viewed in the editor.")
+				s.Level = nil
+				s.UI.Canvas.ClearActors()
+				s.filename = ""
+			}
+		}
+
 		// No level?
 		if s.Level == nil {
 			log.Debug("EditorScene.Setup: initializing a new Level")
@@ -96,11 +109,22 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			s.UI.Canvas.Scrollable = true
 		}
 	case enum.DoodadDrawing:
-		// No Doodad?
+		// Getting a doodad from file?
 		if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading doodad from filename at %s", s.filename)
 			if err := s.LoadDoodad(s.filename); err != nil {
 				d.Flash("LoadDoodad error: %s", err)
+			}
+		}
+
+		// Write locked doodad?
+		if s.Doodad != nil && s.Doodad.Locked {
+			if balance.WriteLockOverride {
+				d.Flash("Note: write lock has been overridden")
+			} else {
+				d.Flash("That doodad is write-protected and cannot be viewed in the editor.")
+				s.Doodad = nil
+				s.filename = ""
 			}
 		}
 

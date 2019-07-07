@@ -52,6 +52,9 @@ func main() {
 
 	app.Commands = []cli.Command{
 		commands.Convert,
+		commands.Show,
+		commands.EditLevel,
+		commands.EditDoodad,
 		commands.InstallScript,
 	}
 

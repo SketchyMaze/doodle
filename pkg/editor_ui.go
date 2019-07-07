@@ -243,7 +243,7 @@ func (u *EditorUI) Loop(ev *events.State) error {
 		)
 
 		// Statusbar filename label.
-		filename := "untitled.map"
+		filename := "untitled.level"
 		fileType := "Level"
 		if u.Scene.filename != "" {
 			filename = u.Scene.filename

@@ -21,16 +21,16 @@ type Base struct {
 	GameVersion string `json:"gameVersion" msgpack:"1"` // Game version that created the level.
 	Title       string `json:"title" msgpack:"2"`
 	Author      string `json:"author" msgpack:"3"`
+	Locked      bool   `json:"locked" msgpack:"4"`
 
 	// Every drawing type is able to embed other files inside of itself.
-	Files FileSystem `json:"files" msgpack:"4"`
+	Files FileSystem `json:"files" msgpack:"5"`
 }
 
 // Level is the container format for Doodle map drawings.
 type Level struct {
 	Base
 	Password string `json:"passwd" msgpack:"10"`
-	Locked   bool   `json:"locked" msgpack:"11"`
 
 	// Chunked pixel data.
 	Chunker *Chunker `json:"chunks" msgpack:"12"`

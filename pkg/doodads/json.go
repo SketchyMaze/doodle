@@ -7,13 +7,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"git.kirsle.net/apps/doodle/pkg/balance"
 )
 
 // ToJSON serializes the doodad as JSON.
 func (d *Doodad) ToJSON() ([]byte, error) {
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
-	encoder.SetIndent("", "\t")
+	if balance.JSONIndent {
+		encoder.SetIndent("", "\t")
+	}
 	err := encoder.Encode(d)
 	return out.Bytes(), err
 }

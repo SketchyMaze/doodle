@@ -1,5 +1,36 @@
 package render
 
+import (
+	"fmt"
+	"regexp"
+	"strconv"
+)
+
+var regexpResolution = regexp.MustCompile(`^(\d+)x(\d+)$`)
+
+// ParseResolution turns a resolution string like "1024x768" and returns the
+// width and height values.
+func ParseResolution(resi string) (int, int, error) {
+	m := regexpResolution.FindStringSubmatch(resi)
+	if m == nil {
+		return 0, 0, fmt.Errorf("invalid resolution format, should be %s",
+			regexpResolution.String(),
+		)
+	}
+
+	width, err := strconv.Atoi(m[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	height, err := strconv.Atoi(m[2])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return width, height, nil
+}
+
 // TrimBox helps with Engine.Copy() to trim a destination box so that it
 // won't overflow with the parent container.
 func TrimBox(src, dst *Rect, p Point, S Rect, thickness int32) {

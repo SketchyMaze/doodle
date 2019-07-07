@@ -2,6 +2,7 @@ package level
 
 import (
 	"fmt"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/lib/render"
 )
@@ -42,6 +43,32 @@ func (s Swatch) String() string {
 		return s.Color.String()
 	}
 	return s.Name
+}
+
+// Attributes returns a comma-separated list of attributes as a string on
+// this swatch. This is for debugging and the `doodad show` CLI command to
+// summarize the swatch and shouldn't be used for game logic.
+func (s *Swatch) Attributes() string {
+	var result string
+
+	if s.Solid {
+		result += "solid,"
+	}
+	if s.Fire {
+		result += "fire,"
+	}
+	if s.Water {
+		result += "water,"
+	}
+	if s.isSparse {
+		result += "sparse,"
+	}
+
+	if result == "" {
+		result = "none,"
+	}
+
+	return strings.TrimSuffix(result, ",")
 }
 
 // IsSparse returns whether this Swatch is sparse (has only a palette index) and

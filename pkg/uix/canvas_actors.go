@@ -31,6 +31,11 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	return nil
 }
 
+// ClearActors removes all the actors from the Canvas.
+func (w *Canvas) ClearActors() {
+	w.actors = []*Actor{}
+}
+
 // SetScriptSupervisor assigns the Canvas scripting supervisor to enable
 // interaction with actor scripts.
 func (w *Canvas) SetScriptSupervisor(s *scripting.Supervisor) {
