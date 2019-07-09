@@ -1,6 +1,19 @@
 # Project: Doodle (Working Title)
 
-Project: Doodle is a drawing-based maze game written in Go.
+> **Homepage:** https://www.kirsle.net/doodle
+
+Doodle is a drawing-based maze game.
+
+The theme of Doodle is centered around hand-drawn, side-scrolling platformer
+type mazes. You can draw your own levels using freehand and basic drawing tools,
+color in some fire or water, and drag in pre-made "Doodads" like buttons, keys
+and doors to add some interaction to your level.
+
+This is a _very_ early pre-release version of the game. Expect bugs and slowness
+but get a general gist of what the game is about.
+
+This alpha release of the game comes with two example levels built-in for
+playing or editing and a handful of built-in Doodads.
 
 # Features
 
@@ -86,7 +99,7 @@ Ctrl-Y
 A brief introduction to the built-in doodads available so far:
 
 - **Characters**
-  - Blue Azulian: this is used as the play character for now. If
+  - Blue Azulian: this is used as the player character for now. If
     dragged into a level, it doesn't do anything but is affected
     by gravity.
   - Red Azulian: an example mobile mob for now. It walks back and
@@ -112,6 +125,12 @@ A brief introduction to the built-in doodads available so far:
     will not release unless it receives a power signal from another
     linked doodad. For example, one Button that links to a Sticky
     Button will release the sticky button if pressed.
+- **Switches**
+  - Switch: when touched by the player or other doodad, the switch will
+    toggle its state from "OFF" to "ON" or vice versa. Link it to an
+    Electric Door to open/close the door. Link switches _to each other_ as
+    well as to a door, and all switches will stay in sync with their ON/OFF
+    state when any switch is pressed.
 
 ## Developer Console
 
@@ -120,6 +139,9 @@ Press `Enter` at any time to open the developer console.
 Commands supported:
 
 ```
+close
+  Exit to the game's title screen.
+
 new
   Show the "New Level" screen to start editing a new map.
 
@@ -144,13 +166,11 @@ quit
   Close the developer console.
 ```
 
-# Building
+# Known Bugs
 
-Fedora dependencies:
-
-```bash
-$ sudo dnf install SDL2-devel SDL2_ttf-devel
-```
+* In an **Unbounded** map, the game will sometimes spaz out in Play Mode when
+  the character moves into negative coordinates (off the top or left edge of
+  the level). Stick with only "Bounded" and "No Negative Space" levels instead.
 
 # Author
 

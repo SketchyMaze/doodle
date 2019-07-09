@@ -81,6 +81,16 @@ mingw: doodads bindata
 			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 			go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
+# `make mingw-free` for Windows binary in free mode.
+.PHONY: mingw-free
+mingw-free: doodads bindata
+	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS_W) -i -o bin/doodle.exe cmd/doodle/main.go
+		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+			go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad.exe cmd/doodad/main.go
+
 
 
 # `make run` to run it in debug mode.
@@ -100,10 +110,18 @@ test:
 
 # `make dist` builds and tars up a release.
 .PHONY: dist
-dist: doodads bindata build
+dist: doodads bindata build __dist-common
+
+# `make dist-free` builds and tars up a release in shareware mode.
+.PHONY: dist-free
+dist-free: doodads bindata build-free __dist-common
+
+# Common logic behind `make dist`
+.PHONY: __dist-common
+__dist-common:
 	mkdir -p dist/doodle-$(VERSION)
 	cp bin/* dist/doodle-$(VERSION)/
-	cp -r README.md dist/doodle-$(VERSION)/
+	cp -r README.md "Open Source Licenses.md" dist/doodle-$(VERSION)/
 	cd dist && tar -czvf doodle-$(VERSION).tar.gz doodle-$(VERSION)
 	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
 
