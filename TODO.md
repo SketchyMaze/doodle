@@ -14,7 +14,7 @@
 **UI Cleanup:**
 
 - Doodads Palette:
-  - [ ] Hide some doodads like the player character.
+  - [x] Hide some doodads like the player character.
   - [x] Pagination or scrolling UI for long lists of doodads.
 
 **Nice to haves:**
@@ -31,9 +31,9 @@
   - [ ] Eraser Tool
   - [ ] Brush size and/or shape
 - [ ] Doodad CLI Tool Features
-  - [ ] `doodad show` to display information about a level or doodad.
+  - [x] `doodad show` to display information about a level or doodad.
   - [ ] `doodad init` or some such to generate a default JS script.
-  - [ ] Options to toggle various states (hidden, hasInventory?)
+  - [x] Options to toggle various states (hidden, hasInventory?)
 
 **Shareware Version:**
 

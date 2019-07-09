@@ -1,5 +1,9 @@
 # Building Doodle
 
+* [Linux](#linux)
+* [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
+* [Mac OS](#mac os)
+
 ## Fonts
 
 The `fonts/` folder is git-ignored. The app currently uses font files here
@@ -84,6 +88,12 @@ sudo dnf -y install golang SDL2-devel SDL2_ttf-devel
 
 # Ubuntu and Debian
 sudo apt -y install golang libsdl2-dev libsdl2-ttf-dev
+```
+
+## Mac OS
+
+```bash
+brew install golang sdl2 sdl2_ttf pkg-config
 ```
 
 ## Windows Cross-Compile from Linux

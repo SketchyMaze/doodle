@@ -2,11 +2,12 @@ SHELL := /bin/bash
 
 VERSION=$(shell grep -e 'Version =' pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2)
 BUILD=$(shell git describe --always)
-BUILD_DATE=$(shell date -Iseconds)
+BUILD_DATE=$(shell date +"%Y-%m-%dT%H:%M:%S%z")
 CURDIR=$(shell curdir)
 
 # Inject the build version (commit hash) into the executable.
 LDFLAGS := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE)"
+LDFLAGS_W := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE) -H windowsgui"
 
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup
@@ -75,7 +76,7 @@ doodads:
 mingw: doodads bindata
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) -i -o bin/doodle.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) -i -o bin/doodle.exe cmd/doodle/main.go
 		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 			go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
