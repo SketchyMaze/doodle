@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Project: Doodle
+GenericName=Project Doodle
+X-GNOME-FullName=Project: Doodle - A drawing-based maze game
+Comment=A drawing-based maze game.
+Exec=/opt/project-doodle/doodle
+Icon=project-doodle
+StartupNotify=true
+Keywords=game;maze;
+Categories=Game;

@@ -86,7 +86,7 @@ mingw: doodads bindata
 mingw-free: doodads bindata
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -i -o bin/doodle.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/doodle.exe cmd/doodle/main.go
 		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 			go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad.exe cmd/doodad/main.go
