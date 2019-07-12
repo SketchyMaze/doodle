@@ -52,6 +52,14 @@ var (
 		Color:        render.Black,
 	}
 
+	// SmallMonoFont for cramped spaces like the +/- buttons on Toolbar.
+	SmallMonoFont = render.Text{
+		Size:         14,
+		PadX:         3,
+		FontFilename: "DejaVuSansMono.ttf",
+		Color:        render.Black,
+	}
+
 	// Color for draggable doodad.
 	DragColor = render.MustHexColor("#0099FF")
 

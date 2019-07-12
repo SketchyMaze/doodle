@@ -27,6 +27,22 @@ var (
 
 	// Size of Undo/Redo history for map editor.
 	UndoHistory = 20
+
+	// Options for brush size.
+	BrushSizeOptions = []int{
+		0,
+		1,
+		2,
+		4,
+		8,
+		16,
+		24,
+		32,
+		48,
+		64,
+	}
+	DefaultEraserBrushSize = 8
+	MaxEraserBrushSize     = 32 // the bigger, the slower
 )
 
 // Edit Mode Values

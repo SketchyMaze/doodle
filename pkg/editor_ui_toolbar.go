@@ -3,8 +3,8 @@ package doodle
 import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/sprites"
 )
 
@@ -27,6 +27,18 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Anchor: ui.N,
 	})
 
+	// Helper functions to toggle the correct palette panel.
+	var (
+		showSwatchPalette = func() {
+			u.DoodadTab.Hide()
+			u.PaletteTab.Show()
+		}
+		showDoodadPalette = func() {
+			u.PaletteTab.Hide()
+			u.DoodadTab.Show()
+		}
+	)
+
 	// Buttons.
 	var buttons = []struct {
 		Value string
@@ -38,8 +50,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:  "assets/sprites/pencil-tool.png",
 			Click: func() {
 				u.Canvas.Tool = drawtool.PencilTool
-				u.DoodadTab.Hide()
-				u.PaletteTab.Show()
+				showSwatchPalette()
 				d.Flash("Pencil Tool selected.")
 			},
 		},
@@ -49,8 +60,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:  "assets/sprites/line-tool.png",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LineTool
-				u.DoodadTab.Hide()
-				u.PaletteTab.Show()
+				showSwatchPalette()
 				d.Flash("Line Tool selected.")
 			},
 		},
@@ -60,8 +70,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:  "assets/sprites/rect-tool.png",
 			Click: func() {
 				u.Canvas.Tool = drawtool.RectTool
-				u.DoodadTab.Hide()
-				u.PaletteTab.Show()
+				showSwatchPalette()
 				d.Flash("Rectangle Tool selected.")
 			},
 		},
@@ -71,8 +80,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:  "assets/sprites/actor-tool.png",
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
-				u.PaletteTab.Hide()
-				u.DoodadTab.Show()
+				showDoodadPalette()
 				d.Flash("Actor Tool selected. Drag a Doodad from the drawer into your level.")
 			},
 		},
@@ -82,9 +90,26 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:  "assets/sprites/link-tool.png",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
-				u.PaletteTab.Hide()
-				u.DoodadTab.Show()
+				showDoodadPalette()
 				d.Flash("Link Tool selected. Click a doodad in your level to link it to another.")
+			},
+		},
+
+		{
+			Value: drawtool.EraserTool.String(),
+			Icon:  "assets/sprites/eraser-tool.png",
+			Click: func() {
+				u.Canvas.Tool = drawtool.EraserTool
+
+				// Set the brush size within range for the eraser.
+				if u.Canvas.BrushSize < balance.DefaultEraserBrushSize {
+					u.Canvas.BrushSize = balance.DefaultEraserBrushSize
+				} else if u.Canvas.BrushSize > balance.MaxEraserBrushSize {
+					u.Canvas.BrushSize = balance.MaxEraserBrushSize
+				}
+
+				showSwatchPalette()
+				d.Flash("Eraser Tool selected.")
 			},
 		},
 	}
@@ -103,7 +128,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		)
 
 		var btnSize int32 = btn.BoxThickness(2) + toolbarSpriteSize
-		log.Info("BtnSize: %d", btnSize)
 		btn.Resize(render.NewRect(btnSize, btnSize))
 
 		btn.Handle(ui.Click, func(p render.Point) {
@@ -115,6 +139,102 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Anchor: ui.N,
 			PadY:   2,
 		})
+	}
+
+	// Spacer frame.
+	frame.Pack(ui.NewFrame("spacer"), ui.Pack{
+		Anchor: ui.N,
+		PadY:   8,
+	})
+
+	// "Brush Size" label
+	bsLabel := ui.NewLabel(ui.Label{
+		Text: "Size:",
+		Font: balance.LabelFont,
+	})
+	frame.Pack(bsLabel, ui.Pack{
+		Anchor: ui.N,
+	})
+
+	// Brush Size widget
+	{
+		sizeFrame := ui.NewFrame("Brush Size Frame")
+		frame.Pack(sizeFrame, ui.Pack{
+			Anchor: ui.N,
+			PadY:   0,
+		})
+
+		sizeLabel := ui.NewLabel(ui.Label{
+			IntVariable: &u.Canvas.BrushSize,
+			Font:        balance.SmallMonoFont,
+		})
+		sizeLabel.Configure(ui.Config{
+			BorderSize:  1,
+			BorderStyle: ui.BorderSunken,
+			Background:  render.Grey,
+		})
+		sizeFrame.Pack(sizeLabel, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+			PadY:   2,
+		})
+
+		sizeBtnFrame := ui.NewFrame("Size Increment Button Frame")
+		sizeFrame.Pack(sizeBtnFrame, ui.Pack{
+			Anchor: ui.N,
+			FillX:  true,
+		})
+
+		var incButtons = []struct {
+			Label string
+			F     func()
+		}{
+			{
+				Label: "-",
+				F: func() {
+					// Select next smaller brush size.
+					for i := len(balance.BrushSizeOptions) - 1; i >= 0; i-- {
+						if balance.BrushSizeOptions[i] < u.Canvas.BrushSize {
+							u.Canvas.BrushSize = balance.BrushSizeOptions[i]
+							break
+						}
+					}
+				},
+			},
+			{
+				Label: "+",
+				F: func() {
+					// Select next bigger brush size.
+					for _, size := range balance.BrushSizeOptions {
+						if size > u.Canvas.BrushSize {
+							u.Canvas.BrushSize = size
+							break
+						}
+					}
+
+					// Limit the eraser brush size, too big and it's slow because
+					// the eraser has to scan and remember pixels to be able to
+					// Undo the erase and restore them.
+					if u.Canvas.Tool == drawtool.EraserTool && u.Canvas.BrushSize > balance.MaxEraserBrushSize {
+						u.Canvas.BrushSize = balance.MaxEraserBrushSize
+					}
+				},
+			},
+		}
+		for _, button := range incButtons {
+			button := button
+			btn := ui.NewButton("BrushSize"+button.Label, ui.NewLabel(ui.Label{
+				Text: button.Label,
+				Font: balance.SmallMonoFont,
+			}))
+			btn.Handle(ui.Click, func(p render.Point) {
+				button.F()
+			})
+			u.Supervisor.Add(btn)
+			sizeBtnFrame.Pack(btn, ui.Pack{
+				Anchor: ui.W,
+			})
+		}
 	}
 
 	frame.Compute(d.Engine)

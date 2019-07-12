@@ -8,6 +8,93 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 )
 
+// commitStroke is the common function that applies a stroke the user is
+// actively drawing onto the canvas. This is for Edit Mode.
+func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
+	if w.currentStroke == nil {
+		// nothing to commit
+		return
+	}
+
+	var (
+		deleting = w.currentStroke.Shape == drawtool.Eraser
+		dedupe   = map[render.Point]interface{}{} // don't revisit the same point twice
+
+		// Helper functions to set pixels on the level while storing the original
+		// value of any pixel being replaced.
+		set = func(pt render.Point, sw *level.Swatch) {
+			// Take note of what pixel was originally here before we change it.
+			if swatch, err := w.chunks.Get(pt); err == nil {
+				if _, ok := dedupe[pt]; !ok {
+					w.currentStroke.OriginalPoints[pt] = swatch
+					dedupe[pt] = nil
+				}
+			}
+
+			if deleting {
+				w.chunks.Delete(pt)
+			} else if sw != nil {
+				w.chunks.Set(pt, sw)
+			} else {
+				panic("Canvas.commitStroke.set: current stroke has no level.Swatch in ExtraData")
+			}
+		}
+
+		// Rects: read existing pixels first, then write new pixels
+		readRect = func(rect render.Rect) {
+			for pt := range w.chunks.IterViewport(rect) {
+				point := pt.Point()
+				if _, ok := dedupe[point]; !ok {
+					w.currentStroke.OriginalPoints[pt.Point()] = pt.Swatch
+					dedupe[point] = nil
+				}
+			}
+		}
+		setRect = func(rect render.Rect, sw *level.Swatch) {
+			if deleting {
+				w.chunks.DeleteRect(rect)
+			} else if sw != nil {
+				w.chunks.SetRect(rect, sw)
+			} else {
+				panic("Canvas.commitStroke.setRect: current stroke has no level.Swatch in ExtraData")
+			}
+		}
+	)
+
+	var swatch *level.Swatch
+	if v, ok := w.currentStroke.ExtraData.(*level.Swatch); ok {
+		swatch = v
+	}
+
+	if w.currentStroke.Thickness > 0 {
+		// Eraser Tool only: record which pixels will be blown away by this.
+		// This is SLOW for thick (rect-based) lines, but eraser tool must have it.
+		if deleting {
+			for rect := range w.currentStroke.IterThickPoints() {
+				readRect(rect)
+			}
+		}
+		for rect := range w.currentStroke.IterThickPoints() {
+			setRect(rect, swatch)
+		}
+	} else {
+		for pt := range w.currentStroke.IterPoints() {
+			// note: set already records the original pixel if changing it.
+			set(pt, swatch)
+		}
+	}
+
+	// Add the stroke to level history.
+	if w.level != nil && addHistory {
+		w.level.UndoHistory.AddStroke(w.currentStroke)
+	}
+
+	w.RemoveStroke(w.currentStroke)
+	w.currentStroke = nil
+
+	w.lastPixel = nil
+}
+
 // loopEditable handles the Loop() part for editable canvases.
 func (w *Canvas) loopEditable(ev *events.State) error {
 	// Get the absolute position of the canvas on screen to accurately match
@@ -19,6 +106,14 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			Y: ev.CursorY.Now - P.Y - w.Scroll.Y,
 		}
 	)
+
+	// If the actual cursor is not over the actual Canvas UI element, don't
+	// pay any attention to clicks. I added this when I saw you were able to
+	// accidentally draw (with large brush size) when clicking on the Palette
+	// panel and not the drawing itself.
+	if !w.IsCursorOver() {
+		return nil
+	}
 
 	switch w.Tool {
 	case drawtool.PencilTool:
@@ -32,6 +127,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.AddStroke(w.currentStroke)
 			}
@@ -53,18 +149,15 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			}
 
 			// Append unique new pixels.
-			if len(w.pixelHistory) == 0 || w.pixelHistory[len(w.pixelHistory)-1] != pixel {
-				if lastPixel != nil {
-					// Draw the pixels in between.
-					if lastPixel != pixel {
-						for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
-							w.currentStroke.AddPoint(point)
-						}
+			if lastPixel != nil || lastPixel != pixel {
+				// Draw the pixels in between.
+				if lastPixel != nil && lastPixel != pixel {
+					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
+						w.currentStroke.AddPoint(point)
 					}
 				}
 
 				w.lastPixel = pixel
-				w.pixelHistory = append(w.pixelHistory, pixel)
 
 				// Save the pixel in the current stroke.
 				w.currentStroke.AddPoint(render.Point{
@@ -73,22 +166,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 				})
 			}
 		} else {
-			// Mouse released, commit the points to the drawing.
-			if w.currentStroke != nil {
-				for _, pt := range w.currentStroke.Points {
-					w.chunks.Set(pt, w.Palette.ActiveSwatch)
-				}
-
-				// Add the stroke to level history.
-				if w.level != nil {
-					w.level.UndoHistory.AddStroke(w.currentStroke)
-				}
-
-				w.RemoveStroke(w.currentStroke)
-				w.currentStroke = nil
-			}
-
-			w.lastPixel = nil
+			w.commitStroke(w.Tool, true)
 		}
 	case drawtool.LineTool:
 		// If no swatch is active, do nothing with mouse clicks.
@@ -101,6 +179,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Line, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
 				w.AddStroke(w.currentStroke)
@@ -108,20 +187,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 
 			w.currentStroke.PointB = render.NewPoint(cursor.X, cursor.Y)
 		} else {
-			// Mouse released, commit the points to the drawing.
-			if w.currentStroke != nil {
-				for pt := range render.IterLine2(w.currentStroke.PointA, w.currentStroke.PointB) {
-					w.chunks.Set(pt, w.Palette.ActiveSwatch)
-				}
-
-				// Add the stroke to level history.
-				if w.level != nil {
-					w.level.UndoHistory.AddStroke(w.currentStroke)
-				}
-
-				w.RemoveStroke(w.currentStroke)
-				w.currentStroke = nil
-			}
+			w.commitStroke(w.Tool, true)
 		}
 	case drawtool.RectTool:
 		// If no swatch is active, do nothing with mouse clicks.
@@ -134,6 +200,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Rectangle, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
 				w.AddStroke(w.currentStroke)
@@ -141,20 +208,52 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 
 			w.currentStroke.PointB = render.NewPoint(cursor.X, cursor.Y)
 		} else {
-			// Mouse released, commit the points to the drawing.
-			if w.currentStroke != nil {
-				for pt := range render.IterRect(w.currentStroke.PointA, w.currentStroke.PointB) {
-					w.chunks.Set(pt, w.Palette.ActiveSwatch)
-				}
-
-				// Add the stroke to level history.
-				if w.level != nil {
-					w.level.UndoHistory.AddStroke(w.currentStroke)
-				}
-
-				w.RemoveStroke(w.currentStroke)
-				w.currentStroke = nil
+			w.commitStroke(w.Tool, true)
+		}
+	case drawtool.EraserTool:
+		// Clicking? Log all the pixels while doing so.
+		if ev.Button1.Now {
+			// Initialize a new Stroke for this atomic drawing operation?
+			if w.currentStroke == nil {
+				// The color is white, will look like white-out that covers the
+				// wallpaper during the stroke.
+				w.currentStroke = drawtool.NewStroke(drawtool.Eraser, render.White)
+				w.currentStroke.Thickness = w.BrushSize
+				w.AddStroke(w.currentStroke)
 			}
+
+			lastPixel := w.lastPixel
+			pixel := &level.Pixel{
+				X:      cursor.X,
+				Y:      cursor.Y,
+				Swatch: w.Palette.ActiveSwatch,
+			}
+
+			// If the user is holding the mouse down over one spot and not
+			// moving, don't do anything. The pixel has already been set and
+			// needless writes to the map cause needless cache rewrites etc.
+			if lastPixel != nil {
+				if pixel.X == lastPixel.X && pixel.Y == lastPixel.Y {
+					break
+				}
+			}
+
+			// Append unique new pixels.
+			if lastPixel == nil || lastPixel != pixel {
+				if lastPixel != nil && lastPixel != pixel {
+					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
+						w.currentStroke.AddPoint(point)
+					}
+				}
+
+				w.lastPixel = pixel
+				w.currentStroke.AddPoint(render.Point{
+					X: cursor.X,
+					Y: cursor.Y,
+				})
+			}
+		} else {
+			w.commitStroke(w.Tool, true)
 		}
 	case drawtool.ActorTool:
 		// See if any of the actors are below the mouse cursor.

@@ -216,8 +216,6 @@ func (u *EditorUI) scrollDoodadFrame(rows int) {
 		u.doodadSkip = 0
 	}
 
-	log.Info("scrollDoodadFrame(%d): skip=%d", rows, u.doodadSkip)
-
 	// Calculate about how many rows we can see given our current window size.
 	var (
 		maxVisibleHeight = int32(u.d.height - 86)
@@ -233,8 +231,6 @@ func (u *EditorUI) scrollDoodadFrame(rows int) {
 		maxSkip = 0
 	}
 
-	log.Info("maxSkip = (%d * %d) - (%d * %d) = %d", len(u.doodadRows), u.doodadButtonSize, u.doodadButtonSize, rowsEstimated, maxSkip)
-	// log.Info("maxSkip: estimate=%d rows=%d - visible=%d => %d", rowsEstimated, len(u.doodadRows), rowsVisible, maxSkip)
 	if u.doodadSkip > maxSkip {
 		u.doodadSkip = maxSkip
 	}
@@ -269,6 +265,5 @@ func (u *EditorUI) scrollDoodadFrame(rows int) {
 	u.doodadScroller.Configure(ui.Config{
 		Width: int32(float64(paletteWidth-50) * viewPercent), // TODO: hacky magic number
 	})
-	log.Info("v%% = (%d + %d) / %d = %f", rowsBefore, rowsVisible, len(u.doodadRows), viewPercent)
 
 }

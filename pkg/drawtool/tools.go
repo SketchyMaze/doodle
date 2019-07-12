@@ -10,6 +10,7 @@ const (
 	RectTool
 	ActorTool // drag and move actors
 	LinkTool
+	EraserTool
 )
 
 var toolNames = []string{
@@ -18,6 +19,7 @@ var toolNames = []string{
 	"Rectangle",
 	"Doodad", // readable name for ActorTool
 	"Link",
+	"Eraser",
 }
 
 func (t Tool) String() string {

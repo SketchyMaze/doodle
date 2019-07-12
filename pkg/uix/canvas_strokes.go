@@ -48,8 +48,48 @@ func (w *Canvas) UndoStroke() bool {
 
 	latest := w.level.UndoHistory.Latest()
 	if latest != nil {
-		for point := range latest.IterPoints() {
-			w.chunks.Delete(point)
+		// TODO: only single-thickness lines will restore the original color;
+		// thick lines just delete their pixels from the world due to performance.
+		// But the Eraser Tool is always thick, which always should restore its
+		// pixels. Can't do anything about that, so the inefficient thick rect
+		// restore is used only for Eraser at least.
+		if latest.Thickness > 0 {
+			if latest.Shape == drawtool.Eraser {
+				for rect := range latest.IterThickPoints() {
+					var (
+						xMin = rect.X
+						xMax = rect.X + rect.W
+						yMin = rect.Y
+						yMax = rect.Y + rect.H
+					)
+					for x := xMin; x < xMax; x++ {
+						for y := yMin; y < yMax; y++ {
+							if v, ok := latest.OriginalPoints[render.NewPoint(x, y)]; ok {
+								if swatch, ok := v.(*level.Swatch); ok {
+									w.chunks.Set(render.NewPoint(x, y), swatch)
+								}
+							}
+						}
+					}
+				}
+			} else {
+				for rect := range latest.IterThickPoints() {
+					w.chunks.DeleteRect(rect)
+				}
+			}
+		} else {
+			for point := range latest.IterPoints() {
+				// Was there a previous swatch at this point to restore?
+				if v, ok := latest.OriginalPoints[point]; ok {
+					if swatch, ok := v.(*level.Swatch); ok {
+						w.chunks.Set(point, swatch)
+						continue
+					}
+				}
+
+				w.chunks.Delete(point)
+			}
+
 		}
 	}
 	return w.level.UndoHistory.Undo()
@@ -72,14 +112,8 @@ func (w *Canvas) RedoStroke() bool {
 
 	// We stored the ActiveSwatch on this stroke as we drew it. Recover it
 	// and place the pixels back down.
-	if swatch, ok := latest.ExtraData.(*level.Swatch); ok {
-		for point := range latest.IterPoints() {
-			w.chunks.Set(point, swatch)
-		}
-		return true
-	}
-
-	log.Error("Canvas.UndoStroke: undo was successful but no Swatch was stored on the Stroke.ExtraData!")
+	w.currentStroke = latest
+	w.commitStroke(w.Tool, false)
 
 	return ok
 }
@@ -153,6 +187,7 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 
 			// Draw a line connecting the centers of each actor together.
 			stroke := drawtool.NewStroke(drawtool.Line, color)
+			stroke.Thickness = 1
 			stroke.PointA = render.Point{
 				X: aP.X + (aS.W / 2),
 				Y: aP.Y + (aS.H / 2),
@@ -163,16 +198,6 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 			}
 
 			strokes = append(strokes, stroke)
-
-			// Make it double thick.
-			double := stroke.Copy()
-			double.PointA = render.NewPoint(stroke.PointA.X, stroke.PointA.Y+1)
-			double.PointB = render.NewPoint(stroke.PointB.X, stroke.PointB.Y+1)
-			strokes = append(strokes, double)
-			double = stroke.Copy()
-			double.PointA = render.NewPoint(stroke.PointA.X+1, stroke.PointA.Y)
-			double.PointB = render.NewPoint(stroke.PointB.X+1, stroke.PointB.Y)
-			strokes = append(strokes, double)
 		}
 	}
 
@@ -183,14 +208,14 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 // presentActorLinks to actually draw the lines to the canvas.
 func (w *Canvas) drawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 	var (
-		P  = ui.AbsolutePosition(w) // w.Point()    // Canvas point in UI
+		P  = ui.AbsolutePosition(w) // Canvas point in UI
 		VP = w.ViewportRelative()   // Canvas scroll viewport
 	)
 
 	for _, stroke := range strokes {
 		// If none of this stroke is in our viewport, don't waste time
 		// looping through it.
-		if stroke.Shape == drawtool.Freehand {
+		if stroke.Shape == drawtool.Freehand || stroke.Shape == drawtool.Eraser {
 			if len(stroke.Points) >= 2 {
 				if !stroke.Points[0].Inside(VP) && !stroke.Points[len(stroke.Points)-1].Inside(VP) {
 					continue
@@ -206,20 +231,58 @@ func (w *Canvas) drawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 		}
 
 		// Iter the points and draw what's visible.
-		for point := range stroke.IterPoints() {
-			if !point.Inside(VP) {
-				continue
-			}
+		if stroke.Thickness > 0 {
+			for rect := range stroke.IterThickPoints() {
+				if !rect.Intersects(VP) {
+					continue
+				}
 
-			dest := render.Point{
-				X: P.X + w.Scroll.X + w.BoxThickness(1) + point.X,
-				Y: P.Y + w.Scroll.Y + w.BoxThickness(1) + point.Y,
-			}
+				// Destination rectangle to draw to screen, taking into account
+				// the position of the Canvas itself.
+				dest := render.Rect{
+					X: rect.X + P.X + w.Scroll.X + w.BoxThickness(1),
+					Y: rect.Y + P.Y + w.Scroll.Y + w.BoxThickness(1),
+					W: rect.W,
+					H: rect.H,
+				}
 
-			if balance.DebugCanvasStrokeColor != render.Invisible {
-				e.DrawPoint(balance.DebugCanvasStrokeColor, dest)
-			} else {
-				e.DrawPoint(stroke.Color, dest)
+				// Cap the render square so it doesn't leave the Canvas and
+				// overlap other UI elements!
+				if dest.X < P.X {
+					// Left edge. TODO: right edge
+					delta := P.X - dest.X
+					dest.X = P.X
+					dest.W -= delta
+				}
+				if dest.Y < P.Y {
+					// Top edge. TODO: bottom edge
+					delta := P.Y - dest.Y
+					dest.Y = P.Y
+					dest.H -= delta
+				}
+
+				if balance.DebugCanvasStrokeColor != render.Invisible {
+					e.DrawBox(balance.DebugCanvasStrokeColor, dest)
+				} else {
+					e.DrawBox(stroke.Color, dest)
+				}
+			}
+		} else {
+			for point := range stroke.IterPoints() {
+				if !point.Inside(VP) {
+					continue
+				}
+
+				dest := render.Point{
+					X: P.X + w.Scroll.X + w.BoxThickness(1) + point.X,
+					Y: P.Y + w.Scroll.Y + w.BoxThickness(1) + point.Y,
+				}
+
+				if balance.DebugCanvasStrokeColor != render.Invisible {
+					e.DrawPoint(balance.DebugCanvasStrokeColor, dest)
+				} else {
+					e.DrawPoint(stroke.Color, dest)
+				}
 			}
 		}
 	}

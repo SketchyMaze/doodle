@@ -12,6 +12,9 @@ var (
 	// Tick is incremented by the main game loop each frame.
 	Tick uint64
 
+	// Current position of the cursor relative to the window.
+	Cursor render.Point
+
 	// Current render engine (i.e. SDL2 or HTML5 Canvas)
 	// The level.Chunk.ToBitmap() uses this to cache a texture image.
 	CurrentRenderEngine render.Engine

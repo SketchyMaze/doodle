@@ -254,6 +254,7 @@ func IterRect(p1, p2 Point) chan Point {
 				X: TopLeft.X,
 				Y: BottomRight.Y,
 			}
+			dedupe = map[Point]interface{}{}
 		)
 
 		// Trace all four edges and yield it.
@@ -268,7 +269,10 @@ func IterRect(p1, p2 Point) chan Point {
 		}
 		for _, edge := range edges {
 			for pt := range IterLine2(edge.A, edge.B) {
-				generator <- pt
+				if _, ok := dedupe[pt]; !ok {
+					generator <- pt
+					dedupe[pt] = nil
+				}
 			}
 		}
 

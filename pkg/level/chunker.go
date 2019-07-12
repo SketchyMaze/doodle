@@ -204,6 +204,23 @@ func (c *Chunker) Set(p render.Point, sw *Swatch) error {
 	return chunk.Set(p, sw)
 }
 
+// SetRect sets a rectangle of pixels to a color all at once.
+func (c *Chunker) SetRect(r render.Rect, sw *Swatch) error {
+	var (
+		xMin = r.X
+		yMin = r.Y
+		xMax = r.X + r.W
+		yMax = r.Y + r.H
+	)
+	for x := xMin; x < xMax; x++ {
+		for y := yMin; y < yMax; y++ {
+			c.Set(render.NewPoint(x, y), sw)
+		}
+	}
+
+	return nil
+}
+
 // Delete a pixel at the given coordinate.
 func (c *Chunker) Delete(p render.Point) error {
 	coord := c.ChunkCoordinate(p)
@@ -211,6 +228,25 @@ func (c *Chunker) Delete(p render.Point) error {
 		return chunk.Delete(p)
 	}
 	return fmt.Errorf("no chunk %s exists for point %s", coord, p)
+}
+
+// DeleteRect deletes a rectangle of pixels between two points.
+// The rect is a relative one with a width and height, and the X,Y values are
+// an absolute world coordinate.
+func (c *Chunker) DeleteRect(r render.Rect) error {
+	var (
+		xMin = r.X
+		yMin = r.Y
+		xMax = r.X + r.W
+		yMax = r.Y + r.H
+	)
+	for x := xMin; x < xMax; x++ {
+		for y := yMin; y < yMax; y++ {
+			c.Delete(render.NewPoint(x, y))
+		}
+	}
+
+	return nil
 }
 
 // ChunkCoordinate computes a chunk coordinate from an absolute coordinate.

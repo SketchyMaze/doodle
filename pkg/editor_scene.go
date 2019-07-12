@@ -227,7 +227,6 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	s.filename = filename
 
 	level, err := level.LoadFile(filename)
-	fmt.Printf("%+v\n", level)
 	if err != nil {
 		return fmt.Errorf("EditorScene.LoadLevel(%s): %s", filename, err)
 	}

@@ -8,4 +8,5 @@ const (
 	Freehand Shape = iota
 	Line
 	Rectangle
+	Eraser // not really a shape but communicates the intention
 )

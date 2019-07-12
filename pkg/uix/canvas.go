@@ -31,7 +31,8 @@ type Canvas struct {
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 
 	// Selected draw tool/mode, default Pencil, for editable canvases.
-	Tool drawtool.Tool
+	Tool      drawtool.Tool
+	BrushSize int // thickness of selected brush
 
 	// MaskColor will force every pixel to render as this color regardless of
 	// the palette index of that pixel. Otherwise pixels behave the same and
@@ -86,10 +87,7 @@ type Canvas struct {
 	// mousedown-and-dragging event.
 	currentStroke *drawtool.Stroke
 	strokes       map[int]*drawtool.Stroke // active stroke mapped by ID
-
-	// Tracking pixels while editing. TODO: get rid of pixelHistory?
-	pixelHistory []*level.Pixel
-	lastPixel    *level.Pixel
+	lastPixel     *level.Pixel
 
 	// We inherit the ui.Widget which manages the width and height.
 	Scroll render.Point // Scroll offset for which parts of canvas are visible.
