@@ -152,7 +152,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			if lastPixel != nil || lastPixel != pixel {
 				// Draw the pixels in between.
 				if lastPixel != nil && lastPixel != pixel {
-					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
+					for point := range render.IterLine(lastPixel.Point(), pixel.Point()) {
 						w.currentStroke.AddPoint(point)
 					}
 				}
@@ -210,6 +210,24 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+	case drawtool.EllipseTool:
+		if w.Palette.ActiveSwatch == nil {
+			return nil
+		}
+
+		if ev.Button1.Now {
+			if w.currentStroke == nil {
+				w.currentStroke = drawtool.NewStroke(drawtool.Ellipse, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Thickness = w.BrushSize
+				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
+				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
+				w.AddStroke(w.currentStroke)
+			}
+
+			w.currentStroke.PointB = render.NewPoint(cursor.X, cursor.Y)
+		} else {
+			w.commitStroke(w.Tool, true)
+		}
 	case drawtool.EraserTool:
 		// Clicking? Log all the pixels while doing so.
 		if ev.Button1.Now {
@@ -241,7 +259,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			// Append unique new pixels.
 			if lastPixel == nil || lastPixel != pixel {
 				if lastPixel != nil && lastPixel != pixel {
-					for point := range render.IterLine(lastPixel.X, lastPixel.Y, pixel.X, pixel.Y) {
+					for point := range render.IterLine(lastPixel.Point(), pixel.Point()) {
 						w.currentStroke.AddPoint(point)
 					}
 				}

@@ -76,6 +76,16 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
+			Value: drawtool.EllipseTool.String(),
+			Icon:  "assets/sprites/ellipse-tool.png",
+			Click: func() {
+				u.Canvas.Tool = drawtool.EllipseTool
+				showSwatchPalette()
+				d.Flash("Ellipse Tool selected.")
+			},
+		},
+
+		{
 			Value: drawtool.ActorTool.String(),
 			Icon:  "assets/sprites/actor-tool.png",
 			Click: func() {

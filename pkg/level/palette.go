@@ -22,7 +22,7 @@ func DefaultPalette() *Palette {
 			},
 			&Swatch{
 				Name:  "water",
-				Color: render.Blue,
+				Color: render.RGBA(0, 0, 255, 180),
 				Water: true,
 			},
 		},

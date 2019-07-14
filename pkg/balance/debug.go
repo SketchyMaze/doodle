@@ -25,7 +25,7 @@ var (
 	// Background color to use when exporting a drawing Chunk as a bitmap image
 	// on disk. Default is white. Setting this to translucent yellow is a great
 	// way to visualize the chunks loaded from cache on your screen.
-	DebugChunkBitmapBackground = render.White // XXX: export $DEBUG_CHUNK_COLOR
+	DebugChunkBitmapBackground = render.Invisible // XXX: export $DEBUG_CHUNK_COLOR
 
 	// Put a border around all Canvas widgets.
 	DebugCanvasBorder = render.Invisible

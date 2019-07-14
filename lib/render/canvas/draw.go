@@ -44,7 +44,7 @@ func (e *Engine) DrawPoint(color render.Color, point render.Point) {
 // DrawLine draws a line between two points.
 func (e *Engine) DrawLine(color render.Color, a, b render.Point) {
 	e.canvas.ctx2d.Set("fillStyle", RGBA(color))
-	for pt := range render.IterLine2(a, b) {
+	for pt := range render.IterLine(a, b) {
 		e.canvas.ctx2d.Call("fillRect",
 			int(pt.X),
 			int(pt.Y),

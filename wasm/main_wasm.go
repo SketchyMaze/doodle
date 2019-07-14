@@ -51,7 +51,7 @@ func testRawCanvas() {
 	fmt.Printf("Got engine: %+v\n", engine)
 	engine.Clear(render.Green)
 
-	for pt := range render.IterLine2(render.NewPoint(20, 20), render.NewPoint(300, 300)) {
+	for pt := range render.IterLine(render.NewPoint(20, 20), render.NewPoint(300, 300)) {
 		engine.DrawPoint(render.Red, pt)
 	}
 

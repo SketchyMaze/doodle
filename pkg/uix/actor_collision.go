@@ -117,7 +117,7 @@ func (w *Canvas) loopActorCollision() error {
 							rect   = doodads.GetBoundingRect(b)
 							hitbox = a.Hitbox()
 						)
-						for point := range render.IterLine2(
+						for point := range render.IterLine(
 							b.Position(),
 							origPoint,
 						) {

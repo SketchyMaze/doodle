@@ -140,7 +140,7 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 	// Trace a line from where we are to where we wanna go.
 	result.Reset()
 	result.MoveTo = P
-	for point := range render.IterLine2(P, target) {
+	for point := range render.IterLine(P, target) {
 		if has := result.ScanBoundingBox(render.Rect{
 			X: point.X,
 			Y: point.Y,
@@ -239,7 +239,7 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 // for any pixels to be set, implying a collision between level geometry and the
 // bounding boxes of the doodad.
 func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
-	for point := range render.IterLine2(p1, p2) {
+	for point := range render.IterLine(p1, p2) {
 		if swatch, err := grid.Get(point); err == nil {
 			// We're intersecting a pixel! If it's a solid one we'll return it
 			// in our result. If non-solid, we'll collect attributes from it
