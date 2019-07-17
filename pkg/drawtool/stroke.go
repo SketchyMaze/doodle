@@ -96,7 +96,7 @@ func (s *Stroke) IterPoints() chan render.Point {
 				ch <- point
 			}
 		case Ellipse:
-			for point := range render.IterEllipse2(s.PointA, s.PointB) {
+			for point := range render.IterEllipse(s.PointA, s.PointB) {
 				ch <- point
 			}
 		}

@@ -86,3 +86,19 @@ In addition to those listed above:
 * Client/server negotiation, protocol
   * Client can request chunks from server for local rendering.
   * Players send inputs over network sockets.
+
+## Far Off Ideas
+
+### Level Styles (Top-down vs Side Scrolling)
+
+It might be cool to support multiple "styles" of level, apart from the current
+2D platforming-with-gravity style.
+
+For example a top-down perspective level would let the player freely walk in
+both axes and would probably have a full set of unique Doodads drawn in that
+perspective.
+
+Migration path: a GameStyle enum would be added to Levels and Doodads as an
+integer type, default 0 is the current 2D platformer style, 1 for top-down,
+etc. -- so existing levels and doodads would default to 0 on upgrade and new
+levels/doodads would use the new value.

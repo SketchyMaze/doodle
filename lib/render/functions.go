@@ -98,3 +98,11 @@ func TrimBox(src, dst *Rect, p Point, S Rect, thickness int32) {
 		dst.W = S.W - thickness
 	}
 }
+
+// AbsInt32 returns the absolute value of an int32.
+func AbsInt32(v int32) int32 {
+	if v < 0 {
+		return -v
+	}
+	return v
+}

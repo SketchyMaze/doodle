@@ -2,8 +2,6 @@ package render
 
 import (
 	"math"
-
-	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
 // IterLine is a generator that returns the X,Y coordinates to draw a line.
@@ -93,106 +91,15 @@ func IterRect(p1, p2 Point) chan Point {
 	return generator
 }
 
-// IterEllipse is a generator that draws out the pixels of an ellipse.
-func IterEllipse(rx, ry, xc, yc float32) chan Point {
-	generator := make(chan Point)
-
-	mkPoint := func(x, y float32) Point {
-		return NewPoint(int32(x), int32(y))
-	}
-
-	go func() {
-		var (
-			dx float32
-			dy float32
-			d1 float32
-			d2 float32
-			x  float32
-			y  = ry
-		)
-
-		d1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx)
-		dx = 2 * ry * ry * x
-		dy = 2 * rx * rx * y
-
-		// For region 1
-		for dx < dy {
-			// Yields points based on 4-way symmetry.
-			for _, point := range []Point{
-				mkPoint(x+xc, y+yc),
-				mkPoint(-x+xc, y+yc),
-				mkPoint(x+xc, -y+yc),
-				mkPoint(-x+xc, -y+yc),
-			} {
-				generator <- point
-			}
-
-			if d1 < 0 {
-				x++
-				dx = dx + (2 * ry * ry)
-				d1 = d1 + dx + (ry * ry)
-			} else {
-				x++
-				y--
-				dx = dx + (2 * ry * ry)
-				dy = dy - (2 * rx * rx)
-				d1 = d1 + dx - dy + (ry * ry)
-			}
-		}
-
-		d2 = ((ry * ry) + ((x + 0.5) * (x + 0.5))) +
-			((rx * rx) * ((y - 1) * (y - 1))) -
-			(rx * rx * ry * ry)
-
-		// Region 2
-		for y >= 0 {
-			// Yields points based on 4-way symmetry.
-			for _, point := range []Point{
-				mkPoint(x+xc, y+yc),
-				mkPoint(-x+xc, y+yc),
-				mkPoint(x+xc, -y+yc),
-				mkPoint(-x+xc, -y+yc),
-			} {
-				generator <- point
-			}
-
-			if d2 > 0 {
-				y--
-				dy = dy - (2 * rx * rx)
-				d2 = d2 + (rx * rx) - dy
-			} else {
-				y--
-				x++
-				dx = dx + (2 * ry * ry)
-				dy = dy - (2 * rx * rx)
-				d2 = d2 + dx - dy + (rx * rx)
-			}
-		}
-
-		close(generator)
-	}()
-
-	return generator
-}
-
-// IterEllipse2 iterates an Ellipse using two Points as the top-left and
+// IterEllipse iterates an Ellipse using two Points as the top-left and
 // bottom-right corners of a rectangle that encompasses the ellipse.
-func IterEllipse2(A, B Point) chan Point {
+func IterEllipse(A, B Point) chan Point {
 	var (
-		// xc = float32(A.X+B.X) / 2
-		// yc = float32(A.Y+B.Y) / 2
-		xc = float32(B.X)
-		yc = float32(B.Y)
-		rx = float32(B.X - A.X)
-		ry = float32(B.Y - A.Y)
+		width  = AbsInt32(B.X - A.X)
+		height = AbsInt32(B.Y - A.Y)
+		radius = NewPoint(width/2, height/2)
+		center = NewPoint(AbsInt32(B.X-radius.X), AbsInt32(B.Y-radius.Y))
 	)
 
-	if rx < 0 {
-		rx = -rx
-	}
-	if ry < 0 {
-		ry = -ry
-	}
-	log.Info("Ellipse btwn=%s-%s  radius=%f,%f at center %f,%f", A, B, rx, ry, xc, yc)
-	return IterEllipse(rx, ry, xc, yc)
+	return MidpointEllipse(center, radius)
 }
