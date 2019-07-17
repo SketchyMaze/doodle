@@ -114,12 +114,6 @@ func (d *Doodle) Run() error {
 		// Poll for events.
 		ev, err := d.Engine.Poll()
 		shmem.Cursor = render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
-		if ev.EnterKey.Now {
-			log.Info("MainLoop sees enter key now")
-		}
-		if ev.KeyName.Now != "" {
-			log.Info("MainLoop sees key %s", ev.KeyName.Now)
-		}
 		if err != nil {
 			log.Error("event poll error: %s", err)
 			d.running = false

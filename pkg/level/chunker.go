@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/vmihailenco/msgpack"
 )
 
@@ -224,6 +225,8 @@ func (c *Chunker) SetRect(r render.Rect, sw *Swatch) error {
 // Delete a pixel at the given coordinate.
 func (c *Chunker) Delete(p render.Point) error {
 	coord := c.ChunkCoordinate(p)
+	defer c.pruneChunk(coord)
+
 	if chunk, ok := c.Chunks[coord]; ok {
 		return chunk.Delete(p)
 	}
@@ -247,6 +250,17 @@ func (c *Chunker) DeleteRect(r render.Rect) error {
 	}
 
 	return nil
+}
+
+// pruneChunk will remove an empty chunk from the chunk map, called after
+// delete operations.
+func (c *Chunker) pruneChunk(coord render.Point) {
+	if chunk, ok := c.Chunks[coord]; ok {
+		if chunk.Len() == 0 {
+			log.Info("Chunker.pruneChunk: %s has become empty", coord)
+			delete(c.Chunks, coord)
+		}
+	}
 }
 
 // ChunkCoordinate computes a chunk coordinate from an absolute coordinate.
