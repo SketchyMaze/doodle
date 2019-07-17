@@ -101,11 +101,19 @@ func TestActorCollision(t *testing.T) {
 		case 0:
 			assert(i, overlap, 0, 1)
 		case 1:
-			assert(i, overlap, 3, 4)
+			assert(i, overlap, 1, 0)
 		case 2:
-			assert(i, overlap, 5, 6)
+			assert(i, overlap, 3, 4)
 		case 3:
+			assert(i, overlap, 4, 3)
+		case 4:
+			assert(i, overlap, 5, 6)
+		case 5:
 			assert(i, overlap, 5, 7)
+		case 6:
+			assert(i, overlap, 6, 5)
+		case 7:
+			assert(i, overlap, 7, 5)
 		default:
 			t.Errorf("got unexpected collision result, index %d, tuple (%d,%d)",
 				i, a, b,

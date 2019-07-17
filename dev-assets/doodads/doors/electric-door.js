@@ -37,11 +37,4 @@ function main() {
 			}
 		}
 	});
-	Events.OnLeave(function() {
-		// if (opened) {
-		// 	Self.PlayAnimation("close", function() {
-		// 		opened = false;
-		// 	});
-		// }
-	})
 }

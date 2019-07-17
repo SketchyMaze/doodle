@@ -35,7 +35,6 @@ func RegisterPublishHooks(vm *VM) {
 	// Register the Message.Subscribe and Message.Publish functions.
 	vm.vm.Set("Message", map[string]interface{}{
 		"Subscribe": func(name string, callback otto.Value) {
-			log.Error("SUBSCRIBE: %s", name)
 			if !callback.IsFunction() {
 				log.Error("SUBSCRIBE(%s): callback is not a function", name)
 				return

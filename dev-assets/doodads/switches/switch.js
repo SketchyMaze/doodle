@@ -14,6 +14,10 @@ function main() {
 	});
 
 	Events.OnCollide(function(e) {
+		if (!e.Settled) {
+			return;
+		}
+
 		if (collide === false) {
 			state = !state;
 			Message.Publish("power", state);

@@ -73,6 +73,9 @@ func (vm *VM) RegisterLevelHooks() error {
 		"Point":  render.NewPoint,
 		"Self":   vm.Self, // i.e., the uix.Actor object
 		"Events": vm.Events,
+		"GetTick": func() uint64 {
+			return shmem.Tick
+		},
 
 		"TypeOf": reflect.TypeOf,
 		"time": map[string]interface{}{

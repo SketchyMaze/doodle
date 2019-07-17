@@ -100,50 +100,90 @@ func (w *Canvas) loopActorCollision() error {
 		a, b := w.actors[tuple.A], w.actors[tuple.B]
 		collidingActors[a.ID()] = b.ID()
 
-		// Call the OnCollide handler.
+		// Call the OnCollide handler for A informing them of B's intersection.
 		if w.scripting != nil {
-			// Tell actor A about the collision with B.
-			if err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
-				Actor:    b,
-				Overlap:  tuple.Overlap,
-				InHitbox: tuple.Overlap.Intersects(a.Hitbox()),
-			}); err != nil {
-				if err == scripting.ErrReturnFalse {
-					if origPoint, ok := originalPositions[b.ID()]; ok {
-						// Trace a vector back from the actor's current position
-						// to where they originated from and find the earliest
-						// point where they are not violating the hitbox.
-						var (
-							rect   = doodads.GetBoundingRect(b)
-							hitbox = a.Hitbox()
-						)
-						for point := range render.IterLine(
-							b.Position(),
-							origPoint,
-						) {
-							test := render.Rect{
-								X: point.X,
-								Y: point.Y,
-								W: rect.W,
-								H: rect.H,
-							}
-							info, err := collision.CompareBoxes(
-								boxes[tuple.A],
-								test,
-							)
-							if err != nil || !info.Overlap.Intersects(hitbox) {
-								b.MoveTo(point)
-								break
-							}
-						}
-					} else {
-						log.Error(
-							"ERROR: Actors %s and %s overlap and the script returned false,"+
-								"but I didn't store %s original position earlier??",
-							a.Doodad.Title, b.Doodad.Title, b.Doodad.Title,
-						)
+			var (
+				rect        = doodads.GetBoundingRect(b)
+				lastGoodBox = boxes[tuple.B] // worst case scenario we get blocked right away
+			)
+
+			// Firstly we want to make sure B isn't able to clip through A's
+			// solid hitbox if A protests the movement. Trace a vector from
+			// B's original position to their current one and ping A's
+			// OnCollide handler for each step, with Settled=false. A should
+			// only return false if it protests the movement, but not trigger
+			// any actions (such as emit messages to linked doodads) until
+			// Settled=true.
+			if origPoint, ok := originalPositions[b.ID()]; ok {
+				// Trace a vector back from the actor's current position
+				// to where they originated from. If A protests B's position at
+				// ANY time, we mark didProtest=true and continue backscanning
+				// B's movement. The next time A does NOT protest, that is to be
+				// B's new position.
+
+				var firstPoint = true
+				for point := range render.IterLine(
+					origPoint,
+					b.Position(),
+				) {
+					test := render.Rect{
+						X: point.X,
+						Y: point.Y,
+						W: rect.W,
+						H: rect.H,
 					}
+
+					if info, err := collision.CompareBoxes(boxes[tuple.A], test); err == nil {
+						// B is overlapping A's box, call its OnCollide handler
+						// with Settled=false and see if it protests the overlap.
+						err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
+							Actor:    b,
+							Overlap:  info.Overlap,
+							InHitbox: info.Overlap.Intersects(a.Hitbox()),
+							Settled:  false,
+						})
+
+						// Did A protest?
+						if err == scripting.ErrReturnFalse {
+							break
+						} else {
+							lastGoodBox = test
+						}
+					}
+
+					firstPoint = false
+				}
+
+				// Were we stopped before we even began?
+				if firstPoint {
+					// TODO: undo the effect of gravity this tick. Use case:
+					// the player lands on top of a solid door, and their
+					// movement is blocked the first step by the door. Originally
+					// he'd continue falling, so I had to move him up to stop it,
+					// turns out moving up by the -gravity is exactly the distance
+					// to go. Don't know why.
+					b.MoveBy(render.NewPoint(0, int32(-balance.Gravity)))
 				} else {
+					b.MoveTo(lastGoodBox.Point())
+				}
+			} else {
+				log.Error(
+					"ERROR: Actors %s and %s overlap and the script returned false,"+
+						"but I didn't store %s original position earlier??",
+					a.Doodad.Title, b.Doodad.Title, b.Doodad.Title,
+				)
+			}
+
+			// Movement has been settled. Check if B's point is still invading
+			// A's box and call its OnCollide handler one last time in
+			// Settled=true mode so it can run its actions.
+			if info, err := collision.CompareBoxes(boxes[tuple.A], lastGoodBox); err == nil {
+				if err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
+					Actor:    b,
+					Overlap:  info.Overlap,
+					InHitbox: info.Overlap.Intersects(a.Hitbox()),
+					Settled:  true,
+				}); err != nil && err != scripting.ErrReturnFalse {
 					log.Error(err.Error())
 				}
 			}

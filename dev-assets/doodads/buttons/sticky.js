@@ -13,6 +13,10 @@ function main() {
 	})
 
 	Events.OnCollide(function(e) {
+		if (!e.Settled) {
+			return;
+		}
+
 		if (pressed) {
 			return;
 		}

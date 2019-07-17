@@ -17,6 +17,9 @@ var (
 
 	// Pretty-print JSON files when writing.
 	JSONIndent bool
+
+	// Temporary debug flag.
+	TempDebug bool
 )
 
 // Human friendly names for the boolProps. Not necessarily the long descriptive
@@ -25,6 +28,7 @@ var props = map[string]*bool{
 	"showAllDoodads":    &ShowHiddenDoodads,
 	"writeLockOverride": &WriteLockOverride,
 	"prettyJSON":        &JSONIndent,
+	"tempDebug":         &TempDebug,
 
 	// WARNING: SLOW!
 	"disableChunkTextureCache": &DisableChunkTextureCache,

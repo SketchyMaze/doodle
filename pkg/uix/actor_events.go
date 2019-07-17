@@ -7,4 +7,5 @@ type CollideEvent struct {
 	Actor    *Actor
 	Overlap  render.Rect
 	InHitbox bool // If the two elected hitboxes are overlapping
+	Settled  bool // Movement phase finished, actor script can fire actions
 }

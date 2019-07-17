@@ -4,6 +4,10 @@ function main() {
 	var timer = 0;
 
 	Events.OnCollide(function(e) {
+		if (!e.Settled) {
+			return;
+		}
+
 		// Verify they've touched the button.
 		if (e.Overlap.Y + e.Overlap.H < 24) {
 			return;

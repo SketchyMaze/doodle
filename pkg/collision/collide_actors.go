@@ -31,8 +31,10 @@ func BetweenBoxes(boxes []render.Rect) chan BoxCollision {
 	go func() {
 		// Outer loop: test each box for intersection with the others.
 		for i, box := range boxes {
-			for j := i + 1; j < len(boxes); j++ {
-				other := boxes[j]
+			for j, other := range boxes {
+				if i == j {
+					continue
+				}
 				collision, err := CompareBoxes(box, other)
 				if err == nil {
 					collision.A = i
