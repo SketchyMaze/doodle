@@ -75,7 +75,6 @@ func NewShell(d *Doodle) Shell {
 	// Make the Doodle instance available to the shell.
 	bindings := map[string]interface{}{
 		"d":     d,
-		"log":   log.Logger,
 		"RGBA":  render.RGBA,
 		"Point": render.NewPoint,
 		"Rect":  render.NewRect,

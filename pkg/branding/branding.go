@@ -4,5 +4,5 @@ package branding
 const (
 	AppName = "Project: Doodle"
 	Summary = "A drawing-based maze game"
-	Version = "0.0.9-alpha"
+	Version = "0.0.10-alpha"
 )

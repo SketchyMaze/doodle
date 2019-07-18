@@ -1,24 +1,31 @@
 # Changes
 
-## v0.0.1-alpha - June 17 2018
+## v0.0.10-alpha
 
-* Add a debug overlay that shows FPS, coordinates, and useful info.
-* Add FPS throttling to target 60 frames per second.
-* Add `F12` for Screenshot key which saves the in-memory representation of
-  the pixels you've drawn to disk as a PNG image.
-* Smoothly connect dots between periods where the mouse button was held down
-  but was moving too fast.
+New features:
 
-## v0.0.0-alpha
+* Added the **Eraser Tool** and support for **brush sizes**. Now you can clean
+  up your mistakes and draw shapes with thicker lines!
+* Added the **Ellipse Tool** for drawing elliptical shapes.
+* Added a third example to the game's built-in levels.
 
-* Basic SDL canvas that draws pixels when you click and/or drag.
-* The lines drawn aren't smooth, because the mouse cursor moves too fast.
+Bug fixes:
 
-### Screenshot Feature
+* The Undo command now restores the original color of a pixel instead of just
+  deleting it. Only works for thin lines so far.
+* Improved collision detection algorithm to prevent players from clipping
+  through a solid doodad, regardless of speed. This change is invisible this
+  build, but opens the door to improvements in the 2D platforming physics and
+  making the player character move and fall faster.
+* Fix mobile non-player doodads from sometimes being able to clip through a
+  solid doodad. For example, a Red Azulian could sometimes walk through a locked
+  door without interacting with it.
+* Sometimes hitting Undo would leave a broken "chunk" in your level, if the
+  Undo operation deleted all pixels in that chunk. The broken chunk would show
+  as a solid black square (non-solid) in the level. This has been fixed: empty
+  chunks are now culled when the last pixel is deleted and existing level files
+  will be repaired on next save.
 
-Pressing `F12` takes a screenshot and saves it on disk as a PNG.
+## v0.0.9-alpha
 
-It does **NOT** read the SDL canvas data for this, though. It uses an
-internal representation of the pixels you've been drawing, and writes that
-to the PNG. This is important because that same pixel data will be used for
-the custom level format.
+First alpha release.
