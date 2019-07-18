@@ -121,7 +121,7 @@ dist-free: doodads bindata build-free __dist-common
 __dist-common:
 	mkdir -p dist/doodle-$(VERSION)
 	cp bin/* dist/doodle-$(VERSION)/
-	cp -r README.md "Open Source Licenses.md" dist/doodle-$(VERSION)/
+	cp -r README.md Changes.md "Open Source Licenses.md" dist/doodle-$(VERSION)/
 	cd dist && tar -czvf doodle-$(VERSION).tar.gz doodle-$(VERSION)
 	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
 
