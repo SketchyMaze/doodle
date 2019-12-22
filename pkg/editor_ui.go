@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
@@ -214,8 +214,8 @@ func (u *EditorUI) Resized(d *Doodle) {
 }
 
 // Loop to process events and update the UI.
-func (u *EditorUI) Loop(ev *events.State) error {
-	u.cursor = render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
+func (u *EditorUI) Loop(ev *event.State) error {
+	u.cursor = render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
 
 	// Loop the UI and see whether we're told to stop event propagation.
 	var stopPropagation bool
@@ -230,8 +230,8 @@ func (u *EditorUI) Loop(ev *events.State) error {
 	// Update status bar labels.
 	{
 		u.StatusMouseText = fmt.Sprintf("Rel:(%d,%d)  Abs:(%s)",
-			ev.CursorX.Now,
-			ev.CursorY.Now,
+			ev.CursorX,
+			ev.CursorY,
 			*u.Scene.debWorldIndex,
 		)
 		u.StatusPaletteText = fmt.Sprintf("%s Tool",

@@ -68,7 +68,7 @@ func (d *Doodle) DrawDebugOverlay() {
 		values = []string{
 			fmt.Sprintf("%d   %s", fpsCurrent, framesSkipped),
 			d.Scene.Name(),
-			fmt.Sprintf("%d,%d", d.event.CursorX.Now, d.event.CursorY.Now),
+			fmt.Sprintf("%d,%d", d.event.CursorX, d.event.CursorY),
 		}
 	)
 

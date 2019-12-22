@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
@@ -161,14 +161,14 @@ func (s *EditorScene) Playtest() {
 }
 
 // Loop the editor scene.
-func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
+func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	// Update debug overlay values.
 	*s.debTool = s.UI.Canvas.Tool.String()
 	*s.debSwatch = s.UI.Canvas.Palette.ActiveSwatch.Name
 	*s.debWorldIndex = s.UI.Canvas.WorldIndexAt(s.UI.cursor).String()
 
 	// Has the window been resized?
-	if resized := ev.Resized.Read(); resized {
+	if ev.WindowResized {
 		w, h := d.Engine.WindowSize()
 		if w != d.width || h != d.height {
 			// Not a false alarm.
@@ -180,11 +180,10 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	}
 
 	// Undo/Redo key bindings.
-	if ev.ControlActive.Now {
-		key := ev.KeyName.Read()
-		if key == "z" {
+	if ev.Ctrl {
+		if ev.KeyDown("z") {
 			s.UI.Canvas.UndoStroke()
-		} else if key == "y" {
+		} else if ev.KeyDown("y") {
 			s.UI.Canvas.RedoStroke()
 		}
 	}
@@ -192,18 +191,17 @@ func (s *EditorScene) Loop(d *Doodle, ev *events.State) error {
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?
-	switch ev.KeyName.Read() {
-	case "p":
+	if ev.KeyDown("p") {
 		s.Playtest()
-	case "l":
+	} else if ev.KeyDown("l") {
 		d.Flash("Line Tool selected.")
 		s.UI.Canvas.Tool = drawtool.LineTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
-	case "f":
+	} else if ev.KeyDown("f") {
 		d.Flash("Pencil Tool selected.")
 		s.UI.Canvas.Tool = drawtool.PencilTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
-	case "r":
+	} else if ev.KeyDown("r") {
 		d.Flash("Rectangle Tool selected.")
 		s.UI.Canvas.Tool = drawtool.RectTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()

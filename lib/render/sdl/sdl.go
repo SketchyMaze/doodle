@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -20,7 +20,7 @@ type Renderer struct {
 	startTime time.Time
 
 	// Private fields.
-	events   *events.State
+	events   *event.State
 	window   *sdl.Window
 	renderer *sdl.Renderer
 	running  bool
@@ -34,7 +34,7 @@ type Renderer struct {
 // New creates the SDL renderer.
 func New(title string, width, height int) *Renderer {
 	return &Renderer{
-		events:   events.New(),
+		events:   event.NewState(),
 		title:    title,
 		width:    int32(width),
 		height:   int32(height),

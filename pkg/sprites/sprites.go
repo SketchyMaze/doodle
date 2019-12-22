@@ -6,11 +6,13 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
+	"runtime"
 
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/wasm"
 )
 
 // LoadImage loads a sprite as a ui.Image object. It checks Doodle's embedded
@@ -21,6 +23,26 @@ func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
 	// Try the bindata first.
 	if data, err := bindata.Asset(filename); err == nil {
 		log.Debug("sprites.LoadImage: %s from bindata", filename)
+
+		img, err := png.Decode(bytes.NewBuffer(data))
+		if err != nil {
+			return nil, err
+		}
+
+		tex, err := e.StoreTexture(filename, img)
+		if err != nil {
+			return nil, err
+		}
+
+		return ui.ImageFromTexture(tex), nil
+	}
+
+	// WASM: try the file over HTTP ajax request.
+	if runtime.GOOS == "js" {
+		data, err := wasm.HTTPGet(filename)
+		if err != nil {
+			return nil, err
+		}
 
 		img, err := png.Decode(bytes.NewBuffer(data))
 		if err != nil {

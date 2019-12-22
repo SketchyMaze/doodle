@@ -7,8 +7,8 @@ import (
 	"git.kirsle.net/apps/doodle/lib/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"github.com/google/uuid"
 	"github.com/robertkrimen/otto"
-	uuid "github.com/satori/go.uuid"
 )
 
 // Actor is an object that marries together the three things that make a
@@ -42,7 +42,7 @@ type Actor struct {
 // If the id is blank, a new UUIDv4 is generated.
 func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor {
 	if id == "" {
-		id = uuid.Must(uuid.NewV4()).String()
+		id = uuid.Must(uuid.NewRandom()).String()
 	}
 
 	size := int32(doodad.Layers[0].Chunker.Size)

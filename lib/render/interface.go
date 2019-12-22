@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 )
 
 // Engine is the interface for the rendering engine, keeping SDL-specific stuff
@@ -13,7 +13,7 @@ type Engine interface {
 	Setup() error
 
 	// Poll for events like keypresses and mouse clicks.
-	Poll() (*events.State, error)
+	Poll() (*event.State, error)
 	GetTicks() uint32
 	WindowSize() (w, h int)
 

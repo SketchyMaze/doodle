@@ -3,8 +3,8 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
@@ -303,9 +303,9 @@ func (s *PlayScene) DieByFire() {
 }
 
 // Loop the editor scene.
-func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
+func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	// Update debug overlay values.
-	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)).String()
+	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))).String()
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
@@ -313,7 +313,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	s.supervisor.Loop(ev)
 
 	// Has the window been resized?
-	if resized := ev.Resized.Now; resized {
+	if ev.WindowResized {
 		w, h := d.Engine.WindowSize()
 		if w != d.width || h != d.height {
 			d.width = w
@@ -324,7 +324,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *events.State) error {
 	}
 
 	// Switching to Edit Mode?
-	if s.CanEdit && ev.KeyName.Read() == "e" {
+	if s.CanEdit && ev.KeyDown("e") {
 		s.EditLevel()
 		return nil
 	}
@@ -381,19 +381,19 @@ func (s *PlayScene) Draw(d *Doodle) error {
 }
 
 // movePlayer updates the player's X,Y coordinate based on key pressed.
-func (s *PlayScene) movePlayer(ev *events.State) {
+func (s *PlayScene) movePlayer(ev *event.State) {
 	var playerSpeed = int32(balance.PlayerMaxVelocity)
 	// var gravity = int32(balance.Gravity)
 
 	var velocity render.Point
 
-	if ev.Left.Now {
+	if ev.Left {
 		velocity.X = -playerSpeed
 	}
-	if ev.Right.Now {
+	if ev.Right {
 		velocity.X = playerSpeed
 	}
-	if ev.Up.Now && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
+	if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
 		velocity.Y = -playerSpeed
 
 		if s.Player.Grounded() {

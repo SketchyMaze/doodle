@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -206,16 +206,16 @@ func (s *Shell) Parse(input string) Command {
 }
 
 // Draw the shell.
-func (s *Shell) Draw(d *Doodle, ev *events.State) error {
+func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 	// Compute the line height we can draw.
 	lineHeight := balance.ShellFontSize + int(balance.ShellPadding)
 
 	// If the console is open, draw the console.
 	if s.Open {
-		if ev.EscapeKey.Read() {
+		if ev.Escape {
 			s.Close()
 			return nil
-		} else if ev.EnterKey.Read() || ev.EscapeKey.Read() {
+		} else if ev.Enter {
 			s.Execute(s.Text)
 
 			// Auto-close the console unless in REPL mode.
@@ -223,8 +223,9 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 				s.Close()
 			}
 
+			ev.Enter = false
 			return nil
-		} else if (ev.Up.Now || ev.Down.Now) && len(s.History) > 0 {
+		} else if (ev.Up || ev.Down) && len(s.History) > 0 {
 			// Paging through history.
 			if !s.historyPaging {
 				s.historyPaging = true
@@ -232,8 +233,9 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 			}
 
 			// Consume the inputs and make convenient variables.
-			ev.Down.Read()
-			isUp := ev.Up.Read()
+			isUp := ev.Up
+			ev.Down = false
+			ev.Up = false
 
 			// Scroll through the input history.
 			if isUp {
@@ -263,7 +265,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 		}
 
 		// Read a character from the keyboard.
-		if key := ev.ReadKey(); key != "" {
+		for _, key := range ev.KeysDown(true) {
 			// Backspace?
 			if key == `\b` {
 				if len(s.Text) > 0 {
@@ -272,6 +274,7 @@ func (s *Shell) Draw(d *Doodle, ev *events.State) error {
 			} else {
 				s.Text += key
 			}
+			ev.SetKeyDown(key, false)
 		}
 
 		// How tall is the box?

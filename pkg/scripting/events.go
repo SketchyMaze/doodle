@@ -3,7 +3,7 @@ package scripting
 import (
 	"errors"
 
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"github.com/robertkrimen/otto"
 )
 
@@ -60,7 +60,7 @@ func (e *Events) OnKeypress(call otto.FunctionCall) otto.Value {
 }
 
 // RunKeypress invokes the OnCollide handler function.
-func (e *Events) RunKeypress(ev *events.State) error {
+func (e *Events) RunKeypress(ev *event.State) error {
 	return e.run(KeypressEvent, ev)
 }
 

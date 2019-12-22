@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
@@ -192,7 +192,7 @@ func (w *Canvas) setup() {
 
 // Loop is called on the scene's event loop to handle mouse interaction with
 // the canvas, i.e. to edit it.
-func (w *Canvas) Loop(ev *events.State) error {
+func (w *Canvas) Loop(ev *event.State) error {
 	// Process the arrow keys scrolling the level in Edit Mode.
 	// canvas_scrolling.go
 	w.loopEditorScroll(ev)
@@ -225,7 +225,7 @@ func (w *Canvas) Loop(ev *events.State) error {
 
 	// If the canvas is editable, only care if it's over our space.
 	if w.Editable {
-		cursor := render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
+		cursor := render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
 		if cursor.Inside(ui.AbsoluteRect(w)) {
 			return w.loopEditable(ev)
 		}

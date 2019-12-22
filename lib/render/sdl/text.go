@@ -2,10 +2,8 @@ package sdl
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -75,20 +73,6 @@ func LoadFont(filename string, size int) (*ttf.Font, error) {
 	fonts[keyName] = font
 
 	return font, nil
-}
-
-// Keysym returns the current key pressed, taking into account the Shift
-// key modifier.
-func (r *Renderer) Keysym(ev *events.State) string {
-	if key := ev.KeyName.Read(); key != "" {
-		if ev.ShiftActive.Pressed() {
-			if symbol, ok := shiftMap[key]; ok {
-				return symbol
-			}
-			return strings.ToUpper(key)
-		}
-	}
-	return ""
 }
 
 // ComputeTextRect computes and returns a Rect for how large the text would

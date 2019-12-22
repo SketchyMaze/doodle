@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -32,7 +32,7 @@ type Doodle struct {
 
 	// Easy access to the event state, for the debug overlay to use.
 	// Might not be thread safe.
-	event *events.State
+	event *event.State
 
 	startTime time.Time
 	running   bool
@@ -113,7 +113,8 @@ func (d *Doodle) Run() error {
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()
-		shmem.Cursor = render.NewPoint(ev.CursorX.Now, ev.CursorY.Now)
+		// log.Error("Button1 is: %+v", ev.Button1)
+		shmem.Cursor = render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
 		if err != nil {
 			log.Error("event poll error: %s", err)
 			d.running = false
@@ -123,23 +124,24 @@ func (d *Doodle) Run() error {
 
 		// Command line shell.
 		if d.shell.Open {
-		} else if ev.EnterKey.Read() {
+		} else if ev.Enter {
 			log.Debug("Shell: opening shell")
 			d.shell.Open = true
+			ev.Enter = false
 		} else {
 			// Global event handlers.
-			if ev.EscapeKey.Read() {
+			if ev.Escape {
 				log.Error("Escape key pressed, shutting down")
 				d.running = false
 				break
 			}
 
-			if ev.KeyName.Now == "F3" {
+			if ev.KeyDown("F3") {
 				DebugOverlay = !DebugOverlay
-				ev.KeyName.Read()
-			} else if ev.KeyName.Now == "F4" {
+				ev.SetKeyDown("F3", false)
+			} else if ev.KeyDown("F4") {
 				DebugCollision = !DebugCollision
-				ev.KeyName.Read()
+				ev.SetKeyDown("F4", false)
 			}
 
 			// Run the scene's logic.
@@ -186,7 +188,7 @@ func (d *Doodle) Run() error {
 		d.TrackFPS(delay)
 
 		// Consume any lingering key sym.
-		ev.KeyName.Read()
+		ev.ResetKeyDown()
 	}
 
 	log.Warn("Main Loop Exited! Shutting down...")

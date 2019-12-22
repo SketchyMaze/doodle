@@ -1,8 +1,8 @@
 package uix
 
 import (
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -96,14 +96,14 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 }
 
 // loopEditable handles the Loop() part for editable canvases.
-func (w *Canvas) loopEditable(ev *events.State) error {
+func (w *Canvas) loopEditable(ev *event.State) error {
 	// Get the absolute position of the canvas on screen to accurately match
 	// it up to mouse clicks.
 	var (
 		P      = ui.AbsolutePosition(w)
 		cursor = render.Point{
-			X: ev.CursorX.Now - P.X - w.Scroll.X,
-			Y: ev.CursorY.Now - P.Y - w.Scroll.Y,
+			X: int32(ev.CursorX) - P.X - w.Scroll.X,
+			Y: int32(ev.CursorY) - P.Y - w.Scroll.Y,
 		}
 	)
 
@@ -123,7 +123,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1.Now {
+		if ev.Button1 {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
@@ -175,7 +175,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1.Now {
+		if ev.Button1 {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Line, w.Palette.ActiveSwatch.Color)
@@ -196,7 +196,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1.Now {
+		if ev.Button1 {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Rectangle, w.Palette.ActiveSwatch.Color)
@@ -215,7 +215,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 			return nil
 		}
 
-		if ev.Button1.Now {
+		if ev.Button1 {
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Ellipse, w.Palette.ActiveSwatch.Color)
 				w.currentStroke.Thickness = w.BrushSize
@@ -230,7 +230,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 		}
 	case drawtool.EraserTool:
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1.Now {
+		if ev.Button1 {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				// The color is white, will look like white-out that covers the
@@ -296,14 +296,14 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 
 				// Check for a mouse down event to begin dragging this
 				// canvas around.
-				if ev.Button1.Read() {
+				if ev.Button1 {
 					// Pop this canvas out for the drag/drop.
 					if w.OnDragStart != nil {
 						deleteActors = append(deleteActors, actor.Actor)
 						w.OnDragStart(actor.Actor)
 					}
 					break
-				} else if ev.Button2.Read() {
+				} else if ev.Button2 {
 					// Right click to delete an actor.
 					deleteActors = append(deleteActors, actor.Actor)
 				}
@@ -347,7 +347,7 @@ func (w *Canvas) loopEditable(ev *events.State) error {
 				})
 
 				// Click handler to start linking this actor.
-				if ev.Button1.Read() {
+				if ev.Button1 {
 					if err := w.LinkAdd(actor); err != nil {
 						return err
 					}

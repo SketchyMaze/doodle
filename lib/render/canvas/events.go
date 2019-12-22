@@ -3,7 +3,7 @@ package canvas
 import (
 	"syscall/js"
 
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 )
 
 // EventClass to categorize JavaScript events.
@@ -158,21 +158,21 @@ func (e *Engine) PollEvent() *Event {
 }
 
 // Poll for events.
-func (e *Engine) Poll() (*events.State, error) {
+func (e *Engine) Poll() (*event.State, error) {
 	s := e.events
 
 	for event := e.PollEvent(); event != nil; event = e.PollEvent() {
 		switch event.Class {
 		case WindowEvent:
-			s.Resized.Push(true)
+			s.WindowResized = true
 		case MouseEvent:
-			s.CursorX.Push(int32(event.X))
-			s.CursorY.Push(int32(event.Y))
+			s.CursorX = event.X
+			s.CursorY = event.Y
 		case ClickEvent:
-			s.CursorX.Push(int32(event.X))
-			s.CursorY.Push(int32(event.Y))
-			s.Button1.Push(event.LeftClick)
-			s.Button2.Push(event.RightClick)
+			s.CursorX = event.X
+			s.CursorY = event.Y
+			s.Button1 = event.LeftClick
+			s.Button2 = event.RightClick
 		case KeyEvent:
 			switch event.KeyName {
 			case "Escape":
@@ -180,45 +180,34 @@ func (e *Engine) Poll() (*events.State, error) {
 					continue
 				}
 
-				if event.State {
-					s.EscapeKey.Push(true)
-				}
+				s.Escape = event.State
 			case "Enter":
 				if event.Repeat {
 					continue
 				}
 
-				if event.State {
-					s.EnterKey.Push(true)
-				}
+				s.Enter = event.State
 			case "F3":
-				if event.State {
-					s.KeyName.Push("F3")
-				}
+				s.SetKeyDown("F3", event.State)
 			case "ArrowUp":
-				s.Up.Push(event.State)
+				s.Up = event.State
 			case "ArrowLeft":
-				s.Left.Push(event.State)
+				s.Left = event.State
 			case "ArrowRight":
-				s.Right.Push(event.State)
+				s.Right = event.State
 			case "ArrowDown":
-				s.Down.Push(event.State)
+				s.Down = event.State
 			case "Shift":
-				s.ShiftActive.Push(event.State)
+				s.Shift = event.State
 				continue
 			case "Alt":
+				s.Alt = event.State
 			case "Control":
-				continue
+				s.Ctrl = event.State
 			case "Backspace":
-				if event.State {
-					s.KeyName.Push(`\b`)
-				}
+				s.SetKeyDown(`\b`, event.State)
 			default:
-				if event.State {
-					s.KeyName.Push(event.KeyName)
-				} else {
-					s.KeyName.Push("")
-				}
+				s.SetKeyDown(event.KeyName, event.State)
 			}
 		}
 	}

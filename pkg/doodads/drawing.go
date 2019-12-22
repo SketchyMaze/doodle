@@ -2,7 +2,7 @@ package doodads
 
 import (
 	"git.kirsle.net/apps/doodle/lib/render"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 // Drawing is a Doodad Actor that is based on drawings made inside the game.
@@ -22,7 +22,7 @@ type Drawing struct {
 // an empty ID string, it will make a random UUIDv4 ID.
 func NewDrawing(id string, doodad *Doodad) Drawing {
 	if id == "" {
-		id = uuid.Must(uuid.NewV4()).String()
+		id = uuid.Must(uuid.NewRandom()).String()
 	}
 	return Drawing{
 		id:     id,

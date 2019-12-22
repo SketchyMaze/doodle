@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 )
@@ -22,21 +22,21 @@ constrained to fit the bounds of the level.
 The debug boolean `NoLimitScroll=true` will override the bounded level scroll
 restriction and allow scrolling into out-of-bounds areas of the level.
 */
-func (w *Canvas) loopEditorScroll(ev *events.State) error {
+func (w *Canvas) loopEditorScroll(ev *event.State) error {
 	if !w.Scrollable {
 		return errors.New("canvas not scrollable")
 	}
 
 	// Arrow keys to scroll the view.
 	scrollBy := render.Point{}
-	if ev.Right.Now {
+	if ev.Right {
 		scrollBy.X -= balance.CanvasScrollSpeed
-	} else if ev.Left.Now {
+	} else if ev.Left {
 		scrollBy.X += balance.CanvasScrollSpeed
 	}
-	if ev.Down.Now {
+	if ev.Down {
 		scrollBy.Y -= balance.CanvasScrollSpeed
-	} else if ev.Up.Now {
+	} else if ev.Up {
 		scrollBy.Y += balance.CanvasScrollSpeed
 	}
 	if !scrollBy.IsZero() {
@@ -103,7 +103,7 @@ Does nothing if w.FollowActor is an empty string. Set it to the ID of an Actor
 to follow. If the actor exists, the Canvas will scroll to keep it on the
 screen.
 */
-func (w *Canvas) loopFollowActor(ev *events.State) error {
+func (w *Canvas) loopFollowActor(ev *event.State) error {
 	// Are we following an actor?
 	if w.FollowActor == "" {
 		return nil

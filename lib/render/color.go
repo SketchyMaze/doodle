@@ -7,8 +7,6 @@ import (
 	"image/color"
 	"regexp"
 	"strconv"
-
-	"github.com/vmihailenco/msgpack"
 )
 
 var (
@@ -164,52 +162,6 @@ func (c *Color) UnmarshalJSON(b []byte) error {
 	c.Alpha = parsed.Alpha
 	return nil
 }
-
-func (c Color) EncodeMsgpack(enc *msgpack.Encoder) error {
-	return enc.EncodeString(fmt.Sprintf(
-		`"#%02x%02x%02x"`,
-		c.Red, c.Green, c.Blue,
-	))
-}
-
-func (c Color) DecodeMsgpack(dec *msgpack.Decoder) error {
-	hex, err := dec.DecodeString()
-	if err != nil {
-		return fmt.Errorf("Color.DecodeMsgpack: %s", err)
-	}
-
-	parsed, err := HexColor(hex)
-	if err != nil {
-		return fmt.Errorf("Color.DecodeMsgpack: HexColor: %s", err)
-	}
-
-	c.Red = parsed.Red
-	c.Blue = parsed.Blue
-	c.Green = parsed.Green
-	c.Alpha = parsed.Alpha
-	return nil
-}
-
-// // MarshalMsgpack serializes the Color for msgpack.
-// func (c Color) MarshalMsgpack() ([]byte, error) {
-// 	data := []uint8{
-// 		c.Red, c.Green, c.Blue, c.Alpha,
-// 	}
-// 	return msgpack.Marshal(data)
-// }
-//
-// // UnmarshalMsgpack decodes a Color from msgpack format.
-// func (c *Color) UnmarshalMsgpack(b []byte) error {
-// 	var data []uint8
-// 	if err := msgpack.Unmarshal(data, b); err != nil {
-// 		return err
-// 	}
-// 	c.Red = 255
-// 	c.Green = data[1]
-// 	c.Blue = data[2]
-// 	c.Alpha = data[3]
-// 	return nil
-// }
 
 // IsZero returns if the color is all zeroes (invisible).
 func (c Color) IsZero() bool {

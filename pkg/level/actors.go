@@ -2,7 +2,7 @@ package level
 
 import (
 	"git.kirsle.net/apps/doodle/lib/render"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 // ActorMap holds the doodad information by their ID in the level data.
@@ -19,7 +19,7 @@ func (m ActorMap) Inflate() {
 // given a random UUIDv4 ID.
 func (m ActorMap) Add(a *Actor) {
 	if a.id == "" {
-		a.id = uuid.Must(uuid.NewV4()).String()
+		a.id = uuid.Must(uuid.NewRandom()).String()
 	}
 	m[a.id] = a
 }

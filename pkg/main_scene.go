@@ -1,8 +1,8 @@
 package doodle
 
 import (
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
@@ -113,7 +113,7 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 }
 
 // Loop the editor scene.
-func (s *MainScene) Loop(d *Doodle, ev *events.State) error {
+func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 	s.Supervisor.Loop(ev)
 
 	if err := s.scripting.Loop(); err != nil {
@@ -122,7 +122,7 @@ func (s *MainScene) Loop(d *Doodle, ev *events.State) error {
 
 	s.canvas.Loop(ev)
 
-	if resized := ev.Resized.Read(); resized {
+	if ev.WindowResized {
 		w, h := d.Engine.WindowSize()
 		d.width = w
 		d.height = h

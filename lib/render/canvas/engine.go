@@ -4,7 +4,7 @@ import (
 	"syscall/js"
 	"time"
 
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 )
 
 // Engine implements a rendering engine targeting an HTML canvas for
@@ -17,7 +17,7 @@ type Engine struct {
 	ticks     uint32
 
 	// Private fields.
-	events   *events.State
+	events   *event.State
 	running  bool
 	textures map[string]*Texture // cached texture PNG images
 
@@ -34,7 +34,7 @@ func New(canvasID string) (*Engine, error) {
 	engine := &Engine{
 		canvas:    canvas,
 		startTime: time.Now(),
-		events:    events.New(),
+		events:    event.NewState(),
 		width:     canvas.ClientW(),
 		height:    canvas.ClientH(),
 		queue:     make(chan Event, 1024),

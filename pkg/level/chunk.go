@@ -10,7 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
-	"github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack"
 )
 
@@ -109,7 +109,7 @@ func (c *Chunk) toBitmap(mask render.Color) (render.Texturer, error) {
 	// Generate a unique name for this chunk cache.
 	var name string
 	if c.uuid == uuid.Nil {
-		c.uuid = uuid.Must(uuid.NewV4())
+		c.uuid = uuid.Must(uuid.NewRandom())
 	}
 	name = c.uuid.String()
 

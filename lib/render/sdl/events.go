@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -12,19 +12,17 @@ import (
 var (
 	DebugWindowEvents = false
 	DebugMouseEvents  = false
-	DebugClickEvents  = false
+	DebugClickEvents  = true
 	DebugKeyEvents    = false
 )
 
 // Poll for events.
-func (r *Renderer) Poll() (*events.State, error) {
+func (r *Renderer) Poll() (*event.State, error) {
 	s := r.events
 
 	// helper function to push keyboard key names on keyDown events only.
 	pushKey := func(name string, state uint8) {
-		if state == 1 {
-			s.KeyName.Push(name)
-		}
+		s.SetKeyDown(name, state == 1)
 	}
 
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -42,7 +40,10 @@ func (r *Renderer) Poll() (*events.State, error) {
 					)
 				}
 			}
-			s.Resized.Push(true)
+
+			if t.Event == sdl.WINDOWEVENT_RESIZED {
+				s.WindowResized = true
+			}
 		case *sdl.MouseMotionEvent:
 			if DebugMouseEvents {
 				fmt.Printf("[%d ms] tick:%d MouseMotion  type:%d  id:%d  x:%d  y:%d  xrel:%d  yrel:%d",
@@ -51,42 +52,50 @@ func (r *Renderer) Poll() (*events.State, error) {
 			}
 
 			// Push the cursor position.
-			s.CursorX.Push(t.X)
-			s.CursorY.Push(t.Y)
-			s.Button1.Push(t.State == 1)
+			s.CursorX = int(t.X)
+			s.CursorY = int(t.Y)
 		case *sdl.MouseButtonEvent:
 			if DebugClickEvents {
-				fmt.Printf("[%d ms] tick:%d MouseButton  type:%d  id:%d  x:%d  y:%d  button:%d  state:%d",
+				fmt.Printf("[%d ms] tick:%d MouseButton  type:%d  id:%d  x:%d  y:%d  button:%d  state:%d\n",
 					t.Timestamp, r.ticks, t.Type, t.Which, t.X, t.Y, t.Button, t.State,
 				)
 			}
 
 			// Push the cursor position.
-			s.CursorX.Push(t.X)
-			s.CursorY.Push(t.Y)
+			s.CursorX = int(t.X)
+			s.CursorY = int(t.Y)
 
-			// Is a mouse button pressed down?
-			checkDown := func(number uint8, target *events.BoolTick) bool {
-				if t.Button == number {
-					var eventName string
-					if t.State == 1 && target.Now == false {
-						eventName = "DOWN"
-					} else if t.State == 0 && target.Now == true {
-						eventName = "UP"
-					}
-
-					if eventName != "" {
-						target.Push(eventName == "DOWN")
-					}
-					return true
-				}
-				return false
+			// Store the clicked state of the mouse button.
+			if t.Button == 1 {
+				s.Button1 = t.State == 1
+			} else if t.Button == 2 {
+				s.Button2 = t.State == 1
+			} else if t.Button == 3 {
+				s.Button3 = t.State == 1
 			}
-
-			if checkDown(1, s.Button1) || checkDown(3, s.Button2) || checkDown(2, s.Button3) {
-				// Return the event immediately.
-				return s, nil
-			}
+			//
+			// // Is a mouse button pressed down?
+			// checkDown := func(number uint8, target *events.BoolTick) bool {
+			// 	if t.Button == number {
+			// 		var eventName string
+			// 		if t.State == 1 && target.Now == false {
+			// 			eventName = "DOWN"
+			// 		} else if t.State == 0 && target.Now == true {
+			// 			eventName = "UP"
+			// 		}
+			//
+			// 		if eventName != "" {
+			// 			target.Push(eventName == "DOWN")
+			// 		}
+			// 		return true
+			// 	}
+			// 	return false
+			// }
+			//
+			// if checkDown(1, s.Button1) || checkDown(3, s.Button2) || checkDown(2, s.Button3) {
+			// 	// Return the event immediately.
+			// 	return s, nil
+			// }
 		case *sdl.MouseWheelEvent:
 			if DebugMouseEvents {
 				fmt.Printf("[%d ms] tick:%d MouseWheel  type:%d  id:%d  x:%d  y:%d",
@@ -105,12 +114,12 @@ func (r *Renderer) Poll() (*events.State, error) {
 				if t.Repeat == 1 {
 					continue
 				}
-				s.EscapeKey.Push(t.State == 1)
+				s.Escape = t.State == 1
 			case sdl.SCANCODE_RETURN:
 				if t.Repeat == 1 {
 					continue
 				}
-				s.EnterKey.Push(t.State == 1)
+				s.Enter = t.State == 1
 			case sdl.SCANCODE_F1:
 				pushKey("F1", t.State)
 			case sdl.SCANCODE_F2:
@@ -136,33 +145,29 @@ func (r *Renderer) Poll() (*events.State, error) {
 			case sdl.SCANCODE_F12:
 				pushKey("F12", t.State)
 			case sdl.SCANCODE_UP:
-				s.Up.Push(t.State == 1)
+				s.Up = t.State == 1
 			case sdl.SCANCODE_LEFT:
-				s.Left.Push(t.State == 1)
+				s.Left = t.State == 1
 			case sdl.SCANCODE_RIGHT:
-				s.Right.Push(t.State == 1)
+				s.Right = t.State == 1
 			case sdl.SCANCODE_DOWN:
-				s.Down.Push(t.State == 1)
+				s.Down = t.State == 1
 			case sdl.SCANCODE_LSHIFT:
 			case sdl.SCANCODE_RSHIFT:
-				s.ShiftActive.Push(t.State == 1)
+				s.Shift = t.State == 1
 			case sdl.SCANCODE_LALT:
 			case sdl.SCANCODE_RALT:
-				continue
+				s.Alt = t.State == 1
 			case sdl.SCANCODE_LCTRL:
-				s.ControlActive.Push(t.State == 1)
+				s.Ctrl = t.State == 1
 			case sdl.SCANCODE_RCTRL:
-				s.ControlActive.Push(t.State == 1)
+				s.Ctrl = t.State == 1
 			case sdl.SCANCODE_BACKSPACE:
 				// Make it a key event with "\b" as the sequence.
-				if t.State == 1 || t.Repeat == 1 {
-					s.KeyName.Push(`\b`)
-				}
+				s.SetKeyDown(`\b`, t.State == 1 || t.Repeat == 1)
 			default:
 				// Push the string value of the key.
-				if t.State == 1 {
-					s.KeyName.Push(string(t.Keysym.Sym))
-				}
+				s.SetKeyDown(string(t.Keysym.Sym), t.State == 1)
 			}
 		}
 	}

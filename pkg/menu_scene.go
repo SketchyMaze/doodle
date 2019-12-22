@@ -3,8 +3,8 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/events"
 	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -493,7 +493,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 }
 
 // Loop the editor scene.
-func (s *MenuScene) Loop(d *Doodle, ev *events.State) error {
+func (s *MenuScene) Loop(d *Doodle, ev *event.State) error {
 	s.Supervisor.Loop(ev)
 	return nil
 }

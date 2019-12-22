@@ -1,7 +1,7 @@
 package doodle
 
 import (
-	"git.kirsle.net/apps/doodle/lib/events"
+	"git.kirsle.net/apps/doodle/lib/render/event"
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
@@ -14,7 +14,7 @@ type Scene interface {
 	Destroy() error
 
 	// Loop should update the scene's state but not draw anything.
-	Loop(*Doodle, *events.State) error
+	Loop(*Doodle, *event.State) error
 
 	// Draw should use the scene's state to figure out what pixels need
 	// to draw to the screen.
