@@ -7,8 +7,8 @@ import (
 
 	"syscall/js"
 
-	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/lib/render/canvas"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/canvas"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"

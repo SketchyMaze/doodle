@@ -1,8 +1,8 @@
 package uix
 
 import (
-	"git.kirsle.net/apps/doodle/lib/render"
-	"git.kirsle.net/apps/doodle/lib/render/event"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/apps/doodle/lib/ui"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"

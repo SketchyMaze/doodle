@@ -1,7 +1,7 @@
 package doodads
 
 import (
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // Actor is a reusable run-time drawing component used in Doodle. Actors are an

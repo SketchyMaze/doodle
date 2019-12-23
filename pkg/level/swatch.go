@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // Swatch holds details about a single value in the palette.

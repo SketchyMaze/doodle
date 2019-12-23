@@ -1,6 +1,6 @@
 package level
 
-import "git.kirsle.net/apps/doodle/lib/render"
+import "git.kirsle.net/go/render"
 
 // DefaultPalette returns a sensible default palette.
 func DefaultPalette() *Palette {

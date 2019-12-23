@@ -3,7 +3,7 @@ package collision
 import (
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // CollisionBox holds all of the coordinate pairs to draw the collision box

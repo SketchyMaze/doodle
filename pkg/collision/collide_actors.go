@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // BoxCollision holds the result of a collision BetweenBoxes.

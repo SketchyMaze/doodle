@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"git.kirsle.net/apps/doodle/lib/draw"
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 func TestLine(t *testing.T) {

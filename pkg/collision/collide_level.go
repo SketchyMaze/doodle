@@ -3,7 +3,7 @@ package collision
 import (
 	"sync"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 )

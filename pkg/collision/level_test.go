@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
 	"git.kirsle.net/apps/doodle/pkg/level"

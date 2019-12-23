@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"github.com/robertkrimen/otto"

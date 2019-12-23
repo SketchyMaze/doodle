@@ -3,7 +3,7 @@ package drawtool
 import (
 	"testing"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 func TestHistory(t *testing.T) {

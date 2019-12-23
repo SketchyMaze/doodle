@@ -3,7 +3,7 @@ package scripting
 import (
 	"errors"
 
-	"git.kirsle.net/apps/doodle/lib/render/event"
+	"git.kirsle.net/go/render/event"
 	"github.com/robertkrimen/otto"
 )
 

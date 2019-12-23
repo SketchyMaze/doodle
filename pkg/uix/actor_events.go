@@ -1,6 +1,6 @@
 package uix
 
-import "git.kirsle.net/apps/doodle/lib/render"
+import "git.kirsle.net/go/render"
 
 // CollideEvent holds data sent to an actor's Collide handler.
 type CollideEvent struct {

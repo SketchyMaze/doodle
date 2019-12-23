@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"git.kirsle.net/apps/doodle/lib/render/sdl"
+	"git.kirsle.net/go/render/sdl"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"

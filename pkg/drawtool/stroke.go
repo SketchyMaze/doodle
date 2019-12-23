@@ -1,6 +1,6 @@
 package drawtool
 
-import "git.kirsle.net/apps/doodle/lib/render"
+import "git.kirsle.net/go/render"
 
 /*
 Stroke holds temporary pixel data with a shape and color.

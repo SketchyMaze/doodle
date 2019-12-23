@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // Debug related variables that can toggle on or off certain features and

@@ -3,7 +3,7 @@ package shmem
 import (
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 )
 
 // Shared globals for easy access throughout the app.

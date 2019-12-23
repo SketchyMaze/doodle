@@ -6,7 +6,7 @@ import (
 	"errors"
 	"image"
 
-	"git.kirsle.net/apps/doodle/lib/render"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )

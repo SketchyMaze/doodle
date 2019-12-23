@@ -16,12 +16,12 @@ function main() {
 		Vx = 0;
 		Vy = 0;
 
-		if (ev.Right.Now) {
+		if (ev.Right) {
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("walk-right", null);
 			}
 			Vx = playerSpeed;
-		} else if (ev.Left.Now) {
+		} else if (ev.Left) {
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("walk-left", null);
 			}
