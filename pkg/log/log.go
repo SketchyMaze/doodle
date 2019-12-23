@@ -3,24 +3,24 @@ package log
 import (
 	"runtime"
 
-	"github.com/kirsle/golog"
+	"git.kirsle.net/go/log"
 )
 
-// Logger is the public golog.Logger object.
-var Logger *golog.Logger
+// Logger is the public log.Logger object.
+var Logger *log.Logger
 
 func init() {
-	Logger = golog.GetLogger("doodle")
-	Logger.Configure(&golog.Config{
-		Level:      golog.InfoLevel,
-		Theme:      golog.DarkTheme,
-		Colors:     golog.ExtendedColor,
+	Logger = log.GetLogger("doodle")
+	Logger.Configure(&log.Config{
+		Level:      log.InfoLevel,
+		Theme:      log.DarkTheme,
+		Colors:     log.ExtendedColor,
 		TimeFormat: "2006-01-02 15:04:05.000000",
 	})
 
 	// TODO: Disable ANSI colors in logs on Windows.
 	if runtime.GOOS == "windows" {
-		Logger.Config.Colors = golog.NoColor
+		Logger.Config.Colors = log.NoColor
 	}
 }
 

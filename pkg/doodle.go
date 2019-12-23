@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
-	"github.com/kirsle/golog"
+	golog "git.kirsle.net/go/log"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
 )
 
 const (

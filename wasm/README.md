@@ -35,7 +35,7 @@ serif in case of any problems.
 
 ## Known Bugs and Limitations
 
-* github.com/kirsle/golog
+* git.kirsle.net/go/log
   * The detection of an interactive terminal is broken in WASM.
   * `terminal.IsTerminal(int(os.Stdout.Fd()))`
   * As a workaround, comment it out and hardcode to `false`
