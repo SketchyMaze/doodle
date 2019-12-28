@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 )
 
 func TestCollisionFunctions(t *testing.T) {
@@ -21,12 +21,12 @@ func TestCollisionFunctions(t *testing.T) {
 
 	// with a solid platform at y=500 and x=0..1000
 	for i := 0; i < 1000; i++ {
-		grid.Set(render.NewPoint(int32(i), 500), solid)
+		grid.Set(render.NewPoint(i, 500), solid)
 	}
 
 	// and a short wall in the middle of the platform
 	for i := 480; i < 500; i++ {
-		grid.Set(render.NewPoint(500, int32(i)), solid)
+		grid.Set(render.NewPoint(500, i), solid)
 	}
 
 	// Make a dummy player character.

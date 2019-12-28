@@ -5,9 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
@@ -15,10 +12,13 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // Width of the panel frame.
-var paletteWidth int32 = 160
+var paletteWidth = 160
 
 // EditorUI manages the user interface for the Editor Scene.
 type EditorUI struct {
@@ -52,7 +52,7 @@ type EditorUI struct {
 	doodadSkip       int
 	doodadRows       []*ui.Frame
 	doodadPager      *ui.Frame
-	doodadButtonSize int32
+	doodadButtonSize int
 	doodadScroller   *ui.Frame
 
 	// ToolBar window.
@@ -130,7 +130,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 	// Menu Bar frame.
 	{
 		u.MenuBar.Configure(ui.Config{
-			Width:      int32(d.width),
+			Width:      d.width,
 			Background: render.Black,
 		})
 		u.MenuBar.Compute(d.Engine)
@@ -139,11 +139,11 @@ func (u *EditorUI) Resized(d *Doodle) {
 	// Status Bar.
 	{
 		u.StatusBar.Configure(ui.Config{
-			Width: int32(d.width),
+			Width: d.width,
 		})
 		u.StatusBar.MoveTo(render.Point{
 			X: 0,
-			Y: int32(d.height) - u.StatusBar.Size().H,
+			Y: d.height - u.StatusBar.Size().H,
 		})
 		u.StatusBar.Compute(d.Engine)
 	}
@@ -152,10 +152,10 @@ func (u *EditorUI) Resized(d *Doodle) {
 	{
 		u.Palette.Configure(ui.Config{
 			Width:  paletteWidth,
-			Height: int32(u.d.height) - u.StatusBar.Size().H,
+			Height: u.d.height - u.StatusBar.Size().H,
 		})
 		u.Palette.MoveTo(render.NewPoint(
-			int32(u.d.width)-u.Palette.BoxSize().W,
+			u.d.width-u.Palette.BoxSize().W,
 			u.MenuBar.BoxSize().H,
 		))
 		u.Palette.Compute(d.Engine)
@@ -163,7 +163,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 		u.scrollDoodadFrame(0)
 	}
 
-	var innerHeight = int32(u.d.height) - u.MenuBar.Size().H - u.StatusBar.Size().H
+	var innerHeight = u.d.height - u.MenuBar.Size().H - u.StatusBar.Size().H
 
 	// Tool Bar.
 	{
@@ -187,8 +187,8 @@ func (u *EditorUI) Resized(d *Doodle) {
 			u.MenuBar.Size().H,
 		))
 		frame.Resize(render.NewRect(
-			int32(d.width)-u.Palette.Size().W-u.ToolBar.Size().W,
-			int32(d.height)-u.MenuBar.Size().H-u.StatusBar.Size().H,
+			d.width-u.Palette.Size().W-u.ToolBar.Size().W,
+			d.height-u.MenuBar.Size().H-u.StatusBar.Size().H,
 		))
 		frame.Compute(d.Engine)
 
@@ -201,10 +201,10 @@ func (u *EditorUI) Resized(d *Doodle) {
 		btn.Compute(d.Engine)
 
 		var (
-			wsP           = u.Workspace.Point()
-			wsSize        = u.Workspace.Size()
-			btnSize       = btn.Size()
-			padding int32 = 8
+			wsP     = u.Workspace.Point()
+			wsSize  = u.Workspace.Size()
+			btnSize = btn.Size()
+			padding = 8
 		)
 		btn.MoveTo(render.NewPoint(
 			wsP.X+wsSize.W-btnSize.W-padding,
@@ -215,7 +215,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 
 // Loop to process events and update the UI.
 func (u *EditorUI) Loop(ev *event.State) error {
-	u.cursor = render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
+	u.cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 
 	// Loop the UI and see whether we're told to stop event propagation.
 	var stopPropagation bool
@@ -537,7 +537,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		BorderSize:  1,
 	}
 
-	var labelHeight int32
+	var labelHeight int
 	for _, variable := range u.StatusBoxes {
 		label := ui.NewLabel(ui.Label{
 			TextVariable: variable,
@@ -577,7 +577,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	// Set the initial good frame size to have the height secured,
 	// so when resizing the application window we can just adjust for width.
 	frame.Resize(render.Rect{
-		W: int32(d.width),
+		W: d.width,
 		H: labelHeight + frame.BoxThickness(1),
 	})
 	frame.Compute(d.Engine)

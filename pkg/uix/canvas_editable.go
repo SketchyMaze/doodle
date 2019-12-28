@@ -1,11 +1,11 @@
 package uix
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
-	"git.kirsle.net/apps/doodle/pkg/drawtool"
-	"git.kirsle.net/apps/doodle/pkg/level"
 )
 
 // commitStroke is the common function that applies a stroke the user is
@@ -102,8 +102,8 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 	var (
 		P      = ui.AbsolutePosition(w)
 		cursor = render.Point{
-			X: int32(ev.CursorX) - P.X - w.Scroll.X,
-			Y: int32(ev.CursorY) - P.Y - w.Scroll.Y,
+			X: ev.CursorX - P.X - w.Scroll.X,
+			Y: ev.CursorY - P.Y - w.Scroll.Y,
 		}
 	)
 

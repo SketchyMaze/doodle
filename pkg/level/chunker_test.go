@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 )
 
 func TestWorldSize(t *testing.T) {
@@ -86,8 +86,8 @@ func TestWorldSize(t *testing.T) {
 
 func TestViewportChunks(t *testing.T) {
 	// Initialize a 100 chunk image with 5x5 chunks.
-	var ChunkSize int32 = 100
-	var Offset int32 = 50
+	var ChunkSize int = 100
+	var Offset int = 50
 	c := level.NewChunker(int(ChunkSize))
 	sw := &level.Swatch{
 		Name:  "solid",
@@ -103,8 +103,8 @@ func TestViewportChunks(t *testing.T) {
 	// The chunk size is 100px so place a single pixel in each
 	// 100px quadrant.
 	fmt.Printf("size=%d  offset=%d\n", ChunkSize, Offset)
-	for x := int32(-2); x <= 2; x++ {
-		for y := int32(-2); y <= 2; y++ {
+	for x := -2; x <= 2; x++ {
+		for y := -2; y <= 2; y++ {
 			point := render.NewPoint(
 				x*ChunkSize+Offset,
 				y*ChunkSize+Offset,

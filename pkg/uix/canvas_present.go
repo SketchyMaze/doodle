@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // Present the canvas.
@@ -59,8 +59,8 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			}
 
 			dst := render.Rect{
-				X: p.X + w.Scroll.X + w.BoxThickness(1) + (coord.X * int32(chunk.Size)),
-				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + (coord.Y * int32(chunk.Size)),
+				X: p.X + w.Scroll.X + w.BoxThickness(1) + (coord.X * chunk.Size),
+				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + (coord.Y * chunk.Size),
 
 				// src.W and src.H will be AT MOST the full width and height of
 				// a Canvas widget. Subtract the scroll offset to keep it bounded

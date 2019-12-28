@@ -114,7 +114,7 @@ func (d *Doodle) Run() error {
 		// Poll for events.
 		ev, err := d.Engine.Poll()
 		// log.Error("Button1 is: %+v", ev.Button1)
-		shmem.Cursor = render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
+		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 		if err != nil {
 			log.Error("event poll error: %s", err)
 			d.running = false

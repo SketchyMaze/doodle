@@ -1,9 +1,9 @@
 package uix
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
 )
 
 // IsCursorOver returns true if the mouse cursor is physically over top
@@ -33,7 +33,7 @@ func (w *Canvas) presentCursor(e render.Engine) {
 
 	// Are we editing with a thick brush?
 	if w.BrushSize > 0 {
-		var r = int32(w.BrushSize)
+		var r = w.BrushSize
 		rect := render.Rect{
 			X: shmem.Cursor.X - r,
 			Y: shmem.Cursor.Y - r,

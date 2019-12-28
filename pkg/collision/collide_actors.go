@@ -102,11 +102,11 @@ The returned CollisionBox uses absolute coordinates in the same space
 as the passed-in rects.
 */
 func Overlap(a, b render.Rect) CollisionBox {
-	max := func(x, y int32) int32 {
-		return int32(math.Max(float64(x), float64(y)))
+	max := func(x, y int) int {
+		return int(math.Max(float64(x), float64(y)))
 	}
-	min := func(x, y int32) int32 {
-		return int32(math.Min(float64(x), float64(y)))
+	min := func(x, y int) int {
+		return int(math.Min(float64(x), float64(y)))
 	}
 
 	var (

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // Frames to cache for FPS calculation.
@@ -20,11 +20,11 @@ var (
 	DebugOverlay   = false
 	DebugCollision = false
 
-	DebugTextPadding int32 = 8
-	DebugTextSize          = 24
-	DebugTextColor         = render.SkyBlue
-	DebugTextStroke        = render.Grey
-	DebugTextShadow        = render.Black
+	DebugTextPadding = 8
+	DebugTextSize    = 24
+	DebugTextColor   = render.SkyBlue
+	DebugTextStroke  = render.Grey
+	DebugTextShadow  = render.Black
 )
 
 var (
@@ -57,10 +57,10 @@ func (d *Doodle) DrawDebugOverlay() {
 	}
 
 	var (
-		darken        = balance.DebugStrokeDarken
-		Yoffset int32 = 20 // leave room for the menu bar
-		Xoffset int32 = 20
-		keys          = []string{
+		darken  = balance.DebugStrokeDarken
+		Yoffset = 20 // leave room for the menu bar
+		Xoffset = 20
+		keys    = []string{
 			"FPS:",
 			"Scene:",
 			"Mouse:",

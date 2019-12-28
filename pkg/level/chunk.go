@@ -6,10 +6,10 @@ import (
 	"image"
 	"math"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack"
 )
@@ -153,8 +153,8 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 	// Pixel coordinate offset to map the Chunk World Position to the
 	// smaller image boundaries.
 	pointOffset := render.Point{
-		X: int32(c.Point.X * int32(c.Size)),
-		Y: int32(c.Point.Y * int32(c.Size)),
+		X: c.Point.X * c.Size,
+		Y: c.Point.Y * c.Size,
 	}
 
 	// Blot all the pixels onto it.
@@ -169,8 +169,8 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 			}
 		}
 		img.Set(
-			int(px.X-pointOffset.X),
-			int(px.Y-pointOffset.Y),
+			px.X-pointOffset.X,
+			px.Y-pointOffset.Y,
 			color.ToColor(),
 		)
 	}
@@ -229,8 +229,8 @@ func (c *Chunk) Rect() render.Rect {
 func (c *Chunk) SizePositive() render.Rect {
 	S := c.Rect()
 	return render.Rect{
-		W: int32(math.Abs(float64(S.X))) + S.W,
-		H: int32(math.Abs(float64(S.Y))) + S.H,
+		W: int(math.Abs(float64(S.X))) + S.W,
+		H: int(math.Abs(float64(S.Y))) + S.H,
 	}
 }
 

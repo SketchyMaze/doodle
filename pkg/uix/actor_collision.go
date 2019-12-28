@@ -5,12 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/go/render"
 	"github.com/robertkrimen/otto"
 )
 
@@ -59,7 +59,7 @@ func (w *Canvas) loopActorCollision() error {
 			// Get the actor's velocity to see if it's moving this tick.
 			v := a.Velocity()
 			if a.hasGravity {
-				v.Y += int32(balance.Gravity)
+				v.Y += balance.Gravity
 			}
 
 			// If not moving, grab the bounding box right now.
@@ -162,7 +162,7 @@ func (w *Canvas) loopActorCollision() error {
 					// he'd continue falling, so I had to move him up to stop it,
 					// turns out moving up by the -gravity is exactly the distance
 					// to go. Don't know why.
-					b.MoveBy(render.NewPoint(0, int32(-balance.Gravity)))
+					b.MoveBy(render.NewPoint(0, -balance.Gravity))
 				} else {
 					b.MoveTo(lastGoodBox.Point())
 				}

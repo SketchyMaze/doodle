@@ -8,7 +8,7 @@ var (
 	ShellBackgroundColor         = render.RGBA(0, 20, 40, 200)
 	ShellForegroundColor         = render.RGBA(0, 153, 255, 255)
 	ShellPromptColor             = render.White
-	ShellPadding          int32  = 8
+	ShellPadding                 = 8
 	ShellFontSize                = 16
 	ShellFontSizeSmall           = 10
 	ShellCursorBlinkRate  uint64 = 20

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 	"github.com/vmihailenco/msgpack"
 )
 
@@ -76,8 +76,8 @@ func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
 	go func() {
 		sent := make(map[render.Point]interface{})
 
-		for x := viewport.X; x < viewport.W; x += int32(c.Size / 4) {
-			for y := viewport.Y; y < viewport.H; y += int32(c.Size / 4) {
+		for x := viewport.X; x < viewport.W; x += (c.Size / 4) {
+			for y := viewport.Y; y < viewport.H; y += (c.Size / 4) {
 
 				// Constrain this chunksize step to a point within the bounds
 				// of the viewport. This can yield partial chunks on the edges
@@ -135,7 +135,7 @@ func (c *Chunker) WorldSize() render.Rect {
 	var (
 		chunkLowest  render.Point
 		chunkHighest render.Point
-		size         = int32(c.Size)
+		size         = c.Size
 	)
 
 	for coord := range c.Chunks {
@@ -169,8 +169,8 @@ func (c *Chunker) WorldSizePositive() render.Rect {
 	return render.Rect{
 		X: 0,
 		Y: 0,
-		W: int32(math.Abs(float64(S.X))) + S.W,
-		H: int32(math.Abs(float64(S.Y))) + S.H,
+		W: int(math.Abs(float64(S.X))) + S.W,
+		H: int(math.Abs(float64(S.Y))) + S.H,
 	}
 }
 
@@ -271,8 +271,8 @@ func (c *Chunker) ChunkCoordinate(abs render.Point) render.Point {
 
 	size := float64(c.Size)
 	return render.NewPoint(
-		int32(math.Floor(float64(abs.X)/size)),
-		int32(math.Floor(float64(abs.Y)/size)),
+		int(math.Floor(float64(abs.X)/size)),
+		int(math.Floor(float64(abs.Y)/size)),
 	)
 }
 

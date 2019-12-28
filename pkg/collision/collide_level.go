@@ -3,9 +3,9 @@ package collision
 import (
 	"sync"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 )
 
 // Collide describes how a collision occurred.
@@ -61,13 +61,13 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 		result = &Collide{
 			MoveTo: P,
 		}
-		ceiling   bool  // Has hit a ceiling?
-		capHeight int32 // Stop vertical movement thru a ceiling
-		capLeft   int32 // Stop movement thru a wall
-		capRight  int32
-		capFloor  int32 // Stop movement thru the floor
-		hitLeft   bool  // Has hit an obstacle on the left
-		hitRight  bool  // or right
+		ceiling   bool // Has hit a ceiling?
+		capHeight int  // Stop vertical movement thru a ceiling
+		capLeft   int  // Stop movement thru a wall
+		capRight  int
+		capFloor  int  // Stop movement thru the floor
+		hitLeft   bool // Has hit an obstacle on the left
+		hitRight  bool // or right
 		hitFloor  bool
 	)
 

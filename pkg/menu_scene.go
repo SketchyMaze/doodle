@@ -3,15 +3,15 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 /*
@@ -82,8 +82,8 @@ func (s *MenuScene) Setup(d *Doodle) error {
 	// Set up the background wallpaper canvas.
 	s.canvas = uix.NewCanvas(100, false)
 	s.canvas.Resize(render.Rect{
-		W: int32(d.width),
-		H: int32(d.height),
+		W: d.width,
+		H: d.height,
 	})
 	s.canvas.LoadLevel(d.Engine, &level.Level{
 		Chunker:   level.NewChunker(100),
@@ -127,8 +127,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 
 	window := ui.NewWindow("New Drawing")
 	window.Configure(ui.Config{
-		Width:      int32(float64(d.width) * 0.75),
-		Height:     int32(float64(d.height) * 0.75),
+		Width:      int(float64(d.width) * 0.75),
+		Height:     int(float64(d.height) * 0.75),
 		Background: render.Grey,
 	})
 	window.Compute(d.Engine)
@@ -324,8 +324,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 	window := ui.NewWindow("Open Drawing")
 	window.Configure(ui.Config{
-		Width:      int32(float64(d.width) * 0.75),
-		Height:     int32(float64(d.height) * 0.75),
+		Width:      int(float64(d.width) * 0.75),
+		Height:     int(float64(d.height) * 0.75),
 		Background: render.Grey,
 	})
 	window.Compute(d.Engine)
@@ -508,7 +508,7 @@ func (s *MenuScene) Draw(d *Doodle) error {
 
 	s.window.Compute(d.Engine)
 	s.window.MoveTo(render.Point{
-		X: (int32(d.width) / 2) - (s.window.Size().W / 2),
+		X: (d.width / 2) - (s.window.Size().W / 2),
 		Y: 60,
 	})
 	s.window.Present(d.Engine, s.window.Point())

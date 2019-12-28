@@ -7,7 +7,7 @@ var (
 	Height = 768
 
 	// Speed to scroll a canvas with arrow keys in Edit Mode.
-	CanvasScrollSpeed int32 = 8
+	CanvasScrollSpeed = 8
 
 	// Window scrolling behavior in Play Mode.
 	ScrollboxHoz      = 256 // horizontal px from window border to start scrol

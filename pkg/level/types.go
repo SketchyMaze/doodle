@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/go/render"
 )
 
 // Useful variables.
@@ -73,9 +73,9 @@ func New() *Level {
 
 // Pixel associates a coordinate with a palette index.
 type Pixel struct {
-	X            int32 `json:"x"`
-	Y            int32 `json:"y"`
-	PaletteIndex int32 `json:"p"`
+	X            int `json:"x"`
+	Y            int `json:"y"`
+	PaletteIndex int `json:"p"`
 
 	// Private runtime values.
 	Swatch *Swatch `json:"-"` // pointer to its swatch, for when rendered.
@@ -103,7 +103,7 @@ func (p Pixel) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON loads a Pixel from JSON again.
 func (p *Pixel) UnmarshalJSON(text []byte) error {
-	var triplet []int32
+	var triplet []int
 	err := json.Unmarshal(text, &triplet)
 	if err != nil {
 		return err

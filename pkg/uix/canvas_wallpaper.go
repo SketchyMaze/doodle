@@ -1,9 +1,9 @@
 package uix
 
 import (
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
+	"git.kirsle.net/go/render"
 )
 
 // Wallpaper configures the wallpaper in a Canvas.
@@ -49,14 +49,14 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 	if w.wallpaper.pageType >= level.Bounded {
 		if w.wallpaper.maxWidth > 0 {
 			if int64(orig.X+size.W) > w.wallpaper.maxWidth {
-				var delta = int32(w.wallpaper.maxWidth - int64(orig.X+size.W))
-				moveBy.X = delta
+				var delta = w.wallpaper.maxWidth - int64(orig.X+size.W)
+				moveBy.X = int(delta)
 			}
 		}
 		if w.wallpaper.maxHeight > 0 {
 			if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
-				var delta = int32(w.wallpaper.maxHeight - int64(orig.Y+size.H))
-				moveBy.Y = delta
+				var delta = w.wallpaper.maxHeight - int64(orig.Y+size.H)
+				moveBy.Y = int(delta)
 			}
 		}
 	}
@@ -89,7 +89,7 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	// For tiled textures, compute the offset amount. If we are scrolled away
 	// from the Origin (0,0) we find out by how far (subtract full tile sizes)
 	// and use the remainder as an offset for drawing the tiles.
-	var dx, dy int32
+	var dx, dy int
 	if origin.X > p.X {
 		for origin.X > p.X && origin.X > size.W {
 			origin.X -= size.W

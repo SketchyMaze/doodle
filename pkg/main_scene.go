@@ -1,15 +1,15 @@
 package doodle
 
 import (
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // MainScene implements the main menu of Doodle.
@@ -84,8 +84,8 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 	s.canvas = uix.NewCanvas(100, false)
 	s.canvas.Scrollable = true
 	s.canvas.Resize(render.Rect{
-		W: int32(d.width),
-		H: int32(d.height),
+		W: d.width,
+		H: d.height,
 	})
 
 	s.scripting = scripting.NewSupervisor()
@@ -128,8 +128,8 @@ func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 		d.height = h
 		log.Info("Resized to %dx%d", d.width, d.height)
 		s.canvas.Resize(render.Rect{
-			W: int32(d.width),
-			H: int32(d.height),
+			W: d.width,
+			H: d.height,
 		})
 	}
 
@@ -147,8 +147,8 @@ func (s *MainScene) Draw(d *Doodle) error {
 	d.Engine.DrawBox(render.RGBA(255, 255, 254, 128), render.Rect{
 		X: 0,
 		Y: 0,
-		W: int32(d.width),
-		H: int32(d.height),
+		W: d.width,
+		H: d.height,
 	})
 
 	label := ui.NewLabel(ui.Label{
@@ -162,14 +162,14 @@ func (s *MainScene) Draw(d *Doodle) error {
 	})
 	label.Compute(d.Engine)
 	label.MoveTo(render.Point{
-		X: (int32(d.width) / 2) - (label.Size().W / 2),
+		X: (d.width / 2) - (label.Size().W / 2),
 		Y: 120,
 	})
 	label.Present(d.Engine, label.Point())
 
 	s.frame.Compute(d.Engine)
 	s.frame.MoveTo(render.Point{
-		X: (int32(d.width) / 2) - (s.frame.Size().W / 2),
+		X: (d.width / 2) - (s.frame.Size().W / 2),
 		Y: 260,
 	})
 	s.frame.Present(d.Engine, s.frame.Point())

@@ -6,9 +6,6 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/collision"
@@ -18,6 +15,9 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // Canvas is a custom ui.Widget that manages a single drawing.
@@ -225,7 +225,7 @@ func (w *Canvas) Loop(ev *event.State) error {
 
 	// If the canvas is editable, only care if it's over our space.
 	if w.Editable {
-		cursor := render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))
+		cursor := render.NewPoint(ev.CursorX, ev.CursorY)
 		if cursor.Inside(ui.AbsoluteRect(w)) {
 			return w.loopEditable(ev)
 		}

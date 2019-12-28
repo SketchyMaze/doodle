@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
 	"github.com/robertkrimen/otto"
 )
@@ -45,7 +45,7 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 		id = uuid.Must(uuid.NewRandom()).String()
 	}
 
-	size := int32(doodad.Layers[0].Chunker.Size)
+	size := doodad.Layers[0].Chunker.Size
 	can := NewCanvas(int(size), false)
 	can.Name = id
 
@@ -83,10 +83,10 @@ func (a *Actor) GetBoundingRect() render.Rect {
 // SetHitbox sets the actor's elected hitbox.
 func (a *Actor) SetHitbox(x, y, w, h int) {
 	a.hitbox = render.Rect{
-		X: int32(x),
-		Y: int32(y),
-		W: int32(w),
-		H: int32(h),
+		X: x,
+		Y: y,
+		W: w,
+		H: h,
 	}
 }
 

@@ -1,9 +1,9 @@
 package doodads
 
 import (
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 )
 
 // Doodad is a reusable component for Levels that have scripts and graphics.
@@ -53,8 +53,8 @@ func (d *Doodad) ChunkSize() int {
 func (d *Doodad) Rect() render.Rect {
 	var size = d.ChunkSize()
 	return render.Rect{
-		W: int32(size),
-		H: int32(size),
+		W: size,
+		H: size,
 	}
 }
 

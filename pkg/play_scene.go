@@ -3,9 +3,6 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
@@ -13,6 +10,9 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // PlayScene manages the "Edit Level" game mode.
@@ -114,7 +114,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.Name = "play-canvas"
 	s.drawing.MoveTo(render.Origin)
-	s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
+	s.drawing.Resize(render.NewRect(d.width, d.height))
 	s.drawing.Compute(d.Engine)
 
 	// Handler when an actor touches water or fire.
@@ -305,7 +305,7 @@ func (s *PlayScene) DieByFire() {
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	// Update debug overlay values.
-	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(int32(ev.CursorX), int32(ev.CursorY))).String()
+	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX, ev.CursorY)).String()
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
@@ -318,7 +318,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 		if w != d.width || h != d.height {
 			d.width = w
 			d.height = h
-			s.drawing.Resize(render.NewRect(int32(d.width), int32(d.height)))
+			s.drawing.Resize(render.NewRect(d.width, d.height))
 			return nil
 		}
 	}
@@ -358,9 +358,9 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 	// Draw the Edit button.
 	var (
-		canSize       = s.drawing.Size()
-		size          = s.editButton.Size()
-		padding int32 = 8
+		canSize = s.drawing.Size()
+		size    = s.editButton.Size()
+		padding = 8
 	)
 	s.editButton.Present(d.Engine, render.Point{
 		X: canSize.W - size.W - padding,
@@ -371,8 +371,8 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	if !s.alertBox.Hidden() {
 		s.alertBox.Compute(d.Engine)
 		s.alertBox.MoveTo(render.Point{
-			X: int32(d.width/2) - (s.alertBox.Size().W / 2),
-			Y: int32(d.height/2) - (s.alertBox.Size().H / 2),
+			X: (d.width / 2) - (s.alertBox.Size().W / 2),
+			Y: (d.height / 2) - (s.alertBox.Size().H / 2),
 		})
 		s.alertBox.Present(d.Engine, s.alertBox.Point())
 	}
@@ -382,8 +382,7 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *event.State) {
-	var playerSpeed = int32(balance.PlayerMaxVelocity)
-	// var gravity = int32(balance.Gravity)
+	var playerSpeed = balance.PlayerMaxVelocity
 
 	var velocity render.Point
 

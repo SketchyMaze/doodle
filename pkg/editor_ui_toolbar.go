@@ -1,16 +1,16 @@
 package doodle
 
 import (
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/sprites"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // Width of the toolbar frame.
-var toolbarWidth int32 = 44      // 38px button (32px sprite + borders) + padding
-var toolbarSpriteSize int32 = 32 // 32x32 sprites.
+var toolbarWidth = 44      // 38px button (32px sprite + borders) + padding
+var toolbarSpriteSize = 32 // 32x32 sprites.
 
 // SetupToolbar configures the UI for the Tools panel.
 func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
@@ -137,7 +137,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			image,
 		)
 
-		var btnSize int32 = btn.BoxThickness(2) + toolbarSpriteSize
+		var btnSize = btn.BoxThickness(2) + toolbarSpriteSize
 		btn.Resize(render.NewRect(btnSize, btnSize))
 
 		btn.Handle(ui.Click, func(p render.Point) {

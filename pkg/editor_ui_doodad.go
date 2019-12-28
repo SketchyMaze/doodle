@@ -7,13 +7,13 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // DraggableActor is a Doodad being dragged from the Doodad palette.
@@ -123,7 +123,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		)
 	}
 
-	var buttonSize = (paletteWidth - window.BoxThickness(2)) / int32(perRow)
+	var buttonSize = (paletteWidth - window.BoxThickness(2)) / perRow
 	u.doodadButtonSize = buttonSize
 
 	// Load all the doodads, skip hidden ones.
@@ -218,8 +218,8 @@ func (u *EditorUI) scrollDoodadFrame(rows int) {
 
 	// Calculate about how many rows we can see given our current window size.
 	var (
-		maxVisibleHeight = int32(u.d.height - 86)
-		calculatedHeight int32
+		maxVisibleHeight = u.d.height - 86
+		calculatedHeight int
 		rowsBefore       int // count of rows hidden before
 		rowsVisible      int
 		rowsAfter        int                                     // count of rows hidden after
@@ -263,7 +263,7 @@ func (u *EditorUI) scrollDoodadFrame(rows int) {
 
 	var viewPercent = float64(rowsBefore+rowsVisible) / float64(len(u.doodadRows))
 	u.doodadScroller.Configure(ui.Config{
-		Width: int32(float64(paletteWidth-50) * viewPercent), // TODO: hacky magic number
+		Width: int(float64(paletteWidth-50) * viewPercent), // TODO: hacky magic number
 	})
 
 }

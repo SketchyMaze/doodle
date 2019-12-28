@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
@@ -15,6 +13,8 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
 )
 
 // EditorScene manages the "Edit Level" game mode.
@@ -136,7 +136,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		}
 
 		// TODO: move inside the UI. Just an approximate position for now.
-		s.UI.Canvas.Resize(render.NewRect(int32(s.DoodadSize), int32(s.DoodadSize)))
+		s.UI.Canvas.Resize(render.NewRect(s.DoodadSize, s.DoodadSize))
 		s.UI.Canvas.ScrollTo(render.Origin)
 		s.UI.Canvas.Scrollable = false
 		s.UI.Workspace.Compute(d.Engine)

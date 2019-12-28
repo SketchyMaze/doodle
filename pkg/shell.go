@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 	"github.com/robertkrimen/otto"
 )
 
@@ -278,21 +278,21 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 		}
 
 		// How tall is the box?
-		boxHeight := int32(lineHeight*(balance.ShellHistoryLineCount+1)) + balance.ShellPadding
+		boxHeight := (lineHeight * (balance.ShellHistoryLineCount + 1)) + balance.ShellPadding
 
 		// Draw the background color.
 		d.Engine.DrawBox(
 			balance.ShellBackgroundColor,
 			render.Rect{
 				X: 0,
-				Y: int32(d.height) - boxHeight,
-				W: int32(d.width),
+				Y: d.height - boxHeight,
+				W: d.width,
 				H: boxHeight,
 			},
 		)
 
 		// Draw the recent commands.
-		outputY := int32(d.height - (lineHeight * 2))
+		outputY := d.height - (lineHeight * 2)
 		for i := 0; i < balance.ShellHistoryLineCount; i++ {
 			if len(s.Output) > i {
 				line := s.Output[len(s.Output)-1-i]
@@ -309,7 +309,7 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 					},
 				)
 			}
-			outputY -= int32(lineHeight)
+			outputY -= lineHeight
 		}
 
 		// Draw the command prompt.
@@ -322,14 +322,14 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 			},
 			render.Point{
 				X: balance.ShellPadding,
-				Y: int32(d.height-balance.ShellFontSize) - balance.ShellPadding,
+				Y: d.height - balance.ShellFontSize - balance.ShellPadding,
 			},
 		)
 	} else if len(s.Flashes) > 0 {
 		// Otherwise, just draw flashed messages.
 		valid := false // Did we actually draw any?
 
-		outputY := int32(d.height - (lineHeight * 2) - 16)
+		outputY := d.height - (lineHeight * 2) - 16
 		for i := len(s.Flashes); i > 0; i-- {
 			flash := s.Flashes[i-1]
 			if shmem.Tick >= flash.Expires {
@@ -349,7 +349,7 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 					Y: outputY,
 				},
 			)
-			outputY -= int32(lineHeight)
+			outputY -= lineHeight
 			valid = true
 		}
 

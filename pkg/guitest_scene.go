@@ -3,12 +3,12 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // GUITestScene implements the main menu of Doodle.
@@ -269,14 +269,14 @@ func (s *GUITestScene) Draw(d *Doodle) error {
 	})
 	label.Compute(d.Engine)
 	label.MoveTo(render.Point{
-		X: (int32(d.width) / 2) - (label.Size().W / 2),
+		X: (d.width / 2) - (label.Size().W / 2),
 		Y: 40,
 	})
 	label.Present(d.Engine, label.Point())
 
 	s.Window.Compute(d.Engine)
 	s.Window.MoveTo(render.Point{
-		X: (int32(d.width) / 2) - (s.Window.Size().W / 2),
+		X: (d.width / 2) - (s.Window.Size().W / 2),
 		Y: 100,
 	})
 	s.Window.Present(d.Engine, s.Window.Point())

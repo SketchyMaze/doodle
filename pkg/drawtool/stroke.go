@@ -111,10 +111,10 @@ func (s *Stroke) IterThickPoints() chan render.Rect {
 	go func() {
 		for pt := range s.IterPoints() {
 			ch <- render.Rect{
-				X: pt.X - int32(s.Thickness),
-				Y: pt.Y - int32(s.Thickness),
-				W: int32(s.Thickness) * 2,
-				H: int32(s.Thickness) * 2,
+				X: pt.X - s.Thickness,
+				Y: pt.Y - s.Thickness,
+				W: s.Thickness * 2,
+				H: s.Thickness * 2,
 			}
 		}
 		close(ch)

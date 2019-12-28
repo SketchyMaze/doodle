@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/event"
 )
 
 /*
@@ -73,8 +73,8 @@ func (w *Canvas) loopConstrainScroll() error {
 		w.wallpaper.maxWidth+w.wallpaper.maxHeight > 0 {
 		var (
 			// TODO: downcast from int64!
-			mw       = int32(w.wallpaper.maxWidth)
-			mh       = int32(w.wallpaper.maxHeight)
+			mw       = int(w.wallpaper.maxWidth)
+			mh       = int(w.wallpaper.maxHeight)
 			Viewport = w.Viewport()
 		)
 		if Viewport.W > mw {
@@ -126,10 +126,10 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		)
 
 		// Scroll left
-		if APosition.X-VP.X <= int32(balance.ScrollboxHoz) {
+		if APosition.X-VP.X <= balance.ScrollboxHoz {
 			var delta = APosition.X - VP.X
-			if delta > int32(balance.ScrollMaxVelocity) {
-				delta = int32(balance.ScrollMaxVelocity)
+			if delta > balance.ScrollMaxVelocity {
+				delta = balance.ScrollMaxVelocity
 			}
 
 			if delta < 0 {
@@ -140,23 +140,23 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		}
 
 		// Scroll right
-		if APosition.X >= VP.W-ASize.W-int32(balance.ScrollboxHoz) {
-			var delta = VP.W - ASize.W - int32(balance.ScrollboxHoz)
-			if delta > int32(balance.ScrollMaxVelocity) {
-				delta = int32(balance.ScrollMaxVelocity)
+		if APosition.X >= VP.W-ASize.W-balance.ScrollboxHoz {
+			var delta = VP.W - ASize.W - balance.ScrollboxHoz
+			if delta > balance.ScrollMaxVelocity {
+				delta = balance.ScrollMaxVelocity
 			}
 			scrollBy.X = -delta
 		}
 
 		// Scroll up
-		if APosition.Y-VP.Y <= int32(balance.ScrollboxVert) {
+		if APosition.Y-VP.Y <= balance.ScrollboxVert {
 			var delta = APosition.Y - VP.Y
-			if delta > int32(balance.ScrollMaxVelocity) {
-				delta = int32(balance.ScrollMaxVelocity)
+			if delta > balance.ScrollMaxVelocity {
+				delta = balance.ScrollMaxVelocity
 			}
 
 			// TODO: add gravity to counteract jitters on scrolling vertically
-			scrollBy.Y -= int32(balance.Gravity)
+			scrollBy.Y -= balance.Gravity
 
 			if delta < 0 {
 				delta = -delta
@@ -165,15 +165,15 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		}
 
 		// Scroll down
-		if APosition.Y >= VP.H-ASize.H-int32(balance.ScrollboxVert) {
-			var delta = VP.H - ASize.H - int32(balance.ScrollboxVert)
-			if delta > int32(balance.ScrollMaxVelocity) {
-				delta = int32(balance.ScrollMaxVelocity)
+		if APosition.Y >= VP.H-ASize.H-balance.ScrollboxVert {
+			var delta = VP.H - ASize.H - balance.ScrollboxVert
+			if delta > balance.ScrollMaxVelocity {
+				delta = balance.ScrollMaxVelocity
 			}
 			scrollBy.Y = -delta
 
 			// TODO: add gravity to counteract jitters on scrolling vertically
-			scrollBy.Y += int32(balance.Gravity * 3)
+			scrollBy.Y += balance.Gravity * 3
 		}
 
 		if scrollBy != render.Origin {
