@@ -9,7 +9,7 @@ import (
 	"runtime"
 
 	"git.kirsle.net/go/render"
-	"git.kirsle.net/apps/doodle/lib/ui"
+	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/wasm"

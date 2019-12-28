@@ -8,7 +8,7 @@ import (
 
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
-	"git.kirsle.net/apps/doodle/lib/ui"
+	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/collision"

@@ -2,7 +2,7 @@ package balance
 
 import (
 	"git.kirsle.net/go/render"
-	"git.kirsle.net/apps/doodle/lib/ui"
+	"git.kirsle.net/go/ui"
 )
 
 // Theme and appearance variables.
