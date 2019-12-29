@@ -199,7 +199,7 @@ func (s *PlayScene) SetupAlertbox() {
 	{
 		frame := ui.NewFrame("Open Drawing Frame")
 		window.Pack(frame, ui.Pack{
-			Side: ui.N,
+			Side:   ui.N,
 			Fill:   true,
 			Expand: true,
 		})
@@ -213,9 +213,9 @@ func (s *PlayScene) SetupAlertbox() {
 			Font: balance.LabelFont,
 		})
 		frame.Pack(s.alertBoxLabel, ui.Pack{
-			Side: ui.N,
-			FillX:  true,
-			PadY:   16,
+			Side:  ui.N,
+			FillX: true,
+			PadY:  16,
 		})
 
 		/******************
@@ -224,9 +224,9 @@ func (s *PlayScene) SetupAlertbox() {
 
 		bottomFrame := ui.NewFrame("Button Frame")
 		frame.Pack(bottomFrame, ui.Pack{
-			Side: ui.N,
-			FillX:  true,
-			PadY:   8,
+			Side:  ui.N,
+			FillX: true,
+			PadY:  8,
 		})
 
 		// Button factory for the various options.
@@ -240,7 +240,7 @@ func (s *PlayScene) SetupAlertbox() {
 			})
 			bottomFrame.Pack(btn, ui.Pack{
 				Side: ui.W,
-				PadX:   2,
+				PadX: 2,
 			})
 			s.supervisor.Add(btn)
 			btn.Hide() // all buttons hidden by default
@@ -362,10 +362,11 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		size    = s.editButton.Size()
 		padding = 8
 	)
-	s.editButton.Present(d.Engine, render.Point{
+	s.editButton.MoveTo(render.Point{
 		X: canSize.W - size.W - padding,
 		Y: canSize.H - size.H - padding,
 	})
+	s.editButton.Present(d.Engine, s.editButton.Point())
 
 	// Draw the alert box window.
 	if !s.alertBox.Hidden() {
