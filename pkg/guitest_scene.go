@@ -53,7 +53,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Background: render.Blue,
 	})
 	window.Pack(titleBar, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 		Fill:   true,
 	})
 
@@ -63,7 +63,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Background: render.Yellow,
 	})
 	window.Pack(body, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 		Expand: true,
 	})
 	s.body = body
@@ -77,7 +77,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Width:       100,
 	})
 	body.Pack(leftFrame, ui.Pack{
-		Anchor: ui.W,
+		Side: ui.W,
 		FillY:  true,
 	})
 
@@ -92,7 +92,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		})
 		s.Supervisor.Add(btn)
 		leftFrame.Pack(btn, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   2,
 		})
@@ -105,7 +105,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		BorderSize: 0,
 	})
 	body.Pack(frame, ui.Pack{
-		Anchor: ui.W,
+		Side: ui.W,
 		Expand: true,
 		Fill:   true,
 	})
@@ -119,7 +119,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Width:       80,
 	})
 	body.Pack(rightFrame, ui.Pack{
-		Anchor: ui.W,
+		Side: ui.W,
 		Fill:   true,
 	})
 
@@ -142,7 +142,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 					d.Flash("%s clicked", btn)
 				})
 				rowFrame.Pack(btn, ui.Pack{
-					Anchor: ui.W,
+					Side: ui.W,
 					Expand: true,
 					FillX:  true,
 				})
@@ -150,7 +150,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			})(row, col, rowFrame)
 		}
 		rightFrame.Pack(rowFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			Fill:   true,
 		})
 	}
@@ -163,7 +163,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Black,
 		},
 	}), ui.Pack{
-		Anchor:  ui.NW,
+		Side:  ui.NW,
 		Padding: 2,
 	})
 
@@ -175,7 +175,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		}),
 	)
 	frame.Pack(cb, ui.Pack{
-		Anchor:  ui.NW,
+		Side:  ui.NW,
 		Padding: 4,
 	})
 	cb.Supervise(s.Supervisor)
@@ -187,7 +187,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Red,
 		},
 	}), ui.Pack{
-		Anchor:  ui.SE,
+		Side:  ui.SE,
 		Padding: 8,
 	})
 	frame.Pack(ui.NewLabel(ui.Label{
@@ -197,7 +197,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Color: render.Blue,
 		},
 	}), ui.Pack{
-		Anchor:  ui.SE,
+		Side:  ui.SE,
 		Padding: 8,
 	})
 
@@ -207,7 +207,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Background: render.Grey,
 	})
 	window.Pack(btnFrame, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 	})
 
 	button1 := ui.NewButton("Button1", ui.NewLabel(ui.Label{
@@ -233,11 +233,11 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 
 	var align = ui.W
 	btnFrame.Pack(button1, ui.Pack{
-		Anchor:  align,
+		Side:  align,
 		Padding: 20,
 	})
 	btnFrame.Pack(button2, ui.Pack{
-		Anchor:  align,
+		Side:  align,
 		Padding: 20,
 	})
 

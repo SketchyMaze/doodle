@@ -32,7 +32,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		u.DoodadTab = frame
 		u.DoodadTab.Hide()
 		window.Pack(u.DoodadTab, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			Fill:   true,
 		})
 	}
@@ -40,7 +40,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 	// Color Palette Frame.
 	u.PaletteTab = u.setupPaletteFrame(window)
 	window.Pack(u.PaletteTab, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 		Fill:   true,
 	})
 
@@ -79,7 +79,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 				BorderStyle: ui.BorderSunken,
 			})
 			swFrame.Pack(colorFrame, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 			})
 
 			label := ui.NewLabel(ui.Label{
@@ -88,7 +88,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			})
 			label.Font.Color = swatch.Color.Darken(128)
 			swFrame.Pack(label, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 			})
 
 			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, swFrame)
@@ -105,7 +105,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			})
 
 			frame.Pack(btn, ui.Pack{
-				Anchor: ui.N,
+				Side: ui.N,
 				Fill:   true,
 				PadY:   4,
 			})

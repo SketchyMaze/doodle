@@ -105,7 +105,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 
 	// Position the Canvas inside the frame.
 	u.Workspace.Pack(u.Canvas, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 	})
 	u.Workspace.Compute(d.Engine)
 	u.ExpandCanvas(d.Engine)
@@ -512,7 +512,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		w.Handle(ui.MouseUp, btn.Click)
 		u.Supervisor.Add(w)
 		frame.Pack(w, ui.Pack{
-			Anchor: ui.W,
+			Side: ui.W,
 			PadX:   1,
 		})
 	}
@@ -546,7 +546,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		label.Configure(style)
 		label.Compute(d.Engine)
 		frame.Pack(label, ui.Pack{
-			Anchor: ui.W,
+			Side: ui.W,
 			PadX:   1,
 		})
 
@@ -571,7 +571,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	})
 	extraLabel.Compute(d.Engine)
 	frame.Pack(extraLabel, ui.Pack{
-		Anchor: ui.E,
+		Side: ui.E,
 	})
 
 	// Set the initial good frame size to have the height secured,

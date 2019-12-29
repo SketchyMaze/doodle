@@ -82,7 +82,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		})
 		u.Supervisor.Add(leftBtn)
 		pager.Pack(leftBtn, ui.Pack{
-			Anchor: ui.W,
+			Side: ui.W,
 		})
 
 		scroller := ui.NewFrame("Doodad Scroll Progressbar")
@@ -92,7 +92,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Background: render.RGBA(128, 128, 128, 128),
 		})
 		pager.Pack(scroller, ui.Pack{
-			Anchor: ui.W,
+			Side: ui.W,
 		})
 		u.doodadScroller = scroller
 
@@ -105,12 +105,12 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		})
 		u.Supervisor.Add(rightBtn)
 		pager.Pack(rightBtn, ui.Pack{
-			Anchor: ui.E,
+			Side: ui.E,
 		})
 	}
 	u.doodadPager = pager
 	frame.Pack(pager, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 		Fill:   true,
 		PadY:   5,
 	})
@@ -160,7 +160,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			row.SetBackground(balance.WindowBackground)
 			btnRows = append(btnRows, row)
 			frame.Pack(row, ui.Pack{
-				Anchor: ui.N,
+				Side: ui.N,
 				Fill:   true,
 			})
 		}
@@ -176,7 +176,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			buttonSize-2, // rests on top of the window border.
 		))
 		row.Pack(btn, ui.Pack{
-			Anchor: ui.W,
+			Side: ui.W,
 		})
 
 		// Begin the drag event to grab this Doodad.

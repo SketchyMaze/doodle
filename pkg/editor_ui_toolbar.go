@@ -24,7 +24,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 	btnFrame := ui.NewFrame("Tool Buttons")
 	frame.Pack(btnFrame, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 	})
 
 	// Helper functions to toggle the correct palette panel.
@@ -146,14 +146,14 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		u.Supervisor.Add(btn)
 
 		btnFrame.Pack(btn, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			PadY:   2,
 		})
 	}
 
 	// Spacer frame.
 	frame.Pack(ui.NewFrame("spacer"), ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 		PadY:   8,
 	})
 
@@ -163,14 +163,14 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Font: balance.LabelFont,
 	})
 	frame.Pack(bsLabel, ui.Pack{
-		Anchor: ui.N,
+		Side: ui.N,
 	})
 
 	// Brush Size widget
 	{
 		sizeFrame := ui.NewFrame("Brush Size Frame")
 		frame.Pack(sizeFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			PadY:   0,
 		})
 
@@ -184,14 +184,14 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Background:  render.Grey,
 		})
 		sizeFrame.Pack(sizeLabel, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   2,
 		})
 
 		sizeBtnFrame := ui.NewFrame("Size Increment Button Frame")
 		sizeFrame.Pack(sizeBtnFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
@@ -242,7 +242,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			})
 			u.Supervisor.Add(btn)
 			sizeBtnFrame.Pack(btn, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 			})
 		}
 	}

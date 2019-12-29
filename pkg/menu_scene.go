@@ -136,7 +136,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 	{
 		frame := ui.NewFrame("New Level Frame")
 		window.Pack(frame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			Fill:   true,
 			Expand: true,
 		})
@@ -150,13 +150,13 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			Font: balance.LabelFont,
 		})
 		frame.Pack(label1, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
 		typeFrame := ui.NewFrame("Page Type Options Frame")
 		frame.Pack(typeFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
@@ -196,7 +196,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				})
 				s.Supervisor.Add(radio)
 				typeFrame.Pack(radio, ui.Pack{
-					Anchor: ui.W,
+					Side: ui.W,
 					PadX:   4,
 				})
 			}(t)
@@ -211,13 +211,13 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			Font: balance.LabelFont,
 		})
 		frame.Pack(label2, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
 		wpFrame := ui.NewFrame("Wallpaper Frame")
 		frame.Pack(wpFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
@@ -246,7 +246,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				})
 				s.Supervisor.Add(radio)
 				wpFrame.Pack(radio, ui.Pack{
-					Anchor: ui.W,
+					Side: ui.W,
 					PadX:   4,
 				})
 			}(t)
@@ -264,7 +264,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 		// })
 		// bottomFrame.SetBackground(render.Grey)
 		frame.Pack(bottomFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   8,
 		})
@@ -309,7 +309,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 			btn.Handle(ui.Click, t.F)
 			s.Supervisor.Add(btn)
 			bottomFrame.Pack(btn, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 				PadX:   4,
 				PadY:   8,
 			})
@@ -333,7 +333,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 	{
 		frame := ui.NewFrame("Open Drawing Frame")
 		window.Pack(frame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			Fill:   true,
 			Expand: true,
 		})
@@ -347,7 +347,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 			Font: balance.LabelFont,
 		})
 		frame.Pack(label1, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 		})
 
@@ -360,7 +360,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 
 		lvlRow := ui.NewFrame("Level Row 0")
 		frame.Pack(lvlRow, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   1,
 		})
@@ -380,7 +380,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 				})
 				s.Supervisor.Add(btn)
 				lvlRow.Pack(btn, ui.Pack{
-					Anchor: ui.W,
+					Side: ui.W,
 					Expand: true,
 					Fill:   true,
 				})
@@ -389,7 +389,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 					log.Warn("i=%d wrapped at mod 4", i)
 					lvlRow = ui.NewFrame(fmt.Sprintf("Level Row %d", i))
 					frame.Pack(lvlRow, ui.Pack{
-						Anchor: ui.N,
+						Side: ui.N,
 						FillX:  true,
 						PadY:   1,
 					})
@@ -409,14 +409,14 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 				Font: balance.LabelFont,
 			})
 			frame.Pack(label2, ui.Pack{
-				Anchor: ui.N,
+				Side: ui.N,
 				FillX:  true,
 			})
 
 			files, _ := userdir.ListDoodads()
 			ddRow := ui.NewFrame("Doodad Row 0")
 			frame.Pack(ddRow, ui.Pack{
-				Anchor: ui.N,
+				Side: ui.N,
 				FillX:  true,
 				PadY:   1,
 			})
@@ -431,7 +431,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 					})
 					s.Supervisor.Add(btn)
 					ddRow.Pack(btn, ui.Pack{
-						Anchor: ui.W,
+						Side: ui.W,
 						Expand: true,
 						Fill:   true,
 					})
@@ -439,7 +439,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 					if i > 0 && (i+1)%4 == 0 {
 						ddRow = ui.NewFrame(fmt.Sprintf("Doodad Row %d", i))
 						frame.Pack(ddRow, ui.Pack{
-							Anchor: ui.N,
+							Side: ui.N,
 							FillX:  true,
 							PadY:   1,
 						})
@@ -460,7 +460,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 		// })
 		// bottomFrame.SetBackground(render.Grey)
 		frame.Pack(bottomFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   8,
 		})
@@ -481,7 +481,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 			btn.Handle(ui.Click, t.F)
 			s.Supervisor.Add(btn)
 			bottomFrame.Pack(btn, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 				PadX:   4,
 				PadY:   8,
 			})

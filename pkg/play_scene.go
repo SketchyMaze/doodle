@@ -199,7 +199,7 @@ func (s *PlayScene) SetupAlertbox() {
 	{
 		frame := ui.NewFrame("Open Drawing Frame")
 		window.Pack(frame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			Fill:   true,
 			Expand: true,
 		})
@@ -213,7 +213,7 @@ func (s *PlayScene) SetupAlertbox() {
 			Font: balance.LabelFont,
 		})
 		frame.Pack(s.alertBoxLabel, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   16,
 		})
@@ -224,7 +224,7 @@ func (s *PlayScene) SetupAlertbox() {
 
 		bottomFrame := ui.NewFrame("Button Frame")
 		frame.Pack(bottomFrame, ui.Pack{
-			Anchor: ui.N,
+			Side: ui.N,
 			FillX:  true,
 			PadY:   8,
 		})
@@ -239,7 +239,7 @@ func (s *PlayScene) SetupAlertbox() {
 				handler()
 			})
 			bottomFrame.Pack(btn, ui.Pack{
-				Anchor: ui.W,
+				Side: ui.W,
 				PadX:   2,
 			})
 			s.supervisor.Add(btn)
