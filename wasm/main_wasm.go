@@ -7,12 +7,12 @@ import (
 
 	"syscall/js"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/canvas"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/canvas"
 )
 
 func main() {

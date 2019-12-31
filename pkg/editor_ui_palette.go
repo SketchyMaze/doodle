@@ -3,10 +3,10 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // SetupPalette sets up the palette panel.
@@ -33,7 +33,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 		u.DoodadTab.Hide()
 		window.Pack(u.DoodadTab, ui.Pack{
 			Side: ui.N,
-			Fill:   true,
+			Fill: true,
 		})
 	}
 
@@ -41,7 +41,7 @@ func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 	u.PaletteTab = u.setupPaletteFrame(window)
 	window.Pack(u.PaletteTab, ui.Pack{
 		Side: ui.N,
-		Fill:   true,
+		Fill: true,
 	})
 
 	return window
@@ -106,8 +106,8 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 
 			frame.Pack(btn, ui.Pack{
 				Side: ui.N,
-				Fill:   true,
-				PadY:   4,
+				Fill: true,
+				PadY: 4,
 			})
 		}
 	}

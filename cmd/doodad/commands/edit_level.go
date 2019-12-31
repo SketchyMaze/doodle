@@ -3,9 +3,9 @@ package commands
 import (
 	"fmt"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 	"github.com/urfave/cli"
 )
 

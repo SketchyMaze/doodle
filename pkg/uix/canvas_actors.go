@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/go/render"
 )
 
 // InstallActors adds external Actors to the canvas to be superimposed on top

@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
 	"github.com/robertkrimen/otto"
@@ -29,6 +30,7 @@ type Actor struct {
 
 	// Actor runtime variables.
 	hasGravity bool
+	isMobile   bool // Mobile character, such as the player or an enemy
 	hitbox     render.Rect
 	data       map[string]string
 
@@ -73,6 +75,18 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 // SetGravity configures whether the actor is affected by gravity.
 func (a *Actor) SetGravity(v bool) {
 	a.hasGravity = v
+}
+
+// SetMobile configures whether the actor is a mobile character (i.e. is the
+// player or a mobile enemy). Mobile characters can set off certain traps when
+// touched but non-mobile actors don't set each other off if touching.
+func (a *Actor) SetMobile(v bool) {
+	a.isMobile = v
+}
+
+// IsMobile returns whether the actor is a mobile character.
+func (a *Actor) IsMobile() bool {
+	return a.isMobile
 }
 
 // GetBoundingRect gets the bounding box of the actor's doodad.
@@ -131,6 +145,21 @@ func (a *Actor) ShowLayer(index int) error {
 	a.activeLayer = index
 	a.Canvas.Load(a.Doodad.Palette, a.Doodad.Layers[index].Chunker)
 	return nil
+}
+
+// ShowLayerNamed sets the actor's ActiveLayer to the one named.
+func (a *Actor) ShowLayerNamed(name string) error {
+	// Find the layer.
+	for i, layer := range a.Doodad.Layers {
+		if layer.Name == name {
+			return a.ShowLayer(i)
+		}
+	}
+	log.Warn("Actor(%s) ShowLayerNamed(%s): layer not found",
+		a.Actor.Filename,
+		name,
+	)
+	return fmt.Errorf("the layer named %s was not found", name)
 }
 
 // Destroy deletes the actor from the running level.

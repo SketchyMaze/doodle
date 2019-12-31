@@ -115,6 +115,33 @@ objects() {
 	doodad convert -t "Exit Flag" exit-flag.png exit-flag.doodad
 	doodad install-script exit-flag.js exit-flag.doodad
 
+	doodad convert -t "Start Flag" start-flag.png start-flag.doodad
+
+	cp *.doodad ../../../assets/doodads/
+
+	cd ../crumbly-floor
+
+	doodad convert -t "Crumbly Floor" floor.png shake1.png shake2.png \
+		fall1.png fall2.png fall3.png fall4.png fallen.png \
+		crumbly-floor.doodad
+	doodad install-script crumbly-floor.js crumbly-floor.doodad
+	cp *.doodad ../../../assets/doodads/
+
+	cd ..
+}
+
+onoff() {
+	cd on-off/
+
+	doodad convert -t "State Button" blue-button.png orange-button.png state-button.doodad
+	doodad install-script state-button.js state-button.doodad
+
+	doodad convert -t "State Block (Blue)" blue-on.png blue-off.png state-block-blue.doodad
+	doodad install-script state-block-blue.js state-block-blue.doodad
+
+	doodad convert -t "State Block (Orange)" orange-off.png orange-on.png state-block-orange.doodad
+	doodad install-script state-block-orange.js state-block-orange.doodad
+
 	cp *.doodad ../../../assets/doodads/
 
 	cd ..
@@ -126,5 +153,6 @@ doors
 trapdoors
 azulians
 objects
+onoff
 doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad
 doodad edit-doodad -hide ../../assets/doodads/azu-blu.doodad

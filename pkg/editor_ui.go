@@ -513,7 +513,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		u.Supervisor.Add(w)
 		frame.Pack(w, ui.Pack{
 			Side: ui.W,
-			PadX:   1,
+			PadX: 1,
 		})
 	}
 
@@ -547,7 +547,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		label.Compute(d.Engine)
 		frame.Pack(label, ui.Pack{
 			Side: ui.W,
-			PadX:   1,
+			PadX: 1,
 		})
 
 		if labelHeight == 0 {

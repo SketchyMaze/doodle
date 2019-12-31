@@ -46,13 +46,18 @@ func (w *Canvas) loopActorCollision() error {
 			// Advance any animations for this actor.
 			if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
 				if done := a.TickAnimation(a.activeAnimation); done {
-					// Animation has finished, run the callback script.
-					if a.animationCallback.IsFunction() {
-						a.animationCallback.Call(otto.NullValue())
+					// Animation has finished, get the callback function.
+					callback := a.animationCallback
+
+					// Clean up the animation state, in case the callback wants
+					// to immediately play another animation.
+					a.StopAnimation()
+
+					// Call the callback function.
+					if callback.IsFunction() {
+						callback.Call(otto.NullValue())
 					}
 
-					// Clean up the animation state.
-					a.StopAnimation()
 				}
 			}
 
@@ -104,7 +109,13 @@ func (w *Canvas) loopActorCollision() error {
 		if w.scripting != nil {
 			var (
 				rect        = doodads.GetBoundingRect(b)
-				lastGoodBox = boxes[tuple.B] // worst case scenario we get blocked right away
+				lastGoodBox = render.Rect{
+					X: originalPositions[b.ID()].X,
+					Y: originalPositions[b.ID()].Y,
+					W: boxes[tuple.B].W,
+					H: boxes[tuple.B].H,
+				}
+				// lastGoodBox = originalPositions[b.ID()] // boxes[tuple.B] // worst case scenario we get blocked right away
 			)
 
 			// Firstly we want to make sure B isn't able to clip through A's
@@ -121,7 +132,12 @@ func (w *Canvas) loopActorCollision() error {
 				// B's movement. The next time A does NOT protest, that is to be
 				// B's new position.
 
-				var firstPoint = true
+				// Special case for when a mobile actor lands ON TOP OF a solid
+				// actor. We want to stop their Y movement downwards, but allow
+				// horizontal movement on the X axis.
+				// Touching the solid actor from the side is already fine.
+				var onTop = false
+
 				for point := range render.IterLine(
 					origPoint,
 					b.Position(),
@@ -132,6 +148,11 @@ func (w *Canvas) loopActorCollision() error {
 						W: rect.W,
 						H: rect.H,
 					}
+
+					var (
+						lockX bool
+						lockY bool
+					)
 
 					if info, err := collision.CompareBoxes(boxes[tuple.A], test); err == nil {
 						// B is overlapping A's box, call its OnCollide handler
@@ -145,27 +166,41 @@ func (w *Canvas) loopActorCollision() error {
 
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
-							break
+							// Are they on top?
+							if render.AbsInt(lastGoodBox.Y+lastGoodBox.H-boxes[tuple.A].Y) <= 2 {
+								onTop = true
+							}
+
+							// What direction were we moving?
+							if test.Y != lastGoodBox.Y {
+								lockY = true
+								b.SetGrounded(true)
+							}
+							if test.X != lastGoodBox.X {
+								if !onTop {
+									lockX = true
+								}
+							}
+
+							// Move them back to the last good box, locking the
+							// axis they were moving from being able to enter
+							// this box.
+							tmp := lastGoodBox
+							lastGoodBox = test
+							if lockY {
+								lastGoodBox.Y = tmp.Y
+							}
+							if lockX {
+								lastGoodBox.X = tmp.X
+								break
+							}
 						} else {
 							lastGoodBox = test
 						}
 					}
-
-					firstPoint = false
 				}
 
-				// Were we stopped before we even began?
-				if firstPoint {
-					// TODO: undo the effect of gravity this tick. Use case:
-					// the player lands on top of a solid door, and their
-					// movement is blocked the first step by the door. Originally
-					// he'd continue falling, so I had to move him up to stop it,
-					// turns out moving up by the -gravity is exactly the distance
-					// to go. Don't know why.
-					b.MoveBy(render.NewPoint(0, -balance.Gravity))
-				} else {
-					b.MoveTo(lastGoodBox.Point())
-				}
+				b.MoveTo(lastGoodBox.Point())
 			} else {
 				log.Error(
 					"ERROR: Actors %s and %s overlap and the script returned false,"+

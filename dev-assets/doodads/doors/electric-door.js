@@ -23,8 +23,8 @@ function main() {
 			});
 		} else {
 			animating = true;
-			opened = false;
 			Self.PlayAnimation("close", function() {
+				opened = false;
 				animating = false;
 			})
 		}

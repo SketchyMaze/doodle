@@ -11,11 +11,11 @@ import (
 
 	"image/png"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 	"github.com/urfave/cli"
 	"golang.org/x/image/bmp"
 )
@@ -322,7 +322,7 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 				newColors[color.String()] = swatch
 			}
 
-			chunker.Set(render.NewPoint(int32(x), int32(y)), swatch)
+			chunker.Set(render.NewPoint(x, y), swatch)
 		}
 	}
 

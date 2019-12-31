@@ -303,7 +303,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 						w.OnDragStart(actor.Actor)
 					}
 					break
-				} else if ev.Button2 {
+				} else if ev.Button3 {
 					// Right click to delete an actor.
 					deleteActors = append(deleteActors, actor.Actor)
 				}

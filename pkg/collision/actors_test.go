@@ -3,8 +3,8 @@ package collision_test
 import (
 	"testing"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/collision"
+	"git.kirsle.net/go/render"
 )
 
 func TestActorCollision(t *testing.T) {

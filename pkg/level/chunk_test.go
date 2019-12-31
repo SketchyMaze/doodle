@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/go/render"
 )
 
 // Test the high level Chunker.

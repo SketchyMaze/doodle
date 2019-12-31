@@ -111,8 +111,8 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 	u.doodadPager = pager
 	frame.Pack(pager, ui.Pack{
 		Side: ui.N,
-		Fill:   true,
-		PadY:   5,
+		Fill: true,
+		PadY: 5,
 	})
 
 	doodadsAvailable, err := doodads.ListDoodads()
@@ -161,7 +161,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			btnRows = append(btnRows, row)
 			frame.Pack(row, ui.Pack{
 				Side: ui.N,
-				Fill:   true,
+				Fill: true,
 			})
 		}
 

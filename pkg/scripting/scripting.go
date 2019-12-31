@@ -77,7 +77,7 @@ func (s *Supervisor) AddLevelScript(id string) error {
 	}
 
 	s.scripts[id] = NewVM(id)
-	RegisterPublishHooks(s.scripts[id])
+	RegisterPublishHooks(s, s.scripts[id])
 	RegisterEventHooks(s, s.scripts[id])
 	if err := s.scripts[id].RegisterLevelHooks(); err != nil {
 		return err

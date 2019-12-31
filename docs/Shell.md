@@ -6,6 +6,9 @@
 * `don't edit and drive` - enable editing while playing a level.
 * `scroll scroll scroll your boat` - enable scrolling the level with arrow keys
   while playing a level.
+* `import antigravity` - during Play Mode, disables gravity for the player
+  character and allows free movement in all directions with the arrow keys.
+  Enter the cheat again to restore gravity to normal.
 
 ## Bool Props
 

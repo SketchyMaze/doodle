@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/go/render"
 )
 
 // Wallpaper is a repeatable background image to go behind levels.

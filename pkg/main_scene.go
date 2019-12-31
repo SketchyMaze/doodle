@@ -68,7 +68,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		s.Supervisor.Add(btn)
 		frame.Pack(btn, ui.Pack{
 			Side: ui.N,
-			PadY:   8,
+			PadY: 8,
 			// Fill:   true,
 			FillX: true,
 		})

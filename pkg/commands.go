@@ -49,6 +49,20 @@ func (c Command) Run(d *Doodle) error {
 			d.Flash("Use this cheat in Play Mode to make the level scrollable.")
 		}
 		return nil
+	} else if c.Raw == "import antigravity" {
+		if playScene, ok := d.Scene.(*PlayScene); ok {
+			playScene.antigravity = !playScene.antigravity
+			playScene.Player.SetGravity(!playScene.antigravity)
+
+			if playScene.antigravity {
+				d.Flash("Gravity disabled for player character.")
+			} else {
+				d.Flash("Gravity restored for player character.")
+			}
+		} else {
+			d.Flash("Use this cheat in Play Mode to disable gravity for the player character.")
+		}
+		return nil
 	}
 
 	switch c.Command {

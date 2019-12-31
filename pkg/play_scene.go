@@ -50,7 +50,8 @@ type PlayScene struct {
 
 	// Player character
 	Player            *uix.Actor
-	playerJumpCounter int // limit jump length
+	antigravity       bool // Cheat: disable player gravity
+	playerJumpCounter int  // limit jump length
 }
 
 // Name of the scene.
@@ -154,21 +155,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	}
 
 	// Load in the player character.
-	player, err := doodads.LoadFile("azu-blu.doodad")
-	if err != nil {
-		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
-		player = doodads.NewDummy(32)
-	}
-
-	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
-	s.Player.MoveTo(render.NewPoint(128, 128))
-	s.drawing.AddActor(s.Player)
-	s.drawing.FollowActor = s.Player.ID()
-
-	// Set up the player character's script in the VM.
-	if err := s.scripting.AddLevelScript(s.Player.ID()); err != nil {
-		log.Error("PlayScene.Setup: scripting.InstallActor(player) failed: %s", err)
-	}
+	s.setupPlayer()
 
 	// Run all the actor scripts' main() functions.
 	if err := s.drawing.InstallScripts(); err != nil {
@@ -184,6 +171,60 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.running = true
 
 	return nil
+}
+
+// setupPlayer creates and configures the Player Character in the level.
+func (s *PlayScene) setupPlayer() {
+	// Load in the player character.
+	player, err := doodads.LoadFile("azu-blu.doodad")
+	if err != nil {
+		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
+		player = doodads.NewDummy(32)
+	}
+
+	// Find the spawn point of the player. Search the level for the
+	// "start-flag.doodad"
+	var (
+		spawn     render.Point
+		flagCount int
+	)
+	for actorID, actor := range s.Level.Actors {
+		if actor.Filename == "start-flag.doodad" {
+			if flagCount > 1 {
+				break
+			}
+
+			// TODO: start-flag.doodad is 86x86 pixels but we can't tell that
+			// from right here.
+			size := render.NewRect(86, 86)
+			log.Info("Found start-flag.doodad at %s (ID %s)", actor.Point, actorID)
+			spawn = render.NewPoint(
+				// X: centered inside the flag.
+				actor.Point.X+(size.W/2)-(player.Layers[0].Chunker.Size/2),
+
+				// Y: the bottom of the flag, 4 pixels from the floor.
+				actor.Point.Y+size.H-4-(player.Layers[0].Chunker.Size),
+			)
+			flagCount++
+		}
+	}
+
+	// Surface warnings around the spawn flag.
+	if flagCount == 0 {
+		s.d.Flash("Warning: this level contained no Start Flag.")
+	} else if flagCount > 1 {
+		s.d.Flash("Warning: this level contains multiple Start Flags. Player spawn point is ambiguous.")
+	}
+
+	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
+	s.Player.MoveTo(spawn)
+	s.drawing.AddActor(s.Player)
+	s.drawing.FollowActor = s.Player.ID()
+
+	// Set up the player character's script in the VM.
+	if err := s.scripting.AddLevelScript(s.Player.ID()); err != nil {
+		log.Error("PlayScene.Setup: scripting.InstallActor(player) failed: %s", err)
+	}
 }
 
 // SetupAlertbox configures the alert box UI.
@@ -393,31 +434,24 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 	if ev.Right {
 		velocity.X = playerSpeed
 	}
-	if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
+	if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0 || s.antigravity) {
 		velocity.Y = -playerSpeed
 
 		if s.Player.Grounded() {
 			s.playerJumpCounter = 20
 		}
 	}
+	if ev.Down && s.antigravity {
+		velocity.Y = playerSpeed
+	}
 
 	if !s.Player.Grounded() {
 		s.playerJumpCounter--
 	}
 
-	// // Apply gravity if not grounded.
-	// if !s.Player.Grounded() {
-	// 	// Gravity has to pipe through the collision checker, too, so it
-	// 	// can't give us a cheated downward boost.
-	// 	velocity.Y += gravity
-	// }
-
 	s.Player.SetVelocity(velocity)
 
-	// TODO: invoke the player OnKeypress for animation testing
-	// if velocity != render.Origin {
 	s.scripting.To(s.Player.ID()).Events.RunKeypress(ev)
-	// }
 }
 
 // Drawing returns the private world drawing, for debugging with the console.

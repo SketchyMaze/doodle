@@ -147,14 +147,14 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 		btnFrame.Pack(btn, ui.Pack{
 			Side: ui.N,
-			PadY:   2,
+			PadY: 2,
 		})
 	}
 
 	// Spacer frame.
 	frame.Pack(ui.NewFrame("spacer"), ui.Pack{
 		Side: ui.N,
-		PadY:   8,
+		PadY: 8,
 	})
 
 	// "Brush Size" label
@@ -171,7 +171,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		sizeFrame := ui.NewFrame("Brush Size Frame")
 		frame.Pack(sizeFrame, ui.Pack{
 			Side: ui.N,
-			PadY:   0,
+			PadY: 0,
 		})
 
 		sizeLabel := ui.NewLabel(ui.Label{
@@ -184,15 +184,15 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Background:  render.Grey,
 		})
 		sizeFrame.Pack(sizeLabel, ui.Pack{
-			Side: ui.N,
-			FillX:  true,
-			PadY:   2,
+			Side:  ui.N,
+			FillX: true,
+			PadY:  2,
 		})
 
 		sizeBtnFrame := ui.NewFrame("Size Increment Button Frame")
 		sizeFrame.Pack(sizeBtnFrame, ui.Pack{
-			Side: ui.N,
-			FillX:  true,
+			Side:  ui.N,
+			FillX: true,
 		})
 
 		var incButtons = []struct {

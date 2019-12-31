@@ -1,13 +1,13 @@
 package uix
 
 import (
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // canvas_strokes.go: functions related to drawtool.Stroke and the Canvas.

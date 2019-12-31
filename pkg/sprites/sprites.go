@@ -8,11 +8,11 @@ import (
 	"os"
 	"runtime"
 
-	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/ui"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/wasm"
+	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // LoadImage loads a sprite as a ui.Image object. It checks Doodle's embedded

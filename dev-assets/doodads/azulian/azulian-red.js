@@ -7,6 +7,7 @@ function main() {
 
 	var direction = "right";
 
+	Self.SetMobile(true);
 	Self.SetGravity(true);
 	Self.AddAnimation("walk-left", 100, ["red-wl1", "red-wl2", "red-wl3", "red-wl4"]);
 	Self.AddAnimation("walk-right", 100, ["red-wr1", "red-wr2", "red-wr3", "red-wr4"]);

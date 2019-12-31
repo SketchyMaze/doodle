@@ -1,8 +1,8 @@
 package doodle
 
 import (
-	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render/event"
 )
 
 // Scene is an abstraction for a game mode in Doodle. The app points to one

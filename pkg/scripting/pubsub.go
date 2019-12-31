@@ -18,7 +18,7 @@ RegisterPublishHooks adds the pub/sub hooks to a JavaScript VM.
 This adds the global methods `Message.Subscribe(name, func)` and
 `Message.Publish(name, args)` to the JavaScript VM's scope.
 */
-func RegisterPublishHooks(vm *VM) {
+func RegisterPublishHooks(s *Supervisor, vm *VM) {
 	// Goroutine to watch the VM's inbound channel and invoke Subscribe handlers
 	// for any matching messages received.
 	go func() {
@@ -47,9 +47,18 @@ func RegisterPublishHooks(vm *VM) {
 		},
 
 		"Publish": func(name string, v ...interface{}) {
-			log.Error("PUBLISH: %s %+v", name, v)
 			for _, channel := range vm.Outbound {
 				channel <- Message{
+					Name: name,
+					Args: v,
+				}
+			}
+		},
+
+		"Broadcast": func(name string, v ...interface{}) {
+			// Send the message to all actor VMs.
+			for _, vm := range s.scripts {
+				vm.Inbound <- Message{
 					Name: name,
 					Args: v,
 				}
