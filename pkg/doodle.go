@@ -106,7 +106,7 @@ func (d *Doodle) Run() error {
 
 	log.Info("Enter Main Loop")
 	for d.running {
-		d.Engine.Clear(render.White)
+		// d.Engine.Clear(render.White)
 
 		start := time.Now() // Record how long this frame took.
 		shmem.Tick++
