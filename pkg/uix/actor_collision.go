@@ -127,6 +127,19 @@ func (w *Canvas) loopActorCollision() error {
 				}
 			)
 
+			// HACK: below, when we determine the moving actor is "onTop" of
+			// the doodad's solid hitbox, we lockY their movement so they don't
+			// fall down further; but sometimes there's an off-by-one error if
+			// the actor fell a distance before landing, and so the final
+			// Settled collision check doesn't fire (i.e. if they fell onto a
+			// Crumbly Floor which should begin shaking when walked on).
+			//
+			// When we decide they're onTop, record the Y position, and then
+			// use it for collision-check purposes but DON'T physically move
+			// the character by it (moving the character may clip them thru
+			// other solid hitboxes like the upside-down trapdoor)
+			var onTopY int
+
 			// Firstly we want to make sure B isn't able to clip through A's
 			// solid hitbox if A protests the movement. Trace a vector from
 			// B's original position to their current one and ping A's
@@ -147,21 +160,22 @@ func (w *Canvas) loopActorCollision() error {
 				// Touching the solid actor from the side is already fine.
 				var onTop = false
 
+				var (
+					lockX int
+					lockY int
+				)
+
 				for point := range render.IterLine(
 					origPoint,
 					b.Position(),
 				) {
+					point := point
 					test := render.Rect{
 						X: point.X,
 						Y: point.Y,
 						W: rect.W,
 						H: rect.H,
 					}
-
-					var (
-						lockX bool
-						lockY bool
-					)
 
 					if info, err := collision.CompareBoxes(boxes[tuple.A], test); err == nil {
 						// B is overlapping A's box, call its OnCollide handler
@@ -176,37 +190,48 @@ func (w *Canvas) loopActorCollision() error {
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
 							// Are they on top?
-							if render.AbsInt(lastGoodBox.Y+lastGoodBox.H-boxes[tuple.A].Y) <= 2 {
+							aHitbox := doodads.GetBoundingRectHitbox(a, a.Hitbox())
+							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
 								onTop = true
+								onTopY = test.Y
 							}
 
 							// What direction were we moving?
 							if test.Y != lastGoodBox.Y {
-								lockY = true
-								b.SetGrounded(true)
+								if lockY == 0 {
+									lockY = lastGoodBox.Y
+								}
+								if onTop {
+									b.SetGrounded(true)
+								}
 							}
 							if test.X != lastGoodBox.X {
 								if !onTop {
-									lockX = true
+									lockX = lastGoodBox.X
 								}
 							}
 
-							// Move them back to the last good box, locking the
-							// axis they were moving from being able to enter
-							// this box.
-							tmp := lastGoodBox
+							// Move them back to the last good box.
 							lastGoodBox = test
-							if lockY {
-								lastGoodBox.Y = tmp.Y
-							}
-							if lockX {
-								lastGoodBox.X = tmp.X
-								break
+							if lockX != 0 {
+								lastGoodBox.X = lockX
 							}
 						} else {
+							// Move them back to the last good box.
 							lastGoodBox = test
 						}
+					} else {
+						// No collision between boxes, increment the lastGoodBox
+						lastGoodBox = test
 					}
+				}
+
+				// Did we lock their X or Y coordinate from moving further?
+				if lockY != 0 {
+					lastGoodBox.Y = lockY
+				}
+				if lockX != 0 {
+					lastGoodBox.X = lockX
 				}
 
 				if !b.noclip {
@@ -218,6 +243,10 @@ func (w *Canvas) loopActorCollision() error {
 						"but I didn't store %s original position earlier??",
 					a.Doodad.Title, b.Doodad.Title, b.Doodad.Title,
 				)
+			}
+
+			if onTopY != 0 && lastGoodBox.Y-onTopY <= 1 {
+				lastGoodBox.Y = onTopY
 			}
 
 			// Movement has been settled. Check if B's point is still invading

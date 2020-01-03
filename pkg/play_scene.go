@@ -427,6 +427,12 @@ func (s *PlayScene) Draw(d *Doodle) error {
 func (s *PlayScene) movePlayer(ev *event.State) {
 	var playerSpeed = balance.PlayerMaxVelocity
 
+	// If antigravity enabled and the Shift key is pressed down, move the
+	// player by only one pixel per tick.
+	if s.antigravity && ev.Shift {
+		playerSpeed = 1
+	}
+
 	var velocity render.Point
 
 	if ev.Left {

@@ -19,10 +19,6 @@ function main() {
 	var startedAnimation = false;
 
 	Events.OnCollide(function(e) {
-		// Only trigger for mobile characters.
-		if (!e.Actor.IsMobile()) {
-			return;
-		}
 
 		// If the floor is falling, the player passes right thru.
 		if (state === stateFalling || state === stateFallen) {
@@ -33,6 +29,11 @@ function main() {
 		if (e.InHitbox && (state === stateSolid || state === stateShaking)) {
 			// Only activate when touched from the top.
 			if (e.Overlap.Y > 0) {
+				return false;
+			}
+
+			// If movement is not settled, be solid.
+			if (!e.Settled) {
 				return false;
 			}
 
