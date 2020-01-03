@@ -84,7 +84,8 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 			d.SetGrounded(false)
 		}
 		if result.Top {
-			// Never seen it touch the top.
+			ceiling = true
+			P.Y++
 		}
 		if result.Left {
 			P.X++
@@ -141,6 +142,13 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 	result.Reset()
 	result.MoveTo = P
 	for point := range render.IterLine(P, target) {
+		// Before we compute their next move, if we're already capping their
+		// height make sure the new point stays capped too. This prevents them
+		// clipping thru a ceiling if they were also holding right/left too.
+		if capHeight != 0 && point.Y < capHeight {
+			point.Y = capHeight
+		}
+
 		if has := result.ScanBoundingBox(render.Rect{
 			X: point.X,
 			Y: point.Y,
@@ -174,7 +182,6 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 		// So far so good, keep following the MoveTo to
 		// the last good point before a collision.
 		result.MoveTo = point
-
 	}
 
 	// If they hit the roof, cap them to the roof.
@@ -225,10 +232,11 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 	var wg sync.WaitGroup
 	for _, job := range jobs {
 		wg.Add(1)
-		go func(job jobSide) {
+		job := job
+		go func() {
 			defer wg.Done()
 			c.ScanGridLine(job.p1, job.p2, grid, job.side)
-		}(job)
+		}()
 	}
 
 	wg.Wait()
@@ -239,6 +247,15 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 // for any pixels to be set, implying a collision between level geometry and the
 // bounding boxes of the doodad.
 func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
+	// If scanning the top or bottom line, offset the X coordinate by 1 pixel.
+	// This is because the 4 corners of the bounding box share their corner
+	// pixel with each side, so the Left and Right edges will check the
+	// left- and right-most point.
+	if side == Top || side == Bottom {
+		p1.X += 1
+		p2.X -= 1
+	}
+
 	for point := range render.IterLine(p1, p2) {
 		if swatch, err := grid.Get(point); err == nil {
 			// We're intersecting a pixel! If it's a solid one we'll return it

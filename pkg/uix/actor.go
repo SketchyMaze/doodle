@@ -31,6 +31,7 @@ type Actor struct {
 	// Actor runtime variables.
 	hasGravity bool
 	isMobile   bool // Mobile character, such as the player or an enemy
+	noclip     bool // Disable collision detection
 	hitbox     render.Rect
 	data       map[string]string
 
@@ -87,6 +88,12 @@ func (a *Actor) SetMobile(v bool) {
 // IsMobile returns whether the actor is a mobile character.
 func (a *Actor) IsMobile() bool {
 	return a.isMobile
+}
+
+// SetNoclip sets the noclip setting for an actor. If true, the actor can
+// clip through level geometry.
+func (a *Actor) SetNoclip(v bool) {
+	a.noclip = v
 }
 
 // GetBoundingRect gets the bounding box of the actor's doodad.

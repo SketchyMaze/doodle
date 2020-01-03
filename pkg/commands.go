@@ -63,6 +63,23 @@ func (c Command) Run(d *Doodle) error {
 			d.Flash("Use this cheat in Play Mode to disable gravity for the player character.")
 		}
 		return nil
+	} else if c.Raw == "ghost mode" {
+		if playScene, ok := d.Scene.(*PlayScene); ok {
+			playScene.noclip = !playScene.noclip
+			playScene.Player.SetNoclip(playScene.noclip)
+
+			playScene.antigravity = playScene.noclip
+			playScene.Player.SetGravity(!playScene.antigravity)
+
+			if playScene.noclip {
+				d.Flash("Clipping disabled for player character.")
+			} else {
+				d.Flash("Clipping and gravity restored for player character.")
+			}
+		} else {
+			d.Flash("Use this cheat in Play Mode to disable clipping for the player character.")
+		}
+		return nil
 	}
 
 	switch c.Command {

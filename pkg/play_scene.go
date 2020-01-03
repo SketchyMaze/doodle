@@ -51,6 +51,7 @@ type PlayScene struct {
 	// Player character
 	Player            *uix.Actor
 	antigravity       bool // Cheat: disable player gravity
+	noclip            bool // Cheat: disable player clipping
 	playerJumpCounter int  // limit jump length
 }
 
@@ -438,7 +439,7 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		velocity.Y = -playerSpeed
 
 		if s.Player.Grounded() {
-			s.playerJumpCounter = 20
+			s.playerJumpCounter = 12
 		}
 	}
 	if ev.Down && s.antigravity {

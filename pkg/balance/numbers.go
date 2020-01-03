@@ -10,14 +10,13 @@ var (
 	CanvasScrollSpeed = 8
 
 	// Window scrolling behavior in Play Mode.
-	ScrollboxHoz      = 256 // horizontal px from window border to start scrol
-	ScrollboxVert     = 128
-	ScrollMaxVelocity = 8 // 24
+	ScrollboxHoz  = 256 // horizontal px from window border to start scrol
+	ScrollboxVert = 128
 
 	// Player speeds
-	PlayerMaxVelocity  = 8
+	PlayerMaxVelocity  = 10
 	PlayerAcceleration = 2
-	Gravity            = 2
+	Gravity            = 6
 
 	// Default chunk size for canvases.
 	ChunkSize = 128

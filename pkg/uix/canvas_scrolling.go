@@ -126,14 +126,11 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		)
 
 		// Scroll left
-		if APosition.X-VP.X <= balance.ScrollboxHoz {
-			var delta = APosition.X - VP.X
-			if delta > balance.ScrollMaxVelocity {
-				delta = balance.ScrollMaxVelocity
-			}
+		if APosition.X <= VP.X+balance.ScrollboxHoz {
+			var delta = VP.X + balance.ScrollboxHoz - APosition.X
 
+			// constrain in case they're FAR OFF SCREEN so we don't flip back around
 			if delta < 0 {
-				// constrain in case they're FAR OFF SCREEN so we don't flip back around
 				delta = -delta
 			}
 			scrollBy.X = delta
@@ -141,22 +138,13 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 
 		// Scroll right
 		if APosition.X >= VP.W-ASize.W-balance.ScrollboxHoz {
-			var delta = VP.W - ASize.W - balance.ScrollboxHoz
-			if delta > balance.ScrollMaxVelocity {
-				delta = balance.ScrollMaxVelocity
-			}
-			scrollBy.X = -delta
+			var delta = VP.W - ASize.W - APosition.X - balance.ScrollboxHoz
+			scrollBy.X = delta
 		}
 
 		// Scroll up
-		if APosition.Y-VP.Y <= balance.ScrollboxVert {
-			var delta = APosition.Y - VP.Y
-			if delta > balance.ScrollMaxVelocity {
-				delta = balance.ScrollMaxVelocity
-			}
-
-			// TODO: add gravity to counteract jitters on scrolling vertically
-			scrollBy.Y -= balance.Gravity
+		if APosition.Y <= VP.Y+balance.ScrollboxVert {
+			var delta = VP.Y + balance.ScrollboxVert - APosition.Y
 
 			if delta < 0 {
 				delta = -delta
@@ -166,14 +154,13 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 
 		// Scroll down
 		if APosition.Y >= VP.H-ASize.H-balance.ScrollboxVert {
-			var delta = VP.H - ASize.H - balance.ScrollboxVert
-			if delta > balance.ScrollMaxVelocity {
-				delta = balance.ScrollMaxVelocity
+			var delta = VP.H - ASize.H - APosition.Y - balance.ScrollboxVert
+			if delta > 300 {
+				delta = 300
+			} else if delta < -300 {
+				delta = -300
 			}
-			scrollBy.Y = -delta
-
-			// TODO: add gravity to counteract jitters on scrolling vertically
-			scrollBy.Y += balance.Gravity * 3
+			scrollBy.Y = delta
 		}
 
 		if scrollBy != render.Origin {

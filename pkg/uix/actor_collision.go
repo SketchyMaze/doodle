@@ -63,7 +63,7 @@ func (w *Canvas) loopActorCollision() error {
 
 			// Get the actor's velocity to see if it's moving this tick.
 			v := a.Velocity()
-			if a.hasGravity {
+			if a.hasGravity && v.Y >= 0 {
 				v.Y += balance.Gravity
 			}
 
@@ -86,7 +86,11 @@ func (w *Canvas) loopActorCollision() error {
 					w.OnLevelCollision(a, info)
 				}
 			}
-			delta = info.MoveTo // Move us back where the collision check put us
+
+			// Move us back where the collision check put us
+			if !a.noclip {
+				delta = info.MoveTo
+			}
 
 			// Move the actor's World Position to the new location.
 			a.MoveTo(delta)
@@ -121,7 +125,6 @@ func (w *Canvas) loopActorCollision() error {
 					W: boxes[tuple.B].W,
 					H: boxes[tuple.B].H,
 				}
-				// lastGoodBox = originalPositions[b.ID()] // boxes[tuple.B] // worst case scenario we get blocked right away
 			)
 
 			// Firstly we want to make sure B isn't able to clip through A's
@@ -206,7 +209,9 @@ func (w *Canvas) loopActorCollision() error {
 					}
 				}
 
-				b.MoveTo(lastGoodBox.Point())
+				if !b.noclip {
+					b.MoveTo(lastGoodBox.Point())
+				}
 			} else {
 				log.Error(
 					"ERROR: Actors %s and %s overlap and the script returned false,"+

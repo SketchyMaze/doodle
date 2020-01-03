@@ -9,6 +9,7 @@
 * `import antigravity` - during Play Mode, disables gravity for the player
   character and allows free movement in all directions with the arrow keys.
   Enter the cheat again to restore gravity to normal.
+* `ghost mode` - during Play Mode, toggles noclip for the player character.
 
 ## Bool Props
 

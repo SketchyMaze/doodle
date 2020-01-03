@@ -57,6 +57,9 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 			if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
 				var delta = w.wallpaper.maxHeight - int64(orig.Y+size.H)
 				moveBy.Y = int(delta)
+
+				// Allow them to jump from the bottom by marking them as grounded.
+				a.SetGrounded(true)
 			}
 		}
 	}
