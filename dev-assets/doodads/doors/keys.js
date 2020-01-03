@@ -1,7 +1,8 @@
 function main() {
+	var color = Self.Doodad.Tag("color");
+
 	Events.OnCollide(function(e) {
-		console.log("%s picked up by %s", Self.Doodad.Title, e.Actor.Title);
-		e.Actor.SetData("key:" + Self.Doodad.Title, "true");
+		e.Actor.SetData("key:" + color, "true");
 		Self.Destroy();
 	})
 }

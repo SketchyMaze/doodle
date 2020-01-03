@@ -1,13 +1,6 @@
 function main() {
 	// What direction is the trapdoor facing?
-	// - Titles are like "Trapdoor Left" or "Trapdoor Right"
-	// - The default (down) is called just "Trapdoor"
-	var direction = Self.Doodad.Title.split(" ")[1];
-	if (!direction) {
-		direction = "down";
-	}
-	direction = direction.toLowerCase();
-
+	var direction = Self.Doodad.Tag("direction");
 	console.log("Trapdoor(%s) initialized", direction);
 
 	var timer = 0;

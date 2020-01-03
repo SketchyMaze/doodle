@@ -1,14 +1,7 @@
 function main() {
 	Self.AddAnimation("open", 0, [1]);
 	var unlocked = false;
-
-	// Map our door names to key names.
-	var KeyMap = {
-		"Blue Door": "Blue Key",
-		"Red Door": "Red Key",
-		"Green Door": "Green Key",
-		"Yellow Door": "Yellow Key"
-	}
+	var color = Self.Doodad.Tag("color");
 
 	Self.SetHitbox(16, 0, 32, 64);
 
@@ -18,7 +11,7 @@ function main() {
 		}
 
 		if (e.InHitbox) {
-			var data = e.Actor.GetData("key:" + KeyMap[Self.Doodad.Title]);
+			var data = e.Actor.GetData("key:" + color);
 			if (data === "") {
 				// Door is locked.
 				return false;

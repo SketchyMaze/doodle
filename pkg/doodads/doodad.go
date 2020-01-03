@@ -3,6 +3,7 @@ package doodads
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -42,6 +43,15 @@ func New(size int) *Doodad {
 		},
 		Tags: map[string]string{},
 	}
+}
+
+// Tag gets a value from the doodad's tags.
+func (d *Doodad) Tag(name string) string {
+	if v, ok := d.Tags[name]; ok {
+		return v
+	}
+	log.Warn("Doodad(%s).Tag(%s): tag not defined", d.Title, name)
+	return ""
 }
 
 // ChunkSize returns the chunk size of the Doodad's first layer.
