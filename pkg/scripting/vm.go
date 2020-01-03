@@ -3,6 +3,7 @@ package scripting
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -25,9 +26,10 @@ type VM struct {
 	// Each VM also has an array of Outbound channels which map to the Inbound
 	//     channel of the VMs it is linked to, for pushing out Message.Publish()
 	//     messages.
-	Inbound   chan Message
-	Outbound  []chan Message
-	subscribe map[string][]otto.Value // Subscribed message handlers by name.
+	Inbound     chan Message
+	Outbound    []chan Message
+	subscribe   map[string][]otto.Value // Subscribed message handlers by name.
+	muSubscribe sync.RWMutex
 
 	vm *otto.Otto
 

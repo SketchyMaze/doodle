@@ -103,6 +103,12 @@ func (w *Canvas) loopActorCollision() error {
 	var collidingActors = map[string]string{}
 	for tuple := range collision.BetweenBoxes(boxes) {
 		a, b := w.actors[tuple.A], w.actors[tuple.B]
+
+		// If neither actor is mobile, don't run collision handlers.
+		if !(a.IsMobile() || b.IsMobile()) {
+			continue
+		}
+
 		collidingActors[a.ID()] = b.ID()
 
 		// Call the OnCollide handler for A informing them of B's intersection.
@@ -219,7 +225,7 @@ func (w *Canvas) loopActorCollision() error {
 					InHitbox: info.Overlap.Intersects(a.Hitbox()),
 					Settled:  true,
 				}); err != nil && err != scripting.ErrReturnFalse {
-					log.Error(err.Error())
+					log.Error("VM(%s).RunCollide: %s", a.ID(), err.Error())
 				}
 			}
 		}

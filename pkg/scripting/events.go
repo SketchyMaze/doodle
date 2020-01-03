@@ -2,6 +2,7 @@ package scripting
 
 import (
 	"errors"
+	"sync"
 
 	"git.kirsle.net/go/render/event"
 	"github.com/robertkrimen/otto"
@@ -25,6 +26,7 @@ var (
 // Events API for Doodad scripts.
 type Events struct {
 	registry map[string][]otto.Value
+	lock     sync.RWMutex
 }
 
 // NewEvents initializes the Events API.
@@ -70,6 +72,9 @@ func (e *Events) register(name string, callback otto.Value) otto.Value {
 		return otto.Value{} // TODO
 	}
 
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
 	if _, ok := e.registry[name]; !ok {
 		e.registry[name] = []otto.Value{}
 	}
@@ -81,6 +86,9 @@ func (e *Events) register(name string, callback otto.Value) otto.Value {
 // Run an event handler. Returns an error only if there was a JavaScript error
 // inside the function. If there are no event handlers, just returns nil.
 func (e *Events) run(name string, args ...interface{}) error {
+	e.lock.RLock()
+	defer e.lock.RUnlock()
+
 	if _, ok := e.registry[name]; !ok {
 		return nil
 	}

@@ -23,7 +23,9 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 	// for any matching messages received.
 	go func() {
 		for msg := range vm.Inbound {
-			log.Warn("vm: %s  msg: %+v", vm.Name, msg)
+			vm.muSubscribe.RLock()
+			defer vm.muSubscribe.RUnlock()
+
 			if _, ok := vm.subscribe[msg.Name]; ok {
 				for _, callback := range vm.subscribe[msg.Name] {
 					callback.Call(otto.Value{}, msg.Args...)
@@ -35,6 +37,9 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 	// Register the Message.Subscribe and Message.Publish functions.
 	vm.vm.Set("Message", map[string]interface{}{
 		"Subscribe": func(name string, callback otto.Value) {
+			vm.muSubscribe.Lock()
+			defer vm.muSubscribe.Unlock()
+
 			if !callback.IsFunction() {
 				log.Error("SUBSCRIBE(%s): callback is not a function", name)
 				return
@@ -57,8 +62,13 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 
 		"Broadcast": func(name string, v ...interface{}) {
 			// Send the message to all actor VMs.
-			for _, vm := range s.scripts {
-				vm.Inbound <- Message{
+			for _, toVM := range s.scripts {
+				if vm.Name == toVM.Name {
+					log.Debug("Broadcast(%s): skip to vm '%s' cuz it is the sender", name, toVM.Name)
+					continue
+				}
+
+				toVM.Inbound <- Message{
 					Name: name,
 					Args: v,
 				}
