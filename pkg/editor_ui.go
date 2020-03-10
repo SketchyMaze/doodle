@@ -98,7 +98,7 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		Text: "Play (P)",
 		Font: balance.PlayButtonFont,
 	}))
-	u.PlayButton.Handle(ui.Click, func(p render.Point) {
+	u.PlayButton.Handle(ui.Click, func(ed ui.EventData) {
 		u.Scene.Playtest()
 	})
 	u.Supervisor.Add(u.PlayButton)
@@ -276,6 +276,10 @@ func (u *EditorUI) Loop(ev *event.State) error {
 
 // Present the UI to the screen.
 func (u *EditorUI) Present(e render.Engine) {
+	// Draw the workspace canvas first. Rationale: we want it to have the lowest
+	// Z-index so Tooltips can pop on top of the workspace.
+	u.Workspace.Present(e, u.Workspace.Point())
+
 	// TODO: if I don't Compute() the palette window, then, whenever the dev console
 	// is open the window will blank out its contents leaving only the outermost Frame.
 	// The title bar and borders are gone. But other UI widgets don't do this.
@@ -286,7 +290,6 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
 	u.ToolBar.Present(e, u.ToolBar.Point())
-	u.Workspace.Present(e, u.Workspace.Point())
 	u.PlayButton.Present(e, u.PlayButton.Point())
 
 	// Are we dragging a Doodad canvas?
@@ -351,7 +354,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// Set up the drop handler for draggable doodads.
 	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
 	// Doodad Palette buttons.
-	drawing.Handle(ui.Drop, func(e render.Point) {
+	drawing.Handle(ui.Drop, func(ed ui.EventData) {
 		log.Info("Drawing canvas has received a drop!")
 		var P = ui.AbsolutePosition(drawing)
 
@@ -436,18 +439,18 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 
 	type menuButton struct {
 		Text  string
-		Click func(render.Point)
+		Click func(ui.EventData)
 	}
 	buttons := []menuButton{
 		menuButton{
 			Text: "New Level",
-			Click: func(render.Point) {
+			Click: func(ed ui.EventData) {
 				d.GotoNewMenu()
 			},
 		},
 		menuButton{
 			Text: "New Doodad",
-			Click: func(render.Point) {
+			Click: func(ed ui.EventData) {
 				d.Prompt("Doodad size [100]>", func(answer string) {
 					size := balance.DoodadSize
 					if answer != "" {
@@ -464,7 +467,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		},
 		menuButton{
 			Text: "Save",
-			Click: func(render.Point) {
+			Click: func(ed ui.EventData) {
 				if u.Scene.filename != "" {
 					saveFunc(u.Scene.filename)
 				} else {
@@ -478,7 +481,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		},
 		menuButton{
 			Text: "Save as...",
-			Click: func(render.Point) {
+			Click: func(ed ui.EventData) {
 				d.Prompt("Save as filename>", func(answer string) {
 					if answer != "" {
 						saveFunc(answer)
@@ -488,7 +491,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		},
 		menuButton{
 			Text: "Load",
-			Click: func(render.Point) {
+			Click: func(ed ui.EventData) {
 				d.GotoLoadMenu()
 			},
 		},

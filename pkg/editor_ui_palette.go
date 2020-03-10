@@ -5,7 +5,6 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
 
@@ -54,7 +53,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	frame.SetBackground(balance.WindowBackground)
 
 	// Handler function for the radio buttons being clicked.
-	onClick := func(p render.Point) {
+	onClick := func(ed ui.EventData) {
 		name := u.selectedSwatch
 		swatch, ok := u.Canvas.Palette.Get(name)
 		if !ok {
@@ -94,6 +93,12 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, swFrame)
 			btn.Handle(ui.Click, onClick)
 			u.Supervisor.Add(btn)
+
+			// Add a tooltip showing the swatch attributes.
+			ui.NewTooltip(btn, ui.Tooltip{
+				Text: "Attributes: " + swatch.Attributes(),
+				Edge: ui.Left,
+			})
 
 			btn.Compute(u.d.Engine)
 			swFrame.Configure(ui.Config{

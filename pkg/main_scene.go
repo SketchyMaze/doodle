@@ -85,7 +85,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Padding:      4,
 		},
 	}))
-	s.updateButton.Handle(ui.Click, func(p render.Point) {
+	s.updateButton.Handle(ui.Click, func(ed ui.EventData) {
 		native.OpenURL(s.updateInfo.DownloadURL)
 	})
 	s.updateButton.Compute(d.Engine)
@@ -119,7 +119,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Text: button.Name,
 			Font: balance.StatusFont,
 		}))
-		btn.Handle(ui.Click, func(p render.Point) {
+		btn.Handle(ui.Click, func(ed ui.EventData) {
 			button.Func()
 		})
 		s.Supervisor.Add(btn)

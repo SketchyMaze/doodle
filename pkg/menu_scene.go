@@ -191,7 +191,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 						Font: balance.MenuFont,
 					}),
 				)
-				radio.Handle(ui.Click, func(p render.Point) {
+				radio.Handle(ui.Click, func(ed ui.EventData) {
 					s.configureCanvas(d.Engine, t.Value, s.newWallpaper)
 				})
 				s.Supervisor.Add(radio)
@@ -238,7 +238,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 					Text: t.Name,
 					Font: balance.MenuFont,
 				}))
-				radio.Handle(ui.Click, func(p render.Point) {
+				radio.Handle(ui.Click, func(ed ui.EventData) {
 					log.Info("Set wallpaper to %s", t.Value)
 					if pageType, ok := level.PageTypeFromString(s.newPageType); ok {
 						s.configureCanvas(d.Engine, pageType, t.Value)
@@ -271,9 +271,9 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 
 		var buttons = []struct {
 			Label string
-			F     func(render.Point)
+			F     func(ui.EventData)
 		}{
-			{"Continue", func(p render.Point) {
+			{"Continue", func(ed ui.EventData) {
 				d.Flash("Create new map with %s page type and %s wallpaper", s.newPageType, s.newWallpaper)
 				pageType, ok := level.PageTypeFromString(s.newPageType)
 				if !ok {
@@ -297,7 +297,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				})
 			}},
 
-			{"Cancel", func(p render.Point) {
+			{"Cancel", func(ed ui.EventData) {
 				d.Goto(&MainScene{})
 			}},
 		}
@@ -371,7 +371,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 					Text: lvl,
 					Font: balance.MenuFont,
 				}))
-				btn.Handle(ui.Click, func(p render.Point) {
+				btn.Handle(ui.Click, func(ed ui.EventData) {
 					if s.loadForPlay {
 						d.PlayLevel(lvl)
 					} else {
@@ -426,7 +426,7 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 						Text: dd,
 						Font: balance.MenuFont,
 					}))
-					btn.Handle(ui.Click, func(p render.Point) {
+					btn.Handle(ui.Click, func(ed ui.EventData) {
 						d.EditFile(dd)
 					})
 					s.Supervisor.Add(btn)
@@ -467,9 +467,9 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 
 		var buttons = []struct {
 			Label string
-			F     func(render.Point)
+			F     func(ui.EventData)
 		}{
-			{"Cancel", func(p render.Point) {
+			{"Cancel", func(ed ui.EventData) {
 				d.Goto(&MainScene{})
 			}},
 		}

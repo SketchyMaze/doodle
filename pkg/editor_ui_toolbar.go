@@ -41,13 +41,15 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 	// Buttons.
 	var buttons = []struct {
-		Value string
-		Icon  string
-		Click func()
+		Value   string
+		Icon    string
+		Tooltip string
+		Click   func()
 	}{
 		{
-			Value: drawtool.PencilTool.String(),
-			Icon:  "assets/sprites/pencil-tool.png",
+			Value:   drawtool.PencilTool.String(),
+			Icon:    "assets/sprites/pencil-tool.png",
+			Tooltip: "Pencil Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.PencilTool
 				showSwatchPalette()
@@ -56,8 +58,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.LineTool.String(),
-			Icon:  "assets/sprites/line-tool.png",
+			Value:   drawtool.LineTool.String(),
+			Icon:    "assets/sprites/line-tool.png",
+			Tooltip: "Line Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LineTool
 				showSwatchPalette()
@@ -66,8 +69,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.RectTool.String(),
-			Icon:  "assets/sprites/rect-tool.png",
+			Value:   drawtool.RectTool.String(),
+			Icon:    "assets/sprites/rect-tool.png",
+			Tooltip: "Rectangle Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.RectTool
 				showSwatchPalette()
@@ -76,8 +80,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.EllipseTool.String(),
-			Icon:  "assets/sprites/ellipse-tool.png",
+			Value:   drawtool.EllipseTool.String(),
+			Icon:    "assets/sprites/ellipse-tool.png",
+			Tooltip: "Ellipse Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.EllipseTool
 				showSwatchPalette()
@@ -86,8 +91,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.ActorTool.String(),
-			Icon:  "assets/sprites/actor-tool.png",
+			Value:   drawtool.ActorTool.String(),
+			Icon:    "assets/sprites/actor-tool.png",
+			Tooltip: "Doodad Tool\nDrag-and-drop objects into your map",
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
 				showDoodadPalette()
@@ -96,8 +102,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.LinkTool.String(),
-			Icon:  "assets/sprites/link-tool.png",
+			Value:   drawtool.LinkTool.String(),
+			Icon:    "assets/sprites/link-tool.png",
+			Tooltip: "Link Tool\nConnect doodads to each other",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
 				showDoodadPalette()
@@ -106,8 +113,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value: drawtool.EraserTool.String(),
-			Icon:  "assets/sprites/eraser-tool.png",
+			Value:   drawtool.EraserTool.String(),
+			Icon:    "assets/sprites/eraser-tool.png",
+			Tooltip: "Eraser Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.EraserTool
 
@@ -140,10 +148,15 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		var btnSize = btn.BoxThickness(2) + toolbarSpriteSize
 		btn.Resize(render.NewRect(btnSize, btnSize))
 
-		btn.Handle(ui.Click, func(p render.Point) {
+		btn.Handle(ui.Click, func(ed ui.EventData) {
 			button.Click()
 		})
 		u.Supervisor.Add(btn)
+
+		ui.NewTooltip(btn, ui.Tooltip{
+			Text: button.Tooltip,
+			Edge: ui.Right,
+		})
 
 		btnFrame.Pack(btn, ui.Pack{
 			Side: ui.N,
@@ -165,6 +178,12 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 	frame.Pack(bsLabel, ui.Pack{
 		Side: ui.N,
 	})
+
+	ui.NewTooltip(bsLabel, ui.Tooltip{
+		Text: "Set the line thickness for drawing",
+		Edge: ui.Right,
+	})
+	u.Supervisor.Add(bsLabel)
 
 	// Brush Size widget
 	{
@@ -237,7 +256,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 				Text: button.Label,
 				Font: balance.SmallMonoFont,
 			}))
-			btn.Handle(ui.Click, func(p render.Point) {
+			btn.Handle(ui.Click, func(ed ui.EventData) {
 				button.F()
 			})
 			u.Supervisor.Add(btn)

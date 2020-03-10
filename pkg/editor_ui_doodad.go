@@ -77,7 +77,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Text: "<",
 			Font: balance.MenuFont,
 		}))
-		leftBtn.Handle(ui.Click, func(p render.Point) {
+		leftBtn.Handle(ui.Click, func(ed ui.EventData) {
 			u.scrollDoodadFrame(-1)
 		})
 		u.Supervisor.Add(leftBtn)
@@ -100,7 +100,7 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Text: ">",
 			Font: balance.MenuFont,
 		}))
-		rightBtn.Handle(ui.Click, func(p render.Point) {
+		rightBtn.Handle(ui.Click, func(ed ui.EventData) {
 			u.scrollDoodadFrame(1)
 		})
 		u.Supervisor.Add(rightBtn)
@@ -179,10 +179,16 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Side: ui.W,
 		})
 
+		// Tooltip hover to show the doodad's name.
+		ui.NewTooltip(btn, ui.Tooltip{
+			Text: doodad.Title,
+			Edge: ui.Top,
+		})
+
 		// Begin the drag event to grab this Doodad.
 		// NOTE: The drag target is the EditorUI.Canvas in
 		// editor_ui.go#SetupCanvas()
-		btn.Handle(ui.MouseDown, func(e render.Point) {
+		btn.Handle(ui.MouseDown, func(ed ui.EventData) {
 			log.Warn("MouseDown on doodad %s (%s)", doodad.Filename, doodad.Title)
 			u.startDragActor(doodad, nil)
 		})

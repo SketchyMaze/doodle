@@ -87,7 +87,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Text: label,
 			Font: balance.StatusFont,
 		}))
-		btn.Handle(ui.Click, func(p render.Point) {
+		btn.Handle(ui.Click, func(ed ui.EventData) {
 			d.Flash("%s clicked", btn)
 		})
 		s.Supervisor.Add(btn)
@@ -138,7 +138,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 					Height:      20,
 					BorderStyle: ui.BorderRaised,
 				})
-				btn.Handle(ui.Click, func(p render.Point) {
+				btn.Handle(ui.Click, func(ed ui.EventData) {
 					d.Flash("%s clicked", btn)
 				})
 				rowFrame.Pack(btn, ui.Pack{
@@ -215,7 +215,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Font: balance.StatusFont,
 	}))
 	button1.SetBackground(render.Blue)
-	button1.Handle(ui.Click, func(p render.Point) {
+	button1.Handle(ui.Click, func(ed ui.EventData) {
 		d.NewMap()
 	})
 
@@ -225,7 +225,7 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Text: "Load Map",
 		Font: balance.StatusFont,
 	}))
-	button2.Handle(ui.Click, func(p render.Point) {
+	button2.Handle(ui.Click, func(ed ui.EventData) {
 		d.Prompt("Map name>", func(name string) {
 			d.EditDrawing(name)
 		})
