@@ -3,6 +3,8 @@ fonts/
 maps/
 bin/
 dist/
+dev-assets/guidebook/venv
+dev-assets/guidebook/compiled/pages
 wasm/assets/
 *.wasm
 *.doodad
