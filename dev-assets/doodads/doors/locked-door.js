@@ -1,3 +1,4 @@
+// DEPRECATED: old locked door script. Superceded by colored-door.js.
 function main() {
 	Self.AddAnimation("open", 0, [1]);
 	var unlocked = false;

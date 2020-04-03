@@ -14,7 +14,7 @@ var (
 	ScrollboxVert = 128
 
 	// Player speeds
-	PlayerMaxVelocity  = 10
+	PlayerMaxVelocity  = 6
 	PlayerAcceleration = 2
 	Gravity            = 6
 
