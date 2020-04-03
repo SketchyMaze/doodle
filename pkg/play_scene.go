@@ -31,6 +31,7 @@ type PlayScene struct {
 
 	// UI widgets.
 	supervisor *ui.Supervisor
+	screen     *ui.Frame // A window sized invisible frame to position UI elements.
 	editButton *ui.Button
 
 	// The alert box shows up when the level goal is reached and includes
@@ -53,6 +54,11 @@ type PlayScene struct {
 	antigravity       bool // Cheat: disable player gravity
 	noclip            bool // Cheat: disable player clipping
 	playerJumpCounter int  // limit jump length
+
+	// Inventory HUD. Impl. in play_inventory.go
+	invenFrame   *ui.Frame
+	invenItems   []string // item list
+	invenDoodads map[string]*uix.Canvas
 }
 
 // Name of the scene.
@@ -65,6 +71,10 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
 	s.scripting = scripting.NewSupervisor()
 	s.supervisor = ui.NewSupervisor()
+
+	// Create an invisible 'screen' frame for UI elements to use for positioning.
+	s.screen = ui.NewFrame("Screen")
+	s.screen.Resize(render.NewRect(d.width, d.height))
 
 	// Level Exit handler.
 	s.SetupAlertbox()
@@ -111,6 +121,9 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.EditLevel()
 	})
 	s.supervisor.Add(s.editButton)
+
+	// Set up the inventory HUD.
+	s.setupInventoryHud()
 
 	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
@@ -382,6 +395,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 		if err := s.drawing.Loop(ev); err != nil {
 			log.Error("Drawing loop error: %s", err.Error())
 		}
+
+		// Update the inventory HUD.
+		s.computeInventory()
 	}
 
 	return nil
@@ -397,6 +413,10 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 	// Draw out bounding boxes.
 	d.DrawCollisionBox(s.Player)
+
+	// Draw the UI screen and any widgets that attached to it.
+	s.screen.Compute(d.Engine)
+	s.screen.Present(d.Engine, render.Origin)
 
 	// Draw the Edit button.
 	var (

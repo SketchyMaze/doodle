@@ -1,6 +1,7 @@
 
 function main() {
 	var color = Self.Doodad.Tag("color");
+	var keyname = "key-" + color + ".doodad";
 
 	// Layers in the doodad image.
 	var layer = {
@@ -34,8 +35,9 @@ function main() {
 				return;
 			}
 
-			var data = e.Actor.GetData("key:" + color);
-			if (data === "") {
+			// Do they have our key?
+			var hasKey = e.Actor.HasItem(keyname) >= 0;
+			if (!hasKey) {
 				// Door is locked.
 				return false;
 			}
