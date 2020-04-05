@@ -205,7 +205,7 @@ func (w *Canvas) loopActorCollision() error {
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
 							// Are they on top?
-							aHitbox := collision.GetBoundingRectHitbox(a.Drawing, a.Hitbox())
+							aHitbox := collision.GetBoundingRectHitbox(a, a.Hitbox())
 							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
 								onTop = true
 								onTopY = test.Y
