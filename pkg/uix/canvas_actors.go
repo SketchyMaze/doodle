@@ -58,7 +58,7 @@ func (w *Canvas) InstallScripts() error {
 		vm.Self = actor
 		vm.Set("Self", vm.Self)
 
-		if _, err := vm.Run(actor.Doodad.Script); err != nil {
+		if _, err := vm.Run(actor.Doodad().Script); err != nil {
 			log.Error("Run script for actor %s failed: %s", actor.ID(), err)
 		}
 

@@ -1,6 +1,6 @@
 
 function main() {
-	var color = Self.Doodad.Tag("color");
+	var color = Self.Doodad().Tag("color");
 	var keyname = "key-" + color + ".doodad";
 
 	// Layers in the doodad image.

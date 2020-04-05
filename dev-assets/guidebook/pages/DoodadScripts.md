@@ -16,7 +16,7 @@ function main() {
     //   other doodads.
 
     // Logs go to the game's log file (standard output on Linux/Mac).
-    console.log("%s initialized!", Self.Doodad.Title);
+    console.log("%s initialized!", Self.Doodad().Title);
 
     // If our doodad has 'solid' parts that should prohibit movement,
     // define the hitbox here. Coordinates are relative so 0,0 is the
@@ -59,13 +59,13 @@ Self holds information about the current doodad. The full surface area of
 the Self object is subject to change, but some useful things you can access
 from it include:
 
-* Self.Doodad: a pointer to the doodad's file data.
-  * Self.Doodad.Title: get the title of the doodad file.
-  * Self.Doodad.Author: the name of the author who wrote the doodad.
-  * Self.Doodad.Script: the doodad's JavaScript source code. Note that
+* Self.Doodad(): a pointer to the doodad's file data.
+  * Self.Doodad().Title: get the title of the doodad file.
+  * Self.Doodad().Author: the name of the author who wrote the doodad.
+  * Self.Doodad().Script: the doodad's JavaScript source code. Note that
     modifying this won't have any effect in-game, as the script had already
     been loaded into the interpreter.
-  * Self.Doodad.GameVersion: the version of {{ app_name }} that was used
+  * Self.Doodad().GameVersion: the version of {{ app_name }} that was used
     when the doodad was created.
 
 ### Events

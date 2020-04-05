@@ -348,7 +348,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		b.Actor.AddLink(idA)
 
 		// Reset the Link tool.
-		d.Flash("Linked '%s' and '%s' together", a.Doodad.Title, b.Doodad.Title)
+		d.Flash("Linked '%s' and '%s' together", a.Doodad().Title, b.Doodad().Title)
 	}
 
 	// Set up the drop handler for draggable doodads.

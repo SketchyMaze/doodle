@@ -7,8 +7,8 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/go/render"
 	"github.com/robertkrimen/otto"
@@ -63,23 +63,36 @@ func (w *Canvas) loopActorCollision() error {
 
 			// Get the actor's velocity to see if it's moving this tick.
 			v := a.Velocity()
-			if a.hasGravity && v.Y >= 0 {
-				v.Y += balance.Gravity
+
+			// Apply gravity to the actor's velocity.
+			if a.hasGravity && !a.Grounded() { //v.Y >= 0 {
+				if !a.Grounded() {
+					v.Y = physics.Lerp(
+						v.Y,             // current speed
+						balance.Gravity, // target max gravity falling downwards
+						balance.PlayerAcceleration,
+					)
+				} else {
+					v.Y = 0
+				}
+				a.SetVelocity(v)
+				// v.Y += balance.Gravity
 			}
 
 			// If not moving, grab the bounding box right now.
-			if v == render.Origin {
-				boxes[i] = doodads.GetBoundingRect(a)
+			if v.IsZero() {
+				boxes[i] = collision.GetBoundingRect(a)
 				return
 			}
 
 			// Create a delta point from their current location to where they
 			// want to move to this tick.
-			delta := a.Position()
+			delta := physics.VectorFromPoint(a.Position())
 			delta.Add(v)
 
 			// Check collision with level geometry.
-			info, ok := collision.CollidesWithGrid(a, w.chunks, delta)
+			chkPoint := delta.ToPoint()
+			info, ok := collision.CollidesWithGrid(a, w.chunks, chkPoint)
 			if ok {
 				// Collision happened with world.
 				if w.OnLevelCollision != nil {
@@ -89,17 +102,17 @@ func (w *Canvas) loopActorCollision() error {
 
 			// Move us back where the collision check put us
 			if !a.noclip {
-				delta = info.MoveTo
+				delta = physics.VectorFromPoint(info.MoveTo)
 			}
 
 			// Move the actor's World Position to the new location.
-			a.MoveTo(delta)
+			a.MoveTo(delta.ToPoint())
 
 			// Keep the actor from leaving the world borders of bounded maps.
 			w.loopContainActorsInsideLevel(a)
 
 			// Store this actor's bounding box after they've moved.
-			boxes[i] = doodads.GetBoundingRect(a)
+			boxes[i] = collision.GetBoundingRect(a)
 		}(i, a)
 		wg.Wait()
 	}
@@ -115,10 +128,12 @@ func (w *Canvas) loopActorCollision() error {
 
 		collidingActors[a.ID()] = b.ID()
 
+		// log.Error("between boxes: %+v  <%s> <%s>", tuple, a.ID(), b.ID())
+
 		// Call the OnCollide handler for A informing them of B's intersection.
 		if w.scripting != nil {
 			var (
-				rect        = doodads.GetBoundingRect(b)
+				rect        = collision.GetBoundingRect(b)
 				lastGoodBox = render.Rect{
 					X: originalPositions[b.ID()].X,
 					Y: originalPositions[b.ID()].Y,
@@ -190,7 +205,7 @@ func (w *Canvas) loopActorCollision() error {
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
 							// Are they on top?
-							aHitbox := doodads.GetBoundingRectHitbox(a, a.Hitbox())
+							aHitbox := collision.GetBoundingRectHitbox(a.Drawing, a.Hitbox())
 							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
 								onTop = true
 								onTopY = test.Y
@@ -241,7 +256,7 @@ func (w *Canvas) loopActorCollision() error {
 				log.Error(
 					"ERROR: Actors %s and %s overlap and the script returned false,"+
 						"but I didn't store %s original position earlier??",
-					a.Doodad.Title, b.Doodad.Title, b.Doodad.Title,
+					a.Doodad().Title, b.Doodad().Title, b.Doodad().Title,
 				)
 			}
 

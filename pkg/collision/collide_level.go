@@ -3,7 +3,6 @@ package collision
 import (
 	"sync"
 
-	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/go/render"
 )
@@ -53,7 +52,7 @@ CollidesWithGrid checks if a Doodad collides with level geometry.
 
 The `target` is the point the actor wants to move to on this tick.
 */
-func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
+func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P = d.Position()
 		S = d.Size()
@@ -72,7 +71,7 @@ func CollidesWithGrid(d doodads.Actor, grid *level.Chunker, target render.Point)
 	)
 
 	// Test all of the bounding boxes for a collision with level geometry.
-	if ok := result.ScanBoundingBox(doodads.GetBoundingRect(d), grid); ok {
+	if ok := result.ScanBoundingBox(GetBoundingRect(d), grid); ok {
 		// We've already collided! Try to wiggle free.
 		if result.Bottom {
 			if !d.Grounded() {

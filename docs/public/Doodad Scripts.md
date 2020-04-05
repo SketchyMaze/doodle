@@ -14,7 +14,7 @@ Provide a script file with a `main` function:
 
 ```javascript
 function main() {
-  console.log("%s initialized!", Self.Doodad.Title);
+  console.log("%s initialized!", Self.Doodad().Title);
 
   var timer = 0;
   Events.OnCollide( function() {
@@ -84,18 +84,18 @@ The global variable `Self` holds an API for the current doodad. The full
 surface area of this API is subject to change, but some useful examples you
 can do with this are as follows.
 
-### Self.Doodad
+### Self.Doodad()
 
-Self.Doodad is a pointer into the doodad's metadata file. Not
+Self.Doodad() is a pointer into the doodad's metadata file. Not
 all properties in there can be written to or read from the
 JavaScript engine, but some useful attributes are:
 
-* `str Self.Doodad.Title`: the title of the doodad.
-* `str Self.Doodad.Author`: the author name of the doodad.
-* `str Self.Doodad.Script`: your own source code. Note that
+* `str Self.Doodad().Title`: the title of the doodad.
+* `str Self.Doodad().Author`: the author name of the doodad.
+* `str Self.Doodad().Script`: your own source code. Note that
   editing this won't have any effect in-game, as your doodad's
   source has already been loaded into the interpreter.
-* `str Self.Doodad.GameVersion`: the game version that created
+* `str Self.Doodad().GameVersion`: the game version that created
   the doodad.
 
 ### Self.ShowLayer(int index)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"github.com/robertkrimen/otto"
@@ -73,6 +74,7 @@ func (vm *VM) RegisterLevelHooks() error {
 		"Flash":  shmem.Flash,
 		"RGBA":   render.RGBA,
 		"Point":  render.NewPoint,
+		"Vector": physics.NewVector,
 		"Self":   vm.Self, // i.e., the uix.Actor object
 		"Events": vm.Events,
 		"GetTick": func() uint64 {

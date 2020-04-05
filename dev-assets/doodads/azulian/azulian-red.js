@@ -1,5 +1,5 @@
 function main() {
-	log.Info("Azulian '%s' initialized!", Self.Doodad.Title);
+	log.Info("Azulian '%s' initialized!", Self.Doodad().Title);
 
 	var playerSpeed = 4;
 	var gravity = 4;
@@ -28,8 +28,10 @@ function main() {
 		}
 		sampleTick++;
 
-		var Vx = playerSpeed * (direction === "left" ? -1 : 1);
-		Self.SetVelocity(Point(Vx, 0));
+		// TODO: Vector() requires floats, pain in the butt for JS,
+		// the JS API should be friendlier and custom...
+		var Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1));
+		Self.SetVelocity(Vector(Vx, 0.0));
 
 		if (!Self.IsAnimating()) {
 			Self.PlayAnimation("walk-"+direction, null);

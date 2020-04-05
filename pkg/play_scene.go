@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
@@ -51,6 +52,7 @@ type PlayScene struct {
 
 	// Player character
 	Player            *uix.Actor
+	playerPhysics     *physics.Mover
 	antigravity       bool // Cheat: disable player gravity
 	noclip            bool // Cheat: disable player clipping
 	playerJumpCounter int  // limit jump length
@@ -235,6 +237,14 @@ func (s *PlayScene) setupPlayer() {
 	s.drawing.AddActor(s.Player)
 	s.drawing.FollowActor = s.Player.ID()
 
+	// Set up the movement physics for the player.
+	s.playerPhysics = &physics.Mover{
+		MaxSpeed: physics.NewVector(balance.PlayerMaxVelocity, balance.PlayerMaxVelocity),
+		// Gravity:      physics.NewVector(balance.Gravity, balance.Gravity),
+		Acceleration: 0.025,
+		Friction:     0.1,
+	}
+
 	// Set up the player character's script in the VM.
 	if err := s.scripting.AddLevelScript(s.Player.ID()); err != nil {
 		log.Error("PlayScene.Setup: scripting.InstallActor(player) failed: %s", err)
@@ -412,7 +422,7 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	// Draw out bounding boxes.
-	d.DrawCollisionBox(s.Player)
+	d.DrawCollisionBox(s.Player.Drawing)
 
 	// Draw the UI screen and any widgets that attached to it.
 	s.screen.Compute(d.Engine)
@@ -445,35 +455,79 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 // movePlayer updates the player's X,Y coordinate based on key pressed.
 func (s *PlayScene) movePlayer(ev *event.State) {
-	var playerSpeed = balance.PlayerMaxVelocity
+	var (
+		playerSpeed = float64(balance.PlayerMaxVelocity)
+		velocity    = s.Player.Velocity()
+		direction   float64
+		jumping     bool
+	)
 
-	// If antigravity enabled and the Shift key is pressed down, move the
-	// player by only one pixel per tick.
-	if s.antigravity && ev.Shift {
-		playerSpeed = 1
-	}
+	// Antigravity: player can move anywhere with arrow keys.
+	if s.antigravity {
+		velocity.X = 0
+		velocity.Y = 0
 
-	var velocity render.Point
-
-	if ev.Left {
-		velocity.X = -playerSpeed
-	}
-	if ev.Right {
-		velocity.X = playerSpeed
-	}
-	if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0 || s.antigravity) {
-		velocity.Y = -playerSpeed
-
-		if s.Player.Grounded() {
-			s.playerJumpCounter = 12
+		// Shift to slow your roll to 1 pixel per tick.
+		if ev.Shift {
+			playerSpeed = 1
 		}
-	}
-	if ev.Down && s.antigravity {
-		velocity.Y = playerSpeed
-	}
 
-	if !s.Player.Grounded() {
-		s.playerJumpCounter--
+		if ev.Left {
+			velocity.X = -playerSpeed
+		} else if ev.Right {
+			velocity.X = playerSpeed
+		}
+		if ev.Up {
+			velocity.Y = -playerSpeed
+		} else if ev.Down {
+			velocity.Y = playerSpeed
+		}
+	} else {
+		// Moving left or right.
+		if ev.Left {
+			direction = -1
+		} else if ev.Right {
+			direction = 1
+		}
+
+		// Up button to signal they want to jump.
+		if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
+			jumping = true
+
+			if s.Player.Grounded() {
+				// Allow them to sustain the jump this many ticks.
+				s.playerJumpCounter = 32
+			}
+		}
+
+		// Moving left or right? Interpolate their velocity by acceleration.
+		if direction != 0 {
+			// TODO: fast turn-around if they change directions so they don't
+			// slip and slide while their velocity updates.
+			velocity.X = physics.Lerp(
+				velocity.X,
+				direction*s.playerPhysics.MaxSpeed.X,
+				s.playerPhysics.Acceleration,
+			)
+		} else {
+			// Slow them back to zero using friction.
+			velocity.X = physics.Lerp(
+				velocity.X,
+				0,
+				s.playerPhysics.Friction,
+			)
+		}
+
+		// Moving upwards (jumping): give them full acceleration upwards.
+		if jumping {
+			velocity.Y = -playerSpeed
+		}
+
+		// While in the air, count down their jump counter; when zero they
+		// cannot jump again until they touch ground.
+		if !s.Player.Grounded() {
+			s.playerJumpCounter--
+		}
 	}
 
 	s.Player.SetVelocity(velocity)

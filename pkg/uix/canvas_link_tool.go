@@ -19,7 +19,7 @@ func (w *Canvas) LinkAdd(a *Actor) error {
 		// First click, hold onto this actor.
 		w.linkFirst = a
 		shmem.Flash("Doodad '%s' selected, click the next Doodad to link it to",
-			a.Doodad.Title,
+			a.Doodad().Title,
 		)
 	} else {
 		// Second click, call the OnLinkActors handler with the two actors.

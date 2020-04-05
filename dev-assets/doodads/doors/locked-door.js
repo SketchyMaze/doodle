@@ -2,7 +2,7 @@
 function main() {
 	Self.AddAnimation("open", 0, [1]);
 	var unlocked = false;
-	var color = Self.Doodad.Tag("color");
+	var color = Self.Doodad().Tag("color");
 
 	Self.SetHitbox(16, 0, 32, 64);
 

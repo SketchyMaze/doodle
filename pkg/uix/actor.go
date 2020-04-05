@@ -6,9 +6,11 @@ import (
 	"sort"
 	"sync"
 
+	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
 	"github.com/robertkrimen/otto"
@@ -23,9 +25,10 @@ import (
 //   as defined in the map: its spawn coordinate and configuration.
 // - A uix.Canvas that can present the actor's graphics to the screen.
 type Actor struct {
-	doodads.Drawing
-	Actor  *level.Actor
-	Canvas *Canvas
+	id      string
+	Drawing *doodads.Drawing
+	Actor   *level.Actor
+	Canvas  *Canvas
 
 	activeLayer int  // active drawing frame for display
 	flagDestroy bool // flag the actor for destruction
@@ -37,6 +40,11 @@ type Actor struct {
 	hitbox     render.Rect
 	inventory  map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
 	data       map[string]string // arbitrary key/value store. DEPRECATED ??
+
+	// Movement data.
+	position render.Point
+	velocity physics.Vector
+	grounded bool
 
 	// Animation variables.
 	animations        map[string]*Animation
@@ -81,6 +89,17 @@ func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor
 	return actor
 }
 
+// ID returns the actor's ID. This is the underlying doodle.Drawing.ID().
+func (a *Actor) ID() string {
+	return a.Drawing.ID()
+}
+
+// Doodad offers access to the underlying Doodad object.
+// Shortcut to the `.Drawing.Doodad` property path.
+func (a *Actor) Doodad() *doodads.Doodad {
+	return a.Drawing.Doodad
+}
+
 // SetGravity configures whether the actor is affected by gravity.
 func (a *Actor) SetGravity(v bool) {
 	a.hasGravity = v
@@ -96,6 +115,46 @@ func (a *Actor) SetMobile(v bool) {
 // IsMobile returns whether the actor is a mobile character.
 func (a *Actor) IsMobile() bool {
 	return a.isMobile
+}
+
+// Size returns the size of the actor, from the underlying doodads.Drawing.
+func (a *Actor) Size() render.Rect {
+	return a.Drawing.Size()
+}
+
+// Velocity returns the actor's current velocity vector.
+func (a *Actor) Velocity() physics.Vector {
+	return a.velocity
+}
+
+// SetVelocity updates the actor's velocity vector.
+func (a *Actor) SetVelocity(v physics.Vector) {
+	a.velocity = v
+}
+
+// Position returns the actor's position.
+func (a *Actor) Position() render.Point {
+	return a.position
+}
+
+// MoveTo sets the actor's position.
+func (a *Actor) MoveTo(p render.Point) {
+	a.position = p
+}
+
+// MoveBy adjusts the actor's position.
+func (a *Actor) MoveBy(p render.Point) {
+	a.position.Add(p)
+}
+
+// Grounded returns if the actor is touching a floor.
+func (a *Actor) Grounded() bool {
+	return a.grounded
+}
+
+// SetGrounded sets the actor's grounded value.
+func (a *Actor) SetGrounded(v bool) {
+	a.grounded = v
 }
 
 // SetNoclip sets the noclip setting for an actor. If true, the actor can
@@ -187,7 +246,7 @@ func (a *Actor) Inventory() map[string]int {
 
 // GetBoundingRect gets the bounding box of the actor's doodad.
 func (a *Actor) GetBoundingRect() render.Rect {
-	return doodads.GetBoundingRect(a)
+	return collision.GetBoundingRect(a)
 }
 
 // SetHitbox sets the actor's elected hitbox.
@@ -233,26 +292,26 @@ func (a *Actor) GetData(key string) string {
 
 // LayerCount returns the number of layers in this actor's drawing.
 func (a *Actor) LayerCount() int {
-	return len(a.Doodad.Layers)
+	return len(a.Doodad().Layers)
 }
 
 // ShowLayer sets the actor's ActiveLayer to the index given.
 func (a *Actor) ShowLayer(index int) error {
 	if index < 0 {
 		return errors.New("layer index must be 0 or greater")
-	} else if index > len(a.Doodad.Layers) {
+	} else if index > len(a.Doodad().Layers) {
 		return fmt.Errorf("layer %d out of range for doodad's layers", index)
 	}
 
 	a.activeLayer = index
-	a.Canvas.Load(a.Doodad.Palette, a.Doodad.Layers[index].Chunker)
+	a.Canvas.Load(a.Doodad().Palette, a.Doodad().Layers[index].Chunker)
 	return nil
 }
 
 // ShowLayerNamed sets the actor's ActiveLayer to the one named.
 func (a *Actor) ShowLayerNamed(name string) error {
 	// Find the layer.
-	for i, layer := range a.Doodad.Layers {
+	for i, layer := range a.Doodad().Layers {
 		if layer.Name == name {
 			return a.ShowLayer(i)
 		}

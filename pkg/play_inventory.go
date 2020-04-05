@@ -39,8 +39,8 @@ func (s *PlayScene) setupInventoryHud() {
 
 	// Add the inventory frame to the screen frame.
 	s.screen.Place(s.invenFrame, ui.Place{
-		Left:   40,
-		Bottom: 40,
+		Top:   40,
+		Right: 40,
 	})
 
 	// Hide inventory if empty.

@@ -7,6 +7,15 @@ import (
 	"git.kirsle.net/go/render"
 )
 
+// Actor is a subset of the uix.Actor interface with just the methods needed
+// for collision checking purposes.
+type Actor interface {
+	Position() render.Point
+	Size() render.Rect
+	Grounded() bool
+	SetGrounded(bool)
+}
+
 // BoxCollision holds the result of a collision BetweenBoxes.
 type BoxCollision struct {
 	// A and B are the indexes of the boxes sent to BetweenBoxes.

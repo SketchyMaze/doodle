@@ -61,7 +61,7 @@ func (a *Actor) AddAnimation(name string, interval int64, layers []interface{}) 
 		switch v := name.(type) {
 		case string:
 			var found bool
-			for i, layer := range a.Doodad.Layers {
+			for i, layer := range a.Doodad().Layers {
 				if layer.Name == v {
 					indexes = append(indexes, i)
 					found = true
@@ -80,7 +80,7 @@ func (a *Actor) AddAnimation(name string, interval int64, layers []interface{}) 
 			}
 
 			iv := int(v)
-			if iv < len(a.Doodad.Layers) {
+			if iv < len(a.Doodad().Layers) {
 				indexes = append(indexes, iv)
 			} else {
 				return fmt.Errorf("layer numbered '%d' is out of bounds", iv)

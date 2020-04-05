@@ -20,11 +20,11 @@ type Drawing struct {
 
 // NewDrawing creates a Drawing actor based on a Doodad drawing. If you pass
 // an empty ID string, it will make a random UUIDv4 ID.
-func NewDrawing(id string, doodad *Doodad) Drawing {
+func NewDrawing(id string, doodad *Doodad) *Drawing {
 	if id == "" {
 		id = uuid.Must(uuid.NewRandom()).String()
 	}
-	return Drawing{
+	return &Drawing{
 		id:     id,
 		Doodad: doodad,
 		size:   doodad.Rect(),

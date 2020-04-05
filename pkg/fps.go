@@ -142,7 +142,7 @@ func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 	}
 
 	var (
-		rect = doodads.GetBoundingRect(actor)
+		rect = collision.GetBoundingRect(actor)
 		box  = collision.GetCollisionBox(rect)
 	)
 

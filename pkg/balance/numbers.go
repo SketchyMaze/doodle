@@ -14,9 +14,9 @@ var (
 	ScrollboxVert = 128
 
 	// Player speeds
-	PlayerMaxVelocity  = 6
-	PlayerAcceleration = 2
-	Gravity            = 6
+	PlayerMaxVelocity  float64 = 6
+	PlayerAcceleration float64 = 0.2
+	Gravity            float64 = 6
 
 	// Default chunk size for canvases.
 	ChunkSize = 128
