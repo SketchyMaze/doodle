@@ -77,8 +77,9 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Text: "<",
 			Font: balance.MenuFont,
 		}))
-		leftBtn.Handle(ui.Click, func(ed ui.EventData) {
+		leftBtn.Handle(ui.Click, func(ed ui.EventData) error {
 			u.scrollDoodadFrame(-1)
+			return nil
 		})
 		u.Supervisor.Add(leftBtn)
 		pager.Pack(leftBtn, ui.Pack{
@@ -100,8 +101,9 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 			Text: ">",
 			Font: balance.MenuFont,
 		}))
-		rightBtn.Handle(ui.Click, func(ed ui.EventData) {
+		rightBtn.Handle(ui.Click, func(ed ui.EventData) error {
 			u.scrollDoodadFrame(1)
+			return nil
 		})
 		u.Supervisor.Add(rightBtn)
 		pager.Pack(rightBtn, ui.Pack{
@@ -188,9 +190,10 @@ func (u *EditorUI) setupDoodadFrame(e render.Engine, window *ui.Window) (*ui.Fra
 		// Begin the drag event to grab this Doodad.
 		// NOTE: The drag target is the EditorUI.Canvas in
 		// editor_ui.go#SetupCanvas()
-		btn.Handle(ui.MouseDown, func(ed ui.EventData) {
+		btn.Handle(ui.MouseDown, func(ed ui.EventData) error {
 			log.Warn("MouseDown on doodad %s (%s)", doodad.Filename, doodad.Title)
 			u.startDragActor(doodad, nil)
+			return nil
 		})
 		u.Supervisor.Add(btn)
 

@@ -25,60 +25,7 @@ func (c Command) Run(d *Doodle) error {
 	}
 
 	// Cheat codes
-	if c.Raw == "unleash the beast" {
-		if fpsDoNotCap {
-			d.Flash("Reset frame rate throttle to factory default FPS")
-		} else {
-			d.Flash("Unleashing as many frames as we can render!")
-		}
-		fpsDoNotCap = !fpsDoNotCap
-		return nil
-	} else if c.Raw == "don't edit and drive" {
-		if playScene, ok := d.Scene.(*PlayScene); ok {
-			playScene.drawing.Editable = true
-			d.Flash("Level canvas is now editable. Don't edit and drive!")
-		} else {
-			d.Flash("Use this cheat in Play Mode to make the level canvas editable.")
-		}
-		return nil
-	} else if c.Raw == "scroll scroll scroll your boat" {
-		if playScene, ok := d.Scene.(*PlayScene); ok {
-			playScene.drawing.Scrollable = true
-			d.Flash("Level canvas is now scrollable with the arrow keys.")
-		} else {
-			d.Flash("Use this cheat in Play Mode to make the level scrollable.")
-		}
-		return nil
-	} else if c.Raw == "import antigravity" {
-		if playScene, ok := d.Scene.(*PlayScene); ok {
-			playScene.antigravity = !playScene.antigravity
-			playScene.Player.SetGravity(!playScene.antigravity)
-
-			if playScene.antigravity {
-				d.Flash("Gravity disabled for player character.")
-			} else {
-				d.Flash("Gravity restored for player character.")
-			}
-		} else {
-			d.Flash("Use this cheat in Play Mode to disable gravity for the player character.")
-		}
-		return nil
-	} else if c.Raw == "ghost mode" {
-		if playScene, ok := d.Scene.(*PlayScene); ok {
-			playScene.noclip = !playScene.noclip
-			playScene.Player.SetNoclip(playScene.noclip)
-
-			playScene.antigravity = playScene.noclip
-			playScene.Player.SetGravity(!playScene.antigravity)
-
-			if playScene.noclip {
-				d.Flash("Clipping disabled for player character.")
-			} else {
-				d.Flash("Clipping and gravity restored for player character.")
-			}
-		} else {
-			d.Flash("Use this cheat in Play Mode to disable clipping for the player character.")
-		}
+	if cheat := c.cheatCommand(d); cheat {
 		return nil
 	}
 

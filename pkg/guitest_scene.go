@@ -87,8 +87,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 			Text: label,
 			Font: balance.StatusFont,
 		}))
-		btn.Handle(ui.Click, func(ed ui.EventData) {
+		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			d.Flash("%s clicked", btn)
+			return nil
 		})
 		s.Supervisor.Add(btn)
 		leftFrame.Pack(btn, ui.Pack{
@@ -138,8 +139,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 					Height:      20,
 					BorderStyle: ui.BorderRaised,
 				})
-				btn.Handle(ui.Click, func(ed ui.EventData) {
+				btn.Handle(ui.Click, func(ed ui.EventData) error {
 					d.Flash("%s clicked", btn)
+					return nil
 				})
 				rowFrame.Pack(btn, ui.Pack{
 					Side:   ui.W,
@@ -215,8 +217,9 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Font: balance.StatusFont,
 	}))
 	button1.SetBackground(render.Blue)
-	button1.Handle(ui.Click, func(ed ui.EventData) {
+	button1.Handle(ui.Click, func(ed ui.EventData) error {
 		d.NewMap()
+		return nil
 	})
 
 	log.Info("Button1 bg: %s", button1.Background())
@@ -225,10 +228,11 @@ func (s *GUITestScene) Setup(d *Doodle) error {
 		Text: "Load Map",
 		Font: balance.StatusFont,
 	}))
-	button2.Handle(ui.Click, func(ed ui.EventData) {
+	button2.Handle(ui.Click, func(ed ui.EventData) error {
 		d.Prompt("Map name>", func(name string) {
 			d.EditDrawing(name)
 		})
+		return nil
 	})
 
 	var align = ui.W

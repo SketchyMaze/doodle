@@ -148,8 +148,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		var btnSize = btn.BoxThickness(2) + toolbarSpriteSize
 		btn.Resize(render.NewRect(btnSize, btnSize))
 
-		btn.Handle(ui.Click, func(ed ui.EventData) {
+		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			button.Click()
+			return nil
 		})
 		u.Supervisor.Add(btn)
 
@@ -256,8 +257,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 				Text: button.Label,
 				Font: balance.SmallMonoFont,
 			}))
-			btn.Handle(ui.Click, func(ed ui.EventData) {
+			btn.Handle(ui.Click, func(ed ui.EventData) error {
 				button.F()
+				return nil
 			})
 			u.Supervisor.Add(btn)
 			sizeBtnFrame.Pack(btn, ui.Pack{

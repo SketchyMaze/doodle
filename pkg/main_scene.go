@@ -85,8 +85,9 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Padding:      4,
 		},
 	}))
-	s.updateButton.Handle(ui.Click, func(ed ui.EventData) {
+	s.updateButton.Handle(ui.Click, func(ed ui.EventData) error {
 		native.OpenURL(s.updateInfo.DownloadURL)
+		return nil
 	})
 	s.updateButton.Compute(d.Engine)
 	s.updateButton.Hide()
@@ -119,8 +120,9 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Text: button.Name,
 			Font: balance.StatusFont,
 		}))
-		btn.Handle(ui.Click, func(ed ui.EventData) {
+		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			button.Func()
+			return nil
 		})
 		s.Supervisor.Add(btn)
 		frame.Pack(btn, ui.Pack{

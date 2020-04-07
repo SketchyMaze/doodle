@@ -119,8 +119,9 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		Text: "Edit (E)",
 		Font: balance.PlayButtonFont,
 	}))
-	s.editButton.Handle(ui.Click, func(ed ui.EventData) {
+	s.editButton.Handle(ui.Click, func(ed ui.EventData) error {
 		s.EditLevel()
+		return nil
 	})
 	s.supervisor.Add(s.editButton)
 
@@ -300,8 +301,9 @@ func (s *PlayScene) SetupAlertbox() {
 				Font: balance.LabelFont,
 				Text: text,
 			}))
-			btn.Handle(ui.Click, func(ed ui.EventData) {
+			btn.Handle(ui.Click, func(ed ui.EventData) error {
 				handler()
+				return nil
 			})
 			bottomFrame.Pack(btn, ui.Pack{
 				Side: ui.W,

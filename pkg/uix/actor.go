@@ -198,6 +198,13 @@ func (a *Actor) RemoveItem(itemName string, quantity int) bool {
 	return false
 }
 
+// ClearInventory removes all items from the actor's inventory.
+func (a *Actor) ClearInventory() {
+	a.muInventory.Lock()
+	a.inventory = map[string]int{}
+	a.muInventory.Unlock()
+}
+
 // HasItem checks the actor's inventory for the item and returns the quantity.
 //
 // A return value of -1 means the item was not found.

@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -42,6 +43,9 @@ type EditorUI struct {
 	StatusBar  *ui.Frame
 	ToolBar    *ui.Frame
 	PlayButton *ui.Button
+
+	// Popup windows.
+	levelSettingsWindow *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -98,8 +102,9 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		Text: "Play (P)",
 		Font: balance.PlayButtonFont,
 	}))
-	u.PlayButton.Handle(ui.Click, func(ed ui.EventData) {
+	u.PlayButton.Handle(ui.Click, func(ed ui.EventData) error {
 		u.Scene.Playtest()
+		return nil
 	})
 	u.Supervisor.Add(u.PlayButton)
 
@@ -302,6 +307,9 @@ func (u *EditorUI) Present(e render.Engine) {
 			))
 		}
 	}
+
+	// Draw any windows being managed by Supervisor.
+	u.Supervisor.Present(e)
 }
 
 // SetupWorkspace configures the main Workspace frame that takes up the full
@@ -354,7 +362,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// Set up the drop handler for draggable doodads.
 	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
 	// Doodad Palette buttons.
-	drawing.Handle(ui.Drop, func(ed ui.EventData) {
+	drawing.Handle(ui.Drop, func(ed ui.EventData) error {
 		log.Info("Drawing canvas has received a drop!")
 		var P = ui.AbsolutePosition(drawing)
 
@@ -363,7 +371,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 			log.Info("Actor is a %s", actor.doodad.Filename)
 			if u.Scene.Level == nil {
 				u.d.Flash("Can't drop doodads onto doodad drawings!")
-				return
+				return nil
 			}
 
 			var (
@@ -391,6 +399,8 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 				log.Error("Error installing actor onDrop to canvas: %s", err)
 			}
 		}
+
+		return nil
 	})
 	u.Supervisor.Add(drawing)
 	return drawing
@@ -439,18 +449,19 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 
 	type menuButton struct {
 		Text  string
-		Click func(ui.EventData)
+		Click func(ui.EventData) error
 	}
 	buttons := []menuButton{
 		menuButton{
 			Text: "New Level",
-			Click: func(ed ui.EventData) {
+			Click: func(ed ui.EventData) error {
 				d.GotoNewMenu()
+				return nil
 			},
 		},
 		menuButton{
 			Text: "New Doodad",
-			Click: func(ed ui.EventData) {
+			Click: func(ed ui.EventData) error {
 				d.Prompt("Doodad size [100]>", func(answer string) {
 					size := balance.DoodadSize
 					if answer != "" {
@@ -463,11 +474,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 					}
 					d.NewDoodad(size)
 				})
+
+				return nil
 			},
 		},
 		menuButton{
 			Text: "Save",
-			Click: func(ed ui.EventData) {
+			Click: func(ed ui.EventData) error {
 				if u.Scene.filename != "" {
 					saveFunc(u.Scene.filename)
 				} else {
@@ -477,22 +490,64 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 						}
 					})
 				}
+				return nil
 			},
 		},
 		menuButton{
 			Text: "Save as...",
-			Click: func(ed ui.EventData) {
+			Click: func(ed ui.EventData) error {
 				d.Prompt("Save as filename>", func(answer string) {
 					if answer != "" {
 						saveFunc(answer)
 					}
 				})
+				return nil
 			},
 		},
 		menuButton{
 			Text: "Load",
-			Click: func(ed ui.EventData) {
+			Click: func(ed ui.EventData) error {
 				d.GotoLoadMenu()
+				return nil
+			},
+		},
+		menuButton{
+			Text: "Options",
+			Click: func(ed ui.EventData) error {
+				scene, _ := d.Scene.(*EditorScene)
+				log.Info("Opening the window")
+
+				// Open the New Level window in edit-settings mode.
+				if u.levelSettingsWindow == nil {
+					u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
+						Supervisor: u.Supervisor,
+						Engine:     d.Engine,
+						EditLevel:  scene.Level,
+
+						OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
+							log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
+							scene.Level.PageType = pageType
+							scene.Level.Wallpaper = wallpaper
+							u.Canvas.LoadLevel(d.Engine, scene.Level)
+						},
+						OnCancel: func() {
+							u.levelSettingsWindow.Hide()
+						},
+					})
+
+					u.levelSettingsWindow.Compute(d.Engine)
+					u.levelSettingsWindow.Supervise(u.Supervisor)
+
+					// Center the window.
+					u.levelSettingsWindow.MoveTo(render.Point{
+						X: (d.width / 2) - (u.levelSettingsWindow.Size().W / 2),
+						Y: 60,
+					})
+				} else {
+					u.levelSettingsWindow.Show()
+				}
+
+				return nil
 			},
 		},
 	}

@@ -12,7 +12,7 @@ import (
 func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 	window := ui.NewWindow("Palette")
 	window.ConfigureTitle(balance.TitleConfig)
-	window.TitleBar().Font = balance.TitleFont
+	// window.TitleBar().Font = balance.TitleFont
 	window.Configure(ui.Config{
 		Background:  balance.WindowBackground,
 		BorderColor: balance.WindowBorder,
@@ -53,15 +53,16 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	frame.SetBackground(balance.WindowBackground)
 
 	// Handler function for the radio buttons being clicked.
-	onClick := func(ed ui.EventData) {
+	onClick := func(ed ui.EventData) error {
 		name := u.selectedSwatch
 		swatch, ok := u.Canvas.Palette.Get(name)
 		if !ok {
 			log.Error("Palette onClick: couldn't get swatch named '%s' from palette", name)
-			return
+			return nil
 		}
 		log.Info("Set swatch: %s", swatch)
 		u.Canvas.SetSwatch(swatch)
+		return nil
 	}
 
 	// Draw the radio buttons for the palette.
