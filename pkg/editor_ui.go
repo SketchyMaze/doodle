@@ -273,7 +273,8 @@ func (u *EditorUI) Loop(ev *event.State) error {
 	u.ToolBar.Compute(u.d.Engine)
 
 	// Only forward events to the Canvas if the UI hasn't stopped them.
-	if !stopPropagation {
+	// Also ignore events if a managed ui.Window is overlapping the canvas.
+	if !(stopPropagation || u.Supervisor.IsPointInWindow(u.cursor)) {
 		u.Canvas.Loop(ev)
 	}
 	return nil

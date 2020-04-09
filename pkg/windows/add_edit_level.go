@@ -29,15 +29,18 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		newPageType  = level.Bounded.String()
 		newWallpaper = "notebook.png"
 		isNewLevel   = config.EditLevel == nil
+		title        = "New Drawing"
 	)
 
 	// Given a level to edit?
 	if config.EditLevel != nil {
 		newPageType = config.EditLevel.PageType.String()
 		newWallpaper = config.EditLevel.Wallpaper
+		title = "Page Settings"
 	}
 
-	window := ui.NewWindow("New Drawing")
+	window := ui.NewWindow(title)
+	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
 		Width:      540,
 		Height:     350,
@@ -119,9 +122,8 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		 ******************/
 
 		label2 := ui.NewLabel(ui.Label{
-			// Text: "Wallpaper",
-			TextVariable: &newWallpaper,
-			Font:         balance.LabelFont,
+			Text: "Wallpaper",
+			Font: balance.LabelFont,
 		})
 		frame.Pack(label2, ui.Pack{
 			Side:  ui.N,
@@ -170,12 +172,6 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		 ******************/
 
 		bottomFrame := ui.NewFrame("Button Frame")
-		// bottomFrame.Configure(ui.Config{
-		// 	BorderSize:  1,
-		// 	BorderStyle: ui.BorderSunken,
-		// 	BorderColor: render.Black,
-		// })
-		// bottomFrame.SetBackground(render.Grey)
 		frame.Pack(bottomFrame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
@@ -221,7 +217,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		}
 		for _, t := range buttons {
 			// If we're editing settings on an existing level, skip the Continue.
-			if isNewLevel && t.Label == "OK" {
+			if (isNewLevel && t.Label == "OK") || (!isNewLevel && t.Label != "OK") {
 				continue
 			}
 			btn := ui.NewButton(t.Label, ui.NewLabel(ui.Label{
