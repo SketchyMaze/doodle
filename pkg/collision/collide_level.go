@@ -3,6 +3,7 @@ package collision
 import (
 	"sync"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/go/render"
 )
@@ -117,7 +118,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		} else {
 			height -= result.RightPoint.Y
 		}
-		if height <= 8 {
+		if height <= balance.SlopeMaxHeight {
 			target.Y -= height
 			if target.X < P.X {
 				target.X-- // push along to the left
@@ -147,6 +148,11 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		if capHeight != 0 && point.Y < capHeight {
 			point.Y = capHeight
 		}
+		if capLeft != 0 && point.X < capLeft {
+			// TODO: this along with a "+ 1" hack prevents clipping thru the
+			// left wall sometimes, but breaks walking up leftward slopes.
+			point.X = capLeft
+		}
 
 		if has := result.ScanBoundingBox(render.Rect{
 			X: point.X,
@@ -165,12 +171,21 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 			if result.Top && !ceiling {
 				// This is a newly discovered ceiling.
 				ceiling = true
-				capHeight = result.TopPoint.Y
+				capHeight = result.TopPoint.Y + 1
+				// TODO: the "+ 1" helps prevent clip thru ceiling, probably.
+				// Similar to the "+ 1" on the left side, below.
 			}
 
 			if result.Left && !hitLeft {
 				hitLeft = true
-				capLeft = result.LeftPoint.X
+				capLeft = result.LeftPoint.X + 1
+
+				// TODO: there was a clipping bug where the player could clip
+				// thru a left wall if they jumped slightly while pressing into
+				// it. (90 degree angle between floor and left wall). The bug
+				// does NOT repro on right walls, only left. The "+ 1" added to
+				// capLeft works around it, BUT breaks walking up leftward slopes
+				// (walking up rightward slopes still works).
 			}
 			if result.Right && !hitRight {
 				hitRight = true
@@ -251,8 +266,8 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 	// pixel with each side, so the Left and Right edges will check the
 	// left- and right-most point.
 	if side == Top || side == Bottom {
-		p1.X += 1
-		p2.X -= 1
+		p1.X++
+		p2.X--
 	}
 
 	for point := range render.IterLine(p1, p2) {

@@ -17,6 +17,7 @@ var (
 	PlayerMaxVelocity  float64 = 6
 	PlayerAcceleration float64 = 0.2
 	Gravity            float64 = 6
+	SlopeMaxHeight             = 8 // max pixel height for player to walk up a slope
 
 	// Default chunk size for canvases.
 	ChunkSize = 128
