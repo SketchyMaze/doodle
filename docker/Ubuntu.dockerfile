@@ -11,6 +11,11 @@ RUN apt update && \
 # Create a user to build the packages.
 RUN useradd builder -u 1000 -m -G users
 
+# HACK: pre-emptively copy go/log in, `make setup` gets a dumb error otherwise
+# cuz terminal_js.go and terminal.go set the same variable which SHOULD NOT
+# HAPPEN cuz the two files should have mutually exclusive build tags. Ugh!
+RUN git clone https://git.kirsle.net/go/log /home/builder/go/src/git.kirsle.net/go/log
+
 # Add the project to the GOPATH
 ADD . /home/builder/go/src/git.kirsle.net/apps/doodle
 WORKDIR /home/builder/go/src/git.kirsle.net/apps/doodle

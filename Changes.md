@@ -1,5 +1,33 @@
 # Changes
 
+## v0.1.0-alpha
+
+New doodads:
+
+* Start Flag: drag this into your level to set where the player character will
+  spawn. There should only be one per level.
+* Crumbly Floor: a rocky floor that breaks and falls away after a couple
+  seconds when the player (or other mobile doodad) walks onto it.
+* State Blocks: blue and orange blocks that toggle between solid and passable
+  when the corresponding ON/OFF button is touched.
+
+New features:
+
+* An inventory overlay now appears in Play Mode when the player character picks
+  up one of the colored keys.
+* While editing a level, you can click the new "Options" button in the top menu
+  to open the level settings window (like the one you see when creating a new
+  level): to change the wallpaper image or the page type.
+
+Other changes:
+
+* Added better platforming physics to the player character: acceleration and
+  friction when walking.
+* The colored Locked Door doodads have been re-designed to be shown in a
+  side-view perspective and have an open and closed state in either direction.
+* Tooltips added to various buttons in the Editor to show names of doodads and
+  functions of various buttons.
+
 ## v0.0.10-alpha
 
 New features:

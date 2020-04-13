@@ -29,8 +29,8 @@ func Line(x1, y1, x2, y2 int32) chan render.Point {
 		y := float64(y1)
 		for i := 0; i <= int(step); i++ {
 			generator <- render.Point{
-				X: int32(x),
-				Y: int32(y),
+				X: int(x),
+				Y: int(y),
 			}
 			x += dx
 			y += dy

@@ -1,6 +1,6 @@
 # Project: Doodle (Working Title)
 
-> **Homepage:** https://www.kirsle.net/doodle
+> **Homepage:** https://www.kirsle.net/tagged/Doodle
 
 Doodle is a drawing-based maze game.
 
@@ -131,8 +131,16 @@ A brief introduction to the built-in doodads available so far:
     Electric Door to open/close the door. Link switches _to each other_ as
     well as to a door, and all switches will stay in sync with their ON/OFF
     state when any switch is pressed.
+- **Crumbly Floor**
+  - This rocky floor will break and fall away after being stepped on.
+- **Two State Blocks**
+  - Blue and orange blocks that will toggle between solid and pass-thru
+    whenever the corresponding ON/OFF block is hit.
+- **Start and Exit Flags**
+  - The "Go" flag lets you pick a spawn point for the player character.
+  - The "Exit" flag marks the level goal.
 
-## Developer Console
+# Developer Console
 
 Press `Enter` at any time to open the developer console.
 
@@ -166,12 +174,37 @@ quit
   Close the developer console.
 ```
 
-# Known Bugs
+## Cheat Codes
 
-* In an **Unbounded** map, the game will sometimes spaz out in Play Mode when
-  the character moves into negative coordinates (off the top or left edge of
-  the level). Stick with only "Bounded" and "No Negative Space" levels instead.
+The following cheats can be entered into the developer console.
+
+Play Mode:
+
+* `import antigravity`
+  - This disables the effects of gravity for the player
+    character. Arrow keys can freely move the player in any direction.
+* `ghost mode`
+  - This disables collision detection for the player character
+    so that you can pass through walls and solid doodads. Combine with
+    antigravity or else you'll fall to the bottom of the map!
+* `give all keys`
+  - Adds all four colored keys to the player's inventory.
+* `drop all items`
+  - Clears the player's inventory of all items.
+
+Experimental:
+
+* `unleash the beast`
+  - Removes the 60 FPS frame rate lock, allowing the game to run as quickly
+    as your hardware permits.
+* `don't edit and drive`
+  - Allows editing the level _while_ you're playing it: you can click and drag
+    new pixels with the freehand pencil tool.
+* `scroll scroll scroll your boat`
+  - Enables Editor Mode scrolling (with the arrow keys) while playing a level.
+    The player character must always remain on screen though so you can't
+    scroll too far away.
 
 # Author
 
-Copyright (C) 2019 Noah Petherbridge. All rights reserved.
+Copyright (C) 2020 Noah Petherbridge. All rights reserved.
