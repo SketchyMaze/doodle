@@ -1,0 +1,16 @@
+{
+	"version": 1,
+	"title": "Tutorial Levels",
+	"author": "kirsle",
+	"levels": [
+		{
+			"filename": "example1.level",
+		},
+		{
+			"filename": "example2.level",
+		},
+		{
+			"filename": "example3.level",
+		}
+	]
+}

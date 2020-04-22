@@ -1,5 +1,5 @@
 function main() {
-	console.log("%s initialized!", Self.Doodad().Title);
+	console.log("%s initialized!", Self.Title);
 
 	Self.AddAnimation("open", 100, [0, 1, 2, 3]);
 	Self.AddAnimation("close", 100, [3, 2, 1, 0]);
@@ -9,7 +9,7 @@ function main() {
 	Self.SetHitbox(16, 0, 32, 64);
 
 	Message.Subscribe("power", function(powered) {
-		console.log("%s got power=%+v", Self.Doodad().Title, powered);
+		console.log("%s got power=%+v", Self.Title, powered);
 
 		if (powered) {
 			if (animating || opened) {

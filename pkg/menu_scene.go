@@ -189,9 +189,6 @@ func (s *MenuScene) Loop(d *Doodle, ev *event.State) error {
 
 // Draw the pixels on this frame.
 func (s *MenuScene) Draw(d *Doodle) error {
-	// Clear the canvas and fill it with white.
-	d.Engine.Clear(render.White)
-
 	// Draw the background canvas.
 	s.canvas.Present(d.Engine, render.Origin)
 

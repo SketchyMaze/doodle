@@ -1,5 +1,5 @@
 function main() {
-	console.log("%s initialized!", Self.Doodad().Title);
+	console.log("%s initialized!", Self.Title);
 
 	var timer = 0;
 

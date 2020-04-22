@@ -50,12 +50,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 	// Main title label
 	s.labelTitle = ui.NewLabel(ui.Label{
 		Text: branding.AppName,
-		Font: render.Text{
-			Size:   46,
-			Color:  render.Pink,
-			Stroke: render.SkyBlue,
-			Shadow: render.Black,
-		},
+		Font: balance.TitleScreenFont,
 	})
 	s.labelTitle.Compute(d.Engine)
 
@@ -101,6 +96,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 		Name string
 		Func func()
 	}{
+		// {
+		// 	Name: "Story Mode",
+		// 	Func: d.GotoStoryMenu,
+		// },
 		{
 			Name: "Play a Level",
 			Func: d.GotoPlayMenu,

@@ -2,14 +2,9 @@ package scripting
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
-	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/physics"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
-	"git.kirsle.net/go/render"
 	"github.com/robertkrimen/otto"
 )
 
@@ -69,32 +64,7 @@ func (vm *VM) Set(name string, v interface{}) error {
 // RegisterLevelHooks registers accessors to the level hooks
 // and Doodad API for Play Mode.
 func (vm *VM) RegisterLevelHooks() error {
-	bindings := map[string]interface{}{
-		"log":    log.Logger,
-		"Flash":  shmem.Flash,
-		"RGBA":   render.RGBA,
-		"Point":  render.NewPoint,
-		"Vector": physics.NewVector,
-		"Self":   vm.Self, // i.e., the uix.Actor object
-		"Events": vm.Events,
-		"GetTick": func() uint64 {
-			return shmem.Tick
-		},
-
-		"TypeOf": reflect.TypeOf,
-		"time": map[string]interface{}{
-			"Now": time.Now,
-			"Add": func(t time.Time, ms int64) time.Time {
-				return t.Add(time.Duration(ms) * time.Millisecond)
-			},
-		},
-
-		// Timer functions with APIs similar to the web browsers.
-		"setTimeout":    vm.SetTimeout,
-		"setInterval":   vm.SetInterval,
-		"clearTimeout":  vm.ClearTimer,
-		"clearInterval": vm.ClearTimer,
-	}
+	bindings := NewJSProxy(vm)
 	for name, v := range bindings {
 		err := vm.vm.Set(name, v)
 		if err != nil {
@@ -103,15 +73,6 @@ func (vm *VM) RegisterLevelHooks() error {
 			)
 		}
 	}
-
-	// Alias the console.log functions to the logger.
-	vm.vm.Run(`
-		console = {};
-		console.log = log.Info;
-		console.debug = log.Debug;
-		console.warn = log.Warn;
-		console.error = log.Error;
-	`)
 	return nil
 }
 

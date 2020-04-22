@@ -1,5 +1,5 @@
 function main() {
-	console.log("%s initialized!", Self.Doodad().Title);
+	console.log("%s initialized!", Self.Title);
 
 	var timer = 0;
 
@@ -26,9 +26,4 @@ function main() {
 			timer = 0;
 		}, 200);
 	});
-
-	// Events.OnLeave(function(e) {
-	// 	console.log("%s has stopped touching %s", e, Self.Doodad().Title)
-	// 	Self.Canvas.SetBackground(RGBA(0, 0, 1, 0));
-	// })
 }

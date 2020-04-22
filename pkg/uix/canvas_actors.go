@@ -55,7 +55,28 @@ func (w *Canvas) InstallScripts() error {
 
 	for _, actor := range w.actors {
 		vm := w.scripting.To(actor.ID())
-		vm.Self = actor
+
+		// Security: expose a selective API to the actor to the JS engine.
+		vm.Self = map[string]interface{}{
+			"Filename": actor.Doodad().Filename,
+			"Title":    actor.Doodad().Title,
+
+			// functions
+			"ID":             actor.ID,
+			"GetTag":         actor.Doodad().Tag,
+			"Position":       actor.Position,
+			"SetHitbox":      actor.SetHitbox,
+			"SetVelocity":    actor.SetVelocity,
+			"SetMobile":      actor.SetMobile,
+			"SetGravity":     actor.SetGravity,
+			"AddAnimation":   actor.AddAnimation,
+			"IsAnimating":    actor.IsAnimating,
+			"PlayAnimation":  actor.PlayAnimation,
+			"StopAnimation":  actor.StopAnimation,
+			"ShowLayer":      actor.ShowLayer,
+			"ShowLayerNamed": actor.ShowLayerNamed,
+			"Destroy":        actor.Destroy,
+		}
 		vm.Set("Self", vm.Self)
 
 		if _, err := vm.Run(actor.Doodad().Script); err != nil {

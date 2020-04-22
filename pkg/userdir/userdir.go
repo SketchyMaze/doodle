@@ -15,9 +15,10 @@ import (
 var (
 	ConfigDirectoryName = "doodle"
 
-	ProfileDirectory string
-	LevelDirectory   string
-	DoodadDirectory  string
+	ProfileDirectory  string
+	LevelDirectory    string
+	DoodadDirectory   string
+	CampaignDirectory string
 
 	CacheDirectory string
 	FontDirectory  string
@@ -34,6 +35,7 @@ func init() {
 	ProfileDirectory = configdir.LocalConfig(ConfigDirectoryName)
 	LevelDirectory = configdir.LocalConfig(ConfigDirectoryName, "levels")
 	DoodadDirectory = configdir.LocalConfig(ConfigDirectoryName, "doodads")
+	CampaignDirectory = configdir.LocalConfig(ConfigDirectoryName, "campaigns")
 
 	// Cache directory to extract font files to.
 	CacheDirectory = configdir.LocalCache(ConfigDirectoryName)
@@ -44,6 +46,7 @@ func init() {
 	if runtime.GOOS != "js" {
 		configdir.MakePath(LevelDirectory)
 		configdir.MakePath(DoodadDirectory)
+		configdir.MakePath(CampaignDirectory)
 		configdir.MakePath(FontDirectory)
 	}
 }
@@ -114,6 +117,30 @@ func ListLevels() ([]string, error) {
 	for _, file := range files {
 		name := file.Name()
 		if strings.HasSuffix(strings.ToLower(name), extLevel) {
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
+}
+
+// ListCampaigns returns a listing of all available campaigns.
+func ListCampaigns() ([]string, error) {
+	var names []string
+
+	// WASM: list from localStorage.
+	if runtime.GOOS == "js" {
+		return wasm.StorageKeys(CampaignDirectory + "/"), nil
+	}
+
+	files, err := ioutil.ReadDir(CampaignDirectory)
+	if err != nil {
+		return names, err
+	}
+
+	for _, file := range files {
+		name := file.Name()
+		if filepath.Ext(name) == ".json" {
 			names = append(names, name)
 		}
 	}

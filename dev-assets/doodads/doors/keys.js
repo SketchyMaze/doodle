@@ -1,9 +1,9 @@
 function main() {
-	var color = Self.Doodad().Tag("color");
+	var color = Self.GetTag("color");
 
 	Events.OnCollide(function(e) {
 		if (e.Settled) {
-			e.Actor.AddItem(Self.Doodad().Filename, 0);
+			e.Actor.AddItem(Self.Filename, 0);
 			Self.Destroy();
 		}
 	})

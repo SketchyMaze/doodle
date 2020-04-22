@@ -32,7 +32,7 @@ func init() {
 				Usage: "set the doodad author",
 			},
 			cli.StringSliceFlag{
-				Name:  "tag",
+				Name:  "tag, t",
 				Usage: "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
 			},
 			cli.BoolFlag{

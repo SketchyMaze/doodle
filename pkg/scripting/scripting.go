@@ -1,5 +1,4 @@
-// Package scripting manages the JavaScript VMs for Doodad
-// scripts.
+// Package scripting manages the JavaScript VMs for Doodad scripts.
 package scripting
 
 import (

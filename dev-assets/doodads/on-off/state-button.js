@@ -4,7 +4,7 @@
 var state = false;
 
 function main() {
-	console.log("%s ID '%s' initialized!", Self.Doodad().Title, Self.ID());
+	console.log("%s ID '%s' initialized!", Self.Title, Self.ID());
 	Self.SetHitbox(0, 0, 33, 33);
 
 	// When the button is activated, don't keep toggling state until we're not

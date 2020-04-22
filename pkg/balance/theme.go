@@ -7,6 +7,14 @@ import (
 
 // Theme and appearance variables.
 var (
+	// Title Screen Font
+	TitleScreenFont = render.Text{
+		Size:   46,
+		Color:  render.Pink,
+		Stroke: render.SkyBlue,
+		Shadow: render.Black,
+	}
+
 	// Window and panel styles.
 	TitleConfig = ui.Config{
 		Background:   render.MustHexColor("#FF9900"),

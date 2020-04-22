@@ -1,6 +1,6 @@
 function main() {
 	// What direction is the trapdoor facing?
-	var direction = Self.Doodad().Tag("direction");
+	var direction = Self.GetTag("direction");
 	console.log("Trapdoor(%s) initialized", direction);
 
 	var timer = 0;
