@@ -32,6 +32,7 @@ function main() {
 			if (unlocked) {
 				Self.ShowLayer(enterSide < 0 ? layer.right : layer.left);
 				opened = true;
+				Sound.Play("door-open.wav")
 				return;
 			}
 
@@ -45,11 +46,13 @@ function main() {
 			if (e.Settled) {
 				unlocked = true;
 				Self.ShowLayer(enterSide < 0 ? layer.right : layer.left);
+				Sound.Play("unlock.wav")
 			}
 		}
 	});
 	Events.OnLeave(function(e) {
 		Self.ShowLayer(layer.closed);
+		// Sound.Play("door-close.wav")
 
 		// Reset collision state.
 		opened = false;

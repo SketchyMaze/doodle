@@ -8,6 +8,7 @@ function main() {
 		if (powered && pressed) {
 			Self.ShowLayer(0);
 			pressed = false;
+			Sound.Play("button-up.wav")
 			Message.Publish("power", false);
 		}
 	})
@@ -26,6 +27,7 @@ function main() {
 			return;
 		}
 
+		Sound.Play("button-down.wav")
 		Self.ShowLayer(1);
 		pressed = true;
 		Message.Publish("power", true);

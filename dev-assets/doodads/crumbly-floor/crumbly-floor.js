@@ -43,6 +43,7 @@ function main() {
 				Self.PlayAnimation("shake", function() {
 					state = stateFalling;
 					Self.PlayAnimation("fall", function() {
+						Sound.Play("crumbly-break.wav")
 						state = stateFallen;
 						Self.ShowLayerNamed("fallen");
 

@@ -3,8 +3,9 @@ fonts/
 maps/
 bin/
 dist/
+rtp/
 dev-assets/guidebook/venv
-dev-assets/guidebook/compiled/pages
+dev-assets/guidebook/site/
 wasm/assets/
 *.wasm
 *.doodad
@@ -15,3 +16,4 @@ docker/fedora
 screenshot-*.png
 map-*.json
 pkg/wallpaper/*.png
+

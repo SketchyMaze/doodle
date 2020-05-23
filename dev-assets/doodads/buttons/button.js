@@ -2,6 +2,7 @@ function main() {
 	console.log("%s initialized!", Self.Title);
 
 	var timer = 0;
+	var pressed = false;
 
 	Events.OnCollide(function(e) {
 		if (!e.Settled) {
@@ -13,7 +14,12 @@ function main() {
 			return;
 		}
 
-		Message.Publish("power", true);
+		if (!pressed) {
+			Sound.Play("button-down.wav")
+			Message.Publish("power", true);
+			pressed = true;
+		}
+
 
 		if (timer > 0) {
 			clearTimeout(timer);
@@ -21,9 +27,11 @@ function main() {
 
 		Self.ShowLayer(1);
 		timer = setTimeout(function() {
+			Sound.Play("button-up.wav")
 			Self.ShowLayer(0);
 			Message.Publish("power", false);
 			timer = 0;
+			pressed = false;
 		}, 200);
 	});
 }

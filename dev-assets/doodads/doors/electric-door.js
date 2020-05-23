@@ -17,12 +17,14 @@ function main() {
 			}
 
 			animating = true;
+			Sound.Play("electric-door.wav")
 			Self.PlayAnimation("open", function() {
 				opened = true;
 				animating = false;
 			});
 		} else {
 			animating = true;
+			Sound.Play("electric-door.wav")
 			Self.PlayAnimation("close", function() {
 				opened = false;
 				animating = false;

@@ -6,6 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/go/render"
 )
 
@@ -23,6 +24,11 @@ func NewJSProxy(vm *VM) JSProxy {
 			"debug": log.Debug,
 			"warn":  log.Warn,
 			"error": log.Error,
+		},
+
+		// Audio API.
+		"Sound": map[string]interface{}{
+			"Play": sound.PlaySound,
 		},
 
 		// Type constructors.

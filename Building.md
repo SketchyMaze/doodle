@@ -84,10 +84,10 @@ Dependencies are Go, SDL2 and SDL2_ttf:
 
 ```bash
 # Fedora
-sudo dnf -y install golang SDL2-devel SDL2_ttf-devel
+sudo dnf -y install golang SDL2-devel SDL2_ttf-devel SDL2_mixer-devel
 
 # Ubuntu and Debian
-sudo apt -y install golang libsdl2-dev libsdl2-ttf-dev
+sudo apt -y install golang libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-devel
 ```
 
 ## Mac OS

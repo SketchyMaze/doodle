@@ -19,6 +19,7 @@ function main() {
 		}
 
 		if (collide === false) {
+			Sound.Play("button-down.wav")
 			state = !state;
 			Message.Publish("power", state);
 			showState(state);

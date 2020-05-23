@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli"
 
@@ -94,6 +95,9 @@ func main() {
 		} else {
 			panic(err)
 		}
+
+		// Preload all sound effects.
+		sound.PreloadAll()
 
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
