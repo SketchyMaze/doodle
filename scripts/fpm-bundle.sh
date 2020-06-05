@@ -2,7 +2,7 @@
 
 # fpm-bundle: create bundles for the app.
 
-VERSION=`grep -e 'Version =' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
+VERSION=`egrep -e 'Version\s+=' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
 INSTALL_ROOT="/opt/project-doodle"
 LAUNCHER_FILE="../../etc/linux/net.kirsle.ProjectDoodle.desktop"
 LAUNCHER_ROOT="/usr/share/applications" # Where the .desktop file goes.
@@ -45,7 +45,7 @@ echo =====================
 fpm -C ./root -s dir -t rpm \
   -d SDL2 -d SDL2_ttf -a x86_64 \
   -n project-doodle -v ${VERSION} \
-  --license="Copyright only" \
+  --license="Copyright" \
   --maintainer=noah@kirsle.net \
   --description="Project: Doodle - A drawing-based maze game." \
   --url="https://www.kirsle.net/doodle"
@@ -54,7 +54,7 @@ fpm -C ./root -s dir -t rpm \
 fpm -C ./root -s dir -t deb \
   -d libsdl2 -d libsdl2-ttf -a x86_64 \
   -n project-doodle -v ${VERSION} \
-  --license="Copyright only" \
+  --license="Copyright" \
   --maintainer=noah@kirsle.net \
   --description="Project: Doodle - A drawing-based maze game." \
   --url="https://www.kirsle.net/doodle"
