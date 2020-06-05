@@ -123,6 +123,7 @@ __dist-common:
 	cp bin/* dist/doodle-$(VERSION)/
 	cp -r README.md Changes.md "Open Source Licenses.md" rtp dist/doodle-$(VERSION)/
 	rm -rf dist/doodle-$(VERSION)/rtp/.git
+	ln -sf doodle-$(VERSION) dist/doodle-latest
 	cd dist && tar -czvf doodle-$(VERSION).tar.gz doodle-$(VERSION)
 	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
 
