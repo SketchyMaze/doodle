@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	golog "git.kirsle.net/go/log"
 	"git.kirsle.net/go/render"
@@ -134,7 +135,11 @@ func (d *Doodle) Run() error {
 				break
 			}
 
-			if ev.KeyDown("F3") {
+			if ev.KeyDown("F1") {
+				// TODO: launch the guidebook.
+				native.OpenURL(balance.GuidebookPath)
+				ev.SetKeyDown("F1", false)
+			} else if ev.KeyDown("F3") {
 				DebugOverlay = !DebugOverlay
 				ev.SetKeyDown("F3", false)
 			} else if ev.KeyDown("F4") {

@@ -3,7 +3,11 @@ package balance
 import "runtime"
 
 // Runtime environment settings.
-var Runtime rtc
+var (
+	Runtime rtc
+
+	GuidebookPath = "./guidebook/index.html"
+)
 
 type rtc struct {
 	Platform platform

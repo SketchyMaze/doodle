@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -11,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
@@ -36,16 +38,18 @@ type EditorUI struct {
 	cursor             render.Point // remember the cursor position in Loop
 
 	// Widgets
+	screen     *ui.Frame // full-window parent frame for layout
 	Supervisor *ui.Supervisor
 	Canvas     *uix.Canvas
 	Workspace  *ui.Frame
-	MenuBar    *ui.Frame
+	MenuBar    *ui.MenuBar
 	StatusBar  *ui.Frame
 	ToolBar    *ui.Frame
 	PlayButton *ui.Button
 
 	// Popup windows.
 	levelSettingsWindow *ui.Window
+	aboutWindow         *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -81,6 +85,11 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		StatusScrollText:   "Hello world",
 	}
 
+	// The screen is a full-window-sized frame for laying out the UI.
+	u.screen = ui.NewFrame("screen")
+	u.screen.Resize(render.NewRect(d.width, d.height))
+	u.screen.Compute(d.Engine)
+
 	// Default tool in the toolbox.
 	u.activeTool = drawtool.PencilTool.String()
 
@@ -97,6 +106,12 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.StatusBar = u.SetupStatusBar(d)
 	u.ToolBar = u.SetupToolbar(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
+
+	log.Error("menu size: %s", u.MenuBar.Rect())
+	u.screen.Pack(u.MenuBar, ui.Pack{
+		Side:  ui.N,
+		FillX: true,
+	})
 
 	u.PlayButton = ui.NewButton("Play", ui.NewLabel(ui.Label{
 		Text: "Play (P)",
@@ -132,14 +147,10 @@ func (u *EditorUI) FinishSetup(d *Doodle) {
 
 // Resized handles the window being resized so we can recompute the widgets.
 func (u *EditorUI) Resized(d *Doodle) {
-	// Menu Bar frame.
-	{
-		u.MenuBar.Configure(ui.Config{
-			Width:      d.width,
-			Background: render.Black,
-		})
-		u.MenuBar.Compute(d.Engine)
-	}
+	// Resize the screen frame to fill the window.
+	u.screen.Resize(render.NewRect(d.width, d.height))
+	u.screen.Compute(d.Engine)
+	menuHeight := 20 // TODO: ideally the MenuBar should know its own height and we can ask
 
 	// Status Bar.
 	{
@@ -161,14 +172,14 @@ func (u *EditorUI) Resized(d *Doodle) {
 		})
 		u.Palette.MoveTo(render.NewPoint(
 			u.d.width-u.Palette.BoxSize().W,
-			u.MenuBar.BoxSize().H,
+			menuHeight,
 		))
 		u.Palette.Compute(d.Engine)
 
 		u.scrollDoodadFrame(0)
 	}
 
-	var innerHeight = u.d.height - u.MenuBar.Size().H - u.StatusBar.Size().H
+	var innerHeight = u.d.height - menuHeight - u.StatusBar.Size().H
 
 	// Tool Bar.
 	{
@@ -178,7 +189,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 		})
 		u.ToolBar.MoveTo(render.NewPoint(
 			0,
-			u.MenuBar.BoxSize().H,
+			menuHeight,
 		))
 		u.ToolBar.Compute(d.Engine)
 	}
@@ -189,11 +200,11 @@ func (u *EditorUI) Resized(d *Doodle) {
 		frame := u.Workspace
 		frame.MoveTo(render.NewPoint(
 			u.ToolBar.Size().W,
-			u.MenuBar.Size().H,
+			menuHeight,
 		))
 		frame.Resize(render.NewRect(
 			d.width-u.Palette.Size().W-u.ToolBar.Size().W,
-			d.height-u.MenuBar.Size().H-u.StatusBar.Size().H,
+			d.height-menuHeight-u.StatusBar.Size().H,
 		))
 		frame.Compute(d.Engine)
 
@@ -274,7 +285,8 @@ func (u *EditorUI) Loop(ev *event.State) error {
 
 	// Only forward events to the Canvas if the UI hasn't stopped them.
 	// Also ignore events if a managed ui.Window is overlapping the canvas.
-	if !(stopPropagation || u.Supervisor.IsPointInWindow(u.cursor)) {
+	// Also ignore if an active modal (popup menu) is on screen.
+	if !(stopPropagation || u.Supervisor.IsPointInWindow(u.cursor) || u.Supervisor.GetModal() != nil) {
 		u.Canvas.Loop(ev)
 	}
 	return nil
@@ -297,6 +309,8 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.StatusBar.Present(e, u.StatusBar.Point())
 	u.ToolBar.Present(e, u.ToolBar.Point())
 	u.PlayButton.Present(e, u.PlayButton.Point())
+
+	u.screen.Present(e, render.Origin)
 
 	// Are we dragging a Doodad canvas?
 	if u.Supervisor.IsDragging() {
@@ -421,14 +435,18 @@ func (u *EditorUI) ExpandCanvas(e render.Engine) {
 }
 
 // SetupMenuBar sets up the menu bar.
-func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
-	frame := ui.NewFrame("MenuBar")
+func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
+	menu := ui.NewMenuBar("Main Menu")
 
 	// Save and Save As common menu handler
-	var saveFunc func(filename string)
+	var (
+		drawingType string
+		saveFunc    func(filename string)
+	)
 
 	switch u.Scene.DrawingType {
 	case enum.LevelDrawing:
+		drawingType = "level"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveLevel(filename); err != nil {
 				d.Flash("Error: %s", err)
@@ -437,6 +455,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 			}
 		}
 	case enum.DoodadDrawing:
+		drawingType = "doodad"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveDoodad(filename); err != nil {
 				d.Flash("Error: %s", err)
@@ -448,136 +467,155 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.Frame {
 		d.Flash("Error: Scene.DrawingType is not a valid type")
 	}
 
-	type menuButton struct {
-		Text  string
-		Click func(ui.EventData) error
-	}
-	buttons := []menuButton{
-		menuButton{
-			Text: "New Level",
-			Click: func(ed ui.EventData) error {
-				d.GotoNewMenu()
-				return nil
-			},
-		},
-		menuButton{
-			Text: "New Doodad",
-			Click: func(ed ui.EventData) error {
-				d.Prompt("Doodad size [100]>", func(answer string) {
-					size := balance.DoodadSize
-					if answer != "" {
-						i, err := strconv.Atoi(answer)
-						if err != nil {
-							d.Flash("Error: Doodad size must be a number.")
-							return
-						}
-						size = i
+	////////
+	// File menu
+	fileMenu := menu.AddMenu("File")
+	fileMenu.AddItemAccel("New level", "Ctrl-N", func() {
+		d.GotoNewMenu()
+	})
+	if !balance.FreeVersion {
+		fileMenu.AddItem("New doodad", func() {
+			d.Prompt("Doodad size [100]>", func(answer string) {
+				size := balance.DoodadSize
+				if answer != "" {
+					i, err := strconv.Atoi(answer)
+					if err != nil {
+						d.Flash("Error: Doodad size must be a number.")
+						return
 					}
-					d.NewDoodad(size)
-				})
-
-				return nil
-			},
-		},
-		menuButton{
-			Text: "Save",
-			Click: func(ed ui.EventData) error {
-				if u.Scene.filename != "" {
-					saveFunc(u.Scene.filename)
-				} else {
-					d.Prompt("Save filename>", func(answer string) {
-						if answer != "" {
-							saveFunc(answer)
-						}
-					})
+					size = i
 				}
-				return nil
-			},
-		},
-		menuButton{
-			Text: "Save as...",
-			Click: func(ed ui.EventData) error {
-				d.Prompt("Save as filename>", func(answer string) {
-					if answer != "" {
-						saveFunc(answer)
-					}
-				})
-				return nil
-			},
-		},
-		menuButton{
-			Text: "Load",
-			Click: func(ed ui.EventData) error {
-				d.GotoLoadMenu()
-				return nil
-			},
-		},
-		menuButton{
-			Text: "Options",
-			Click: func(ed ui.EventData) error {
-				scene, _ := d.Scene.(*EditorScene)
-				log.Info("Opening the window")
-
-				// Open the New Level window in edit-settings mode.
-				if u.levelSettingsWindow == nil {
-					u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
-						Supervisor: u.Supervisor,
-						Engine:     d.Engine,
-						EditLevel:  scene.Level,
-
-						OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
-							log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
-							scene.Level.PageType = pageType
-							scene.Level.Wallpaper = wallpaper
-							u.Canvas.LoadLevel(d.Engine, scene.Level)
-						},
-						OnCancel: func() {
-							u.levelSettingsWindow.Hide()
-						},
-					})
-
-					u.levelSettingsWindow.Compute(d.Engine)
-					u.levelSettingsWindow.Supervise(u.Supervisor)
-
-					// Center the window.
-					u.levelSettingsWindow.MoveTo(render.Point{
-						X: (d.width / 2) - (u.levelSettingsWindow.Size().W / 2),
-						Y: 60,
-					})
-				} else {
-					u.levelSettingsWindow.Show()
-				}
-
-				return nil
-			},
-		},
+				d.NewDoodad(size)
+			})
+		})
 	}
-
-	for _, btn := range buttons {
-		if balance.FreeVersion {
-			if btn.Text == "New Doodad" {
-				continue
-			}
+	fileMenu.AddItemAccel("Save", "Ctrl-S", func() {
+		if u.Scene.filename != "" {
+			saveFunc(u.Scene.filename)
+		} else {
+			d.Prompt("Save filename>", func(answer string) {
+				if answer != "" {
+					saveFunc(answer)
+				}
+			})
 		}
-
-		w := ui.NewButton(btn.Text, ui.NewLabel(ui.Label{
-			Text: btn.Text,
-			Font: balance.MenuFont,
-		}))
-		w.Configure(ui.Config{
-			BorderSize:  1,
-			OutlineSize: 0,
+	})
+	fileMenu.AddItem("Save as...", func() {
+		d.Prompt("Save as filename>", func(answer string) {
+			if answer != "" {
+				saveFunc(answer)
+			}
 		})
-		w.Handle(ui.MouseUp, btn.Click)
-		u.Supervisor.Add(w)
-		frame.Pack(w, ui.Pack{
-			Side: ui.W,
-			PadX: 1,
+	})
+	fileMenu.AddItemAccel("Open...", "Ctrl-O", func() {
+		d.GotoLoadMenu()
+	})
+	fileMenu.AddSeparator()
+	fileMenu.AddItem("Close "+drawingType, func() {
+		d.Goto(&MainScene{})
+	})
+	fileMenu.AddItemAccel("Quit", "Ctrl-Q", func() {
+		// TODO graceful shutdown
+		os.Exit(0)
+	})
+
+	////////
+	// Edit menu
+	editMenu := menu.AddMenu("Edit")
+	editMenu.AddItemAccel("Undo", "Ctrl-Z", func() {
+		u.Canvas.UndoStroke()
+	})
+	editMenu.AddItemAccel("Redo", "Shift-Ctrl-Y", func() {
+		u.Canvas.RedoStroke()
+	})
+	editMenu.AddSeparator()
+	editMenu.AddItem("Level options", func() {
+		scene, _ := d.Scene.(*EditorScene)
+		log.Info("Opening the window")
+
+		// Open the New Level window in edit-settings mode.
+		if u.levelSettingsWindow == nil {
+			u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
+				Supervisor: u.Supervisor,
+				Engine:     d.Engine,
+				EditLevel:  scene.Level,
+
+				OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
+					log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
+					scene.Level.PageType = pageType
+					scene.Level.Wallpaper = wallpaper
+					u.Canvas.LoadLevel(d.Engine, scene.Level)
+				},
+				OnCancel: func() {
+					u.levelSettingsWindow.Hide()
+				},
+			})
+
+			u.levelSettingsWindow.Compute(d.Engine)
+			u.levelSettingsWindow.Supervise(u.Supervisor)
+
+			// Center the window.
+			u.levelSettingsWindow.MoveTo(render.Point{
+				X: (d.width / 2) - (u.levelSettingsWindow.Size().W / 2),
+				Y: 60,
+			})
+		} else {
+			u.levelSettingsWindow.Show()
+		}
+	})
+
+	////////
+	// Level menu
+	if drawingType == "level" {
+		levelMenu := menu.AddMenu("Level")
+		levelMenu.AddItemAccel("Playtest", "P", func() {
+			u.Scene.Playtest()
 		})
 	}
 
-	frame.Compute(d.Engine)
-	return frame
+	////////
+	// Tools menu
+	toolMenu := menu.AddMenu("Tools")
+	toolMenu.AddItemAccel("Debug overlay", "F3", func() {
+		DebugOverlay = !DebugOverlay
+		if DebugOverlay {
+			d.Flash("Debug overlay enabled. Press F3 to turn it off.")
+		}
+	})
+	toolMenu.AddItemAccel("Command shell", "Enter", func() {
+		d.shell.Open = true
+	})
+
+	////////
+	// Help menu
+	helpMenu := menu.AddMenu("Help")
+	helpMenu.AddItemAccel("User Manual", "F1", func() {
+		// TODO: launch the guidebook.
+		native.OpenURL(balance.GuidebookPath)
+	})
+	helpMenu.AddItem("About", func() {
+		if u.aboutWindow == nil {
+			u.aboutWindow = windows.NewAboutWindow(windows.About{
+				Supervisor: u.Supervisor,
+				Engine:     d.Engine,
+			})
+			u.aboutWindow.Compute(d.Engine)
+			u.aboutWindow.Supervise(u.Supervisor)
+
+			// Center the window.
+			u.aboutWindow.MoveTo(render.Point{
+				X: (d.width / 2) - (u.aboutWindow.Size().W / 2),
+				Y: 60,
+			})
+		}
+		u.aboutWindow.Show()
+	})
+
+	menu.Supervise(u.Supervisor)
+	menu.Compute(d.Engine)
+	log.Error("Setup MenuBar: %s\n", menu.Size())
+
+	return menu
 }
 
 // SetupStatusBar sets up the status bar widget along the bottom of the window.
