@@ -20,8 +20,9 @@ func init() {
 		ArgsUsage: "<filename.doodad>",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:  "quiet, q",
-				Usage: "limit output (don't show doodad data at the end)",
+				Name:    "quiet",
+				Aliases: []string{"q"},
+				Usage:   "limit output (don't show doodad data at the end)",
 			},
 			&cli.StringFlag{
 				Name:  "title",
@@ -32,8 +33,9 @@ func init() {
 				Usage: "set the doodad author",
 			},
 			&cli.StringSliceFlag{
-				Name:  "tag, t",
-				Usage: "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
+				Name:    "tag",
+				Aliases: []string{"t"},
+				Usage:   "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
 			},
 			&cli.BoolFlag{
 				Name:  "hide",
