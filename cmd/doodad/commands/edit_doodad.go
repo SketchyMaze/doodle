@@ -11,43 +11,43 @@ import (
 )
 
 // EditDoodad allows writing doodad metadata.
-var EditDoodad cli.Command
+var EditDoodad *cli.Command
 
 func init() {
-	EditDoodad = cli.Command{
+	EditDoodad = &cli.Command{
 		Name:      "edit-doodad",
 		Usage:     "update metadata for a Doodad file",
 		ArgsUsage: "<filename.doodad>",
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "quiet, q",
 				Usage: "limit output (don't show doodad data at the end)",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "title",
 				Usage: "set the doodad title",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "author",
 				Usage: "set the doodad author",
 			},
-			cli.StringSliceFlag{
+			&cli.StringSliceFlag{
 				Name:  "tag, t",
 				Usage: "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "hide",
 				Usage: "Hide the doodad from the palette",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "unhide",
 				Usage: "Unhide the doodad from the palette",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "lock",
 				Usage: "write-lock the level file",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "unlock",
 				Usage: "remove the write-lock on the level file",
 			},
@@ -60,7 +60,7 @@ func init() {
 				)
 			}
 
-			var filenames = c.Args()
+			var filenames = c.Args().Slice()
 			for _, filename := range filenames {
 				if err := editDoodad(c, filename); err != nil {
 					log.Error("%s: %s", filename, err)

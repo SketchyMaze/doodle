@@ -10,15 +10,15 @@ import (
 )
 
 // InstallScript to add the script to a doodad file.
-var InstallScript cli.Command
+var InstallScript *cli.Command
 
 func init() {
-	InstallScript = cli.Command{
+	InstallScript = &cli.Command{
 		Name:      "install-script",
 		Usage:     "install the JavaScript source to a doodad",
 		ArgsUsage: "<index.js> <filename.doodad>",
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "key",
 				Usage: "chroma key color for transparency on input image files",
 				Value: "#ffffff",
@@ -34,8 +34,8 @@ func init() {
 
 			var (
 				args       = c.Args()
-				scriptFile = args[0]
-				doodadFile = args[1]
+				scriptFile = args.Get(0)
+				doodadFile = args.Get(1)
 			)
 
 			// Read the JavaScript source.

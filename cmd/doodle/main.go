@@ -55,15 +55,17 @@ func main() {
 	)
 
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  "debug, d",
-			Usage: "enable debug level logging",
+		&cli.BoolFlag{
+			Name:    "debug",
+			Aliases: []string{"d"},
+			Usage:   "enable debug level logging",
 		},
-		cli.BoolFlag{
-			Name:  "edit, e",
-			Usage: "edit the map given on the command line (instead of play it)",
+		&cli.BoolFlag{
+			Name:    "edit",
+			Aliases: []string{"e"},
+			Usage:   "edit the map given on the command line (instead of play it)",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "guitest",
 			Usage: "enter the GUI Test scene on startup",
 		},

@@ -10,47 +10,48 @@ import (
 )
 
 // EditLevel allows writing level metadata.
-var EditLevel cli.Command
+var EditLevel *cli.Command
 
 func init() {
-	EditLevel = cli.Command{
+	EditLevel = &cli.Command{
 		Name:      "edit-level",
 		Usage:     "update metadata for a Level file",
 		ArgsUsage: "<filename.level>",
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "quiet, q",
-				Usage: "limit output (don't show doodad data at the end)",
+			&cli.BoolFlag{
+				Name:    "quiet",
+				Aliases: []string{"q"},
+				Usage:   "limit output (don't show doodad data at the end)",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "title",
 				Usage: "set the level title",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "author",
 				Usage: "set the level author",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "password",
 				Usage: "set the level password",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "type",
 				Usage: "set the page type. One of: Unbounded, Bounded, NoNegativeSpace, Bordered",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "max-size",
 				Usage: "set the page max size (WxH format, like 2550x3300)",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "wallpaper",
 				Usage: "set the wallpaper filename",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "lock",
 				Usage: "write-lock the level file",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "unlock",
 				Usage: "remove the write-lock on the level file",
 			},
@@ -63,7 +64,7 @@ func init() {
 				)
 			}
 
-			var filenames = c.Args()
+			var filenames = c.Args().Slice()
 			for _, filename := range filenames {
 				if err := editLevel(c, filename); err != nil {
 					log.Error("%s: %s", filename, err)

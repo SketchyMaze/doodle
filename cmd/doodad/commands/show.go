@@ -13,29 +13,30 @@ import (
 )
 
 // Show information about a Level or Doodad file.
-var Show cli.Command
+var Show *cli.Command
 
 func init() {
-	Show = cli.Command{
+	Show = &cli.Command{
 		Name:      "show",
 		Usage:     "show information about a level or doodad file",
 		ArgsUsage: "<.level or .doodad>",
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "actors",
 				Usage: "print verbose actor data in Level files",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "chunks",
 				Usage: "print verbose data about all the pixel chunks in a file",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "script",
 				Usage: "print the script from a doodad file and exit",
 			},
-			cli.BoolFlag{
-				Name:  "verbose, v",
-				Usage: "print verbose output (all verbose flags enabled)",
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Usage:   "print verbose output (all verbose flags enabled)",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -46,7 +47,7 @@ func init() {
 				)
 			}
 
-			filenames := c.Args()
+			filenames := c.Args().Slice()
 			for _, filename := range filenames {
 				switch strings.ToLower(filepath.Ext(filename)) {
 				case enum.LevelExt:

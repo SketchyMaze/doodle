@@ -22,26 +22,28 @@ import (
 
 // Convert between image files (png or bitmap) and Doodle drawing files (levels
 // and doodads)
-var Convert cli.Command
+var Convert *cli.Command
 
 func init() {
-	Convert = cli.Command{
+	Convert = &cli.Command{
 		Name:      "convert",
 		Usage:     "convert between images and Doodle drawing files",
 		ArgsUsage: "<input> <output>",
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "key",
 				Usage: "chroma key color for transparency on input image files",
 				Value: "#ffffff",
 			},
-			cli.StringFlag{
-				Name:  "title, t",
-				Usage: "set the title of the level or doodad being created",
+			&cli.StringFlag{
+				Name:    "title",
+				Aliases: []string{"t"},
+				Usage:   "set the title of the level or doodad being created",
 			},
-			cli.StringFlag{
-				Name:  "palette, p",
-				Usage: "use a palette JSON to define color swatch properties",
+			&cli.StringFlag{
+				Name:    "palette",
+				Aliases: []string{"p"},
+				Usage:   "use a palette JSON to define color swatch properties",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -63,7 +65,7 @@ func init() {
 				)
 			}
 
-			args := c.Args()
+			args := c.Args().Slice()
 			var (
 				inputFiles = args[:len(args)-1]
 				inputType  = strings.ToLower(filepath.Ext(inputFiles[0]))

@@ -44,13 +44,13 @@ func main() {
 	)
 
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "debug, d",
 			Usage: "enable debug level logging",
 		},
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		commands.Convert,
 		commands.Show,
 		commands.EditLevel,
