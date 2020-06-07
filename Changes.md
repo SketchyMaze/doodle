@@ -1,5 +1,21 @@
 # Changes
 
+## v0.2.0-alpha
+
+This release brings Sound Effects and Menus to the game.
+
+New features:
+
+* Added some User Documentation to ship with the game which teaches you how to
+  create your own custom Doodads and program them with JavaScript. More
+  documentation to come with time.
+* Sound effects! Several doodads have a first pass at sound effects using some
+  free sounds I found online. More doodads still need sounds and the existing
+  sounds are by no means final. Buttons, switches, doors and keys have sound
+  effects so far.
+* The game now has a Menu Bar with pull-down menus in the Editor Mode instead
+  of just a top panel with New/Save/Open buttons.
+
 ## v0.1.0-alpha
 
 New doodads:

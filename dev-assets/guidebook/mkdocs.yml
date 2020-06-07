@@ -2,7 +2,7 @@ site_name: "Project: Doodle Guidebook"
 nav:
   - Home: index.md
   - About: about.md
-  - "Custom Doodads": custom-doodads/
+  - "Custom Doodads": custom-doodads/index.md
 markdown_extensions:
   - toc:
       permalink: "#"
