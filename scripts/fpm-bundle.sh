@@ -37,6 +37,9 @@ cp ../../etc/icons/64.png "root$ICON_ROOT/64x64/apps/project-doodle.png"
 cp ../../etc/icons/32.png "root$ICON_ROOT/32x32/apps/project-doodle.png"
 cp ../../etc/icons/16.png "root$ICON_ROOT/16x16/apps/project-doodle.png"
 
+# Copy runtime package and guidebook
+cp -r guidebook rtp "root$INSTALL_ROOT/"
+
 echo =====================
 echo Starting fpm package build.
 echo =====================

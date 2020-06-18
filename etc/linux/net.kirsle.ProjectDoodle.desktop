@@ -6,6 +6,7 @@ GenericName=Project Doodle
 X-GNOME-FullName=Project: Doodle - A drawing-based maze game
 Comment=A drawing-based maze game.
 Exec=/opt/project-doodle/doodle
+Path=/opt/project-doodle
 Icon=project-doodle
 StartupNotify=true
 Keywords=game;maze;
