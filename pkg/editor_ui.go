@@ -20,9 +20,6 @@ import (
 	"git.kirsle.net/go/ui"
 )
 
-// Width of the panel frame.
-var paletteWidth = 160
-
 // EditorUI manages the user interface for the Editor Scene.
 type EditorUI struct {
 	d     *Doodle
@@ -50,6 +47,8 @@ type EditorUI struct {
 	// Popup windows.
 	levelSettingsWindow *ui.Window
 	aboutWindow         *ui.Window
+	doodadWindow        *ui.Window
+	paletteEditor       *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -106,6 +105,9 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u.StatusBar = u.SetupStatusBar(d)
 	u.ToolBar = u.SetupToolbar(d)
 	u.Workspace = u.SetupWorkspace(d) // important that this is last!
+
+	// Preload pop-up windows before they're needed.
+	u.SetupPopups(d)
 
 	log.Error("menu size: %s", u.MenuBar.Rect())
 	u.screen.Pack(u.MenuBar, ui.Pack{
@@ -175,8 +177,6 @@ func (u *EditorUI) Resized(d *Doodle) {
 			menuHeight,
 		))
 		u.Palette.Compute(d.Engine)
-
-		u.scrollDoodadFrame(0)
 	}
 
 	var innerHeight = u.d.height - menuHeight - u.StatusBar.Size().H
@@ -312,6 +312,9 @@ func (u *EditorUI) Present(e render.Engine) {
 
 	u.screen.Present(e, render.Origin)
 
+	// Draw any windows being managed by Supervisor.
+	u.Supervisor.Present(e)
+
 	// Are we dragging a Doodad canvas?
 	if u.Supervisor.IsDragging() {
 		if actor := u.DraggableActor; actor != nil {
@@ -322,9 +325,6 @@ func (u *EditorUI) Present(e render.Engine) {
 			))
 		}
 	}
-
-	// Draw any windows being managed by Supervisor.
-	u.Supervisor.Present(e)
 }
 
 // SetupWorkspace configures the main Workspace frame that takes up the full
@@ -359,6 +359,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// mode when you click an existing Doodad and it "pops" out of the canvas
 	// and onto the cursor to be repositioned.
 	drawing.OnDragStart = func(actor *level.Actor) {
+		log.Warn("drawing.OnDragStart: grab actor %s", actor)
 		u.startDragActor(nil, actor)
 	}
 
@@ -384,8 +385,19 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		// Was it an actor from the Doodad Palette?
 		if actor := u.DraggableActor; actor != nil {
 			log.Info("Actor is a %s", actor.doodad.Filename)
+
+			// The actor has been dropped so null it out.
+			defer func() {
+				u.DraggableActor = nil
+			}()
+
 			if u.Scene.Level == nil {
 				u.d.Flash("Can't drop doodads onto doodad drawings!")
+				return nil
+			}
+
+			// If they dropped it onto a UI window, ignore it.
+			if u.Supervisor.IsPointInWindow(ed.Point) {
 				return nil
 			}
 
@@ -530,38 +542,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	})
 	editMenu.AddSeparator()
 	editMenu.AddItem("Level options", func() {
-		scene, _ := d.Scene.(*EditorScene)
 		log.Info("Opening the window")
 
 		// Open the New Level window in edit-settings mode.
-		if u.levelSettingsWindow == nil {
-			u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
-				Supervisor: u.Supervisor,
-				Engine:     d.Engine,
-				EditLevel:  scene.Level,
-
-				OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
-					log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
-					scene.Level.PageType = pageType
-					scene.Level.Wallpaper = wallpaper
-					u.Canvas.LoadLevel(d.Engine, scene.Level)
-				},
-				OnCancel: func() {
-					u.levelSettingsWindow.Hide()
-				},
-			})
-
-			u.levelSettingsWindow.Compute(d.Engine)
-			u.levelSettingsWindow.Supervise(u.Supervisor)
-
-			// Center the window.
-			u.levelSettingsWindow.MoveTo(render.Point{
-				X: (d.width / 2) - (u.levelSettingsWindow.Size().W / 2),
-				Y: 60,
-			})
-		} else {
-			u.levelSettingsWindow.Show()
-		}
+		u.levelSettingsWindow.Hide()
+		u.levelSettingsWindow = nil
+		u.SetupPopups(u.d)
+		u.levelSettingsWindow.Show()
 	})
 
 	////////
@@ -584,6 +571,10 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	})
 	toolMenu.AddItemAccel("Command shell", "Enter", func() {
 		d.shell.Open = true
+	})
+	toolMenu.AddItemAccel("Doodads", "d", func() {
+		log.Info("Open the DoodadDropper")
+		u.doodadWindow.Show()
 	})
 
 	////////
@@ -616,6 +607,96 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	log.Error("Setup MenuBar: %s\n", menu.Size())
 
 	return menu
+}
+
+// SetupPopups preloads popup windows like the DoodadDropper.
+func (u *EditorUI) SetupPopups(d *Doodle) {
+	// Common window configure function.
+	var configure = func(window *ui.Window) {
+		var size = window.Size()
+		window.Compute(d.Engine)
+		window.Supervise(u.Supervisor)
+
+		// Center the window.
+		window.MoveTo(render.Point{
+			X: (d.width / 2) - (size.W / 2),
+			Y: (d.height / 2) - (size.H / 2),
+		})
+	}
+
+	// Doodad Dropper.
+	if u.doodadWindow == nil {
+		u.doodadWindow = windows.NewDoodadDropper(windows.DoodadDropper{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+
+			OnStartDragActor: u.startDragActor,
+			OnCancel: func() {
+				u.doodadWindow.Hide()
+			},
+		})
+		configure(u.doodadWindow)
+	}
+
+	// Page Settings
+	if u.levelSettingsWindow == nil {
+		scene, _ := d.Scene.(*EditorScene)
+
+		u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			EditLevel:  scene.Level,
+
+			OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
+				log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
+				scene.Level.PageType = pageType
+				scene.Level.Wallpaper = wallpaper
+				u.Canvas.LoadLevel(d.Engine, scene.Level)
+			},
+			OnCancel: func() {
+				u.levelSettingsWindow.Hide()
+			},
+		})
+		configure(u.levelSettingsWindow)
+	}
+
+	// Palette Editor.
+	if u.paletteEditor == nil {
+		scene, _ := d.Scene.(*EditorScene)
+
+		u.paletteEditor = windows.NewPaletteEditor(windows.PaletteEditor{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			EditLevel:  scene.Level,
+
+			OnChange: func() {
+				// Reload the level.
+				log.Warn("RELOAD LEVEL")
+				u.Canvas.LoadLevel(d.Engine, scene.Level)
+				scene.Level.Chunker.Redraw()
+
+				// Reload the palette frame to reflect the changed data.
+				u.Palette.Hide()
+				u.Palette = u.SetupPalette(d)
+				u.Resized(d)
+			},
+			OnAddColor: func() {
+				// Adding a new color to the palette.
+				sw := scene.Level.Palette.AddSwatch()
+				log.Info("Added new palette color: %+v", sw)
+
+				// Awkward but... reload this very same window.
+				u.paletteEditor.Hide()
+				u.paletteEditor = nil
+				u.SetupPopups(d)
+				u.paletteEditor.Show()
+			},
+			OnCancel: func() {
+				u.paletteEditor.Hide()
+			},
+		})
+		configure(u.paletteEditor)
+	}
 }
 
 // SetupStatusBar sets up the status bar widget along the bottom of the window.

@@ -8,33 +8,19 @@ import (
 	"git.kirsle.net/go/ui"
 )
 
+// Width of the panel frame.
+var paletteWidth = 50
+
 // SetupPalette sets up the palette panel.
 func (u *EditorUI) SetupPalette(d *Doodle) *ui.Window {
 	window := ui.NewWindow("Palette")
 	window.ConfigureTitle(balance.TitleConfig)
-	// window.TitleBar().Font = balance.TitleFont
+	_, label := window.TitleBar()
+	label.Font = balance.TitleFont
 	window.Configure(ui.Config{
 		Background:  balance.WindowBackground,
 		BorderColor: balance.WindowBorder,
 	})
-
-	// Doodad frame.
-	{
-		frame, err := u.setupDoodadFrame(d.Engine, window)
-		if err != nil {
-			d.Flash(err.Error())
-		}
-
-		// Even if there was an error (userdir.ListDoodads couldn't read the
-		// config folder on disk or whatever) the Frame is still valid but
-		// empty, which is still the intended behavior.
-		u.DoodadTab = frame
-		u.DoodadTab.Hide()
-		window.Pack(u.DoodadTab, ui.Pack{
-			Side: ui.N,
-			Fill: true,
-		})
-	}
 
 	// Color Palette Frame.
 	u.PaletteTab = u.setupPaletteFrame(window)
@@ -65,30 +51,16 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		return nil
 	}
 
+	var buttonSize = 32
+
 	// Draw the radio buttons for the palette.
 	if u.Canvas != nil && u.Canvas.Palette != nil {
 		for _, swatch := range u.Canvas.Palette.Swatches {
 			swFrame := ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
-
-			colorFrame := ui.NewFrame(fmt.Sprintf("Swatch(%s) Color Box", swatch.Name))
-			colorFrame.Configure(ui.Config{
-				Width:       16,
-				Height:      16,
-				Background:  swatch.Color,
-				BorderSize:  1,
-				BorderStyle: ui.BorderSunken,
-			})
-			swFrame.Pack(colorFrame, ui.Pack{
-				Side: ui.W,
-			})
-
-			label := ui.NewLabel(ui.Label{
-				Text: swatch.Name,
-				Font: balance.StatusFont,
-			})
-			label.Font.Color = swatch.Color.Darken(128)
-			swFrame.Pack(label, ui.Pack{
-				Side: ui.W,
+			swFrame.Configure(ui.Config{
+				Width:      buttonSize,
+				Height:     buttonSize,
+				Background: swatch.Color,
 			})
 
 			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, swFrame)
@@ -97,18 +69,11 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 
 			// Add a tooltip showing the swatch attributes.
 			ui.NewTooltip(btn, ui.Tooltip{
-				Text: "Attributes: " + swatch.Attributes(),
+				Text: fmt.Sprintf("Name: %s\nAttributes: %s", swatch.Name, swatch.Attributes()),
 				Edge: ui.Left,
 			})
 
 			btn.Compute(u.d.Engine)
-			swFrame.Configure(ui.Config{
-				Height: label.Size().H,
-
-				// TODO: magic number, trying to left-align
-				// the label by making the frame as wide as possible.
-				Width: paletteWidth - 16,
-			})
 
 			frame.Pack(btn, ui.Pack{
 				Side: ui.N,
@@ -117,6 +82,28 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			})
 		}
 	}
+
+	// Draw the Edit Palette button.
+	btn := ui.NewButton("Edit Palette", ui.NewLabel(ui.Label{
+		Text: "Edit",
+		Font: balance.MenuFont,
+	}))
+	btn.Handle(ui.Click, func(ed ui.EventData) error {
+		// TODO: recompute the window so the actual loaded level palette gets in
+		u.paletteEditor.Hide()
+		u.paletteEditor = nil
+		u.SetupPopups(u.d)
+		u.paletteEditor.Show()
+		return nil
+	})
+	u.Supervisor.Add(btn)
+
+	btn.Compute(u.d.Engine)
+	frame.Pack(btn, ui.Pack{
+		Side: ui.N,
+		Fill: true,
+		PadY: 4,
+	})
 
 	return frame
 }

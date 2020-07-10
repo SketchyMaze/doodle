@@ -351,6 +351,11 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 					if err := w.LinkAdd(actor); err != nil {
 						return err
 					}
+
+					// TODO: reset the Button1 state so we don't finish a
+					// link and then LinkAdd the clicked doodad immediately
+					// (causing link chaining)
+					ev.Button1 = false
 					break
 				}
 			} else {

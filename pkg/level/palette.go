@@ -1,6 +1,10 @@
 package level
 
-import "git.kirsle.net/go/render"
+import (
+	"fmt"
+
+	"git.kirsle.net/go/render"
+)
 
 // DefaultPalette returns a sensible default palette.
 func DefaultPalette() *Palette {
@@ -83,6 +87,25 @@ type Palette struct {
 // "color by name" cache and assign the index numbers to each swatch.
 func (p *Palette) Inflate() {
 	p.update()
+}
+
+// AddSwatch adds a new swatch to the palette.
+func (p *Palette) AddSwatch() *Swatch {
+	p.update()
+
+	var (
+		index = len(p.Swatches)
+		name  = fmt.Sprintf("color %d", len(p.Swatches)+1)
+	)
+
+	p.Swatches = append(p.Swatches, &Swatch{
+		Name:  name,
+		Color: render.Magenta,
+		index: index,
+	})
+	p.byName[name] = index
+
+	return p.Swatches[index]
 }
 
 // Get a swatch by name.

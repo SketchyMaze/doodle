@@ -180,6 +180,14 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 	return chunk, ok
 }
 
+// Redraw marks every chunk as dirty and invalidates all their texture caches,
+// forcing the drawing to re-generate from scratch.
+func (c *Chunker) Redraw() {
+	for _, chunk := range c.Chunks {
+		chunk.SetDirty()
+	}
+}
+
 // Get a pixel at the given coordinate. Returns the Palette entry for that
 // pixel or else returns an error if not found.
 func (c *Chunker) Get(p render.Point) (*Swatch, error) {

@@ -104,6 +104,12 @@ func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texture
 	return c.textureMasked
 }
 
+// SetDirty sets the `dirty` flag to true and forces the texture to be
+// re-computed next frame.
+func (c *Chunk) SetDirty() {
+	c.dirty = true
+}
+
 // toBitmap puts the texture in a well named bitmap path in the cache folder.
 func (c *Chunk) toBitmap(mask render.Color) (render.Texturer, error) {
 	// Generate a unique name for this chunk cache.

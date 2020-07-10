@@ -146,6 +146,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 		},
 	})
 	s.window = window
+	window.SetButtons(0)
+	window.Show()
 	return nil
 }
 

@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"runtime"
@@ -15,6 +14,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli"
@@ -71,7 +71,7 @@ func main() {
 		&cli.StringFlag{
 			Name:    "window",
 			Aliases: []string{"w"},
-			Usage:   "set the window size (e.g. -w 1024x768) or special value: desktop, mobile, landscape",
+			Usage:   "set the window size (e.g. -w 1024x768) or special value: desktop, mobile, landscape, maximized",
 		},
 		&cli.BoolFlag{
 			Name:  "guitest",
@@ -127,6 +127,13 @@ func main() {
 				game.PlayLevel(filename)
 			}
 		}
+
+		// Maximizing the window? with `-w maximized`
+		if c.String("window") == "maximized" {
+			log.Info("Maximize main window")
+			engine.Maximize()
+		}
+
 		game.Run()
 		return nil
 	}
@@ -136,13 +143,13 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 }
 
 func setResolution(value string) error {
 	switch value {
-	case "desktop":
+	case "desktop", "maximized":
 		return nil
 	case "mobile":
 		balance.Width = 375

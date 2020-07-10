@@ -23,7 +23,7 @@ var (
 	}
 	TitleFont = render.Text{
 		FontFilename: "DejaVuSans-Bold.ttf",
-		Size:         12,
+		Size:         9,
 		Padding:      4,
 		Color:        render.White,
 		Stroke:       render.Red,
@@ -36,6 +36,11 @@ var (
 	MenuFont       = render.Text{
 		Size: 12,
 		PadX: 4,
+	}
+	MenuFontBold = render.Text{
+		FontFilename: "DejaVuSans-Bold.ttf",
+		Size:         12,
+		PadX:         4,
 	}
 
 	// StatusFont is the font for the status bar.
@@ -83,4 +88,10 @@ var (
 		Color:        render.RGBA(255, 255, 0, 255),
 		Stroke:       render.RGBA(100, 100, 0, 255),
 	}
+
+	// Doodad Dropper Window settings.
+	DoodadButtonBackground = render.RGBA(255, 255, 200, 255)
+	DoodadButtonSize       = 64
+	DoodadDropperCols      = 6 // rows/columns of buttons
+	DoodadDropperRows      = 3
 )

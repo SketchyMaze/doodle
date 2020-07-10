@@ -22,6 +22,9 @@ var (
 	// Globally available Flash() function so we can emit text to the Doodle UI.
 	Flash func(string, ...interface{})
 
+	// Globally available Prompt() function.
+	Prompt func(string, func(string))
+
 	// Ajax file cache for WASM use.
 	AjaxCache map[string][]byte
 )

@@ -27,18 +27,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Side: ui.N,
 	})
 
-	// Helper functions to toggle the correct palette panel.
-	var (
-		showSwatchPalette = func() {
-			u.DoodadTab.Hide()
-			u.PaletteTab.Show()
-		}
-		showDoodadPalette = func() {
-			u.PaletteTab.Hide()
-			u.DoodadTab.Show()
-		}
-	)
-
 	// Buttons.
 	var buttons = []struct {
 		Value   string
@@ -52,7 +40,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Pencil Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.PencilTool
-				showSwatchPalette()
 				d.Flash("Pencil Tool selected.")
 			},
 		},
@@ -63,7 +50,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Line Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LineTool
-				showSwatchPalette()
 				d.Flash("Line Tool selected.")
 			},
 		},
@@ -74,7 +60,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Rectangle Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.RectTool
-				showSwatchPalette()
 				d.Flash("Rectangle Tool selected.")
 			},
 		},
@@ -85,7 +70,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Ellipse Tool",
 			Click: func() {
 				u.Canvas.Tool = drawtool.EllipseTool
-				showSwatchPalette()
 				d.Flash("Ellipse Tool selected.")
 			},
 		},
@@ -96,7 +80,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Doodad Tool\nDrag-and-drop objects into your map",
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
-				showDoodadPalette()
+				u.doodadWindow.Show()
 				d.Flash("Actor Tool selected. Drag a Doodad from the drawer into your level.")
 			},
 		},
@@ -107,7 +91,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Tooltip: "Link Tool\nConnect doodads to each other",
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
-				showDoodadPalette()
+				u.doodadWindow.Show()
 				d.Flash("Link Tool selected. Click a doodad in your level to link it to another.")
 			},
 		},
@@ -126,7 +110,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 					u.Canvas.BrushSize = balance.MaxEraserBrushSize
 				}
 
-				showSwatchPalette()
 				d.Flash("Eraser Tool selected.")
 			},
 		},

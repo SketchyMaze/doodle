@@ -61,6 +61,7 @@ func New(debug bool, engine render.Engine) *Doodle {
 	// Make the render engine globally available. TODO: for wasm/ToBitmap
 	shmem.CurrentRenderEngine = engine
 	shmem.Flash = d.Flash
+	shmem.Prompt = d.Prompt
 
 	if debug {
 		log.Logger.Config.Level = golog.DebugLevel
