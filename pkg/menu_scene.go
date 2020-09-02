@@ -72,6 +72,15 @@ func (d *Doodle) GotoPlayMenu() {
 	d.Goto(scene)
 }
 
+// GotoSettingsMenu loads the settings screen.
+func (d *Doodle) GotoSettingsMenu() {
+	log.Info("Loading the MenuScene to the Settings Menu")
+	scene := &MenuScene{
+		StartupMenu: "settings",
+	}
+	d.Goto(scene)
+}
+
 // Setup the scene.
 func (s *MenuScene) Setup(d *Doodle) error {
 	s.Supervisor = ui.NewSupervisor()
@@ -96,6 +105,10 @@ func (s *MenuScene) Setup(d *Doodle) error {
 		}
 	case "load":
 		if err := s.setupLoadWindow(d); err != nil {
+			return err
+		}
+	case "settings":
+		if err := s.setupSettingsWindow(d); err != nil {
 			return err
 		}
 	default:
@@ -167,6 +180,17 @@ func (s *MenuScene) setupLoadWindow(d *Doodle) error {
 			d.Goto(&MainScene{})
 		},
 	})
+	s.window = window
+	return nil
+}
+
+// setupLoadWindow sets up the UI for the "New" window.
+func (s *MenuScene) setupSettingsWindow(d *Doodle) error {
+	window := windows.NewSettingsWindow(windows.Settings{
+		Supervisor: s.Supervisor,
+		Engine:     d.Engine,
+	})
+	window.SetButtons(0)
 	s.window = window
 	return nil
 }
