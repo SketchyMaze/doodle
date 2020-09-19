@@ -112,10 +112,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Name: "Edit a Level",
 			Func: d.GotoLoadMenu,
 		},
-		{
-			Name: "Settings",
-			Func: d.GotoSettingsMenu,
-		},
+		// {
+		// 	Name: "Settings",
+		// 	Func: d.GotoSettingsMenu,
+		// },
 	}
 	for _, button := range buttons {
 		button := button

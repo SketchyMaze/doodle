@@ -1,5 +1,32 @@
 # Changes
 
+## v0.3.0-alpha
+
+This update introduces the player character to the game. He doesn't have a name;
+the game just refers to him as Boy.
+
+His sprite size is bigger (33x54) than the 32x32 size of the placeholder player
+character from before. So, the three example levels shipped with previous versions
+of Project: Doodle no longer work. This release comes with two replacement levels
+which are better decorated, anyway.
+
+Other new features:
+
+* **Palette Editor:** you can add and modify the colors on your level
+  palette! Pick any colors you want, give a name to each swatch, and mark
+  whether they behave as Solid, Water or Fire. Without any of these
+  properties, colors are decorational-only by default.
+* **Doodad Window:** when selecting the Actor or Link Tools in the editor,
+  the Doodads window pops up. Doodads can be dragged from this window onto your
+  level, instead of the Palette toolbar turning into a Doodad palette.
+* The Palette toolbar on the Editor is now thinner and only shows colors.
+  Mouse-over tooltips show the name and properties of each swatch.
+* Added a --window option to the Doodle program to set the default window size.
+  Options can be a resolution (e.g. 1024x768) or a special keyword
+  "desktop", "mobile", "landscape" or "maximized"
+  - Default size is desktop: 1024x768
+  - Mobile and landscape mimic a smartphone at 375x812 resolution.
+
 ## v0.2.0-alpha
 
 This release brings Sound Effects and Menus to the game.
