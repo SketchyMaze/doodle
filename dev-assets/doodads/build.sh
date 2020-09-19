@@ -8,6 +8,19 @@ fi
 
 mkdir -p ../../assets/doodads
 
+boy() {
+	cd boy/
+
+	doodad convert -t "Boy" stand-right.png stand-left.png \
+		walk-right-1.png walk-right-2.png walk-right-3.png \
+		walk-left-1.png walk-left-2.png walk-left-3.png \
+		boy.doodad
+	doodad install-script boy.js boy.doodad
+
+	cp *.doodad ../../../assets/doodads/
+	cd ..
+}
+
 buttons() {
 	cd buttons/
 
@@ -123,6 +136,7 @@ onoff() {
 	cd ..
 }
 
+boy
 buttons
 switches
 doors
@@ -132,3 +146,4 @@ objects
 onoff
 doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad
 doodad edit-doodad -hide ../../assets/doodads/azu-blu.doodad
+doodad edit-doodad -hide ../../assets/doodads/boy.doodad

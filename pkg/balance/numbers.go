@@ -43,6 +43,12 @@ var (
 	}
 	DefaultEraserBrushSize = 8
 	MaxEraserBrushSize     = 32 // the bigger, the slower
+
+	// Default player character doodad in Play Mode.
+	PlayerCharacterDoodad = "boy.doodad"
+
+	// Level name for the title screen.
+	DemoLevelName = "example 1.level"
 )
 
 // Edit Mode Values

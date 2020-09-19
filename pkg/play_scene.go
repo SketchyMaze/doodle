@@ -193,7 +193,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 // setupPlayer creates and configures the Player Character in the level.
 func (s *PlayScene) setupPlayer() {
 	// Load in the player character.
-	player, err := doodads.LoadFile("azu-blu.doodad")
+	player, err := doodads.LoadFile(balance.PlayerCharacterDoodad)
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)
