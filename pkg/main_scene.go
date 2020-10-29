@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
@@ -112,10 +113,15 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Name: "Edit a Level",
 			Func: d.GotoLoadMenu,
 		},
-		// {
-		// 	Name: "Settings",
-		// 	Func: d.GotoSettingsMenu,
-		// },
+		{
+			Name: "Settings",
+			Func: func() {
+				log.Error("TEST Alert()")
+				modal.Alert("Hello world!").then(func() {
+					d.Flash("Alert has been clicked thru!")
+				})
+			},
+		},
 	}
 	for _, button := range buttons {
 		button := button
