@@ -6,7 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // InstallScript to add the script to a doodad file.

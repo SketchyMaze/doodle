@@ -185,7 +185,7 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 			log.Error("Error running actor main() functions: %s", err)
 		}
 	} else {
-		log.Error("Error loading title-screen.level: %s", err)
+		log.Error("Error loading demo level %s: %s", balance.DemoLevelName, err)
 	}
 
 	return nil

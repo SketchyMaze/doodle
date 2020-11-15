@@ -4,6 +4,36 @@
 * [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
 * [Mac OS](#mac os)
 
+## Complete App Build
+
+You'll need the following git repositories:
+
+* git.kirsle.net/apps/doodle - the game engine.
+* git.kirsle.net/apps/doodle-masters - where built-in level files are kept.
+* git.kirsle.net/apps/doodle-vendor - vendored libraries for Windows (SDL2.dll etc.)
+
+```bash
+# Copy fonts and levels in
+$ cp /git/doodle-masters/levels assets/levels
+$ cp /git/doodle-vendor/fonts assets/fonts
+
+# Ensure you have bindata CLI command. NOTE: below repo is
+# my fork of go-bindata, can find it elsewhere instead.
+$ go get -u git.kirsle.net/go/bindata/...
+
+# From the doodle repo
+$ make bindata-dev  # TODO: populates the bindata .go modules.
+$ go get ./...      # install dependencies etc.
+```
+
+The `make setup` command tries to do the above.
+
+`make build` produces a local binary in the bin/ folder and `make dist`
+will build an app for distribution in the dist/ folder.
+
+Levels should be copied in from the doodle-masters repo into the
+assets/levels/ folder before running `make bindata` to release the game.
+
 ## Fonts
 
 The `fonts/` folder is git-ignored. The app currently uses font files here

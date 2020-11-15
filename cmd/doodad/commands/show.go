@@ -9,7 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Show information about a Level or Doodad file.

@@ -7,7 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // EditDoodad allows writing doodad metadata.

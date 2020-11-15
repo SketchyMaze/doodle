@@ -17,7 +17,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/go/render/sdl"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	_ "image/png"
 )

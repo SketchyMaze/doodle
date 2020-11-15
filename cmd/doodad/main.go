@@ -11,7 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Build variables.

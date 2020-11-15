@@ -1,0 +1,22 @@
+module git.kirsle.net/apps/doodle
+
+go 1.15
+
+require (
+	git.kirsle.net/go/audio v0.0.0-20200429055451-ae3b0695ba6f
+	git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b
+	git.kirsle.net/go/render v0.0.0-20200710023247-e5f4c3a16860
+	git.kirsle.net/go/ui v0.0.0-20200710023146-e2a561fbd04c
+	github.com/google/uuid v1.1.2
+	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
+	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
+	github.com/tomnomnom/xtermcolor v0.0.0-20160428124646-b78803f00a7e // indirect
+	github.com/urfave/cli v1.22.5
+	github.com/urfave/cli/v2 v2.3.0
+	github.com/veandco/go-sdl2 v0.4.4
+	github.com/vmihailenco/msgpack v3.3.3+incompatible
+	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
+	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
+	google.golang.org/appengine v1.6.7 // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+)
