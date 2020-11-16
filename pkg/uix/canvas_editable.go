@@ -8,6 +8,18 @@ import (
 	"git.kirsle.net/go/ui"
 )
 
+// Modified returns whether the canvas has been modified since it was last
+// loaded. Methods like Load and LoadFile will set modified to false, and
+// commitStroke sets it to true.
+func (w *Canvas) Modified() bool {
+	return w.modified
+}
+
+// SetModified sets the modified bit on the canvas.
+func (w *Canvas) SetModified(v bool) {
+	w.modified = v
+}
+
 // commitStroke is the common function that applies a stroke the user is
 // actively drawing onto the canvas. This is for Edit Mode.
 func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
@@ -15,6 +27,9 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 		// nothing to commit
 		return
 	}
+
+	// Mark the canvas as modified.
+	w.modified = true
 
 	var (
 		deleting = w.currentStroke.Shape == drawtool.Eraser

@@ -48,8 +48,9 @@ type Canvas struct {
 	NoLimitScroll bool
 
 	// Underlying chunk data for the drawing.
-	level  *level.Level
-	chunks *level.Chunker
+	level    *level.Level
+	chunks   *level.Chunker
+	modified bool // set to True when the drawing has been modified, like in Editor Mode.
 
 	// Actors to superimpose on top of the drawing.
 	actor  *Actor   // if this canvas IS an actor
@@ -131,6 +132,7 @@ func NewCanvas(size int, editable bool) *Canvas {
 func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 	w.Palette = p
 	w.chunks = g
+	w.modified = false
 
 	if len(w.Palette.Swatches) > 0 {
 		w.SetSwatch(w.Palette.Swatches[0])

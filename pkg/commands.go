@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"github.com/robertkrimen/otto"
 )
 
@@ -32,6 +33,9 @@ func (c Command) Run(d *Doodle) error {
 	switch c.Command {
 	case "echo":
 		d.Flash(c.ArgsLiteral)
+		return nil
+	case "alert":
+		modal.Alert(c.ArgsLiteral)
 		return nil
 	case "new":
 		return c.New(d)

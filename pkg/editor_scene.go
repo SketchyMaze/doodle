@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -160,6 +161,19 @@ func (s *EditorScene) Playtest() {
 	})
 }
 
+// ConfirmUnload may pop up a confirmation modal to save the level before the
+// user performs an action that may close the level, such as click File->New.
+func (s *EditorScene) ConfirmUnload(fn func()) {
+	if !s.UI.Canvas.Modified() {
+		fn()
+		return
+	}
+
+	modal.Confirm(
+		"This level has unsaved changes. Are you sure you\nwant to continue and lose your changes?",
+	).WithTitle("Confirm Closing Level").Then(fn)
+}
+
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	// Update debug overlay values.
@@ -265,6 +279,9 @@ func (s *EditorScene) SaveLevel(filename string) error {
 	m.Palette = s.UI.Canvas.Palette
 	m.Chunker = s.UI.Canvas.Chunker()
 
+	// Clear the modified flag on the level.
+	s.UI.Canvas.SetModified(false)
+
 	return m.WriteFile(filename)
 }
 
@@ -306,6 +323,9 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 	// TODO: is this copying necessary?
 	d.Palette = s.UI.Canvas.Palette
 	d.Layers[0].Chunker = s.UI.Canvas.Chunker()
+
+	// Clear the modified flag on the level.
+	s.UI.Canvas.SetModified(false)
 
 	// Save it to their profile directory.
 	filename = userdir.DoodadPath(filename)

@@ -2,6 +2,9 @@ module git.kirsle.net/apps/doodle
 
 go 1.15
 
+replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/render
+replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/ui
+
 require (
 	git.kirsle.net/go/audio v0.0.0-20200429055451-ae3b0695ba6f
 	git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b
@@ -19,4 +22,5 @@ require (
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	mvdan.cc/unparam v0.0.0-20200501210554-b37ab49443f7 // indirect
 )

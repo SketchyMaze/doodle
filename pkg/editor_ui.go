@@ -2,7 +2,6 @@ package doodle
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -483,21 +482,25 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	// File menu
 	fileMenu := menu.AddMenu("File")
 	fileMenu.AddItemAccel("New level", "Ctrl-N", func() {
-		d.GotoNewMenu()
+		u.Scene.ConfirmUnload(func() {
+			d.GotoNewMenu()
+		})
 	})
 	if !balance.FreeVersion {
 		fileMenu.AddItem("New doodad", func() {
-			d.Prompt("Doodad size [100]>", func(answer string) {
-				size := balance.DoodadSize
-				if answer != "" {
-					i, err := strconv.Atoi(answer)
-					if err != nil {
-						d.Flash("Error: Doodad size must be a number.")
-						return
+			u.Scene.ConfirmUnload(func() {
+				d.Prompt("Doodad size [100]>", func(answer string) {
+					size := balance.DoodadSize
+					if answer != "" {
+						i, err := strconv.Atoi(answer)
+						if err != nil {
+							d.Flash("Error: Doodad size must be a number.")
+							return
+						}
+						size = i
 					}
-					size = i
-				}
-				d.NewDoodad(size)
+					d.NewDoodad(size)
+				})
 			})
 		})
 	}
@@ -520,15 +523,18 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 	})
 	fileMenu.AddItemAccel("Open...", "Ctrl-O", func() {
-		d.GotoLoadMenu()
+		u.Scene.ConfirmUnload(func() {
+			d.GotoLoadMenu()
+		})
 	})
 	fileMenu.AddSeparator()
 	fileMenu.AddItem("Close "+drawingType, func() {
-		d.Goto(&MainScene{})
+		u.Scene.ConfirmUnload(func() {
+			d.Goto(&MainScene{})
+		})
 	})
 	fileMenu.AddItemAccel("Quit", "Ctrl-Q", func() {
-		// TODO graceful shutdown
-		os.Exit(0)
+		d.ConfirmExit()
 	})
 
 	////////

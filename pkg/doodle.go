@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	golog "git.kirsle.net/go/log"
@@ -84,10 +85,15 @@ func (d *Doodle) Title() string {
 
 // SetupEngine sets up the rendering engine.
 func (d *Doodle) SetupEngine() error {
+	// Set up the rendering engine (SDL2, etc.)
 	if err := d.Engine.Setup(); err != nil {
 		return err
 	}
 	d.engineReady = true
+
+	// Initialize the UI modal manager.
+	modal.Initialize(d.Engine)
+
 	return nil
 }
 
@@ -113,7 +119,6 @@ func (d *Doodle) Run() error {
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()
-		// log.Error("Button1 is: %+v", ev.Button1)
 		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 		if err != nil {
 			log.Error("event poll error: %s", err)
@@ -132,8 +137,8 @@ func (d *Doodle) Run() error {
 			// Global event handlers.
 			if ev.Escape {
 				log.Error("Escape key pressed, shutting down")
-				d.running = false
-				break
+				d.ConfirmExit()
+				continue
 			}
 
 			if ev.KeyDown("F1") {
@@ -148,17 +153,24 @@ func (d *Doodle) Run() error {
 				ev.SetKeyDown("F4", false)
 			}
 
-			// Run the scene's logic.
-			err = d.Scene.Loop(d, ev)
-			if err != nil {
-				return err
+			// Is a UI modal active?
+			if modal.Handled(ev) == false {
+				// Run the scene's logic.
+				err = d.Scene.Loop(d, ev)
+				if err != nil {
+					return err
+				}
 			}
+
 		}
 
 		// Draw the scene.
 		d.Scene.Draw(d)
 
-		// Draw the shell.
+		// Draw modals on top of the game UI.
+		modal.Draw()
+
+		// Draw the shell, always on top of UI and modals.
 		err = d.shell.Draw(d, ev)
 		if err != nil {
 			log.Error("shell error: %s", err)
@@ -197,6 +209,15 @@ func (d *Doodle) Run() error {
 
 	log.Warn("Main Loop Exited! Shutting down...")
 	return nil
+}
+
+// ConfirmExit may shut down Doodle gracefully after showing the user a
+// confirmation modal.
+func (d *Doodle) ConfirmExit() {
+	modal.Confirm("Are you sure you want to quit %s?", branding.AppName).
+		WithTitle("Confirm Quit").Then(func() {
+		d.running = false
+	})
 }
 
 // NewMap loads a new map in Edit Mode.
