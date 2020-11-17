@@ -43,6 +43,9 @@ var (
 		PadX:         4,
 	}
 
+	// Modal backdrop color.
+	ModalBackdrop = render.RGBA(1, 1, 1, 42)
+
 	// StatusFont is the font for the status bar.
 	StatusFont = render.Text{
 		Size:    12,

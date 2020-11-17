@@ -136,7 +136,6 @@ func (d *Doodle) Run() error {
 		} else {
 			// Global event handlers.
 			if ev.Escape {
-				log.Error("Escape key pressed, shutting down")
 				d.ConfirmExit()
 				continue
 			}

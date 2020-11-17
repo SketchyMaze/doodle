@@ -95,7 +95,7 @@ func (p *Palette) AddSwatch() *Swatch {
 
 	var (
 		index = len(p.Swatches)
-		name  = fmt.Sprintf("color %d", len(p.Swatches)+1)
+		name  = fmt.Sprintf("color %d", len(p.Swatches))
 	)
 
 	p.Swatches = append(p.Swatches, &Swatch{

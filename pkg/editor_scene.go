@@ -31,8 +31,9 @@ type EditorScene struct {
 
 	// The current level or doodad object being edited, based on the
 	// DrawingType.
-	Level  *level.Level
-	Doodad *doodads.Doodad
+	Level       *level.Level
+	Doodad      *doodads.Doodad
+	ActiveLayer int // which layer (of a doodad) is being edited now?
 
 	// Custom debug overlay values.
 	debTool       *string
@@ -170,8 +171,8 @@ func (s *EditorScene) ConfirmUnload(fn func()) {
 	}
 
 	modal.Confirm(
-		"This level has unsaved changes. Are you sure you\nwant to continue and lose your changes?",
-	).WithTitle("Confirm Closing Level").Then(fn)
+		"This drawing has unsaved changes. Are you sure you\nwant to continue and lose your changes?",
+	).WithTitle("Confirm Closing Drawing").Then(fn)
 }
 
 // Loop the editor scene.
@@ -322,7 +323,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 
 	// TODO: is this copying necessary?
 	d.Palette = s.UI.Canvas.Palette
-	d.Layers[0].Chunker = s.UI.Canvas.Chunker()
+	d.Layers[s.ActiveLayer].Chunker = s.UI.Canvas.Chunker()
 
 	// Clear the modified flag on the level.
 	s.UI.Canvas.SetModified(false)

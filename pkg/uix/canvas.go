@@ -175,6 +175,16 @@ func (w *Canvas) LoadDoodad(d *doodads.Doodad) {
 	w.Load(d.Palette, d.Layers[0].Chunker)
 }
 
+// LoadDoodadToLayer initializes a Canvas from a Doodad object and picks
+// a layer to load.
+func (w *Canvas) LoadDoodadToLayer(d *doodads.Doodad, index int) {
+	if index < 0 || index > len(d.Layers) {
+		log.Error("LoadDoodadToLayer: index %d out of range", index)
+		return
+	}
+	w.Load(d.Palette, d.Layers[index].Chunker)
+}
+
 // SetSwatch changes the currently selected swatch for editing.
 func (w *Canvas) SetSwatch(s *level.Swatch) {
 	w.Palette.ActiveSwatch = s

@@ -2,6 +2,7 @@
 package modal
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -27,7 +28,7 @@ func Initialize(e render.Engine) {
 	window = render.NewRect(width, height)
 
 	screen = ui.NewFrame("Modal Screen")
-	screen.SetBackground(render.RGBA(1, 1, 1, 128))
+	screen.SetBackground(balance.ModalBackdrop)
 	screen.Resize(window)
 	screen.Compute(e)
 

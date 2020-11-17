@@ -89,11 +89,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		Font: balance.MenuFont,
 	}))
 	btn.Handle(ui.Click, func(ed ui.EventData) error {
-		// TODO: recompute the window so the actual loaded level palette gets in
-		u.paletteEditor.Hide()
-		u.paletteEditor = nil
-		u.SetupPopups(u.d)
-		u.paletteEditor.Show()
+		u.OpenPaletteWindow()
 		return nil
 	})
 	u.Supervisor.Add(btn)

@@ -48,6 +48,7 @@ type EditorUI struct {
 	aboutWindow         *ui.Window
 	doodadWindow        *ui.Window
 	paletteEditor       *ui.Window
+	layersWindow        *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -481,7 +482,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	////////
 	// File menu
 	fileMenu := menu.AddMenu("File")
-	fileMenu.AddItemAccel("New level", "Ctrl-N", func() {
+	fileMenu.AddItemAccel("New level", "Ctrl-N*", func() {
 		u.Scene.ConfirmUnload(func() {
 			d.GotoNewMenu()
 		})
@@ -504,7 +505,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			})
 		})
 	}
-	fileMenu.AddItemAccel("Save", "Ctrl-S", func() {
+	fileMenu.AddItemAccel("Save", "Ctrl-S*", func() {
 		if u.Scene.filename != "" {
 			saveFunc(u.Scene.filename)
 		} else {
@@ -522,7 +523,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			}
 		})
 	})
-	fileMenu.AddItemAccel("Open...", "Ctrl-O", func() {
+	fileMenu.AddItemAccel("Open...", "Ctrl-O*", func() {
 		u.Scene.ConfirmUnload(func() {
 			d.GotoLoadMenu()
 		})
@@ -533,7 +534,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			d.Goto(&MainScene{})
 		})
 	})
-	fileMenu.AddItemAccel("Quit", "Ctrl-Q", func() {
+	fileMenu.AddItemAccel("Quit", "Escape", func() {
 		d.ConfirmExit()
 	})
 
@@ -543,7 +544,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	editMenu.AddItemAccel("Undo", "Ctrl-Z", func() {
 		u.Canvas.UndoStroke()
 	})
-	editMenu.AddItemAccel("Redo", "Shift-Ctrl-Y", func() {
+	editMenu.AddItemAccel("Redo", "Ctrl-Y", func() {
 		u.Canvas.RedoStroke()
 	})
 	editMenu.AddSeparator()
@@ -559,7 +560,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	////////
 	// Level menu
-	if drawingType == "level" {
+	if u.Scene.DrawingType == enum.LevelDrawing {
 		levelMenu := menu.AddMenu("Level")
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
@@ -578,10 +579,20 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	toolMenu.AddItemAccel("Command shell", "Enter", func() {
 		d.shell.Open = true
 	})
-	toolMenu.AddItemAccel("Doodads", "d", func() {
-		log.Info("Open the DoodadDropper")
-		u.doodadWindow.Show()
+	toolMenu.AddSeparator()
+	toolMenu.AddItem("Edit Palette", func() {
+		u.OpenPaletteWindow()
 	})
+	if u.Scene.DrawingType == enum.LevelDrawing {
+		toolMenu.AddItemAccel("Doodads", "d", func() {
+			log.Info("Open the DoodadDropper")
+			u.doodadWindow.Show()
+		})
+	} else if u.Scene.DrawingType == enum.DoodadDrawing {
+		toolMenu.AddItem("Layers", func() {
+			u.OpenLayersWindow()
+		})
+	}
 
 	////////
 	// Help menu
@@ -613,96 +624,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	log.Error("Setup MenuBar: %s\n", menu.Size())
 
 	return menu
-}
-
-// SetupPopups preloads popup windows like the DoodadDropper.
-func (u *EditorUI) SetupPopups(d *Doodle) {
-	// Common window configure function.
-	var configure = func(window *ui.Window) {
-		var size = window.Size()
-		window.Compute(d.Engine)
-		window.Supervise(u.Supervisor)
-
-		// Center the window.
-		window.MoveTo(render.Point{
-			X: (d.width / 2) - (size.W / 2),
-			Y: (d.height / 2) - (size.H / 2),
-		})
-	}
-
-	// Doodad Dropper.
-	if u.doodadWindow == nil {
-		u.doodadWindow = windows.NewDoodadDropper(windows.DoodadDropper{
-			Supervisor: u.Supervisor,
-			Engine:     d.Engine,
-
-			OnStartDragActor: u.startDragActor,
-			OnCancel: func() {
-				u.doodadWindow.Hide()
-			},
-		})
-		configure(u.doodadWindow)
-	}
-
-	// Page Settings
-	if u.levelSettingsWindow == nil {
-		scene, _ := d.Scene.(*EditorScene)
-
-		u.levelSettingsWindow = windows.NewAddEditLevel(windows.AddEditLevel{
-			Supervisor: u.Supervisor,
-			Engine:     d.Engine,
-			EditLevel:  scene.Level,
-
-			OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
-				log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
-				scene.Level.PageType = pageType
-				scene.Level.Wallpaper = wallpaper
-				u.Canvas.LoadLevel(d.Engine, scene.Level)
-			},
-			OnCancel: func() {
-				u.levelSettingsWindow.Hide()
-			},
-		})
-		configure(u.levelSettingsWindow)
-	}
-
-	// Palette Editor.
-	if u.paletteEditor == nil {
-		scene, _ := d.Scene.(*EditorScene)
-
-		u.paletteEditor = windows.NewPaletteEditor(windows.PaletteEditor{
-			Supervisor: u.Supervisor,
-			Engine:     d.Engine,
-			EditLevel:  scene.Level,
-
-			OnChange: func() {
-				// Reload the level.
-				log.Warn("RELOAD LEVEL")
-				u.Canvas.LoadLevel(d.Engine, scene.Level)
-				scene.Level.Chunker.Redraw()
-
-				// Reload the palette frame to reflect the changed data.
-				u.Palette.Hide()
-				u.Palette = u.SetupPalette(d)
-				u.Resized(d)
-			},
-			OnAddColor: func() {
-				// Adding a new color to the palette.
-				sw := scene.Level.Palette.AddSwatch()
-				log.Info("Added new palette color: %+v", sw)
-
-				// Awkward but... reload this very same window.
-				u.paletteEditor.Hide()
-				u.paletteEditor = nil
-				u.SetupPopups(d)
-				u.paletteEditor.Show()
-			},
-			OnCancel: func() {
-				u.paletteEditor.Hide()
-			},
-		})
-		configure(u.paletteEditor)
-	}
 }
 
 // SetupStatusBar sets up the status bar widget along the bottom of the window.

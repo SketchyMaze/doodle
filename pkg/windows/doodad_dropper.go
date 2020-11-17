@@ -41,9 +41,10 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		height = (buttonSize * rows) + 64 // account for button borders :(
 
 		// pagination values
-		page    = 1
-		pages   int
-		perPage = 20
+		page           = 1
+		pages          int
+		perPage        = 20
+		maxPageButtons = 10
 	)
 
 	window := ui.NewWindow(title)
@@ -180,10 +181,12 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 
 		// Pager for the doodads.
 		pager := ui.NewPager(ui.Pager{
-			Page:    page,
-			Pages:   pages,
-			PerPage: perPage,
-			Font:    balance.MenuFont,
+			Name:           "Doodad Dropper Pager",
+			Page:           page,
+			Pages:          pages,
+			PerPage:        perPage,
+			MaxPageButtons: maxPageButtons,
+			Font:           balance.MenuFont,
 			OnChange: func(newPage, perPage int) {
 				page = newPage
 				log.Info("Page: %d, %d", page, perPage)

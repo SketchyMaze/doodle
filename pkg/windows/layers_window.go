@@ -5,58 +5,56 @@ import (
 	"math"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
-	"git.kirsle.net/go/ui/style"
 )
 
-// PaletteEditor lets you customize the level palette in Edit Mode.
-type PaletteEditor struct {
+// Layers shows the layers when editing a doodad file.
+type Layers struct {
 	Supervisor *ui.Supervisor
 	Engine     render.Engine
-	IsDoodad   bool // you're editing a doodad instead of a level?
 
-	// Pointer to the currently edited palette, be it
-	// from a level or a doodad.
-	EditPalette *level.Palette
+	// Pointer to the currently edited level.
+	EditDoodad  *doodads.Doodad
+	ActiveLayer int    // pointer to selected layer
+	activeLayer string // cached string for radio button
 
 	// Callback functions.
-	OnChange   func()
-	OnAddColor func()
-	OnCancel   func()
+	OnChange   func(*doodads.Doodad) // Doodad data was modified, reload the Canvas etc.
+	OnAddLayer func()                // "Add Layer" button was clicked
+	OnCancel   func()                // Close button was clicked.
+
+	// Editor should change the active layer
+	OnChangeLayer func(index int)
 }
 
-// NewPaletteEditor initializes the window.
-func NewPaletteEditor(config PaletteEditor) *ui.Window {
+// NewLayerWindow initializes the window.
+func NewLayerWindow(config Layers) *ui.Window {
 	// Default options.
 	var (
-		title = "Level Palette"
-
-		buttonSize = balance.DoodadButtonSize
-		columns    = balance.DoodadDropperCols
-		rows       = []*ui.Frame{}
+		title = "Layers"
+		rows  = []*ui.Frame{}
 
 		// size of the popup window
-		width  = buttonSize * columns
-		height = (buttonSize * balance.DoodadDropperRows) + 64 // account for button borders :(
+		width  = 320
+		height = 300
 
 		// Column sizes of the palette table.
-		col1 = 30  // ID no.
-		col2 = 24  // Color
-		col3 = 130 // Name
-		col4 = 140 // Attributes
+		col1 = 40  // Index
+		col3 = 120 // Name
+		col4 = 60  // Edit button
 		// col5 = 150 // Delete
 
 		// pagination values
 		page    = 1
 		perPage = 5
 	)
-	if config.IsDoodad {
-		title = "Doodad Palette"
-	}
+
+	config.activeLayer = fmt.Sprintf("%d", config.ActiveLayer)
+	log.Warn("config.activeLayer=%s", config.activeLayer)
 
 	window := ui.NewWindow(title)
 	window.SetButtons(ui.CloseButton)
@@ -80,13 +78,11 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 		Name string
 		Size int
 	}{
-		{"ID", col1},
-		{"Col", col2},
+		{"Index", col1},
 		{"Name", col3},
-		{"Attributes", col4},
-		// {"Delete", col5},
+		{"Edit", col4},
 	}
-	header := ui.NewFrame("Palette Header")
+	header := ui.NewFrame("Header")
 	for _, col := range headers {
 		labelFrame := ui.NewFrame(col.Name)
 		labelFrame.Configure(ui.Config{
@@ -113,13 +109,13 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 		Side: ui.N,
 	})
 
-	// Draw the main table of Palette rows.
-	if pal := config.EditPalette; pal != nil {
-		for i, swatch := range pal.Swatches {
+	// Draw the rows for each Layer in the given doodad.
+	if doodad := config.EditDoodad; doodad != nil {
+		for i, _ := range doodad.Layers {
+			i := i // rescope
 			var idStr = fmt.Sprintf("%d", i)
-			swatch := swatch
 
-			row := ui.NewFrame("Swatch " + idStr)
+			row := ui.NewFrame("Layer " + idStr)
 			rows = append(rows, row)
 
 			// Off the end of the first page?
@@ -139,19 +135,19 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 
 			// Name button (click to rename the swatch)
 			btnName := ui.NewButton("Name", ui.NewLabel(ui.Label{
-				TextVariable: &swatch.Name,
+				TextVariable: &doodad.Layers[i].Name,
 			}))
 			btnName.Configure(ui.Config{
 				Width:  col3,
 				Height: 24,
 			})
 			btnName.Handle(ui.Click, func(ed ui.EventData) error {
-				shmem.Prompt("New swatch name ["+swatch.Name+"]: ", func(answer string) {
+				shmem.Prompt("New layer name ["+doodad.Layers[i].Name+"]: ", func(answer string) {
 					log.Warn("Answer: %s", answer)
 					if answer != "" {
-						swatch.Name = answer
+						doodad.Layers[i].Name = answer
 						if config.OnChange != nil {
-							config.OnChange()
+							config.OnChange(config.EditDoodad)
 						}
 					}
 				})
@@ -159,104 +155,28 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			})
 			config.Supervisor.Add(btnName)
 
-			// Color Choice button.
-			btnColor := ui.NewButton("Color", ui.NewFrame("Color Frame"))
-			btnColor.SetStyle(&style.Button{
-				Background:      swatch.Color,
-				HoverBackground: swatch.Color.Lighten(40),
-				OutlineColor:    render.Black,
-				OutlineSize:     1,
-				BorderStyle:     style.BorderRaised,
-				BorderSize:      2,
-			})
-			btnColor.Configure(ui.Config{
-				Background: swatch.Color,
-				Width:      col2,
-				Height:     24,
-			})
-			btnColor.Handle(ui.Click, func(ed ui.EventData) error {
-				shmem.Prompt(fmt.Sprintf(
-					"New color in hex notation [%s]: ", swatch.Color.ToHex()), func(answer string) {
-					if answer != "" {
-						color, err := render.HexColor(answer)
-						if err != nil {
-							shmem.Flash("Error with that color code: %s", err)
-							return
-						}
-
-						swatch.Color = color
-
-						// TODO: redundant from above, consolidate these
-						fmt.Printf("Set button style to: %s\n", swatch.Color)
-						btnColor.SetStyle(&style.Button{
-							Background:      swatch.Color,
-							HoverBackground: swatch.Color.Lighten(40),
-							OutlineColor:    render.Black,
-							OutlineSize:     1,
-							BorderStyle:     style.BorderRaised,
-							BorderSize:      2,
-						})
-
-						if config.OnChange != nil {
-							config.OnChange()
-						}
-					}
-				})
-				return nil
-			})
-			config.Supervisor.Add(btnColor)
-
-			// Attribute flags.
-			attrFrame := ui.NewFrame("Attributes")
-			attrFrame.Configure(ui.Config{
+			// Edit button (open layer for editing)
+			// btnEdit := ui.NewButton("Edit", ui.NewLabel(ui.Label{
+			// 	Text: "Edit",
+			// }))
+			btnEdit := ui.NewRadioButton("Edit",
+				&config.activeLayer, idStr, ui.NewLabel(ui.Label{
+					Text: "Edit",
+				}))
+			btnEdit.Configure(ui.Config{
 				Width:  col4,
 				Height: 24,
 			})
-			attributes := []struct {
-				Label string
-				Var   *bool
-			}{
-				{
-					Label: "Solid",
-					Var:   &swatch.Solid,
-				},
-				{
-					Label: "Fire",
-					Var:   &swatch.Fire,
-				},
-				{
-					Label: "Water",
-					Var:   &swatch.Water,
-				},
-			}
-
-			// Do not show in Doodad editing mode.
-			if !config.IsDoodad {
-				for _, attr := range attributes {
-					attr := attr
-					btn := ui.NewCheckButton(attr.Label, attr.Var, ui.NewLabel(ui.Label{
-						Text: attr.Label,
-						Font: balance.MenuFont,
-					}))
-					btn.Handle(ui.Click, func(ed ui.EventData) error {
-						if config.OnChange != nil {
-							config.OnChange()
-						}
-						return nil
-					})
-					config.Supervisor.Add(btn)
-					attrFrame.Pack(btn, ui.Pack{
-						Side: ui.W,
-					})
+			btnEdit.Handle(ui.Click, func(ed ui.EventData) error {
+				if config.OnChangeLayer != nil {
+					config.OnChangeLayer(i)
 				}
-			}
+				return nil
+			})
+			config.Supervisor.Add(btnEdit)
 
 			// Pack all the widgets.
 			row.Pack(idLabel, ui.Pack{
-				Side: ui.W,
-				PadX: 2,
-			})
-			row.Pack(btnColor, ui.Pack{
 				Side: ui.W,
 				PadX: 2,
 			})
@@ -264,7 +184,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				Side: ui.W,
 				PadX: 2,
 			})
-			row.Pack(attrFrame, ui.Pack{
+			row.Pack(btnEdit, ui.Pack{
 				Side: ui.W,
 				PadX: 2,
 			})
@@ -290,13 +210,13 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 
 		// Pager for the doodads.
 		pager := ui.NewPager(ui.Pager{
-			Name: "Palette Editor Pager",
+			Name: "Layers Window Pager",
 			Page: page,
 			Pages: int(math.Ceil(
 				float64(len(rows)) / float64(perPage),
 			)),
 			PerPage:        perPage,
-			MaxPageButtons: 6,
+			MaxPageButtons: 10,
 			Font:           balance.MenuFont,
 			OnChange: func(newPage, perPage int) {
 				page = newPage
@@ -334,13 +254,13 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			Label string
 			F     func(ui.EventData) error
 		}{
-			{"Add Color", func(ed ui.EventData) error {
-				if config.OnAddColor != nil {
-					config.OnAddColor()
+			{"Add Layer", func(ed ui.EventData) error {
+				if config.OnAddLayer != nil {
+					config.OnAddLayer()
 				}
 
 				if config.OnChange != nil {
-					config.OnChange()
+					config.OnChange(config.EditDoodad)
 				}
 				return nil
 			}},
@@ -366,8 +286,8 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			})
 		}
 		bottomFrame.Place(btnFrame, ui.Place{
-			Top:   20,
-			Right: 20,
+			Top:    60,
+			Center: true,
 		})
 	}
 

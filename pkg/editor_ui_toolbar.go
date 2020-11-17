@@ -3,6 +3,7 @@ package doodle
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -33,6 +34,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Icon    string
 		Tooltip string
 		Click   func()
+
+		// Optional fields.
+		NoDoodad bool // tool not available for Doodad editing (Levels only)
 	}{
 		{
 			Value:   drawtool.PencilTool.String(),
@@ -75,9 +79,10 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value:   drawtool.ActorTool.String(),
-			Icon:    "assets/sprites/actor-tool.png",
-			Tooltip: "Doodad Tool\nDrag-and-drop objects into your map",
+			Value:    drawtool.ActorTool.String(),
+			Icon:     "assets/sprites/actor-tool.png",
+			Tooltip:  "Doodad Tool\nDrag-and-drop objects into your map",
+			NoDoodad: true,
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
 				u.doodadWindow.Show()
@@ -86,9 +91,10 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
-			Value:   drawtool.LinkTool.String(),
-			Icon:    "assets/sprites/link-tool.png",
-			Tooltip: "Link Tool\nConnect doodads to each other",
+			Value:    drawtool.LinkTool.String(),
+			Icon:     "assets/sprites/link-tool.png",
+			Tooltip:  "Link Tool\nConnect doodads to each other",
+			NoDoodad: true,
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
 				u.doodadWindow.Show()
@@ -116,6 +122,10 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 	}
 	for _, button := range buttons {
 		button := button
+		if button.NoDoodad && u.Scene.DrawingType == enum.DoodadDrawing {
+			continue
+		}
+
 		image, err := sprites.LoadImage(d.Engine, button.Icon)
 		if err != nil {
 			panic(err)
@@ -142,6 +152,23 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Edge: ui.Right,
 		})
 
+		btnFrame.Pack(btn, ui.Pack{
+			Side: ui.N,
+			PadY: 2,
+		})
+	}
+
+	// Doodad Editor: show the Layers button.
+	if u.Scene.DrawingType == enum.DoodadDrawing {
+		btn := ui.NewButton("Layers Button", ui.NewLabel(ui.Label{
+			Text: "Lyr.",
+			Font: balance.MenuFont,
+		}))
+		btn.Handle(ui.Click, func(ed ui.EventData) error {
+			u.OpenLayersWindow()
+			return nil
+		})
+		u.Supervisor.Add(btn)
 		btnFrame.Pack(btn, ui.Pack{
 			Side: ui.N,
 			PadY: 2,
