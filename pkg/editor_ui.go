@@ -594,6 +594,45 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 	}
 
+	// Draw Tools
+	toolMenu.AddItemAccel("Pencil Tool", "F", func() {
+		u.Canvas.Tool = drawtool.PencilTool
+		u.activeTool = u.Canvas.Tool.String()
+		d.Flash("Pencil Tool selected.")
+	})
+	toolMenu.AddItemAccel("Line Tool", "L", func() {
+		u.Canvas.Tool = drawtool.LineTool
+		u.activeTool = u.Canvas.Tool.String()
+		d.Flash("Line Tool selected.")
+	})
+	toolMenu.AddItemAccel("Rectangle Tool", "R", func() {
+		u.Canvas.Tool = drawtool.RectTool
+		u.activeTool = u.Canvas.Tool.String()
+		d.Flash("Rectangle Tool selected.")
+	})
+	toolMenu.AddItemAccel("Ellipse Tool", "C", func() {
+		u.Canvas.Tool = drawtool.EllipseTool
+		u.activeTool = u.Canvas.Tool.String()
+		d.Flash("Ellipse Tool selected.")
+	})
+	toolMenu.AddItemAccel("Eraser Tool", "x", func() {
+		u.Canvas.Tool = drawtool.EraserTool
+		u.activeTool = u.Canvas.Tool.String()
+		d.Flash("Eraser Tool selected.")
+	})
+
+	if u.Scene.DrawingType == enum.LevelDrawing {
+		toolMenu.AddItemAccel("Doodads", "d", func() {
+			log.Info("Open the DoodadDropper")
+			u.doodadWindow.Show()
+		})
+		toolMenu.AddItem("Link Tool", func() {
+			u.Canvas.Tool = drawtool.LinkTool
+			u.activeTool = u.Canvas.Tool.String()
+			d.Flash("Link Tool selected. Click a doodad in your level to link it to another.")
+		})
+	}
+
 	////////
 	// Help menu
 	helpMenu := menu.AddMenu("Help")

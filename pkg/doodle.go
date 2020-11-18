@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
@@ -135,21 +136,18 @@ func (d *Doodle) Run() error {
 			ev.Enter = false
 		} else {
 			// Global event handlers.
-			if ev.Escape {
+			if keybind.Shutdown(ev) {
 				d.ConfirmExit()
 				continue
 			}
 
-			if ev.KeyDown("F1") {
+			if keybind.Help(ev) {
 				// TODO: launch the guidebook.
 				native.OpenURL(balance.GuidebookPath)
-				ev.SetKeyDown("F1", false)
-			} else if ev.KeyDown("F3") {
+			} else if keybind.DebugOverlay(ev) {
 				DebugOverlay = !DebugOverlay
-				ev.SetKeyDown("F3", false)
-			} else if ev.KeyDown("F4") {
+			} else if keybind.DebugCollision(ev) {
 				DebugCollision = !DebugCollision
-				ev.SetKeyDown("F4", false)
 			}
 
 			// Is a UI modal active?

@@ -6,6 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/physics"
@@ -391,7 +392,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	}
 
 	// Switching to Edit Mode?
-	if s.CanEdit && ev.KeyDown("e") {
+	if s.CanEdit && keybind.GotoEdit(ev) {
 		s.EditLevel()
 		return nil
 	}

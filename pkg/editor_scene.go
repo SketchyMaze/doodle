@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -195,31 +196,39 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	}
 
 	// Undo/Redo key bindings.
-	if ev.Ctrl {
-		if ev.KeyDown("z") {
-			s.UI.Canvas.UndoStroke()
-		} else if ev.KeyDown("y") {
-			s.UI.Canvas.RedoStroke()
-		}
+	if keybind.Undo(ev) {
+		s.UI.Canvas.UndoStroke()
+	} else if keybind.Redo(ev) {
+		s.UI.Canvas.RedoStroke()
 	}
 
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?
-	if ev.KeyDown("p") {
+	if keybind.GotoPlay(ev) {
 		s.Playtest()
-	} else if ev.KeyDown("l") {
+	} else if keybind.LineTool(ev) {
 		d.Flash("Line Tool selected.")
 		s.UI.Canvas.Tool = drawtool.LineTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
-	} else if ev.KeyDown("f") {
+	} else if keybind.PencilTool(ev) {
 		d.Flash("Pencil Tool selected.")
 		s.UI.Canvas.Tool = drawtool.PencilTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
-	} else if ev.KeyDown("r") {
+	} else if keybind.RectTool(ev) {
 		d.Flash("Rectangle Tool selected.")
 		s.UI.Canvas.Tool = drawtool.RectTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
+	} else if keybind.EllipseTool(ev) {
+		d.Flash("Ellipse Tool selected.")
+		s.UI.Canvas.Tool = drawtool.EllipseTool
+		s.UI.activeTool = s.UI.Canvas.Tool.String()
+	} else if keybind.EraserTool(ev) {
+		d.Flash("Eraser Tool selected.")
+		s.UI.Canvas.Tool = drawtool.EraserTool
+		s.UI.activeTool = s.UI.Canvas.Tool.String()
+	} else if keybind.DoodadDropper(ev) {
+		s.UI.doodadWindow.Show()
 	}
 
 	return nil
