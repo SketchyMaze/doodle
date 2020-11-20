@@ -29,6 +29,7 @@ type Canvas struct {
 	// NewCanvas() with editable=true, they are both enabled.
 	Editable   bool // Clicking will edit pixels of this canvas.
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
+	Zoom       int  // Zoom level on the canvas.
 
 	// Selected draw tool/mode, default Pencil, for editable canvases.
 	Tool      drawtool.Tool
@@ -289,10 +290,17 @@ func (w *Canvas) ViewportRelative() render.Rect {
 // the mouse cursor.
 func (w *Canvas) WorldIndexAt(screenPixel render.Point) render.Point {
 	var P = ui.AbsolutePosition(w)
-	return render.Point{
+	world := render.Point{
 		X: screenPixel.X - P.X - w.Scroll.X,
 		Y: screenPixel.Y - P.Y - w.Scroll.Y,
 	}
+
+	// Handle Zoomies
+	if w.Zoom != 0 {
+		world.X = w.ZoomMultiply(world.X)
+		world.Y = w.ZoomMultiply(world.Y)
+	}
+	return world
 }
 
 // Chunker returns the underlying Chunker object.

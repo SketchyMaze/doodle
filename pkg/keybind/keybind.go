@@ -45,6 +45,26 @@ func Redo(ev *event.State) bool {
 	return ev.Ctrl && ev.KeyDown("y")
 }
 
+// ZoomIn (+)
+func ZoomIn(ev *event.State) bool {
+	return ev.KeyDown("=") || ev.KeyDown("+")
+}
+
+// ZoomOut (-)
+func ZoomOut(ev *event.State) bool {
+	return ev.KeyDown("-")
+}
+
+// ZoomReset (1)
+func ZoomReset(ev *event.State) bool {
+	return ev.KeyDown("1")
+}
+
+// Origin (0) -- scrolls the canvas back to 0,0 in Editor Mode.
+func Origin(ev *event.State) bool {
+	return ev.KeyDown("0")
+}
+
 // GotoPlay (P) play tests the current level in the editor.
 func GotoPlay(ev *event.State) bool {
 	return ev.KeyDown("p")

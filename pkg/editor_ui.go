@@ -547,23 +547,40 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	editMenu.AddItemAccel("Redo", "Ctrl-Y", func() {
 		u.Canvas.RedoStroke()
 	})
-	editMenu.AddSeparator()
-	editMenu.AddItem("Level options", func() {
-		log.Info("Opening the window")
-
-		// Open the New Level window in edit-settings mode.
-		u.levelSettingsWindow.Hide()
-		u.levelSettingsWindow = nil
-		u.SetupPopups(u.d)
-		u.levelSettingsWindow.Show()
-	})
 
 	////////
 	// Level menu
 	if u.Scene.DrawingType == enum.LevelDrawing {
 		levelMenu := menu.AddMenu("Level")
+		levelMenu.AddItem("Page settings", func() {
+			log.Info("Opening the window")
+
+			// Open the New Level window in edit-settings mode.
+			u.levelSettingsWindow.Hide()
+			u.levelSettingsWindow = nil
+			u.SetupPopups(u.d)
+			u.levelSettingsWindow.Show()
+		})
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
+		})
+	}
+
+	////////
+	// View menu
+	if balance.Feature.Zoom {
+		viewMenu := menu.AddMenu("View")
+		viewMenu.AddItemAccel("Zoom in", "+", func() {
+			u.Canvas.Zoom++
+		})
+		viewMenu.AddItemAccel("Zoom out", "-", func() {
+			u.Canvas.Zoom--
+		})
+		viewMenu.AddItemAccel("Reset zoom", "1", func() {
+			u.Canvas.Zoom = 0
+		})
+		viewMenu.AddItemAccel("Scroll drawing to origin", "0", func() {
+			u.Canvas.ScrollTo(render.Origin)
 		})
 	}
 

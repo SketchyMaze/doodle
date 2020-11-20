@@ -202,6 +202,23 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		s.UI.Canvas.RedoStroke()
 	}
 
+	// Zoom in/out.
+	if balance.Feature.Zoom {
+		if keybind.ZoomIn(ev) {
+			d.Flash("Zoom in")
+			s.UI.Canvas.Zoom++
+		} else if keybind.ZoomOut(ev) {
+			d.Flash("Zoom out")
+			s.UI.Canvas.Zoom--
+		} else if keybind.ZoomReset(ev) {
+			d.Flash("Reset zoom")
+			s.UI.Canvas.Zoom = 0
+		} else if keybind.Origin(ev) {
+			d.Flash("Scrolled back to level origin (0,0)")
+			s.UI.Canvas.ScrollTo(render.Origin)
+		}
+	}
+
 	s.UI.Loop(ev)
 
 	// Switching to Play Mode?

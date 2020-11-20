@@ -137,7 +137,11 @@ func (d *Doodle) Run() error {
 		} else {
 			// Global event handlers.
 			if keybind.Shutdown(ev) {
-				d.ConfirmExit()
+				if d.Debug { // fast exit in -debug mode.
+					d.running = false
+				} else {
+					d.ConfirmExit()
+				}
 				continue
 			}
 

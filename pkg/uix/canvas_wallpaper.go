@@ -2,6 +2,7 @@ package uix
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
 )
@@ -70,45 +71,96 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 }
 
 // PresentWallpaper draws the wallpaper.
+// Point p is the one given to Canvas.Present(), i.e., the position of the
+// top-left corner of the Canvas widget relative to the application window.
 func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	var (
-		wp       = w.wallpaper
-		S        = w.Size()
-		size     = wp.corner.Size()
+		wp   = w.wallpaper
+		S    = w.Size()
+		size = wp.corner.Size()
+
+		// Get the relative viewport of world coordinates looked at by the canvas.
+		// The X,Y values are the negative Scroll value
+		// The W,H values are the Canvas size same as var S above.
 		Viewport = w.ViewportRelative()
-		origin   = render.Point{
-			X: p.X + w.Scroll.X + w.BoxThickness(1),
-			Y: p.Y + w.Scroll.Y + w.BoxThickness(1),
+
+		// origin and limit seem to be the boundaries of where on screen
+		// we are rendering inside.
+		origin = render.Point{
+			X: p.X + w.Scroll.X, // + w.BoxThickness(1),
+			Y: p.Y + w.Scroll.Y, // + w.BoxThickness(1),
 		}
-		limit = render.Point{
-			// NOTE: we add + the texture size so we would actually draw one
-			// full extra texture out-of-bounds for the repeating backgrounds.
-			// This is cuz for scrolling we offset the draw spot on a loop.
-			X: origin.X + S.W - w.BoxThickness(1) + size.W,
-			Y: origin.Y + S.H - w.BoxThickness(1) + size.H,
-		}
+		limit render.Point // TBD later
 	)
+
+	// Grow or shrink the render limit if we're zoomed.
+	if w.Zoom != 0 {
+		// I was surprised to discover that just zooming the texture
+		// quadrant size handled most of the problem! For reference, the
+		// Blueprint wallpaper has a size of 120x120 for the tiling pattern.
+		size.H = w.ZoomMultiply(size.H)
+		size.W = w.ZoomMultiply(size.W)
+	}
+
+	// SCRATCH
+	// at bootup, scroll position 0,0:
+	//		origin=44,20    p=44,20     p=relative to application window
+	// scroll right and down to -60,-60:
+	//		origin=-16,-40   p=44,20    and looks good in that direction
+	// scroll left and up to 60,60:
+	//		origin=104,80    p=44,20
+	//		becomes origin=44,20  p=44,20   d=-16,-40
+	// the latter case is handled below. walking thru:
+	//    if o(104) > p(44):
+	//        while o(104) > p(44):
+	//            o -= size(120) of texture block
+	//            o is now -16,-40
+	//        while o(-16) > p(44): it's not; break
+	//    dx = o(-16)
+	//    origin.X = p.X
+	//    (becomes origin=44,20  p=44,20  d=-16,-40)
+	//
+	// The visual bug is: if you scroll left or up on an Unbounded level from
+	// the origin (0, 0), the tiling of the wallpaper jumps to the right and
+	// down by an offset of 44x20 pixels.
+	//
+	// what is meant to happen:
+	// -
 
 	// For tiled textures, compute the offset amount. If we are scrolled away
 	// from the Origin (0,0) we find out by how far (subtract full tile sizes)
 	// and use the remainder as an offset for drawing the tiles.
+	// p      = position on screen of the Canvas widget
+	// origin = p.X + Scroll.X, p.Y + scroll.Y
+	// note: negative Scroll values means to the right and down
 	var dx, dy int
 	if origin.X > p.X {
-		for origin.X > p.X && origin.X > size.W {
-			origin.X -= size.W
-		}
+		// View is scrolled leftward (into negative world coordinates)
 		dx = origin.X
-		origin.X = p.X
+		for dx > p.X {
+			dx -= size.W
+		}
+		origin.X = 0 // note: origin 0,0 will be the corner of the app window
 	}
 	if origin.Y > p.Y {
-		for origin.Y > p.Y && origin.Y > size.H {
-			origin.Y -= size.H
-		}
+		// View is scrolled upward (into negative world coordinates)
 		dy = origin.Y
-		origin.Y = p.Y
+		for dy > p.Y {
+			dy -= size.H
+		}
+		origin.Y = 0
 	}
 
-	// And capping the scroll delta in the other direction.
+	limit = render.Point{
+		// NOTE: we add + the texture size so we would actually draw one
+		// full extra texture out-of-bounds for the repeating backgrounds.
+		// This is cuz for scrolling we offset the draw spot on a loop.
+		X: origin.X + S.W + size.W,
+		Y: origin.Y + S.H + size.H,
+	}
+
+	// And capping the scroll delta in the other direction. Always draw
+	// pixels until the Canvas size is covered.
 	if limit.X < S.W {
 		limit.X = S.W
 	}
@@ -117,10 +169,12 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 		limit.Y = S.H
 	}
 
+	// TODO: was still getting some slight flicker on the right and bottom
+	// when scrolling.. add a bit extra margin.
 	limit.X += size.W
 	limit.Y += size.H
 
-	// Tile the repeat texture.
+	// Tile the repeat texture. Start from 1 full wallpaper tile out of bounds
 	for x := origin.X - size.W; x < limit.X; x += size.W {
 		for y := origin.Y - size.H; y < limit.Y; y += size.H {
 			src := render.Rect{
@@ -134,8 +188,20 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				H: src.H,
 			}
 
+			// Zoom the output texture.
+			if w.Zoom != 0 {
+				// dst.X = w.ZoomMultiply(dst.X - p.X)
+				// dst.Y = w.ZoomMultiply(dst.Y - p.Y)
+				// dst.W = w.ZoomMultiply(dst.W)
+				// dst.H = w.ZoomMultiply(dst.H)
+			}
+
 			// Trim the edges of the destination box, like in canvas.go#Present
+			odst := dst
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
+			if dst.W == 0 {
+				log.Error("TrimBoxed! %s => %s", odst, dst)
+			}
 
 			e.Copy(wp.repeat, src, dst)
 		}
@@ -154,6 +220,15 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				W: src.W,
 				H: src.H,
 			}
+
+			// Zoom the output texture.
+			if w.Zoom != 0 {
+				// dst.X = w.ZoomMultiply(dst.X - origin.X)
+				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
+				// dst.W = w.ZoomMultiply(dst.W)
+				// dst.H = w.ZoomMultiply(dst.H)
+			}
+
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
 			e.Copy(wp.left, src, dst)
 		}
@@ -170,6 +245,15 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				W: src.W,
 				H: src.H,
 			}
+
+			// Zoom the output texture.
+			if w.Zoom != 0 {
+				// dst.X = w.ZoomMultiply(dst.X - origin.X)
+				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
+				// dst.W = w.ZoomMultiply(dst.W)
+				// dst.H = w.ZoomMultiply(dst.H)
+			}
+
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
 			e.Copy(wp.top, src, dst)
 		}
@@ -186,6 +270,15 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				W: src.W,
 				H: src.H,
 			}
+
+			// Zoom the output texture.
+			if w.Zoom != 0 {
+				// dst.X = w.ZoomMultiply(dst.X - origin.X)
+				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
+				// dst.W = w.ZoomMultiply(dst.W)
+				// dst.H = w.ZoomMultiply(dst.H)
+			}
+
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
 			e.Copy(wp.corner, src, dst)
 		}

@@ -142,7 +142,9 @@ A brief introduction to the built-in doodads available so far:
 
 # Developer Console
 
-Press `Enter` at any time to open the developer console.
+Press `Enter` at any time to open the developer console. The console
+provides commands and advanced functionality, and is also where cheat
+codes can be entered.
 
 Commands supported:
 
@@ -154,8 +156,8 @@ new
   Show the "New Level" screen to start editing a new map.
 
 save [filename]
-  Save the current map in Edit Mode. The filename is required if the map has
-  not been saved yet.
+  Save the current map in Edit Mode. The filename is required
+  if the map has not been saved yet.
 
 edit [filename]
   Open a map or doodad in Edit Mode.
@@ -166,13 +168,38 @@ play [filename]
 echo <text>
   Flash a message to the console.
 
+alert <text>
+  Test an alert box modal with a custom message.
+
 clear
   Clear the console output history.
 
 exit
 quit
   Close the developer console.
+
+boolProp <property> <true/false>
+  Toggle certain boolean settings in the game. Most of these
+  are debugging related. `boolProp list` shows the available
+  props.
+
+eval <expression>
+$ <expression>
+  Execute a line of JavaScript code in the console. Several
+  of the game's core data types are available here; `d` is
+  the master game struct; d.Scene is the pointer to the
+  current scene. d.Scene.UI.Canvas may point to the level edit
+  canvas in Editor Mode. Object.keys() can enumerate public
+  functions and variables.
+
+repl
+  Enters an interactive JavaScript shell, where the console
+  stays open and pre-fills a $ prompt for subsequent commands.
 ```
+
+The JavaScript console is a feature for advanced users and was
+used while developing the game. Cool things you can do with it
+may be documented elsewhere.
 
 ## Cheat Codes
 
@@ -204,6 +231,64 @@ Experimental:
   - Enables Editor Mode scrolling (with the arrow keys) while playing a level.
     The player character must always remain on screen though so you can't
     scroll too far away.
+
+Unsupported shell commands (here be dragons):
+
+* `reload`: reloads the current 'scene' within the game engine, using the
+  existing scene's data. If playing a level this will start the level over.
+  If editing a level this will reload the editor, but your recent unsaved
+  changes _should_ be left intact.
+* `guitest`: loads the GUI Test scene within the game. This was where I
+  was testing UI widgets early on; not well maintained; the `close`
+  command can get you out of it.
+
+## Environment Variables
+
+To enable certain debug features or customize some aspects of the game,
+run it with environment variables like the following:
+
+```bash
+# Draw a semi-transparent yellow background over all level chunks
+$ DEBUG_CHUNK_COLOR=FFFF0066 ./doodle
+
+# Set a window size for the application
+# (equivalent to: doodle --window 1024x768)
+$ DOODLE_W=1024 DOODLE_H=768 ./doodle
+
+# Turn on lots of fun debug features.
+$ DEBUG_CANVAS_LABEL=1 DEBUG_CHUNK_COLOR=FFFF00AA \
+  DEBUG_CANVAS_BORDER=FF0 ./doodle
+```
+
+Supported variables include:
+
+* `DOODLE_W` and `DOODLE_H` set the width and height of the application
+  window. Equivalent to the `--window` command-line option.
+* `D_SCROLL_SPEED` (int): tune the canvas scrolling speed. Default might
+  be around 8 or so.
+* `D_DOODAD_SIZE` (int): default size for newly created doodads
+* `D_SHELL_BG` (color): set the background color of the developer console
+* `D_SHELL_FG` (color): text color for the developer console
+* `D_SHELL_PC` (color): color for the shell prompt text
+* `D_SHELL_LN` (int): set the number of lines of output history the
+  console will show. This dictates how 'tall' it rises from the bottom
+  of the screen. Large values will cover the entire screen with console
+  whenever the shell is open.
+* `D_SHELL_FS` (int): set the font size for the developer shell. Default
+  is about 16. This also affects the size of "flashed" text that appears
+  at the bottom of the screen.
+* `DEBUG_CHUNK_COLOR` (color): set a background color over each chunk
+  of drawing (level or doodad). A solid color will completely block out
+  the wallpaper; semitransparent is best.
+* `DEBUG_CANVAS_BORDER` (color): the game will draw an insert colored
+  border around every "Canvas" widget (drawing) on the screen. The level
+  itself is a Canvas and every individual Doodad or actor in the level is
+  its own Canvas.
+* `DEBUG_CANVAS_LABEL` (bool): draws a text label over every Canvas
+  widget on the screen, showing its name or Actor ID and some properties,
+  such as Level Position (LP) and World Position (WP) of actors within
+  a level. LP is their placement in the level file and WP is their
+  actual position now (in case it moves).
 
 # Author
 

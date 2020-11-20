@@ -77,6 +77,10 @@ func main() {
 			Name:  "guitest",
 			Usage: "enter the GUI Test scene on startup",
 		},
+		&cli.BoolFlag{
+			Name:  "experimental",
+			Usage: "enable experimental Feature Flags",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -90,6 +94,11 @@ func main() {
 			if err := setResolution(c.String("window")); err != nil {
 				panic(err)
 			}
+		}
+
+		// Enable feature flags?
+		if c.Bool("experimental") {
+			balance.FeaturesOn()
 		}
 
 		// SDL engine.

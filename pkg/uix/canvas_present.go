@@ -42,9 +42,16 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			} else {
 				tex = chunk.Texture(e)
 			}
+
+			// Zoom in the texture.
+			texSize := tex.Size()
+			if w.Zoom != 0 {
+				texSize.W = w.ZoomMultiply(texSize.W)
+				texSize.H = w.ZoomMultiply(texSize.H)
+			}
 			src := render.Rect{
-				W: tex.Size().W,
-				H: tex.Size().H,
+				W: texSize.W,
+				H: texSize.H,
 			}
 
 			// If the source bitmap is already bigger than the Canvas widget
@@ -67,6 +74,16 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				// visually on its right and bottom sides.
 				W: src.W,
 				H: src.H,
+			}
+
+			// Zoom the destination rect.
+			if w.Zoom != 0 {
+				// dst.X += int(w.GetZoomMultiplier())
+				// dst.Y += int(w.GetZoomMultiplier())
+				// dst.X = w.ZoomMultiply(dst.X)
+				// dst.Y = w.ZoomMultiply(dst.Y)
+				// dst.W = w.ZoomMultiply(dst.W)
+				// dst.H = w.ZoomMultiply(dst.H)
 			}
 
 			// TODO: all this shit is in TrimBox(), make it DRY
