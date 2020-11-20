@@ -11,19 +11,46 @@ You'll need the following git repositories:
 * git.kirsle.net/apps/doodle - the game engine.
 * git.kirsle.net/apps/doodle-masters - where built-in level files are kept.
 * git.kirsle.net/apps/doodle-vendor - vendored libraries for Windows (SDL2.dll etc.)
+* git.kirsle.net/apps/doodle-rtp - runtime package (sounds and music mostly)
+
+The [doodle-docker](https://git.kirsle.net/apps/doodle-docker) repo will
+be more up-to-date than the instructions below.
 
 ```bash
+# Clone all the repos down to your project folder
+git clone git@git.kirsle.net:apps/doodle-rtp rtp
+git clone git@git.kirsle.net:apps/doodle-vendor vendor
+git clone git@git.kirsle.net:apps/doodle-masters masters
+git clone git@git.kirsle.net:apps/doodle doodle
+
+# Enter doodle/ project
+cd doodle/
+
 # Copy fonts and levels in
-$ cp /git/doodle-masters/levels assets/levels
-$ cp /git/doodle-vendor/fonts assets/fonts
+cp ../masters/levels assets/levels
+cp ../vendor/fonts assets/fonts
+mkdir rtp && cp -r ../rtp/* rtp/
 
 # Ensure you have bindata CLI command. NOTE: below repo is
 # my fork of go-bindata, can find it elsewhere instead.
-$ go get -u git.kirsle.net/go/bindata/...
+go get -u git.kirsle.net/go/bindata/...
 
 # From the doodle repo
-$ make bindata-dev  # TODO: populates the bindata .go modules.
-$ go get ./...      # install dependencies etc.
+make bindata-dev  # TODO: populates the bindata .go modules.
+go get ./...      # install dependencies etc.
+
+# The app should build now. Build and install the doodad tool.
+go install git.kirsle.net/apps/doodle/cmd/doodad
+doodad --version
+# "doodad version 0.3.0-alpha build ..."
+
+# Build and release the game into the dist/ folder.
+# This will: generate builtin doodads, bundle them with bindata,
+# and create a tarball in the dist/ folder.
+make dist
+
+# Build a cross-compiled Windows target from Linux.
+make mingw
 ```
 
 The `make setup` command tries to do the above.

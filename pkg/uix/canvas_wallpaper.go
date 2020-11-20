@@ -2,7 +2,6 @@ package uix
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
 )
@@ -197,11 +196,7 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 			}
 
 			// Trim the edges of the destination box, like in canvas.go#Present
-			odst := dst
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
-			if dst.W == 0 {
-				log.Error("TrimBoxed! %s => %s", odst, dst)
-			}
 
 			e.Copy(wp.repeat, src, dst)
 		}

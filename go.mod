@@ -2,10 +2,6 @@ module git.kirsle.net/apps/doodle
 
 go 1.15
 
-replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/render
-
-replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/ui
-
 require (
 	4d63.com/gochecknoglobals v0.0.0-20201008074935-acfc0b28355a // indirect
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect

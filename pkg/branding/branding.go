@@ -4,7 +4,7 @@ package branding
 const (
 	AppName   = "Project: Doodle"
 	Summary   = "A drawing-based maze game"
-	Version   = "0.3.0-alpha"
+	Version   = "0.4.0-alpha"
 	Website   = "https://www.kirsle.net/tagged/Doodle"
 	Copyright = "2020 Noah Petherbridge"
 
