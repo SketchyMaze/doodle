@@ -654,8 +654,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	// Help menu
 	helpMenu := menu.AddMenu("Help")
 	helpMenu.AddItemAccel("User Manual", "F1", func() {
-		// TODO: launch the guidebook.
-		native.OpenURL(balance.GuidebookPath)
+		native.OpenLocalURL(balance.GuidebookPath)
 	})
 	helpMenu.AddItem("About", func() {
 		if u.aboutWindow == nil {

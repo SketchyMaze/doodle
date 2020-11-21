@@ -3,7 +3,9 @@
 package native
 
 import (
+	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -24,6 +26,16 @@ func OpenURL(url string) {
 	} else {
 		log.Error("OpenURL: don't know how to open URLs")
 	}
+}
+
+// OpenLocalURL opens a web browser to a local HTML path.
+// It converts a relative path like "guidebook/index.html" to its absolute
+// filesystem location.
+func OpenLocalURL(path string) {
+	abs, _ := filepath.Abs(path)
+	url := fmt.Sprintf("file:///%s", abs)
+	fmt.Printf("Open Local URL: %s\n", url)
+	OpenURL(url)
 }
 
 func windowsOpenURL(url string) {

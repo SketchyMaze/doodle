@@ -146,8 +146,8 @@ func (d *Doodle) Run() error {
 			}
 
 			if keybind.Help(ev) {
-				// TODO: launch the guidebook.
-				native.OpenURL(balance.GuidebookPath)
+				// Launch the local guidebook
+				native.OpenLocalURL(balance.GuidebookPath)
 			} else if keybind.DebugOverlay(ev) {
 				DebugOverlay = !DebugOverlay
 			} else if keybind.DebugCollision(ev) {

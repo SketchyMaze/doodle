@@ -3,10 +3,14 @@ package doodle
 import (
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"github.com/robertkrimen/otto"
 )
@@ -69,6 +73,9 @@ func (c Command) Run(d *Doodle) error {
 		d.shell.Text = "$ "
 	case "boolProp":
 		return c.BoolProp(d)
+	case "extract-bindata":
+		// Undocumented command to extract the binary of its assets.
+		return c.ExtractBindata(d, c.ArgsLiteral)
 	default:
 		return c.Default()
 	}
@@ -85,6 +92,47 @@ func (c Command) New(d *Doodle) error {
 func (c Command) Close(d *Doodle) error {
 	main := &MainScene{}
 	d.Goto(main)
+	return nil
+}
+
+// ExtractBindata dumps the app's embedded bindata to the filesystem.
+func (c Command) ExtractBindata(d *Doodle, path string) error {
+	if len(path) == 0 || path[0] != '/' {
+		d.Flash("Required: an absolute path to a directory to extract to.")
+		return nil
+	}
+
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		d.Flash("MkdirAll: %s", err)
+		return err
+	}
+
+	for _, filename := range bindata.AssetNames() {
+		outfile := filepath.Join(path, filename)
+		log.Info("Extracting bindata: %s    to: %s", filename, outfile)
+
+		data, err := bindata.Asset(filename)
+		if err != nil {
+			d.Flash("error on file %s: %s", filename, err)
+			continue
+		}
+
+		// Fill out the directory path.
+		if _, err := os.Stat(filepath.Dir(outfile)); os.IsNotExist(err) {
+			os.MkdirAll(filepath.Dir(outfile), 0755)
+		}
+
+		fh, err := os.Create(outfile)
+		if err != nil {
+			d.Flash("error writing file %s: %s", outfile, err)
+			continue
+		}
+		fh.Write(data)
+		fh.Close()
+	}
+
+	d.Flash("Bindata extracted to %s", path)
 	return nil
 }
 

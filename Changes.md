@@ -1,5 +1,26 @@
 # Changes
 
+## v0.4.0-alpha
+
+This update brings improvements to the editor; you can now fully draw all the
+graphics for a custom doodad using the in-app tools!
+
+A key difference between a Level and a Doodad is that doodads have **Layers**
+where they keep multiple frames of animation or state. The editor tool now
+supports working with these extra layers.
+
+Other new features:
+
+* The **Guidebook** has been updated with tons of good info and screenshots of
+  the game's features. Press `F1` in-game to open the guidebook, or check it
+  online at https://www.sketchymaze.com/guidebook/
+* **Layer Selection Window for Doodads:** when you're editing a Doodad drawing,
+  a "Lyr." button is added to the toolbar to access the Layers window.
+* **Global UI popup modals:** when you're about to close a level with unsaved
+  changes, you get an Ok/Cancel prompt confirming if you want to do that.
+  Hitting the Escape key will ask you before just exiting the program. Alert
+  boxes are supported too, and an `alert` command added to the developer console.
+
 ## v0.3.0-alpha
 
 This update introduces the player character to the game. He doesn't have a name;
