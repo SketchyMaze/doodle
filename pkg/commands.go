@@ -59,6 +59,7 @@ func (c Command) Run(d *Doodle) error {
 		d.Goto(&GUITestScene{})
 		return nil
 	case "eval":
+		fallthrough
 	case "$":
 		out, err := c.RunScript(d, c.ArgsLiteral)
 		d.Flash("%+v", out)
@@ -90,12 +91,19 @@ func (c Command) Close(d *Doodle) error {
 // Help prints the help info.
 func (c Command) Help(d *Doodle) error {
 	if len(c.Args) == 0 {
-		d.Flash("Available commands: new save edit play quit echo clear help")
+		d.Flash("Available commands: new save edit play quit echo")
+		d.Flash("     alert clear help boolProp eval repl")
 		d.Flash("Type `help` and then the command, like: `help edit`")
 		return nil
 	}
 
 	switch c.Args[0] {
+	case "echo":
+		d.Flash("Usage: echo <message>")
+		d.Flash("Flash a message back to the console")
+	case "alert":
+		d.Flash("Usage: alert <message>")
+		d.Flash("Pop up an Alert box with a custom message")
 	case "new":
 		d.Flash("Usage: new")
 		d.Flash("Create a new drawing in Edit Mode")
@@ -108,18 +116,25 @@ func (c Command) Help(d *Doodle) error {
 	case "play":
 		d.Flash("Usage: play <filename.json>")
 		d.Flash("Open a map from disk in Play Mode")
-	case "echo":
-		d.Flash("Usage: echo <message>")
-		d.Flash("Flash a message back to the console")
 	case "quit":
+		fallthrough
 	case "exit":
 		d.Flash("Usage: quit")
-		d.Flash("Closes the dev console")
+		d.Flash("Closes the dev console (alias: exit)")
 	case "clear":
 		d.Flash("Usage: clear")
-		d.Flash("Clears the terminal output history")
+		d.Flash("Clears the console output history")
+	case "eval":
+		fallthrough
+	case "$":
+		d.Flash("Evaluate a line of JavaScript on the in-game interpreter")
+	case "repl":
+		d.Flash("Enter a JavaScript shell on the in-game interpreter")
+	case "boolProp":
+		d.Flash("Toggle boolean values. `boolProp list` lists available")
 	case "help":
 		d.Flash("Usage: help <command>")
+		d.Flash("Gets further help on a command")
 	default:
 		d.Flash("Unknown help topic.")
 	}

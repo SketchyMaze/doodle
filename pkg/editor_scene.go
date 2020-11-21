@@ -213,10 +213,13 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		} else if keybind.ZoomReset(ev) {
 			d.Flash("Reset zoom")
 			s.UI.Canvas.Zoom = 0
-		} else if keybind.Origin(ev) {
-			d.Flash("Scrolled back to level origin (0,0)")
-			s.UI.Canvas.ScrollTo(render.Origin)
 		}
+	}
+
+	// More keybinds
+	if keybind.Origin(ev) {
+		d.Flash("Scrolled back to level origin (0,0)")
+		s.UI.Canvas.ScrollTo(render.Origin)
 	}
 
 	s.UI.Loop(ev)
