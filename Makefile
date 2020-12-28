@@ -18,7 +18,6 @@ setup: clean
 # `make build` to build the binary.
 .PHONY: build
 build:
-	gofmt -w .
 	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 

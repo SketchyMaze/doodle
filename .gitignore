@@ -1,4 +1,5 @@
 pkg/bindata/bindata.go
+deps/
 fonts/
 maps/
 bin/
@@ -16,4 +17,3 @@ docker/fedora
 screenshot-*.png
 map-*.json
 pkg/wallpaper/*.png
-
