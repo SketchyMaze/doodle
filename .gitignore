@@ -5,8 +5,7 @@ maps/
 bin/
 dist/
 rtp/
-dev-assets/guidebook/venv
-dev-assets/guidebook/site/
+guidebook/
 wasm/assets/
 *.wasm
 *.doodad

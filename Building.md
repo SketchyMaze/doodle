@@ -1,29 +1,71 @@
 # Building Doodle
 
+* [Quickstart](#quickstart-with-bootstrap-py)
+* [Detailed Instructions](#detailed-instructions)
 * [Linux](#linux)
 * [Flatpak for Linux](#flatpak-for-linux)
 * [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
-* [Mac OS](#mac os)
+* [Old Docs](#old-docs)
 
-## Complete App Build
+# Quickstart with bootstrap.py
 
-You'll need the following git repositories:
+From any Unix-like system (Fedora, Ubuntu, macOS) the bootstrap.py script
+is intended to set this app up, from scratch, _fast._ The basic steps are:
 
-* git.kirsle.net/apps/doodle - the game engine.
-* git.kirsle.net/apps/doodle-masters - where built-in level files are kept.
-* git.kirsle.net/apps/doodle-vendor - vendored libraries for Windows (SDL2.dll etc.)
-* git.kirsle.net/apps/doodle-rtp - runtime package (sounds and music mostly)
+```bash
+# Example from an Ubuntu 20.04 LTS fresh install running in a
+# libvirt-manager virtual machine on a Fedora host.
+
+# 1. Ensure your SSH keys have git clone permission for git.kirsle.net.
+# For example just scp my keys from the host Fedora machine.
+$ scp -r kirsle@192.168.122.1:.ssh/id_rsa* ~/.ssh/
+
+# 2. git clone the Project Doodle repository.
+$ git clone git@git.kirsle.net:apps/doodle
+$ cd ./doodle
+
+# 3. Run the bootstrap script.
+$ python3 bootstrap.py
+```
+
+The bootstrap script will take care of the rest:
+
+* `apt install` all the dependencies (golang, SDL2, etc.)
+* Install the `go-bindata` command, needed to bundle assets like doodads
+  and fonts into the program.
+* `git clone` various other repositories into a "deps/" folder in doodle's
+  directory. These are things like my Go render library `go/render` and
+  `go/ui` as well as the doodle-rtp runtime package (sound effects, etc.)
+  all of which are hosted on git.kirsle.net.
+* Build and install the `doodad` tool so it can generate the builtin
+  doodads, and build and release a full distribution of the game.
+
+It should work on Fedora-likes, Debian-likes and macOS all the same.
+It even runs on the Pine64 Pinephone (ARM64) with Mobian!
+
+**To do:** the most important repositories, like the game itself, are
+also mirrored on GitHub. Other supporting repos need mirroring too, or
+otherwise, full source tarballs (the result of bootstrap.py) will be
+built and archived somewhere safe for posterity in case git.kirsle.net
+ever goes away. The doodle mirror is at <https://github.com/kirsle/doodle>
+(private repository) and the others are there too (go/render, go/ui, etc.)
+
+# Detailed Instructions
+
+For building the app the hard way, and in-depth instructions, read
+this section. You'll need the following git repositories:
+
+* `git.kirsle.net/apps/doodle` - the game engine.
+* `git.kirsle.net/apps/doodle-masters` - where built-in level files are kept,
+  as well as master GIMP drawings for sprites and such but only the levels
+  are necessary to build the app properly. Tho even then the app would
+  work fine with no levels built in!
+* `git.kirsle.net/apps/doodle-vendor` - vendored libraries for Windows (SDL2.dll etc.)
+* `git.kirsle.net/apps/doodle-rtp` - runtime package (sounds and music mostly)
 
 The [doodle-docker](https://git.kirsle.net/apps/doodle-docker) repo will
-be more up-to-date than the instructions below.
-
-The `bootstrap.py` script should attempt to git clone most dependencies into a
-folder named `deps/` relative to the root of the doodle repo. For example,
-`deps/render` would be a git clone of `git.kirsle.net/go/render`. By updating
-Doodle's go.mod file to replace these dependencies, you can produce a fully
-self-contained source directory that can fully build the app. The
-[Flatpak repo](#flatpak-for-linux) makes use of this. Below is how you would
-do this process very manually:
+be more up-to-date than the instructions below, as that repo actually has
+runnable code in the Dockerfile!
 
 ```bash
 # Clone all the repos down to your project folder
@@ -42,10 +84,14 @@ mkdir rtp && cp -r ../rtp/* rtp/
 
 # Ensure you have bindata CLI command. NOTE: below repo is
 # my fork of go-bindata, can find it elsewhere instead.
+# Future Go 1.16 will have native support to embed files and
+# go-bindata will be not needed.
 go get -u git.kirsle.net/go/bindata/...
 
-# From the doodle repo
-make bindata-dev  # TODO: populates the bindata .go modules.
+# From the doodle repo: `make bindata-dev` will populate dummy .go
+# files for bindata and allow the app to actually BUILD, otherwise the
+# `go get` would fail.
+make bindata-dev
 go get ./...      # install dependencies etc.
 
 # The app should build now. Build and install the doodad tool.
@@ -87,9 +133,11 @@ mkdir fonts
 cp /usr/share/fonts/dejavu/{DejaVuSans.ttf,DejaVuSans-Bold.ttf,DejaVuSansMono.ttf} fonts/
 ```
 
+The doodle-vendor repo has copies of these fonts.
+
 ## Makefile
 
-Makefile commands for Linux:
+Makefile commands for Unix-likes:
 
 * `make setup`: install Go dependencies and set up the build environment
 * `make doodads`: build the default Doodads from sources in `dev-assets/`
@@ -117,54 +165,27 @@ Makefile commands for Linux:
   * `make docker.fedora`
 * `make clean`: clean all build artifacts
 
-## Build Tags
+# Dependencies
 
-### shareware
-
-> Files ending with `_free.go` are for the shareware release as opposed to
-> `_paid.go` for the full version.
-
-Builds the game in the free shareware release mode.
-
-Run `make build-free` to build the shareware binary.
-
-Shareware releases of the game have the following changes compared to the default
-(release) mode:
-
-* No access to the Doodad Editor scene in-game (soft toggle)
-
-### developer
-
-> Files ending with `_developer.go` are for the developer build as opposed to
-> `_release.go` for the public version.
-
-Developer builds support extra features over the standard release version:
-
-* Ability to write the JSON file format for Levels and Doodads.
-
-Run `make build-debug` to build a developer version of the program.
-
-## Linux
-
-Dependencies are Go, SDL2 and SDL2_ttf:
+The bootstrap.py script lists dependencies for Fedora, Debian and macOS.
+Also here for clarity, hopefully not out-of-date:
 
 ```bash
-# Fedora
-sudo dnf -y install golang SDL2-devel SDL2_ttf-devel SDL2_mixer-devel
+# Fedora-likes
+sudo dnf install make golang SDL2-devel SDL2_ttf-devel \
+     SDL2_mixer-devel
 
-# Ubuntu and Debian
-sudo apt -y install golang libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-devel
+# Debian and Ubuntu
+sudo dnf install make golang libsdl2-dev libsdl2-ttf-dev \
+     libsdl2-mixer-dev
+
+# macOS via Homebrew (https://brew.sh)
+brew install golang sdl2 sdl2_ttf sdl2_mixer pkg-config
 ```
 
 ## Flatpak for Linux
 
 The repo for this is at <https://code.sketchymaze.com/game/flatpak>.
-
-## Mac OS
-
-```bash
-brew install golang sdl2 sdl2_ttf pkg-config
-```
 
 ## Windows Cross-Compile from Linux
 
@@ -212,3 +233,34 @@ cp /usr/x86_64-w64-mingw32/bin/SDL*.dll bin/
 
 SDL2_ttf requires libfreetype, you can get its DLL here:
 https://github.com/ubawurinna/freetype-windows-binaries
+
+# Old Docs
+
+## Build Tags
+
+These aren't really used much anymore but documented here:
+
+### shareware
+
+> Files ending with `_free.go` are for the shareware release as opposed to
+> `_paid.go` for the full version.
+
+Builds the game in the free shareware release mode.
+
+Run `make build-free` to build the shareware binary.
+
+Shareware releases of the game have the following changes compared to the default
+(release) mode:
+
+* No access to the Doodad Editor scene in-game (soft toggle)
+
+### developer
+
+> Files ending with `_developer.go` are for the developer build as opposed to
+> `_release.go` for the public version.
+
+Developer builds support extra features over the standard release version:
+
+* Ability to write the JSON file format for Levels and Doodads.
+
+Run `make build-debug` to build a developer version of the program.

@@ -22,7 +22,6 @@ import pathlib
 
 # Git repositories.
 repos = {
-    "git@git.kirsle.net:apps/doodle": "doodle",
     "git@git.kirsle.net:apps/doodle-masters": "masters",
     "git@git.kirsle.net:apps/doodle-vendor": "vendor",
     "git@git.kirsle.net:apps/doodle-rtp": "rtp",
@@ -39,8 +38,8 @@ repos_github = {
 }
 
 # Software dependencies.
-dep_fedora = ["golang", "SDL2-devel", "SDL2_ttf-devel", "SDL2_mixer-devel"]
-dep_debian = ["golang", "libsdl2-dev", "libsdl2-ttf-dev", "libsdl2-mixer-dev"]
+dep_fedora = ["make", "golang", "SDL2-devel", "SDL2_ttf-devel", "SDL2_mixer-devel"]
+dep_debian = ["make", "golang", "libsdl2-dev", "libsdl2-ttf-dev", "libsdl2-mixer-dev"]
 dep_macos = ["golang", "sdl2", "sdl2_ttf", "sdl2_mixer", "pkg-config"]
 
 
@@ -52,7 +51,10 @@ def main():
     print(
         "Project: Doodle Full Installer\n"
         "Current working directory: {root}\n"
-        "Ensure your SSH keys are set up on git.kirsle.net to easily clone repos."
+        "Ensure your SSH keys are set up on git.kirsle.net to easily clone repos.\n"
+        "Also check your $GOPATH is set and your $PATH will run binaries installed,\n"
+        "for e.g. GOPATH=$HOME/go and PATH includes $HOME/go/bin; otherwise the\n"
+        "go-bindata command won't function later."
         .format(root=ROOT)
     )
     input("Press Enter to begin.")
@@ -80,8 +82,11 @@ def install_deps():
     else:
         print("Warning: didn't detect your package manager to install SDL2 and other dependencies")
 
-    # Get the bindata command.
+    # Get the bindata command. Do this from OUTSIDE a Go module folder, so that
+    # it installs the command globally.
+    os.chdir("/tmp")
     shell("go get -u git.kirsle.net/go/bindata/...")
+    os.chdir(ROOT)
 
 
 
