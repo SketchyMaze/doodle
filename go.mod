@@ -38,8 +38,3 @@ require (
 	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
 	mvdan.cc/unparam v0.0.0-20200501210554-b37ab49443f7 // indirect
 )
-
-
-replace git.kirsle.net/go/render => /run/build/doodle/deps/render
-replace git.kirsle.net/go/ui => /run/build/doodle/deps/ui
-replace git.kirsle.net/go/audio => /run/build/doodle/deps/audio
