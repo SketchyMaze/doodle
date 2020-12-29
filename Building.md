@@ -1,6 +1,7 @@
 # Building Doodle
 
 * [Linux](#linux)
+* [Flatpak for Linux](#flatpak-for-linux)
 * [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
 * [Mac OS](#mac os)
 
@@ -15,6 +16,14 @@ You'll need the following git repositories:
 
 The [doodle-docker](https://git.kirsle.net/apps/doodle-docker) repo will
 be more up-to-date than the instructions below.
+
+The `bootstrap.py` script should attempt to git clone most dependencies into a
+folder named `deps/` relative to the root of the doodle repo. For example,
+`deps/render` would be a git clone of `git.kirsle.net/go/render`. By updating
+Doodle's go.mod file to replace these dependencies, you can produce a fully
+self-contained source directory that can fully build the app. The
+[Flatpak repo](#flatpak-for-linux) makes use of this. Below is how you would
+do this process very manually:
 
 ```bash
 # Clone all the repos down to your project folder
@@ -146,6 +155,10 @@ sudo dnf -y install golang SDL2-devel SDL2_ttf-devel SDL2_mixer-devel
 # Ubuntu and Debian
 sudo apt -y install golang libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-devel
 ```
+
+## Flatpak for Linux
+
+The repo for this is at <https://code.sketchymaze.com/game/flatpak>.
 
 ## Mac OS
 

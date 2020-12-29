@@ -63,6 +63,10 @@ func main() {
 			Aliases: []string{"d"},
 			Usage:   "enable debug level logging",
 		},
+		&cli.StringFlag{
+			Name:  "chdir",
+			Usage: "working directory for the game's runtime package",
+		},
 		&cli.BoolFlag{
 			Name:    "edit",
 			Aliases: []string{"e"},
@@ -84,6 +88,14 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		// --chdir into a different working directory? e.g. for Flatpak especially.
+		if doodlePath := c.String("chdir"); doodlePath != "" {
+			if err := os.Chdir(doodlePath); err != nil {
+				log.Error("--chdir: couldn't enter '%s': %s", doodlePath, err)
+				return err
+			}
+		}
+
 		var filename string
 		if c.NArg() > 0 {
 			filename = c.Args().Get(0)
@@ -142,6 +154,10 @@ func main() {
 			log.Info("Maximize main window")
 			engine.Maximize()
 		}
+
+		// Log what Doodle thinks its working directory is, for debugging.
+		pwd, _ := os.Getwd()
+		log.Debug("PWD: %s", pwd)
 
 		game.Run()
 		return nil
