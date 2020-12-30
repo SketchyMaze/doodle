@@ -2,19 +2,19 @@
 # doodad edit-doodad -q --tag color=red door-red.doodad
 # doodad install-script locked-door.js door-red.doodad
 
-doodad convert -t "Red Door" red-closed.png red-right.png red-left.png door-red.doodad
+doodad convert -t "Red Door" red-closed.png red-unlocked.png red-right.png red-left.png door-red.doodad
 doodad edit-doodad -q --tag color=red door-red.doodad
 doodad install-script colored-door.js door-red.doodad
 
-doodad convert -t "Blue Door" blue-closed.png blue-right.png blue-left.png door-blue.doodad
+doodad convert -t "Blue Door" blue-closed.png blue-unlocked.png blue-right.png blue-left.png door-blue.doodad
 doodad edit-doodad -q --tag color=blue door-blue.doodad
 doodad install-script colored-door.js door-blue.doodad
 
-doodad convert -t "Green Door" green-closed.png green-right.png green-left.png door-green.doodad
+doodad convert -t "Green Door" green-closed.png green-unlocked.png green-right.png green-left.png door-green.doodad
 doodad edit-doodad -q --tag color=green door-green.doodad
 doodad install-script colored-door.js door-green.doodad
 
-doodad convert -t "Yellow Door" yellow-closed.png yellow-right.png yellow-left.png door-yellow.doodad
+doodad convert -t "Yellow Door" yellow-closed.png yellow-unlocked.png yellow-right.png yellow-left.png door-yellow.doodad
 doodad edit-doodad -q --tag color=yellow door-yellow.doodad
 doodad install-script colored-door.js door-yellow.doodad
 

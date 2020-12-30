@@ -1,4 +1,3 @@
-
 function main() {
 	var color = Self.GetTag("color");
 	var keyname = "key-" + color + ".doodad";
@@ -6,8 +5,9 @@ function main() {
 	// Layers in the doodad image.
 	var layer = {
 		closed: 0,
-		right: 1,
-		left: 2,
+		unlocked: 1,
+		right: 2,
+		left: 3,
 	};
 
 	// Variables that change in event handler.
@@ -15,7 +15,7 @@ function main() {
 	var opened = false;    // If door is currently showing its opened state.
 	var enterSide = 0;     // Side of player entering the door, -1 or 1, left or right.
 
-	Self.SetHitbox(23, 0, 23, 64);
+	Self.SetHitbox(34, 0, 13, 76);
 
 	Events.OnCollide(function(e) {
 		// Record the side that this actor has touched us, in case the door
@@ -51,7 +51,7 @@ function main() {
 		}
 	});
 	Events.OnLeave(function(e) {
-		Self.ShowLayer(layer.closed);
+		Self.ShowLayer(unlocked ? layer.unlocked : layer.closed);
 		// Sound.Play("door-close.wav")
 
 		// Reset collision state.

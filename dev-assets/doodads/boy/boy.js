@@ -9,7 +9,7 @@ function main() {
 
 	Self.SetMobile(true);
 	Self.SetGravity(true);
-	Self.SetHitbox(0, 0, 29, 52);
+	Self.SetHitbox(0, 0, 16, 52);
 	Self.AddAnimation("walk-left", 200, ["stand-left", "walk-left-1", "walk-left-2", "walk-left-3", "walk-left-2", "walk-left-1"]);
 	Self.AddAnimation("walk-right", 200, ["stand-right", "walk-right-1", "walk-right-2", "walk-right-3", "walk-right-2", "walk-right-1"]);
 

@@ -6,7 +6,7 @@ function main() {
 	var animating = false;
 	var opened = false;
 
-	Self.SetHitbox(16, 0, 32, 64);
+	Self.SetHitbox(0, 0, 34, 76);
 
 	Message.Subscribe("power", function(powered) {
 		console.log("%s got power=%+v", Self.Title, powered);
