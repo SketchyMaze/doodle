@@ -37,6 +37,7 @@ type Actor struct {
 	hasGravity bool
 	isMobile   bool // Mobile character, such as the player or an enemy
 	noclip     bool // Disable collision detection
+	hidden     bool // invisible, via Hide() and Show()
 	hitbox     render.Rect
 	inventory  map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
 	data       map[string]string // arbitrary key/value store. DEPRECATED ??
@@ -117,6 +118,12 @@ func (a *Actor) IsMobile() bool {
 	return a.isMobile
 }
 
+// IsPlayer returns whether the actor is the player character.
+// It's true when the Actor ID is "PLAYER"
+func (a *Actor) IsPlayer() bool {
+	return a.Canvas.Name == "PLAYER"
+}
+
 // Size returns the size of the actor, from the underlying doodads.Drawing.
 func (a *Actor) Size() render.Rect {
 	return a.Drawing.Size()
@@ -155,6 +162,16 @@ func (a *Actor) Grounded() bool {
 // SetGrounded sets the actor's grounded value.
 func (a *Actor) SetGrounded(v bool) {
 	a.grounded = v
+}
+
+// Hide makes the actor invisible.
+func (a *Actor) Hide() {
+	a.hidden = true
+}
+
+// Show a hidden actor.
+func (a *Actor) Show() {
+	a.hidden = false
 }
 
 // SetNoclip sets the noclip setting for an actor. If true, the actor can

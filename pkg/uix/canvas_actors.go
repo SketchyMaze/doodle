@@ -113,6 +113,12 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			log.Error("Canvas.drawActors: null actor at index %d (of %d actors)", i, len(w.actors))
 			continue
 		}
+
+		// Skip hidden actors.
+		if a.hidden {
+			continue
+		}
+
 		var (
 			can        = a.Canvas // Canvas widget that draws the actor
 			actorPoint = a.Position()

@@ -1,6 +1,6 @@
 // Blue State Block
 function main() {
-	Self.SetHitbox(0, 0, 33, 33);
+	Self.SetHitbox(0, 0, 42, 42);
 
 	// Blue block is ON by default.
 	var state = true;

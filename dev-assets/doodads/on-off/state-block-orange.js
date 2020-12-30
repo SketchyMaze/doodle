@@ -1,6 +1,6 @@
 // Orange State Block
 function main() {
-	Self.SetHitbox(0, 0, 33, 33);
+	Self.SetHitbox(0, 0, 42, 42);
 
 	// Orange block is OFF by default.
 	var state = false;

@@ -98,6 +98,17 @@ azulians() {
 	cd ..
 }
 
+mobs() {
+	cd bird/
+
+	doodad convert -t "Bird (red)" left-1.png left-2.png right-1.png right-2.png \
+		dive-left.png dive-right.png bird-red.doodad
+	doodad install-script bird.js bird-red.doodad
+
+	cp *.doodad ../../../assets/doodads/
+	cd ..
+}
+
 objects() {
 	cd objects/
 
@@ -136,14 +147,38 @@ onoff() {
 	cd ..
 }
 
+warpdoor() {
+	cd warp-door/
+
+	doodad convert -t "Warp Door" door-1.png door-2.png door-3.png door-4.png warp-door.doodad
+	doodad edit-doodad -q --tag color=none warp-door.doodad
+	doodad install-script warp-door.js warp-door.doodad
+
+	doodad convert -t "Warp Door (Blue)" blue-1.png blue-2.png blue-3.png blue-4.png blue-off.png \
+		warp-door-blue.doodad
+	doodad edit-doodad -q --tag color=blue warp-door-blue.doodad
+	doodad install-script warp-door.js warp-door-blue.doodad
+
+	doodad convert -t "Warp Door (Orange)" orange-off.png orange-1.png orange-2.png orange-3.png orange-4.png \
+		warp-door-orange.doodad
+	doodad edit-doodad -q --tag color=orange warp-door-orange.doodad
+	doodad install-script warp-door.js warp-door-orange.doodad
+
+	cp *.doodad ../../../assets/doodads/
+
+	cd ..
+}
+
 boy
 buttons
 switches
 doors
 trapdoors
 azulians
+mobs
 objects
 onoff
+warpdoor
 doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad
 doodad edit-doodad -hide ../../assets/doodads/azu-blu.doodad
 doodad edit-doodad -hide ../../assets/doodads/boy.doodad
