@@ -106,3 +106,33 @@ func EraserTool(ev *event.State) bool {
 func DoodadDropper(ev *event.State) bool {
 	return ev.KeyDown("d")
 }
+
+// Shift key.
+func Shift(ev *event.State) bool {
+	return ev.Shift
+}
+
+// Left arrow.
+func Left(ev *event.State) bool {
+	return ev.Left || ev.KeyDown("a")
+}
+
+// Right arrow.
+func Right(ev *event.State) bool {
+	return ev.Right || ev.KeyDown("d")
+}
+
+// Up arrow.
+func Up(ev *event.State) bool {
+	return ev.Up || ev.KeyDown("w")
+}
+
+// Down arrow.
+func Down(ev *event.State) bool {
+	return ev.Down || ev.KeyDown("s")
+}
+
+// "Use" button.
+func Use(ev *event.State) bool {
+	return ev.Space || ev.KeyDown("q")
+}

@@ -9,3 +9,8 @@ type CollideEvent struct {
 	InHitbox bool // If the two elected hitboxes are overlapping
 	Settled  bool // Movement phase finished, actor script can fire actions
 }
+
+// UseEvent holds data sent to an actor's OnUse handler.
+type UseEvent struct {
+	Actor *Actor
+}

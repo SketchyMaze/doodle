@@ -276,6 +276,16 @@ func (w *Canvas) loopActorCollision() error {
 				}); err != nil && err != scripting.ErrReturnFalse {
 					log.Error("VM(%s).RunCollide: %s", a.ID(), err.Error())
 				}
+
+				// If the (player) is pressing the Use key, call the colliding
+				// actor's OnUse event.
+				if b.flagUsing {
+					if err := w.scripting.To(a.ID()).Events.RunUse(&UseEvent{
+						Actor: b,
+					}); err != nil {
+						log.Error("VM(%s).RunUse: %s", a.ID(), err.Error())
+					}
+				}
 			}
 		}
 	}

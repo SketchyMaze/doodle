@@ -13,6 +13,7 @@ const (
 	CollideEvent = "OnCollide" // another doodad collides with us
 	EnterEvent   = "OnEnter"   // a doodad is fully inside us
 	LeaveEvent   = "OnLeave"   // a doodad no longer collides with us
+	UseEvent     = "OnUse"     // player pressed the Use key while touching us
 
 	// Controllable (player character) doodad events
 	KeypressEvent = "OnKeypress" // i.e. arrow keys
@@ -44,6 +45,16 @@ func (e *Events) OnCollide(call otto.FunctionCall) otto.Value {
 // RunCollide invokes the OnCollide handler function.
 func (e *Events) RunCollide(v interface{}) error {
 	return e.run(CollideEvent, v)
+}
+
+// OnUse fires when another actor collides with yours.
+func (e *Events) OnUse(call otto.FunctionCall) otto.Value {
+	return e.register(UseEvent, call.Argument(0))
+}
+
+// RunUse invokes the OnUse handler function.
+func (e *Events) RunUse(v interface{}) error {
+	return e.run(UseEvent, v)
 }
 
 // OnLeave fires when another actor stops colliding with yours.

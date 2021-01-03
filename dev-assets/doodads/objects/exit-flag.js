@@ -1,6 +1,5 @@
 // Exit Flag.
 function main() {
-	console.log("%s initialized!", Self.Title);
 	Self.SetHitbox(22+16, 16, 75-16, 86);
 
 	Events.OnCollide(function(e) {

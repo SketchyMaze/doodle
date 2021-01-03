@@ -4,8 +4,6 @@ function main() {
 	var Vx = Vy = 0;
 	var altitude = Self.Position().Y; // original height in the level
 
-	console.log("Bird altitude is %d", altitude);
-
 	var direction = "left";
 	var states = {
 		flying: 0,

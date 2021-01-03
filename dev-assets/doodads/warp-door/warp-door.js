@@ -1,7 +1,5 @@
 // Warp Doors
 function main() {
-	console.log("Warp Door %s Initialized", Self.Title);
-
 	Self.SetHitbox(0, 0, 34, 76);
 
 	// Are we a blue or orange door? Regular warp door will be 'none'
@@ -31,12 +29,18 @@ function main() {
 		spriteDefault = "door-1";
 	}
 
-	console.log("Warp %s: default=%s  disabled=%+v  color=%s  isState=%+v  state=%+v", Self.Title, spriteDefault, spriteDisabled, color, isStateDoor, state);
+	// Find our linked Warp Door.
+	var links = Self.GetLinks()
+	var linkedDoor = null;
+	for (var i = 0; i < links.length; i++) {
+		if (links[i].Title.indexOf("Warp Door") > -1) {
+			linkedDoor = links[i];
+		}
+	}
 
 	// Subscribe to the global state-change if we are a state door.
 	if (isStateDoor) {
 		Message.Subscribe("broadcast:state-change", function(newState) {
-			console.log("Warp %s: received state to %+v", Self.Title, newState);
 			state = color === 'blue' ? !newState : newState;
 
 			// Activate or deactivate the door.
@@ -44,38 +48,69 @@ function main() {
 		});
 	}
 
-	// TODO: respond to a "Use" button instead of a Collide to open the door.
-	Events.OnCollide(function(e) {
-		if (!e.Settled) {
+	// The player Uses the door.
+	var flashedCooldown = false; // "Locked Door" flashed message.
+	Events.OnUse(function(e) {
+		if (animating) {
 			return;
 		}
 
-		if (animating || collide) {
+		// Doors without linked exits are not usable.
+		if (linkedDoor === null) {
+			if (!flashedCooldown) {
+				Flash("This door is locked.");
+				flashedCooldown = true;
+				setTimeout(function() {
+					flashedCooldown = false;
+				}, 1000);
+			}
 			return;
 		}
 
 		// Only players can use doors for now.
-		if (e.Actor.IsPlayer() && e.InHitbox) {
+		if (e.Actor.IsPlayer()) {
 			if (isStateDoor && !state) {
 				// The state door is inactive (dotted outline).
 				return;
 			}
 
+			// Freeze the player.
+			e.Actor.Freeze()
+
 			// Play the open and close animation.
 			animating = true;
-			collide = true;
 			Self.PlayAnimation("open", function() {
 				e.Actor.Hide()
 				Self.PlayAnimation("close", function() {
 					Self.ShowLayerNamed(isStateDoor && !state ? spriteDisabled : spriteDefault);
-					e.Actor.Show()
 					animating = false;
+
+					// Teleport the player to the linked door. Inform the target
+					// door of the arrival of the player so it doesn't trigger
+					// to send the player back here again on a loop.
+					if (linkedDoor !== null) {
+						Message.Publish("warp-door:incoming", e.Actor);
+						e.Actor.MoveTo(linkedDoor.Position());
+					}
 				});
 			});
 		}
 	});
 
-	Events.OnLeave(function(e) {
-		collide = false;
+	// Respond to incoming warp events.
+	Message.Subscribe("warp-door:incoming", function(player) {
+		animating = true;
+		player.Unfreeze();
+		Self.PlayAnimation("open", function() {
+			player.Show();
+			Self.PlayAnimation("close", function() {
+				animating = false;
+
+				// If the receiving door was a State Door, fix its state.
+				if (isStateDoor) {
+					Self.ShowLayerNamed(state ? spriteDefault : spriteDisabled);
+				}
+			});
+		});
 	});
 }

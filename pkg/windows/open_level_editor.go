@@ -5,7 +5,6 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -74,7 +73,6 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 		})
 		for i, lvl := range levels {
 			func(i int, lvl string) {
-				log.Info("Add file %s to row %s", lvl, lvlRow.Name)
 				btn := ui.NewButton("Level Btn", ui.NewLabel(ui.Label{
 					Text: lvl,
 					Font: balance.MenuFont,
@@ -95,7 +93,6 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 				})
 
 				if i > 0 && (i+1)%4 == 0 {
-					log.Warn("i=%d wrapped at mod 4", i)
 					lvlRow = ui.NewFrame(fmt.Sprintf("Level Row %d", i))
 					frame.Pack(lvlRow, ui.Pack{
 						Side:  ui.N,

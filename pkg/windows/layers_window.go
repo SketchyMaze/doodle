@@ -6,7 +6,6 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -54,7 +53,6 @@ func NewLayerWindow(config Layers) *ui.Window {
 	)
 
 	config.activeLayer = fmt.Sprintf("%d", config.ActiveLayer)
-	log.Warn("config.activeLayer=%s", config.activeLayer)
 
 	window := ui.NewWindow(title)
 	window.SetButtons(ui.CloseButton)
@@ -70,8 +68,6 @@ func NewLayerWindow(config Layers) *ui.Window {
 		Fill:   true,
 		Expand: true,
 	})
-
-	log.Info("SETUP PALETTE WINDOW")
 
 	// Draw the header row.
 	headers := []struct {
@@ -143,7 +139,6 @@ func NewLayerWindow(config Layers) *ui.Window {
 			})
 			btnName.Handle(ui.Click, func(ed ui.EventData) error {
 				shmem.Prompt("New layer name ["+doodad.Layers[i].Name+"]: ", func(answer string) {
-					log.Warn("Answer: %s", answer)
 					if answer != "" {
 						doodad.Layers[i].Name = answer
 						if config.OnChange != nil {
@@ -220,7 +215,6 @@ func NewLayerWindow(config Layers) *ui.Window {
 			Font:           balance.MenuFont,
 			OnChange: func(newPage, perPage int) {
 				page = newPage
-				log.Info("Page: %d, %d", page, perPage)
 
 				// Re-evaluate which rows are shown/hidden for this page.
 				var (

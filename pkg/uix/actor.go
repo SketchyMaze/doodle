@@ -25,19 +25,20 @@ import (
 //   as defined in the map: its spawn coordinate and configuration.
 // - A uix.Canvas that can present the actor's graphics to the screen.
 type Actor struct {
-	id      string
 	Drawing *doodads.Drawing
 	Actor   *level.Actor
 	Canvas  *Canvas
 
 	activeLayer int  // active drawing frame for display
 	flagDestroy bool // flag the actor for destruction
+	flagUsing   bool // flag that the (player) has pressed the Use key.
 
 	// Actor runtime variables.
 	hasGravity bool
 	isMobile   bool // Mobile character, such as the player or an enemy
 	noclip     bool // Disable collision detection
 	hidden     bool // invisible, via Hide() and Show()
+	frozen     bool // Frozen, via Freeze() and Unfreeze()
 	hitbox     render.Rect
 	inventory  map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
 	data       map[string]string // arbitrary key/value store. DEPRECATED ??
@@ -172,6 +173,28 @@ func (a *Actor) Hide() {
 // Show a hidden actor.
 func (a *Actor) Show() {
 	a.hidden = false
+}
+
+// Freeze an actor. For the player character, this means arrow key inputs
+// will stop moving the actor.
+func (a *Actor) Freeze() {
+	a.frozen = true
+}
+
+// Unfreeze an actor.
+func (a *Actor) Unfreeze() {
+	a.frozen = false
+}
+
+// IsFrozen returns true if the actor is frozen.
+func (a *Actor) IsFrozen() bool {
+	return a.frozen
+}
+
+// SetUsing enables the "Use Key" flag, mainly for the player character to activate
+// certain doodads in the level.
+func (a *Actor) SetUsing(v bool) {
+	a.flagUsing = v
 }
 
 // SetNoclip sets the noclip setting for an actor. If true, the actor can

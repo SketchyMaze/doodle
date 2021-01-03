@@ -109,7 +109,6 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	// Preload pop-up windows before they're needed.
 	u.SetupPopups(d)
 
-	log.Error("menu size: %s", u.MenuBar.Rect())
 	u.screen.Pack(u.MenuBar, ui.Pack{
 		Side:  ui.N,
 		FillX: true,
@@ -676,7 +675,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	menu.Supervise(u.Supervisor)
 	menu.Compute(d.Engine)
-	log.Error("Setup MenuBar: %s\n", menu.Size())
 
 	return menu
 }

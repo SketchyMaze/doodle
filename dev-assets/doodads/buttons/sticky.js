@@ -1,6 +1,4 @@
 function main() {
-	console.log("%s initialized!", Self.Title);
-
 	var pressed = false;
 
 	// When a sticky button receives power, it pops back up.

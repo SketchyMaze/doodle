@@ -471,30 +471,30 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		velocity.Y = 0
 
 		// Shift to slow your roll to 1 pixel per tick.
-		if ev.Shift {
+		if keybind.Shift(ev) {
 			playerSpeed = 1
 		}
 
-		if ev.Left {
+		if keybind.Left(ev) {
 			velocity.X = -playerSpeed
-		} else if ev.Right {
+		} else if keybind.Right(ev) {
 			velocity.X = playerSpeed
 		}
-		if ev.Up {
+		if keybind.Up(ev) {
 			velocity.Y = -playerSpeed
-		} else if ev.Down {
+		} else if keybind.Down(ev) {
 			velocity.Y = playerSpeed
 		}
 	} else {
 		// Moving left or right.
-		if ev.Left {
+		if keybind.Left(ev) {
 			direction = -1
-		} else if ev.Right {
+		} else if keybind.Right(ev) {
 			direction = 1
 		}
 
 		// Up button to signal they want to jump.
-		if ev.Up && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
+		if keybind.Up(ev) && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
 			jumping = true
 
 			if s.Player.Grounded() {
@@ -533,7 +533,17 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		}
 	}
 
+	// Move the player unless frozen.
+	// TODO: if Y=0 then gravity fails, but not doing this allows the
+	// player to jump while frozen. Not a HUGE deal right now as only Warp Doors
+	// freeze the player currently but do address this later.
+	if s.Player.IsFrozen() {
+		velocity.X = 0
+	}
 	s.Player.SetVelocity(velocity)
+
+	// If the "Use" key is pressed, set an actor flag on the player.
+	s.Player.SetUsing(keybind.Use(ev))
 
 	s.scripting.To(s.Player.ID()).Events.RunKeypress(ev)
 }

@@ -73,8 +73,6 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 		Expand: true,
 	})
 
-	log.Info("SETUP PALETTE WINDOW")
-
 	// Draw the header row.
 	headers := []struct {
 		Name string

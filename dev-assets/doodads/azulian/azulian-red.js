@@ -1,6 +1,4 @@
 function main() {
-	console.log("Azulian '%s' initialized!", Self.Title);
-
 	var playerSpeed = 4;
 	var gravity = 4;
 	var Vx = Vy = 0;

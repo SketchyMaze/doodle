@@ -93,9 +93,9 @@ func (s *Supervisor) To(name string) *VM {
 
 	// TODO: put this log back in, but add PLAYER script so it doesn't spam
 	// the console for missing PLAYER.
-	// log.Error("scripting.Supervisor.To(%s): no such VM but returning blank VM",
-	// 	name,
-	// )
+	log.Error("scripting.Supervisor.To(%s): no such VM but returning blank VM",
+		name,
+	)
 	return NewVM(name)
 }
 

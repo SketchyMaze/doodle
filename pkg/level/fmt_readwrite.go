@@ -57,7 +57,7 @@ func LoadFile(filename string) (*Level, error) {
 
 	// Do we have the file in bindata?
 	if jsonData, err := bindata.Asset(filename); err == nil {
-		log.Info("loaded from embedded bindata")
+		log.Debug("Level %s: loaded from embedded bindata", filename)
 		return FromJSON(filename, jsonData)
 	}
 

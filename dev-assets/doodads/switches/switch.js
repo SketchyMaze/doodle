@@ -1,5 +1,4 @@
 function main() {
-	console.log("%s initialized!", Self.Title);
 
 	// Switch has two frames:
 	// 0: Off

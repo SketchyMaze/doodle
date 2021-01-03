@@ -1,6 +1,4 @@
 function main() {
-	console.log("%s initialized!", Self.Title);
-
 	Self.AddAnimation("open", 100, [0, 1, 2, 3]);
 	Self.AddAnimation("close", 100, [3, 2, 1, 0]);
 	var animating = false;
@@ -9,8 +7,6 @@ function main() {
 	Self.SetHitbox(0, 0, 34, 76);
 
 	Message.Subscribe("power", function(powered) {
-		console.log("%s got power=%+v", Self.Title, powered);
-
 		if (powered) {
 			if (animating || opened) {
 				return;
