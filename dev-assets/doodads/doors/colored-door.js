@@ -1,6 +1,6 @@
 function main() {
 	var color = Self.GetTag("color");
-	var keyname = "key-" + color + ".doodad";
+	var keyname = color === "small" ? "small-key.doodad" : "key-" + color + ".doodad";
 
 	// Layers in the doodad image.
 	var layer = {
@@ -46,7 +46,12 @@ function main() {
 			if (e.Settled) {
 				unlocked = true;
 				Self.ShowLayer(enterSide < 0 ? layer.right : layer.left);
-				Sound.Play("unlock.wav")
+				Sound.Play("unlock.wav");
+
+				// If a Small Key door, consume a small key.
+				if (color === "small") {
+					e.Actor.RemoveItem(keyname, 1)
+				}
 			}
 		}
 	});

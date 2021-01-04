@@ -18,13 +18,9 @@ doodad convert -t "Yellow Door" yellow-closed.png yellow-unlocked.png yellow-rig
 doodad edit-doodad -q --tag color=yellow door-yellow.doodad
 doodad install-script colored-door.js door-yellow.doodad
 
-# doodad convert -t "Green Door" green1.png green2.png door-green.doodad
-# doodad edit-doodad -q --tag color=green door-green.doodad
-# doodad install-script locked-door.js door-green.doodad
-#
-# doodad convert -t "Yellow Door" yellow1.png yellow2.png door-yellow.doodad
-# doodad edit-doodad -q --tag color=yellow door-yellow.doodad
-# doodad install-script locked-door.js door-yellow.doodad
+doodad convert -t "Small Key Door" small-closed.png small-unlocked.png small-right.png small-left.png small-key-door.doodad
+doodad edit-doodad -q --tag color=small small-key-door.doodad
+doodad install-script colored-door.js small-key-door.doodad
 
 doodad convert -t "Red Key" red-key.png key-red.doodad
 doodad edit-doodad -q --tag color=red key-red.doodad
@@ -42,7 +38,11 @@ doodad convert -t "Yellow Key" yellow-key.png key-yellow.doodad
 doodad edit-doodad -q --tag color=yellow key-yellow.doodad
 doodad install-script keys.js key-yellow.doodad
 
+doodad convert -t "Small Key" small-key.png small-key.doodad
+doodad edit-doodad -q --tag color=small small-key.doodad
+doodad install-script keys.js small-key.doodad
+
 doodad convert -t "Electric Door" electric{1,2,3,4}.png door-electric.doodad
 doodad install-script electric-door.js door-electric.doodad
 
-cp door-*.doodad key-*.doodad ../../../assets/doodads/
+cp door-*.doodad key-*.doodad small-*.doodad ../../../assets/doodads/

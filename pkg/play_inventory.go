@@ -1,6 +1,8 @@
 package doodle
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/uix"
@@ -52,69 +54,76 @@ func (s *PlayScene) setupInventoryHud() {
 // computeInventory adjusts the inventory HUD when the player's inventory changes.
 func (s *PlayScene) computeInventory() {
 	items := s.Player.ListItems()
-	if len(items) != len(s.invenItems) {
-		// Inventory has changed! See which doodads we have
-		// and which we need to load.
-		var seen = map[string]interface{}{}
-		for _, filename := range items {
-			seen[filename] = nil
 
-			if _, ok := s.invenDoodads[filename]; !ok {
-				// Cache miss. Load the doodad here.
-				doodad, err := doodads.LoadFile(filename)
-				if err != nil {
-					s.d.Flash("Inventory item '%s' error: %s", filename, err)
-					continue
-				}
+	// Inventory has changed! See which doodads we have
+	// and which we need to load.
+	var seen = map[string]interface{}{}
+	for _, filename := range items {
+		seen[filename] = nil
 
-				canvas := uix.NewCanvas(doodad.ChunkSize(), false)
-				canvas.LoadDoodad(doodad)
-				canvas.Resize(render.NewRect(
-					doodad.ChunkSize(), doodad.ChunkSize(),
-				))
-				s.invenFrame.Pack(canvas, ui.Pack{
-					Side: ui.W,
-
-					// TODO: work around a weird padding bug. item had too
-					// tall a top margin when added to the inventory frame!
-					PadX: 8,
-				})
-				s.invenDoodads[filename] = canvas
+		if _, ok := s.invenDoodads[filename]; !ok {
+			// Cache miss. Load the doodad here.
+			doodad, err := doodads.LoadFile(filename)
+			if err != nil {
+				s.d.Flash("Inventory item '%s' error: %s", filename, err)
+				continue
 			}
 
-			s.invenDoodads[filename].Show()
+			canvas := uix.NewCanvas(doodad.ChunkSize(), false)
+			canvas.SetBackground(render.RGBA(1, 0, 0, 0))
+			canvas.LoadDoodad(doodad)
+			canvas.Resize(render.NewRect(
+				doodad.ChunkSize(), doodad.ChunkSize(),
+			))
+			s.invenFrame.Pack(canvas, ui.Pack{
+				Side: ui.W,
+
+				// TODO: work around a weird padding bug. item had too
+				// tall a top margin when added to the inventory frame!
+				PadX: 8,
+			})
+			s.invenDoodads[filename] = canvas
 		}
 
-		// Hide any doodad that used to be in the inventory but now is not.
-		for filename, canvas := range s.invenDoodads {
-			if _, ok := seen[filename]; !ok {
-				canvas.Hide()
-			}
-		}
-
-		// Recompute the size of the inventory frame.
-		// TODO: this works around a bug in ui.Frame, at the bottom of
-		// compute_packed, a frame Resize's itself to fit the children but this
-		// trips the "manually set size" boolean... packing more items after a
-		// computer doesn't resize the frame. So here, we resize-auto it to
-		// reset that boolean so the next compute, picks the right size.
-		s.invenFrame.Configure(ui.Config{
-			AutoResize: true,
-			Width:      1,
-			Height:     1,
-		})
-		s.invenFrame.Compute(s.d.Engine)
-
-		// If we removed all items, hide the frame.
-		if len(items) == 0 {
-			s.invenFrame.Hide()
+		// For items with >1 quantity, show the quantity in the corner.
+		if qty := s.Player.HasItem(filename); qty > 0 {
+			s.invenDoodads[filename].CornerLabel = fmt.Sprintf("%d", qty)
 		} else {
-			s.invenFrame.Show()
+			s.invenDoodads[filename].CornerLabel = ""
 		}
 
-		// Cache the item list so we don't run the above logic every single tick.
-		s.invenItems = items
+		s.invenDoodads[filename].Show()
 	}
+
+	// Hide any doodad that used to be in the inventory but now is not.
+	for filename, canvas := range s.invenDoodads {
+		if _, ok := seen[filename]; !ok {
+			canvas.Hide()
+		}
+	}
+
+	// Recompute the size of the inventory frame.
+	// TODO: this works around a bug in ui.Frame, at the bottom of
+	// compute_packed, a frame Resize's itself to fit the children but this
+	// trips the "manually set size" boolean... packing more items after a
+	// computer doesn't resize the frame. So here, we resize-auto it to
+	// reset that boolean so the next compute, picks the right size.
+	s.invenFrame.Configure(ui.Config{
+		AutoResize: true,
+		Width:      1,
+		Height:     1,
+	})
+	s.invenFrame.Compute(s.d.Engine)
+
+	// If we removed all items, hide the frame.
+	if len(items) == 0 {
+		s.invenFrame.Hide()
+	} else {
+		s.invenFrame.Show()
+	}
+
+	// Cache the item list so we don't run the above logic every single tick.
+	s.invenItems = items
 
 	// Compute the inventory frame so it positions and wraps the items.
 	s.screen.Compute(s.d.Engine)

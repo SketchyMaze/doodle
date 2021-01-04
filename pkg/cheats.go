@@ -72,6 +72,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			playScene.Player.AddItem("key-blue.doodad", 0)
 			playScene.Player.AddItem("key-green.doodad", 0)
 			playScene.Player.AddItem("key-yellow.doodad", 0)
+			playScene.Player.AddItem("small-key.doodad", 99)
 			d.Flash("Given all keys to the player character.")
 		} else {
 			d.Flash("Use this cheat in Play Mode to get all colored keys.")

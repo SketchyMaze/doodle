@@ -1,6 +1,6 @@
 // Crumbly Floor.
 function main() {
-	Self.SetHitbox(0, 0, 65, 7);
+	Self.SetHitbox(0, 0, 98, 11);
 
 	Self.AddAnimation("shake", 100, ["shake1", "shake2", "floor", "shake1", "shake2", "floor"]);
 	Self.AddAnimation("fall", 100, ["fall1", "fall2", "fall3", "fall4"]);

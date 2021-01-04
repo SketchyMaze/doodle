@@ -207,7 +207,11 @@ func (a *Actor) SetNoclip(v bool) {
 // Item name is usually the doodad filename.
 func (a *Actor) AddItem(itemName string, quantity int) {
 	a.muInventory.Lock()
-	a.inventory[itemName] = quantity
+	if _, ok := a.inventory[itemName]; ok {
+		a.inventory[itemName] += quantity
+	} else {
+		a.inventory[itemName] = quantity
+	}
 	a.muInventory.Unlock()
 }
 

@@ -152,6 +152,24 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	w.presentStrokes(e)
 	w.presentCursor(e)
 
+	// Custom label in the canvas corner? (e.g. for Inventory item counts)
+	if w.CornerLabel != "" {
+		label := ui.NewLabel(ui.Label{
+			Text: w.CornerLabel,
+			Font: render.Text{
+				FontFilename: balance.ShellFontFilename,
+				Size:         balance.ShellFontSizeSmall,
+				Color:        render.White,
+			},
+		})
+		label.SetBackground(render.RGBA(0, 0, 50, 150))
+		label.Compute(e)
+		label.Present(e, render.Point{
+			X: p.X + S.W - label.Size().W - w.BoxThickness(1),
+			Y: p.Y + S.H - label.Size().H - w.BoxThickness(1),
+		})
+	}
+
 	// XXX: Debug, show label in canvas corner.
 	if balance.DebugCanvasLabel {
 		rows := []string{

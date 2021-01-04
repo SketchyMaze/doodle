@@ -31,6 +31,10 @@ type Canvas struct {
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 	Zoom       int  // Zoom level on the canvas.
 
+	// Custom label to place in the lower-right corner of the canvas.
+	// Used for e.g. the quantity badge on Inventory items.
+	CornerLabel string
+
 	// Selected draw tool/mode, default Pencil, for editable canvases.
 	Tool      drawtool.Tool
 	BrushSize int // thickness of selected brush
