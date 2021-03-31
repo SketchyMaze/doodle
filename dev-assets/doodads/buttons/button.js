@@ -2,8 +2,21 @@ function main() {
 	var timer = 0;
 	var pressed = false;
 
+	// Has a linked Sticky Button been pressed permanently down?
+	var stickyDown = false;
+	Message.Subscribe("sticky:down", function(down) {
+		stickyDown = down;
+		Self.ShowLayer(stickyDown ? 1 : 0);
+	});
+
 	Events.OnCollide(function(e) {
 		if (!e.Settled) {
+			return;
+		}
+
+		// If a linked Sticky Button is pressed, button stays down too and
+		// doesn't interact.
+		if (stickyDown) {
 			return;
 		}
 
@@ -12,7 +25,7 @@ function main() {
 			return;
 		}
 
-		if (!pressed) {
+		if (!pressed && !stickyDown) {
 			Sound.Play("button-down.wav")
 			Message.Publish("power", true);
 			pressed = true;

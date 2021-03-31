@@ -138,9 +138,11 @@ func (s *PlayScene) Setup(d *Doodle) error {
 
 	// Handler when an actor touches water or fire.
 	s.drawing.OnLevelCollision = func(a *uix.Actor, col *collision.Collide) {
-		if col.InFire {
+		if col.InFire != "" {
 			a.Canvas.MaskColor = render.Black
-			s.DieByFire()
+			if a.ID() == "PLAYER" { // only the player dies in fire.
+				s.DieByFire(col.InFire)
+			}
 		} else if col.InWater {
 			a.Canvas.MaskColor = render.DarkBlue
 		} else {
@@ -352,11 +354,11 @@ func (s *PlayScene) RestartLevel() {
 	})
 }
 
-// DieByFire ends the level by fire.
-func (s *PlayScene) DieByFire() {
-	log.Info("Watch out for fire!")
+// DieByFire ends the level by "fire", or w/e the swatch is named.
+func (s *PlayScene) DieByFire(name string) {
+	log.Info("Watch out for %s!", name)
 	s.alertBox.Title = "You've died!"
-	s.alertBoxLabel.Text = "Watch out for fire!"
+	s.alertBoxLabel.Text = fmt.Sprintf("Watch out for %s!", name)
 
 	s.alertReplayButton.Show()
 	if s.CanEdit {

@@ -20,6 +20,9 @@ function main() {
 		if (collide === false) {
 			Sound.Play("button-down.wav")
 			state = !state;
+
+			var nonce = Math.random() * 2147483647;
+			Message.Publish("switch:toggle", state);
 			Message.Publish("power", state);
 			showState(state);
 

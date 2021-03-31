@@ -25,7 +25,7 @@ type Collide struct {
 	MoveTo      render.Point
 
 	// Swatch attributes affecting the collision at this time.
-	InFire  bool
+	InFire  string // the name of the swatch, Fire = general ouchy color.
 	InWater bool
 }
 
@@ -222,7 +222,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 // IsColliding returns whether any sort of collision has occurred.
 func (c *Collide) IsColliding() bool {
 	return c.Top || c.Bottom || c.Left || c.Right ||
-		c.InFire || c.InWater
+		c.InFire != "" || c.InWater
 }
 
 // ScanBoundingBox scans all of the pixels in a bounding box on the grid and
@@ -276,7 +276,7 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 			// in our result. If non-solid, we'll collect attributes from it
 			// and return them in the final result for gameplay behavior.
 			if swatch.Fire {
-				c.InFire = true
+				c.InFire = swatch.Name
 			}
 			if swatch.Water {
 				c.InWater = true

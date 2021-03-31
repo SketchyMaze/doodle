@@ -108,6 +108,7 @@ func NewCanvas(size int, editable bool) *Canvas {
 		Editable:   editable,
 		Scrollable: editable,
 		Palette:    level.NewPalette(),
+		BrushSize:  1,
 		chunks:     level.NewChunker(size),
 		actors:     make([]*Actor, 0),
 		wallpaper:  &Wallpaper{},

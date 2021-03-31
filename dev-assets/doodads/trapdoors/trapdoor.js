@@ -5,8 +5,8 @@ function main() {
 	var timer = 0;
 
 	// Set our hitbox based on our orientation.
-	var thickness = 6;
-	var doodadSize = 72;
+	var thickness = 10;
+	var doodadSize = 86;
 	if (direction === "left") {
 		Self.SetHitbox(48, 0, doodadSize, doodadSize);
 	} else if (direction === "right") {

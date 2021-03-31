@@ -43,7 +43,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
 		Width:      400,
-		Height:     180,
+		Height:     240,
 		Background: render.Grey,
 	})
 
@@ -165,6 +165,73 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 					PadX: 4,
 				})
 			}(t)
+		}
+
+		/******************
+		 * Frame for giving the level a title.
+		 ******************/
+
+		if config.EditLevel != nil {
+			label3 := ui.NewLabel(ui.Label{
+				Text: "Metadata",
+				Font: balance.LabelFont,
+			})
+			frame.Pack(label3, ui.Pack{
+				Side:  ui.N,
+				FillX: true,
+			})
+
+			type metadataObj struct {
+				Label   string
+				Binding *string
+				Update  func(string)
+			}
+			var metaRows = []metadataObj{
+				{"Title:", &config.EditLevel.Title, func(v string) { config.EditLevel.Title = v }},
+				{"Author:", &config.EditLevel.Author, func(v string) { config.EditLevel.Author = v }},
+			}
+
+			for _, mr := range metaRows {
+				mr := mr
+				mrFrame := ui.NewFrame("Metadata " + mr.Label + "Frame")
+				frame.Pack(mrFrame, ui.Pack{
+					Side:  ui.N,
+					FillX: true,
+					PadY:  2,
+				})
+
+				// The label.
+				mrLabel := ui.NewLabel(ui.Label{
+					Text: mr.Label,
+					Font: balance.MenuFont,
+				})
+				mrLabel.Configure(ui.Config{
+					Width: 75,
+				})
+				mrFrame.Pack(mrLabel, ui.Pack{
+					Side: ui.W,
+				})
+
+				// The button.
+				mrButton := ui.NewButton(mr.Label, ui.NewLabel(ui.Label{
+					TextVariable: mr.Binding,
+					Font:         balance.MenuFont,
+				}))
+				mrButton.Handle(ui.Click, func(ed ui.EventData) error {
+					shmem.Prompt("Enter a new "+mr.Label, func(answer string) {
+						if answer != "" {
+							mr.Update(answer)
+						}
+					})
+					return nil
+				})
+				config.Supervisor.Add(mrButton)
+				mrFrame.Pack(mrButton, ui.Pack{
+					Side:   ui.W,
+					Expand: true,
+					PadX:   2,
+				})
+			}
 		}
 
 		/******************

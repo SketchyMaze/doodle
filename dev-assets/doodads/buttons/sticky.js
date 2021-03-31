@@ -8,6 +8,7 @@ function main() {
 			pressed = false;
 			Sound.Play("button-up.wav")
 			Message.Publish("power", false);
+			Message.Publish("sticky:down", false);
 		}
 	})
 
@@ -29,5 +30,6 @@ function main() {
 		Self.ShowLayer(1);
 		pressed = true;
 		Message.Publish("power", true);
+		Message.Publish("sticky:down", true);
 	});
 }
