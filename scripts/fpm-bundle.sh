@@ -3,7 +3,7 @@
 # fpm-bundle: create bundles for the app.
 
 VERSION=`egrep -e 'Version\s+=' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
-INSTALL_ROOT="/opt/project-doodle"
+INSTALL_ROOT="/opt/sketchy-maze"
 LAUNCHER_FILE="../../etc/linux/net.kirsle.ProjectDoodle.desktop"
 LAUNCHER_ROOT="/usr/share/applications" # Where the .desktop file goes.
 ICON_ROOT="/usr/share/icons/hicolor/"
@@ -47,17 +47,17 @@ echo =====================
 # RPM Package
 fpm -C ./root -s dir -t rpm \
   -d SDL2 -d SDL2_ttf -a x86_64 \
-  -n project-doodle -v ${VERSION} \
+  -n sketchy-maze -v ${VERSION} \
   --license="Copyright" \
   --maintainer=noah@kirsle.net \
-  --description="Project: Doodle - A drawing-based maze game." \
-  --url="https://www.kirsle.net/doodle"
+  --description="Sketchy Maze - A drawing-based maze game." \
+  --url="https://www.sketchymaze.com"
 
 # Debian Package
 fpm -C ./root -s dir -t deb \
   -d libsdl2 -d libsdl2-ttf -a x86_64 \
-  -n project-doodle -v ${VERSION} \
+  -n sketchy-maze -v ${VERSION} \
   --license="Copyright" \
   --maintainer=noah@kirsle.net \
-  --description="Project: Doodle - A drawing-based maze game." \
-  --url="https://www.kirsle.net/doodle"
+  --description="Sketchy Maze - A drawing-based maze game." \
+  --url="https://www.sketchymaze.com"

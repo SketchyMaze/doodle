@@ -4,7 +4,7 @@
 # containing the doodad binaries (subdirectory of /dist from git repo root)
 
 VERSION=`grep -e 'Version =' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
-INSTALL_ROOT="/opt/project-doodle"
+INSTALL_ROOT="/opt/sketchy-maze"
 APP_NAME="Project Doodle.app"
 APP_FOLDER="../../etc/macos/$APP_NAME"
 APP_CONTENTS="$APP_NAME/Contents"
