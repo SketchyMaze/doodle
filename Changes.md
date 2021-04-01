@@ -1,5 +1,51 @@
 # Changes
 
+## v0.5.0-alpha
+
+Project: Doodle is renamed to Sketchy Maze in this release.
+
+New Features:
+
+* **New Tutorial Levels:** the bundled levels demonstrate the built-in doodads
+  and how they interact and shows off several game features.
+* **Level Editor:** you can now set the Title and Author of the level you're
+  editing by using the Level->Page Settings window.
+* The **Inventory HUD** in Play Mode now shows a small number indicator for items
+  which have quantity, such as the Small Key. Colored Keys do not have quantity
+  and don't show a number: those are permanent collectibles.
+* **Fire Pixels:** when the player character dies by touching a "Fire" pixel
+  during gameplay, the death message uses the **name** of the color instead
+  of calling it "fire." For example, if you name a color "spikes" and give
+  it the Fire attribute, it will say "Watch out for spikes!" if the player
+  dies by touching it.
+* New cheat code: `give all keys` gives all four colored keys and 99x Small Keys
+  to the player character. The `drop all items` cheat clears your inventory.
+
+New Doodads:
+
+* **Warp Doors** allow the player character to fast travel to another location
+  on the map. Drag two Warp Doors into your level and use the Link Tool to
+  connect them together. Doors without an exit link will be "locked" and don't
+  open.
+* **Small Key Doors** are locked doors which consume the Small Keys when unlocked,
+  unlike the colored doors where the key is multi-use. The player character can
+  hold many small keys at once and only unlock as many doors as he has keys.
+
+Updated Doodads:
+
+* **Several doodads** were increased in size to better match the player character:
+  Colored Locked Doors, Trapdoors, the Crumbly Floor and Electric Door, and the
+  blue and orange Boolean State Blocks.
+* **Colored Doors** now have a visual locked vs. unlocked state: while locked, a
+  golden padlock hangs from the door, which goes away after it's been unlocked.
+* **Switches** now interact differently with Electric Doors: the door will _always_
+  toggle its current state regardless of the 'power' setting of the Switch.
+* **Buttons** which are linked to a **Sticky Button** will press and stay down
+  if the linked Sticky Button is pressed. Or in other words, the Sticky Button
+  makes all linked Buttons act sticky too and stay pressed while the Sticky
+  Button is pressed. If the Sticky Button is released later (e.g. by receiving
+  power from a Switch) it releases its linked Buttons as well.
+
 ## v0.4.0-alpha
 
 This update brings improvements to the editor; you can now fully draw all the

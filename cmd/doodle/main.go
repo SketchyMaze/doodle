@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli/v2"
@@ -85,6 +86,10 @@ func main() {
 			Name:  "experimental",
 			Usage: "enable experimental Feature Flags",
 		},
+		&cli.BoolFlag{
+			Name:  "offline",
+			Usage: "offline mode, disables check for new updates",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -111,6 +116,11 @@ func main() {
 		// Enable feature flags?
 		if c.Bool("experimental") {
 			balance.FeaturesOn()
+		}
+
+		// Offline mode?
+		if c.Bool("offline") {
+			shmem.OfflineMode = true
 		}
 
 		// SDL engine.

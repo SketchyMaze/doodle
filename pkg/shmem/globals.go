@@ -19,6 +19,9 @@ var (
 	// The level.Chunk.ToBitmap() uses this to cache a texture image.
 	CurrentRenderEngine render.Engine
 
+	// Offline mode, if True then the updates check in MainScene is skipped.
+	OfflineMode bool
+
 	// Globally available Flash() function so we can emit text to the Doodle UI.
 	Flash func(string, ...interface{})
 

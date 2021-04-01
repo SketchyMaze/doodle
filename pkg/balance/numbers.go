@@ -48,7 +48,7 @@ var (
 	PlayerCharacterDoodad = "boy.doodad"
 
 	// Level name for the title screen.
-	DemoLevelName = "example 1.level"
+	DemoLevelName = "Tutorial 3.level"
 )
 
 // Edit Mode Values

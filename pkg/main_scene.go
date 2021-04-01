@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/updater"
 	"git.kirsle.net/go/render"
@@ -27,6 +28,7 @@ type MainScene struct {
 	// UI components.
 	labelTitle   *ui.Label
 	labelVersion *ui.Label
+	labelHint    *ui.Label
 	frame        *ui.Frame // Main button frame
 
 	// Update check variables.
@@ -69,6 +71,17 @@ func (s *MainScene) Setup(d *Doodle) error {
 	})
 	ver.Compute(d.Engine)
 	s.labelVersion = ver
+
+	// Arrow Keys hint label (scroll the demo level).
+	s.labelHint = ui.NewLabel(ui.Label{
+		Text: "Hint: press the Arrow keys",
+		Font: render.Text{
+			Size:   16,
+			Color:  render.Grey,
+			Shadow: render.Purple,
+		},
+	})
+	s.labelHint.Compute(d.Engine)
 
 	// "Update Available" button.
 	s.updateButton = ui.NewButton("Update Button", ui.NewLabel(ui.Label{
@@ -144,6 +157,11 @@ func (s *MainScene) Setup(d *Doodle) error {
 
 // checkUpdate checks for a version update and shows the button.
 func (s *MainScene) checkUpdate() {
+	if shmem.OfflineMode {
+		log.Info("OfflineMode: skip updates check")
+		return
+	}
+
 	info, err := updater.Check()
 	if err != nil {
 		log.Error(err.Error())
@@ -243,6 +261,13 @@ func (s *MainScene) Draw(d *Doodle) error {
 		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
 	})
 	s.labelVersion.Present(d.Engine, s.labelVersion.Point())
+
+	// Hint label.
+	s.labelHint.MoveTo(render.Point{
+		X: d.width - s.labelHint.Size().W - 32,
+		Y: d.height - s.labelHint.Size().H - 32,
+	})
+	s.labelHint.Present(d.Engine, s.labelHint.Point())
 
 	// Update button.
 	s.updateButton.MoveTo(render.Point{
