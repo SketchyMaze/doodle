@@ -47,6 +47,8 @@ github.com/mdempsky/maligned v0.0.0-20201101000000-d73c43cb16d0 h1:+6XJvFZBYbNv/
 github.com/mdempsky/maligned v0.0.0-20201101000000-d73c43cb16d0/go.mod h1:3UB4iTzhLciyWcrrvXSkrtCIU+IJ5GCfEmnleHRsxL4=
 github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f h1:Kc3s6QFyh9DLgInXpWKuG+8I7R7lXbnP7mcoOVIt6KY=
 github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f/go.mod h1:AmCV4WB3cDMZqgPk+OUQKumliiQS4ZYsBt3AXekyuAU=
+github.com/mibk/dupl v1.0.0 h1:aZc3jqrF9n0tUHwHt/+jsRxA8cRgA0Gdl56M7W7PoqE=
+github.com/mibk/dupl v1.0.0/go.mod h1:pCr4pNxxIbFGvtyCOi0c7LVjmV6duhKWV+ex5vh38ME=
 github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff h1:lRHufowVGvUvxGsPveAZOpSa/9T5Gpxg6d7UbHCA9MQ=
 github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff/go.mod h1:tydB+MZxWpY8M/NRu7jQhND/mXuLAPsKcSV6JkzofsA=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

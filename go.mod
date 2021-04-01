@@ -20,6 +20,7 @@ require (
 	github.com/kisielk/errcheck v1.4.0 // indirect
 	github.com/mdempsky/maligned v0.0.0-20201101000000-d73c43cb16d0 // indirect
 	github.com/mdempsky/unconvert v0.0.0-20200228143138-95ecdbfc0b5f // indirect
+	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/opennota/check v0.0.0-20180911053232-0c771f5545ff // indirect
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/stripe/safesql v0.2.0 // indirect

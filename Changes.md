@@ -1,6 +1,6 @@
 # Changes
 
-## v0.5.0-alpha
+## v0.5.0-alpha (Mar 31 2021)
 
 Project: Doodle is renamed to Sketchy Maze in this release.
 
@@ -46,7 +46,7 @@ Updated Doodads:
   Button is pressed. If the Sticky Button is released later (e.g. by receiving
   power from a Switch) it releases its linked Buttons as well.
 
-## v0.4.0-alpha
+## v0.4.0-alpha (Nov 21 2020)
 
 This update brings improvements to the editor; you can now fully draw all the
 graphics for a custom doodad using the in-app tools!
@@ -67,7 +67,7 @@ Other new features:
   Hitting the Escape key will ask you before just exiting the program. Alert
   boxes are supported too, and an `alert` command added to the developer console.
 
-## v0.3.0-alpha
+## v0.3.0-alpha (Sept 19 2020)
 
 This update introduces the player character to the game. He doesn't have a name;
 the game just refers to him as Boy.
@@ -94,7 +94,7 @@ Other new features:
   - Default size is desktop: 1024x768
   - Mobile and landscape mimic a smartphone at 375x812 resolution.
 
-## v0.2.0-alpha
+## v0.2.0-alpha (June 7 2020)
 
 This release brings Sound Effects and Menus to the game.
 
@@ -110,7 +110,7 @@ New features:
 * The game now has a Menu Bar with pull-down menus in the Editor Mode instead
   of just a top panel with New/Save/Open buttons.
 
-## v0.1.0-alpha
+## v0.1.0-alpha (Apr 13 2020)
 
 New doodads:
 
@@ -138,7 +138,7 @@ Other changes:
 * Tooltips added to various buttons in the Editor to show names of doodads and
   functions of various buttons.
 
-## v0.0.10-alpha
+## v0.0.10-alpha (July 18 2019)
 
 New features:
 
@@ -164,6 +164,6 @@ Bug fixes:
   chunks are now culled when the last pixel is deleted and existing level files
   will be repaired on next save.
 
-## v0.0.9-alpha
+## v0.0.9-alpha (July 9 2019)
 
 First alpha release.

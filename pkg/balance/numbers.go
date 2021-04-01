@@ -11,7 +11,7 @@ var (
 
 	// Window scrolling behavior in Play Mode.
 	ScrollboxHoz  = 256 // horizontal px from window border to start scrol
-	ScrollboxVert = 128
+	ScrollboxVert = 160
 
 	// Player speeds
 	PlayerMaxVelocity  float64 = 6
