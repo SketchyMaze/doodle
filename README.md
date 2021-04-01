@@ -1,10 +1,10 @@
-# Project: Doodle (Working Title)
+# Sketchy Maze
 
-> **Homepage:** https://www.kirsle.net/tagged/Doodle
+> **Homepage:** https://www.sketchymaze.com
 
-Doodle is a drawing-based maze game.
+Sketchy Maze is a drawing-based maze game.
 
-The theme of Doodle is centered around hand-drawn, side-scrolling platformer
+The game is themed around hand-drawn, side-scrolling platformer
 type mazes. You can draw your own levels using freehand and basic drawing tools,
 color in some fire or water, and drag in pre-made "Doodads" like buttons, keys
 and doors to add some interaction to your level.
@@ -12,8 +12,11 @@ and doors to add some interaction to your level.
 This is a _very_ early pre-release version of the game. Expect bugs and slowness
 but get a general gist of what the game is about.
 
-This alpha release of the game comes with two example levels built-in for
+This alpha release of the game comes with some example levels built-in for
 playing or editing and a handful of built-in Doodads.
+
+See the **Guidebook** included with this game for good user-facing
+documentation or online at https://www.sketchymaze.com/guidebook
 
 # Features
 
@@ -292,4 +295,4 @@ Supported variables include:
 
 # Author
 
-Copyright (C) 2020 Noah Petherbridge. All rights reserved.
+Copyright (C) 2021 Noah Petherbridge. All rights reserved.
