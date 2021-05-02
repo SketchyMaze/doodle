@@ -8,3 +8,7 @@ import "syscall/js"
 func OpenURL(url string) {
 	js.Global().Get("window").Call("open", url)
 }
+
+func OpenLocalURL(url string) {
+	OpenURL(url)
+}

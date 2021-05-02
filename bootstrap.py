@@ -72,13 +72,13 @@ def install_deps():
         # Fedora-like.
         if shell("rpm -q {}".format(' '.join(dep_fedora))) != 0:
             must_shell("sudo dnf install {}".format(' '.join(dep_fedora)))
+    elif shell("which brew") == 0:
+        # MacOS, as Catalina has an apt command now??
+        must_shell("brew install {}".format(' '.join(dep_macos)))
     elif shell("which apt") == 0:
         # Debian-like.
         if shell("dpkg-query -l {}".format(' '.join(dep_debian))) != 0:
             must_shell("sudo apt update && sudo apt install {}".format(' '.join(dep_debian)))
-    elif shell("which brew") == 0:
-        # MacOS
-        must_shell("brew install {}".format(' '.join(dep_macos)))
     else:
         print("Warning: didn't detect your package manager to install SDL2 and other dependencies")
 

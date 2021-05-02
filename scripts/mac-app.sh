@@ -5,7 +5,7 @@
 
 VERSION=`grep -e 'Version =' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
 INSTALL_ROOT="/opt/sketchy-maze"
-APP_NAME="Project Doodle.app"
+APP_NAME="Sketchy Maze.app"
 APP_FOLDER="../../etc/macos/$APP_NAME"
 APP_CONTENTS="$APP_NAME/Contents"
 
@@ -29,4 +29,4 @@ mkdir -p "$APP_CONTENTS/Resources"
 
 # Copy binaries to /MacOS
 cp doodle doodad "$APP_CONTENTS/MacOS/"
-cp *.* "$APP_CONTENTS/Resources/"
+cp -r *.* rtp guidebook "$APP_CONTENTS/Resources/"

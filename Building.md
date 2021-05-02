@@ -43,6 +43,9 @@ The bootstrap script will take care of the rest:
 It should work on Fedora-likes, Debian-likes and macOS all the same.
 It even runs on the Pine64 Pinephone (ARM64) with Mobian!
 
+MacOS is expected to have [homebrew](https://brew.sh) installed.
+MP3 support issues? [See here](https://github.com/veandco/go-sdl2/issues/299#issuecomment-611681191).
+
 **To do:** the most important repositories, like the game itself, are
 also mirrored on GitHub. Other supporting repos need mirroring too, or
 otherwise, full source tarballs (the result of bootstrap.py) will be
