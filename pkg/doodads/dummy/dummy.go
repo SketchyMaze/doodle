@@ -22,3 +22,8 @@ func NewDrawing(id string, doodad *doodads.Doodad) *Drawing {
 func (d *Drawing) Size() render.Rect {
 	return d.Drawing.Size()
 }
+
+// MoveTo changes the drawing's position.
+func (d *Drawing) MoveTo(to render.Point) {
+	d.Drawing.MoveTo(to)
+}

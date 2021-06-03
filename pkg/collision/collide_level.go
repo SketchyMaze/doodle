@@ -73,9 +73,13 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	)
 
 	// Adjust the actor's bounding rect by its stated Hitbox from its script.
-	S = SizePlusHitbox(S, hitbox)
+	// e.g.: Boy's Canvas size is 56x56 but he is a narrower character with a
+	// hitbox width smaller than its Canvas size.
+	S = SizePlusHitbox(GetBoundingRect(d), hitbox)
 
-	// Test all of the bounding boxes for a collision with level geometry.
+	// Test if we are ALREADY colliding with level geometry and try and wiggle
+	// free. ScanBoundingBox scans level pixels along the four edges of the
+	// actor's hitbox in world space.
 	if ok := result.ScanBoundingBox(GetBoundingRectHitbox(d, hitbox), grid); ok {
 		// We've already collided! Try to wiggle free.
 		if result.Bottom {
@@ -108,7 +112,8 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 			// We're moving upward.
 			d.SetGrounded(false)
 		} else {
-			// Cap our downward motion to our current position.
+			// Cap our downward motion to our current position,
+			// fighting the force of gravity.
 			target.Y = P.Y
 		}
 	}
@@ -117,7 +122,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	if (result.Left && target.X < P.X) || (result.Right && target.X > P.X) {
 		// If the step is short enough, try and jump up.
 		height := P.Y + S.H
-		if result.Left && target.X < P.X {
+		if result.Left { // && target.X < P.X {
 			height -= result.LeftPoint.Y
 		} else {
 			height -= result.RightPoint.Y
@@ -182,7 +187,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 
 			if result.Left && !hitLeft {
 				hitLeft = true
-				capLeft = result.LeftPoint.X + 1
+				capLeft = result.LeftPoint.X // + 1
 
 				// TODO: there was a clipping bug where the player could clip
 				// thru a left wall if they jumped slightly while pressing into
