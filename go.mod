@@ -41,3 +41,8 @@ require (
 	mvdan.cc/unparam v0.0.0-20200501210554-b37ab49443f7 // indirect
 )
 
+
+
+replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
+replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
+replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio
