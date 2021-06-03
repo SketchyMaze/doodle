@@ -43,6 +43,3 @@ require (
 
 
 
-replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
-replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
-replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio

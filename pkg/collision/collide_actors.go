@@ -14,6 +14,7 @@ type Actor interface {
 	Size() render.Rect
 	Grounded() bool
 	SetGrounded(bool)
+	Hitbox() render.Rect
 }
 
 // BoxCollision holds the result of a collision BetweenBoxes.

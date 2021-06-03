@@ -57,6 +57,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	var (
 		P = d.Position()
 		S = d.Size()
+		hitbox = d.Hitbox()
 
 		result = &Collide{
 			MoveTo: P,
@@ -71,8 +72,11 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		hitFloor  bool
 	)
 
+	// Adjust the actor's bounding rect by its stated Hitbox from its script.
+	S = SizePlusHitbox(S, hitbox)
+
 	// Test all of the bounding boxes for a collision with level geometry.
-	if ok := result.ScanBoundingBox(GetBoundingRect(d), grid); ok {
+	if ok := result.ScanBoundingBox(GetBoundingRectHitbox(d, hitbox), grid); ok {
 		// We've already collided! Try to wiggle free.
 		if result.Bottom {
 			if !d.Grounded() {

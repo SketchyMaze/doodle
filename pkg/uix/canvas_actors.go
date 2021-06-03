@@ -31,6 +31,11 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	return nil
 }
 
+// Actors returns the list of actors currently in the Canvas.
+func (w *Canvas) Actors() []*Actor {
+	return w.actors
+}
+
 // ClearActors removes all the actors from the Canvas.
 func (w *Canvas) ClearActors() {
 	w.actors = []*Actor{}

@@ -126,7 +126,7 @@ func (w *Canvas) presentStrokes(e render.Engine) {
 	for _, stroke := range w.strokes {
 		strokes = append(strokes, stroke)
 	}
-	w.drawStrokes(e, strokes)
+	w.DrawStrokes(e, strokes)
 
 	// Dynamic actor links visible in the ActorTool and LinkTool.
 	if w.Tool == drawtool.ActorTool || w.Tool == drawtool.LinkTool {
@@ -201,12 +201,12 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 		}
 	}
 
-	w.drawStrokes(e, strokes)
+	w.DrawStrokes(e, strokes)
 }
 
-// drawStrokes is the common base function behind presentStrokes and
+// DrawStrokes is the common base function behind presentStrokes and
 // presentActorLinks to actually draw the lines to the canvas.
-func (w *Canvas) drawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
+func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 	var (
 		P  = ui.AbsolutePosition(w) // Canvas point in UI
 		VP = w.ViewportRelative()   // Canvas scroll viewport

@@ -6,7 +6,8 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -133,10 +134,9 @@ func (d *Doodle) DrawDebugOverlay() {
 
 // DrawCollisionBox draws the collision box around a Doodad.
 //
-// TODO: move inside the Canvas. Currently it takes an actor's World Position
-// and draws the box as if it were a relative (to the window) position, so the
-// hitbox drifts off when the level scrolls away from 0,0
-func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
+// The canvas will be the level Canvas, and the collision box is drawn in world
+// space using the canvas.DrawStrokes function.
+func (d *Doodle) DrawCollisionBox(canvas *uix.Canvas, actor *uix.Actor) {
 	if !DebugCollision {
 		return
 	}
@@ -144,12 +144,32 @@ func (d *Doodle) DrawCollisionBox(actor doodads.Actor) {
 	var (
 		rect = collision.GetBoundingRect(actor)
 		box  = collision.GetCollisionBox(rect)
+		hitbox = actor.Hitbox()
 	)
 
-	d.Engine.DrawLine(render.DarkGreen, box.Top[0], box.Top[1])
-	d.Engine.DrawLine(render.DarkBlue, box.Bottom[0], box.Bottom[1])
-	d.Engine.DrawLine(render.DarkYellow, box.Left[0], box.Left[1])
-	d.Engine.DrawLine(render.Red, box.Right[0], box.Right[1])
+	// Adjust the actor's bounding rect by its stated Hitbox from its script.
+	rect = collision.SizePlusHitbox(rect, hitbox)
+
+	box = collision.GetCollisionBox(rect)
+
+	// The stroke data for drawing the collision box "inside" the level Canvas,
+	// so it scrolls and works in world units not screen units.
+	var strokes = []struct{
+		Color render.Color
+		PointA render.Point
+		PointB render.Point
+	}{
+		{render.DarkGreen, box.Top[0], box.Top[1]},
+		{render.DarkBlue, box.Bottom[0], box.Bottom[1]},
+		{render.DarkYellow, box.Left[0], box.Left[1]},
+		{render.Red, box.Right[0], box.Right[1]},
+	}
+	for _, cfg := range strokes {
+		stroke := drawtool.NewStroke(drawtool.Line, cfg.Color)
+		stroke.PointA = cfg.PointA
+		stroke.PointB = cfg.PointB
+		canvas.DrawStrokes(d.Engine, []*drawtool.Stroke{stroke})
+	}
 }
 
 // TrackFPS shows the current FPS once per second.

@@ -427,7 +427,11 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	// Draw out bounding boxes.
-	d.DrawCollisionBox(s.Player.Drawing)
+	if DebugCollision {
+		for _, actor := range s.drawing.Actors() {
+			d.DrawCollisionBox(s.drawing, actor)
+		}
+	}
 
 	// Draw the UI screen and any widgets that attached to it.
 	s.screen.Compute(d.Engine)

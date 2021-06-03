@@ -5,6 +5,7 @@ function main() {
 
 	var direction = "right";
 
+	Self.SetHitbox(0, 0, 32, 32)
 	Self.SetMobile(true);
 	Self.SetGravity(true);
 	Self.AddAnimation("walk-left", 100, ["red-wl1", "red-wl2", "red-wl3", "red-wl4"]);

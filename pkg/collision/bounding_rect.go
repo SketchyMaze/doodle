@@ -40,3 +40,13 @@ func GetBoundingRectHitbox(a Actor, hitbox render.Rect) render.Rect {
 	}
 	return rect
 }
+
+// SizePlusHitbox adjusts an actor's canvas Size() to better fit the
+// declared Hitbox by the actor's script.
+func SizePlusHitbox(size render.Rect, hitbox render.Rect) render.Rect {
+	size.X += hitbox.X
+	size.Y += hitbox.Y
+	size.W -= size.W - hitbox.W
+	size.H -= size.H - hitbox.H
+	return size
+}

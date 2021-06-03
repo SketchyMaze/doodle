@@ -112,7 +112,7 @@ func (w *Canvas) loopActorCollision() error {
 			w.loopContainActorsInsideLevel(a)
 
 			// Store this actor's bounding box after they've moved.
-			boxes[i] = collision.GetBoundingRect(a)
+			boxes[i] = collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
 		}(i, a)
 		wg.Wait()
 	}
@@ -133,7 +133,7 @@ func (w *Canvas) loopActorCollision() error {
 		// Call the OnCollide handler for A informing them of B's intersection.
 		if w.scripting != nil {
 			var (
-				rect        = collision.GetBoundingRect(b)
+				rect        = collision.SizePlusHitbox(collision.GetBoundingRect(b), b.Hitbox())
 				lastGoodBox = render.Rect{
 					X: originalPositions[b.ID()].X,
 					Y: originalPositions[b.ID()].Y,
@@ -205,7 +205,7 @@ func (w *Canvas) loopActorCollision() error {
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
 							// Are they on top?
-							aHitbox := collision.GetBoundingRectHitbox(a, a.Hitbox())
+							aHitbox := collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
 							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
 								onTop = true
 								onTopY = test.Y
