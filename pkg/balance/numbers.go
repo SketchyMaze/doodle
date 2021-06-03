@@ -15,8 +15,9 @@ var (
 
 	// Player speeds
 	PlayerMaxVelocity  float64 = 6
-	PlayerAcceleration float64 = 0.2
+	PlayerAcceleration float64 = 0.9
 	Gravity            float64 = 6
+	GravityAcceleration float64 = 0.2
 	SlopeMaxHeight             = 8 // max pixel height for player to walk up a slope
 
 	// Default chunk size for canvases.

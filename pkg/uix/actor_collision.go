@@ -70,7 +70,7 @@ func (w *Canvas) loopActorCollision() error {
 					v.Y = physics.Lerp(
 						v.Y,             // current speed
 						balance.Gravity, // target max gravity falling downwards
-						balance.PlayerAcceleration,
+						balance.GravityAcceleration,
 					)
 				} else {
 					v.Y = 0
