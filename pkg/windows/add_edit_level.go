@@ -3,6 +3,7 @@ package windows
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -28,14 +29,18 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	var (
 		newPageType  = level.Bounded.String()
 		newWallpaper = "notebook.png"
+		paletteName  = level.DefaultPaletteNames[0]
 		isNewLevel   = config.EditLevel == nil
 		title        = "New Drawing"
+
+		textCurrentPalette = "Keep current palette"
 	)
 
 	// Given a level to edit?
 	if config.EditLevel != nil {
 		newPageType = config.EditLevel.PageType.String()
 		newWallpaper = config.EditLevel.Wallpaper
+		paletteName = textCurrentPalette
 		title = "Page Settings"
 	}
 
@@ -128,12 +133,14 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		frame.Pack(label2, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
+			PadY: 2,
 		})
 
 		wpFrame := ui.NewFrame("Wallpaper Frame")
 		frame.Pack(wpFrame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
+			PadY: 2,
 		})
 
 		type wallpaperObj struct {
@@ -164,7 +171,67 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 					Side: ui.W,
 					PadX: 4,
 				})
+
+				// If a new level, the Blueprint button has a tooltip
+				// hinting to pick the Blueprint palette to match.
+				if config.EditLevel == nil && t.Name == "Blueprint" {
+					ui.NewTooltip(radio, ui.Tooltip{
+						Text: "Dark theme! Make sure to also\npick a Blueprint color palette!",
+						Edge: ui.Top,
+					})
+				}
 			}(t)
+		}
+
+		/******************
+		 * Frame for picking a default color palette.
+		 ******************/
+
+		// For new level or --experimental only.
+		if config.EditLevel == nil || balance.Feature.ChangePalette {
+			palFrame := ui.NewFrame("Palette Frame")
+			frame.Pack(palFrame, ui.Pack{
+				Side:  ui.N,
+				FillX: true,
+				PadY: 4,
+			})
+
+			label3 := ui.NewLabel(ui.Label{
+				Text: "Palette: ",
+				Font: balance.LabelFont,
+			})
+			palFrame.Pack(label3, ui.Pack{
+				Side:  ui.W,
+			})
+
+			palBtn := ui.NewMenuButton("Palette Button", ui.NewLabel(ui.Label{
+				TextVariable: &paletteName,
+				Font: balance.MenuFont,
+			}))
+
+			palFrame.Pack(palBtn, ui.Pack{
+				Side: ui.W,
+				// FillX: true,
+				Expand: true,
+			})
+
+			if config.EditLevel != nil {
+				palBtn.AddItem(paletteName, func() {
+					paletteName = textCurrentPalette
+				})
+				palBtn.AddSeparator();
+			}
+
+			for _, palName := range level.DefaultPaletteNames {
+				palName := palName
+				// palette := level.DefaultPalettes[palName]
+				palBtn.AddItem(palName, func() {
+					paletteName = palName
+				})
+			}
+
+			config.Supervisor.Add(palBtn)
+			palBtn.Supervise(config.Supervisor)
 		}
 
 		/******************
@@ -258,14 +325,9 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 				}
 
 				lvl := level.New()
-				lvl.Palette = level.DefaultPalette()
+				lvl.Palette = level.DefaultPalettes[paletteName]
 				lvl.Wallpaper = newWallpaper
 				lvl.PageType = pageType
-
-				// Blueprint theme palette for the dark wallpaper color.
-				if lvl.Wallpaper == "blueprint.png" {
-					lvl.Palette = level.NewBlueprintPalette()
-				}
 
 				config.OnCreateNewLevel(lvl)
 				return nil
@@ -278,6 +340,19 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 
 			// OK button is for editing an existing level.
 			{"OK", func(ed ui.EventData) error {
+				// If we're editing a level, did we select a new palette?
+				if paletteName != textCurrentPalette {
+					modal.Confirm(
+						"Are you sure you want to change the level palette?\n"+
+						"Existing pixels drawn on your level may change, and\n"+
+						"if the new palette is smaller, some pixels may be\n"+
+						"lost from your level. OK to continue?",
+					).WithTitle("Change Level Palette").Then(func() {
+						config.OnCancel();
+					})
+					return nil
+				}
+
 				config.OnCancel()
 				return nil
 			}},

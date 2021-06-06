@@ -43,6 +43,11 @@ func (s *MenuScene) Name() string {
 	return "Menu"
 }
 
+// DebugGetWindow surfaces the underlying private window.
+func (s *MenuScene) DebugGetWindow() *ui.Window {
+	return s.window
+}
+
 // GotoNewMenu loads the MenuScene and shows the "New" window.
 func (d *Doodle) GotoNewMenu() {
 	log.Info("Loading the MenuScene to the New window")
