@@ -64,19 +64,18 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		 * Frame for selecting Page Type
 		 ******************/
 
-		label1 := ui.NewLabel(ui.Label{
-			Text: "Page Type",
-			Font: balance.LabelFont,
-		})
-		frame.Pack(label1, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-		})
-
 		typeFrame := ui.NewFrame("Page Type Options Frame")
 		frame.Pack(typeFrame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
+		})
+
+		label1 := ui.NewLabel(ui.Label{
+			Text: "Page Type:",
+			Font: balance.LabelFont,
+		})
+		typeFrame.Pack(label1, ui.Pack{
+			Side:  ui.W,
 		})
 
 		type typeObj struct {
@@ -84,11 +83,20 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			Value level.PageType
 		}
 		var types = []typeObj{
-			{"Unbounded", level.Unbounded},
 			{"Bounded", level.Bounded},
+			{"Unbounded", level.Unbounded},
 			{"No Negative Space", level.NoNegativeSpace},
 			// {"Bordered (TODO)", level.Bordered},
 		}
+
+		typeBtn := ui.NewSelectBox("Type Select", ui.Label{
+			Font: ui.MenuFont,
+		})
+		typeFrame.Pack(typeBtn, ui.Pack{
+			Side: ui.W,
+			Expand: true,
+		})
+
 		for _, t := range types {
 			// TODO: Hide some options for the free version of the game.
 			// - At launch only Bounded and Bordered will be available
@@ -100,46 +108,44 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			// 		continue
 			// 	}
 			// }
-
-			func(t typeObj) {
-				radio := ui.NewRadioButton(t.Name,
-					&newPageType,
-					t.Value.String(),
-					ui.NewLabel(ui.Label{
-						Text: t.Name,
-						Font: balance.MenuFont,
-					}),
-				)
-				radio.Handle(ui.Click, func(ed ui.EventData) error {
-					config.OnChangePageTypeAndWallpaper(t.Value, newWallpaper)
-					return nil
-				})
-				config.Supervisor.Add(radio)
-				typeFrame.Pack(radio, ui.Pack{
-					Side: ui.W,
-					PadX: 4,
-				})
-			}(t)
+			typeBtn.AddItem(t.Name, t.Value, func() {})
 		}
+
+		// If editing an existing level, pre-select the right page type.
+		if config.EditLevel != nil {
+			typeBtn.SetValue(config.EditLevel.PageType)
+		}
+
+		typeBtn.Handle(ui.Change, func(ed ui.EventData) error {
+			if selection, ok := typeBtn.GetValue(); ok {
+				if pageType, ok := selection.Value.(level.PageType); ok {
+					newPageType = pageType.String()
+					config.OnChangePageTypeAndWallpaper(pageType, newWallpaper)
+				}
+			}
+			return nil
+		})
+
+		typeBtn.Supervise(config.Supervisor)
+		config.Supervisor.Add(typeBtn)
 
 		/******************
 		 * Frame for selecting Level Wallpaper
 		 ******************/
 
-		label2 := ui.NewLabel(ui.Label{
-			Text: "Wallpaper",
-			Font: balance.LabelFont,
-		})
-		frame.Pack(label2, ui.Pack{
+		wpFrame := ui.NewFrame("Wallpaper Frame")
+		frame.Pack(wpFrame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
 			PadY: 2,
 		})
 
-		wpFrame := ui.NewFrame("Wallpaper Frame")
-		frame.Pack(wpFrame, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
+		label2 := ui.NewLabel(ui.Label{
+			Text: "Wallpaper:",
+			Font: balance.LabelFont,
+		})
+		wpFrame.Pack(label2, ui.Pack{
+			Side:  ui.W,
 			PadY: 2,
 		})
 
@@ -154,34 +160,54 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			{"Pure White", "white.png"},
 			// {"Placemat", "placemat.png"},
 		}
-		for _, t := range wallpapers {
-			func(t wallpaperObj) {
-				radio := ui.NewRadioButton(t.Name, &newWallpaper, t.Value, ui.NewLabel(ui.Label{
-					Text: t.Name,
-					Font: balance.MenuFont,
-				}))
-				radio.Handle(ui.Click, func(ed ui.EventData) error {
-					if pageType, ok := level.PageTypeFromString(newPageType); ok {
-						config.OnChangePageTypeAndWallpaper(pageType, t.Value)
-					}
-					return nil
-				})
-				config.Supervisor.Add(radio)
-				wpFrame.Pack(radio, ui.Pack{
-					Side: ui.W,
-					PadX: 4,
-				})
 
-				// If a new level, the Blueprint button has a tooltip
-				// hinting to pick the Blueprint palette to match.
-				if config.EditLevel == nil && t.Name == "Blueprint" {
-					ui.NewTooltip(radio, ui.Tooltip{
-						Text: "Dark theme! Make sure to also\npick a Blueprint color palette!",
-						Edge: ui.Top,
-					})
-				}
-			}(t)
+		wallBtn := ui.NewSelectBox("Wallpaper Select", ui.Label{
+			Font: balance.MenuFont,
+		})
+		wallBtn.AlwaysChange = true
+		wpFrame.Pack(wallBtn, ui.Pack{
+			Side: ui.W,
+			Expand: true,
+		})
+
+		for _, t := range wallpapers {
+			wallBtn.AddItem(t.Name, t.Value, func() {})
 		}
+
+		// Add custom wallpaper options.
+		if balance.Feature.CustomWallpaper {
+			wallBtn.AddSeparator()
+			wallBtn.AddItem("Browse...", "_custom", func() {})
+		}
+
+		// If editing a level, select the current wallpaper.
+		if config.EditLevel != nil {
+			wallBtn.SetValue(config.EditLevel.Wallpaper)
+		}
+
+		wallBtn.Handle(ui.Change, func(ed ui.EventData) error {
+			if selection, ok := wallBtn.GetValue(); ok {
+				if filename, ok := selection.Value.(string); ok {
+					// Picking the Custom option?
+					if filename == "_custom" {
+						shmem.Prompt("Enter file path to custom wallpaper:", func(filepath string) {
+							shmem.Flash("Chosen: %s", filepath)
+							newWallpaper = filename
+						})
+						// return nil
+					}
+
+					if pageType, ok := level.PageTypeFromString(newPageType); ok {
+						config.OnChangePageTypeAndWallpaper(pageType, filename)
+						newWallpaper = filename
+					}
+				}
+			}
+			return nil
+		})
+
+		wallBtn.Supervise(config.Supervisor)
+		config.Supervisor.Add(wallBtn)
 
 		/******************
 		 * Frame for picking a default color palette.
@@ -204,31 +230,33 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 				Side:  ui.W,
 			})
 
-			palBtn := ui.NewMenuButton("Palette Button", ui.NewLabel(ui.Label{
-				TextVariable: &paletteName,
+			palBtn := ui.NewSelectBox("Palette Select", ui.Label{
 				Font: balance.MenuFont,
-			}))
+			})
+			palBtn.AlwaysChange = true
 
 			palFrame.Pack(palBtn, ui.Pack{
 				Side: ui.W,
-				// FillX: true,
 				Expand: true,
 			})
 
 			if config.EditLevel != nil {
-				palBtn.AddItem(paletteName, func() {
-					paletteName = textCurrentPalette
-				})
+				palBtn.AddItem(paletteName, paletteName, func() {})
 				palBtn.AddSeparator();
 			}
 
 			for _, palName := range level.DefaultPaletteNames {
 				palName := palName
-				// palette := level.DefaultPalettes[palName]
-				palBtn.AddItem(palName, func() {
-					paletteName = palName
-				})
+				palBtn.AddItem(palName, palName, func() {})
 			}
+
+			palBtn.Handle(ui.Change, func(ed ui.EventData) error {
+				if val, ok := palBtn.GetValue(); ok {
+					val2, _ := val.Value.(string)
+					paletteName = val2
+				}
+				return nil
+			})
 
 			config.Supervisor.Add(palBtn)
 			palBtn.Supervise(config.Supervisor)
