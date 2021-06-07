@@ -3,7 +3,6 @@ package windows
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -165,8 +164,10 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		}
 		var wallpapers = []wallpaperObj{
 			{"Notebook", "notebook.png"},
-			{"Blueprint", "blueprint.png"},
 			{"Legal Pad", "legal.png"},
+			{"Graph paper", "graph.png"},
+			{"Dotted paper", "dots.png"},
+			{"Blueprint", "blueprint.png"},
 			{"Pure White", "white.png"},
 			// {"Placemat", "placemat.png"},
 		}
