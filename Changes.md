@@ -1,5 +1,39 @@
 # Changes
 
+## v0.6.0-alpha (June 6 2021)
+
+This release brings less jank and some new features.
+
+The new features:
+
+* **Choice of Default Palette for New Levels:** when creating a new level, a
+  "Palette:" option appears which allows you to set the default colors to start
+  your level with. The options include:
+  * Default: the classic default 4 colors (black, grey, red, blue).
+  * Colored Pencil: a set with more earthy tones for outdoorsy levels
+    (grass, dirt, stone, fire, water)
+  * Blueprint: the classic Blueprint wallpaper theme, a bright version of Default
+    for dark level backgrounds.
+* **Custom Wallpapers:** unhappy with the default, paper-themed level background
+  images? You can now use your own! They attach to your level data for easy
+  transport when sharing your level with others.
+* **More Wallpapers:** a couple of new default wallpapers are added: Graph paper
+  and Dotted paper. They are both on light white paper and offer a light
+  alternative to Blueprint.
+
+Some bugs fixed:
+
+* **Collision fixes:** you should be able to walk up gentle slopes to the left
+  without jumping, as easily as you could to the right.
+* **Debugging:** the F4 key to show collision hitboxes around all doodads in
+  Play Mode now functions again, and draws boxes around _all_ doodads, not just the 
+  player character.
+* **Hitboxes are tighter:** a doodad's declared hitbox size (from their JavaScript)
+  is used when a doodad collides against level geometry or other doodads. Meaning:
+  Boy, who has a narrow body but a square sprite size, now collides closer with
+  objects on his right side.
+* **Physics are tweaked:** Boy now moves and accelerates slightly faster.
+
 ## v0.5.0-alpha (Mar 31 2021)
 
 Project: Doodle is renamed to Sketchy Maze in this release.
