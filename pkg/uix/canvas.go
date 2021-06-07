@@ -2,15 +2,14 @@ package uix
 
 import (
 	"fmt"
-	"os"
 	"runtime"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
@@ -154,15 +153,13 @@ func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 	filename := "assets/wallpapers/" + level.Wallpaper
 	if runtime.GOOS != "js" {
 		// Check if the wallpaper wasn't found. Check bindata and file system.
-		if _, err := bindata.Asset(filename); err != nil {
-			if _, err := os.Stat(filename); os.IsNotExist(err) {
-				log.Error("LoadLevel: wallpaper %s did not appear to exist, default to notebook.png", filename)
-				filename = "assets/wallpapers/notebook.png"
-			}
+		if _, err := filesystem.FindFileEmbedded(filename, level); err != nil {
+			log.Error("LoadLevel: wallpaper %s did not appear to exist, default to notebook.png", filename)
+			filename = "assets/wallpapers/notebook.png"
 		}
 	}
 
-	wp, err := wallpaper.FromFile(e, filename)
+	wp, err := wallpaper.FromFile(e, filename, level)
 	if err != nil {
 		log.Error("wallpaper FromFile(%s): %s", filename, err)
 	}

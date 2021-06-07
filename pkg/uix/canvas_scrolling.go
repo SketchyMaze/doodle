@@ -111,6 +111,7 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 
 	var (
 		VP = w.Viewport()
+		// ScrollboxHoz = VP.
 	)
 
 	// Find the actor.

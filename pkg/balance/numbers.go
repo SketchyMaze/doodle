@@ -10,8 +10,12 @@ var (
 	CanvasScrollSpeed = 8
 
 	// Window scrolling behavior in Play Mode.
+	// DEPRECATED: pixels close to window edges
 	ScrollboxHoz  = 256 // horizontal px from window border to start scrol
 	ScrollboxVert = 160
+	// NEW: set scrollbox bounds by percents
+	ScrollboxHozPercent float64 = 0.25
+	ScrollboxVertPercent float64 = 0.40
 
 	// Player speeds
 	PlayerMaxVelocity  float64 = 6
@@ -50,6 +54,11 @@ var (
 
 	// Level name for the title screen.
 	DemoLevelName = "Tutorial 3.level"
+
+	// Level attachment filename for the custom wallpaper.
+	// NOTE: due to hard-coded "assets/wallpapers/" prefix in uix/canvas.go#LoadLevel.
+	CustomWallpaperFilename = "custom.b64img"
+	CustomWallpaperEmbedPath = "assets/wallpapers/custom.b64img"
 )
 
 // Edit Mode Values

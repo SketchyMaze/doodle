@@ -8,8 +8,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"encoding/base64"
 
 	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -57,13 +60,16 @@ func FromImage(e render.Engine, img *image.RGBA, name string) (*Wallpaper, error
 // FromFile creates a Wallpaper from a file on disk.
 // If the renger.Engine is nil it will compute images but not pre-cache any
 // textures yet.
-func FromFile(e render.Engine, filename string) (*Wallpaper, error) {
+func FromFile(e render.Engine, filename string, embeddable filesystem.Embeddable) (*Wallpaper, error) {
+	// Default object to return on errors.
+	var defaultWP = &Wallpaper{
+		Name:  strings.Split(filepath.Base(filename), ".")[0],
+		ready: false,
+	}
+
 	// WASM: no support yet for wallpapers.
 	if runtime.GOOS == "js" {
-		return &Wallpaper{
-			Name:  strings.Split(filepath.Base(filename), ".")[0],
-			ready: false,
-		}, nil
+		return defaultWP, nil
 	}
 
 	// Try and get an image object by any means.
@@ -73,21 +79,27 @@ func FromFile(e render.Engine, filename string) (*Wallpaper, error) {
 		imgErr error
 	)
 
-	// Try the bindata store.
-	if data, err := bindata.Asset(filename); err == nil {
+	// Try the level embedded files, then bindata, then filesystem.
+	if data, err := embeddable.GetFile(filename); err == nil {
+		log.Debug("wallpaper.FromFile(%s): found in embedded level files", filename)
+		bin, _ := base64.StdEncoding.DecodeString(string(data))
+		img, format, imgErr = image.Decode(bytes.NewReader(bin))
+	} else if data, err := bindata.Asset(filename); err == nil {
+		log.Debug("wallpaper.FromFile(%s): found in program bindata", filename)
 		fh := bytes.NewBuffer(data)
 		img, format, imgErr = image.Decode(fh)
 	} else {
+		log.Debug("wallpaper.FromFile(%s): opening from disk", filename)
 		fh, err := os.Open(filename)
 		if err != nil {
-			return nil, err
+			return defaultWP, err
 		}
 		img, format, imgErr = image.Decode(fh)
 	}
 
 	// Image loading error?
 	if imgErr != nil {
-		return nil, imgErr
+		return defaultWP, imgErr
 	}
 
 	// Ugly hack: make it an image.RGBA because the thing we get tends to be

@@ -176,6 +176,11 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				shmem.Prompt(fmt.Sprintf(
 					"New color in hex notation [%s]: ", swatch.Color.ToHex()), func(answer string) {
 					if answer != "" {
+						// XXX: pure white renders as invisible, fudge it a bit.
+						if answer == "FFFFFF" {
+							answer = "FFFFFE"
+						}
+
 						color, err := render.HexColor(answer)
 						if err != nil {
 							shmem.Flash("Error with that color code: %s", err)

@@ -3,8 +3,11 @@ package windows
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -33,7 +36,14 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		isNewLevel   = config.EditLevel == nil
 		title        = "New Drawing"
 
+		// Default text for the Palette drop-down for already-existing levels.
+		// (needs --experimental feature flag to enable the UI).
 		textCurrentPalette = "Keep current palette"
+
+		// For NEW levels, if a custom wallpaper is selected from disk, cache
+		// it in these vars. For pre-existing levels, the wallpaper updates
+		// immediately in the live config.EditLevel object.
+		newWallpaperB64 string
 	)
 
 	// Given a level to edit?
@@ -177,7 +187,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		// Add custom wallpaper options.
 		if balance.Feature.CustomWallpaper {
 			wallBtn.AddSeparator()
-			wallBtn.AddItem("Browse...", "_custom", func() {})
+			wallBtn.AddItem("Custom wallpaper...", balance.CustomWallpaperFilename, func() {})
 		}
 
 		// If editing a level, select the current wallpaper.
@@ -189,12 +199,31 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			if selection, ok := wallBtn.GetValue(); ok {
 				if filename, ok := selection.Value.(string); ok {
 					// Picking the Custom option?
-					if filename == "_custom" {
-						shmem.Prompt("Enter file path to custom wallpaper:", func(filepath string) {
-							shmem.Flash("Chosen: %s", filepath)
-							newWallpaper = filename
-						})
-						// return nil
+					if filename == balance.CustomWallpaperFilename {
+						filename, err := native.OpenFile("Choose a custom wallpaper:", "*.png *.jpg *.gif")
+						if err == nil {
+							b64data, err := wallpaper.FileToB64(filename)
+							if err != nil {
+								shmem.Flash("Error loading wallpaper: %s", err)
+								return nil
+							}
+
+							// If editing a level, apply the update straight away.
+							if config.EditLevel != nil {
+								config.EditLevel.SetFile(balance.CustomWallpaperEmbedPath, []byte(b64data))
+								newWallpaper = balance.CustomWallpaperFilename
+
+								// Trigger the page type change to the caller.
+								if pageType, ok := level.PageTypeFromString(newPageType); ok {
+									config.OnChangePageTypeAndWallpaper(pageType, balance.CustomWallpaperFilename)
+								}
+							} else {
+								// Hold onto the new wallpaper until the level is created.
+								newWallpaper = balance.CustomWallpaperFilename
+								newWallpaperB64 = b64data
+							}
+						}
+						return nil
 					}
 
 					if pageType, ok := level.PageTypeFromString(newPageType); ok {
@@ -356,6 +385,11 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 				lvl.Palette = level.DefaultPalettes[paletteName]
 				lvl.Wallpaper = newWallpaper
 				lvl.PageType = pageType
+
+				// Was a custom wallpaper selected for our NEW level?
+				if lvl.Wallpaper == balance.CustomWallpaperFilename && len(newWallpaperB64) > 0 {
+					lvl.SetFile(balance.CustomWallpaperEmbedPath, []byte(newWallpaperB64))
+				}
 
 				config.OnCreateNewLevel(lvl)
 				return nil

@@ -3,7 +3,7 @@ package balance
 // Feature Flags to turn on/off experimental content.
 var Feature = feature{
 	Zoom: false,
-	CustomWallpaper: false,
+	CustomWallpaper: true,
 	ChangePalette: false,
 }
 

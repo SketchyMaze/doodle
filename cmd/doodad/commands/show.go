@@ -33,6 +33,11 @@ func init() {
 				Name:  "script",
 				Usage: "print the script from a doodad file and exit",
 			},
+			&cli.StringFlag{
+				Name: "attachment",
+				Aliases: []string{"a"},
+				Usage: "print the contents of the attached filename to terminal",
+			},
 			&cli.BoolFlag{
 				Name:    "verbose",
 				Aliases: []string{"v"},
@@ -76,6 +81,17 @@ func showLevel(c *cli.Context, filename string) error {
 		return err
 	}
 
+	// Are we printing an attached file?
+	if filename := c.String("attachment"); filename != "" {
+		if data, err := lvl.GetFile(filename); err == nil {
+			fmt.Print(string(data))
+			return nil
+		} else {
+			fmt.Printf("Couldn't get attached file '%s': %s\n", filename, err)
+			return err
+		}
+	}
+
 	fmt.Printf("===== Level: %s =====\n", filename)
 
 	fmt.Println("Headers:")
@@ -94,6 +110,17 @@ func showLevel(c *cli.Context, filename string) error {
 	fmt.Printf("   Max size: %dx%d\n", lvl.MaxWidth, lvl.MaxHeight)
 	fmt.Printf("  Wallpaper: %s\n", lvl.Wallpaper)
 	fmt.Println("")
+
+	fmt.Println("Attached Files:")
+	if files := lvl.ListFiles(); len(files) > 0 {
+		for _, v := range files {
+			data, _ := lvl.GetFile(v)
+			fmt.Printf("  %s: %d bytes\n", v, len(data))
+		}
+		fmt.Println("")
+	} else {
+		fmt.Printf("  None\n\n")
+	}
 
 	// Print the actor information.
 	fmt.Println("Actors:")
