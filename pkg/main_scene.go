@@ -34,6 +34,11 @@ type MainScene struct {
 	// Update check variables.
 	updateButton *ui.Button
 	updateInfo   updater.VersionInfo
+
+	// Lazy scroll variables. See LoopLazyScroll().
+	lazyScrollBounce     bool
+	lazyScrollTrajectory render.Point
+	lazyScrollLastValue  render.Point
 }
 
 // Name of the scene.
@@ -217,6 +222,9 @@ func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 		log.Error("MainScene.Loop: scripting.Loop: %s", err)
 	}
 
+	// Lazily scroll the canvas around, slowly.
+	s.LoopLazyScroll()
+
 	s.canvas.Loop(ev)
 
 	if ev.WindowResized {
@@ -231,6 +239,63 @@ func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 	}
 
 	return nil
+}
+
+// LoopLazyScroll gently scrolls the title screen demo level, called each Loop.
+func (s *MainScene) LoopLazyScroll() {
+	// The v1 basic sauce algorithm:
+	// 1. We scroll diagonally downwards and rightwards.
+	// 2. When we scroll downwards far enough, we change direction.
+	//    Make a zigzag pattern.
+	// 3. When we reach the right bound of the level
+	//    OR some max number of px into an unbounded level:
+	//    enter a simple ball bouncing mode like a screensaver.
+	var (
+		zigzagMaxHeight = 512
+		maxScrollX      = zigzagMaxHeight * 2
+		lastScrollValue = s.lazyScrollLastValue
+		currentScroll   = s.canvas.Scroll
+	)
+
+	// So we have two states:
+	// - Zigzag state (default)
+	// - Bounce state (when we hit a wall)
+	if !s.lazyScrollBounce {
+		// Zigzag state.
+		s.lazyScrollTrajectory = render.Point{
+			X: -1, // down and right
+			Y: -1,
+		}
+
+		// When we've gone far enough X, it's also far enough Y.
+		if currentScroll.X < -zigzagMaxHeight {
+			s.lazyScrollTrajectory.Y = 1 // go back up
+		}
+
+		// Have we gotten stuck in a corner? (ending the zigzag phase, for bounded levels)
+		if currentScroll.X < 0 && (currentScroll == lastScrollValue) || currentScroll.X < -maxScrollX {
+			log.Debug("LoopLazyScroll: Ending zigzag phase, enter bounce phase")
+			s.lazyScrollBounce = true
+			s.lazyScrollTrajectory = render.Point{
+				X: -1,
+				Y: -1,
+			}
+		}
+	} else {
+		// Lazy bounce algorithm.
+		if currentScroll.Y == lastScrollValue.Y {
+			log.Debug("LoopLazyScroll: Hit a floor/ceiling")
+			s.lazyScrollTrajectory.Y = -s.lazyScrollTrajectory.Y
+		}
+		if currentScroll.X == lastScrollValue.X {
+			log.Debug("LoopLazyScroll: Hit the side of the map!")
+			s.lazyScrollTrajectory.X = -s.lazyScrollTrajectory.X
+		}
+	}
+
+	// Check the scroll.
+	s.lazyScrollLastValue = currentScroll
+	s.canvas.ScrollBy(s.lazyScrollTrajectory)
 }
 
 // Draw the pixels on this frame.

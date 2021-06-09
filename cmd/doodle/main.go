@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"regexp"
 	"runtime"
@@ -37,6 +38,9 @@ func init() {
 	// Use all the CPU cores for collision detection and other load balanced
 	// goroutine work in the app.
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	// Seed the random number generator.
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
