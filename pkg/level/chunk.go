@@ -8,6 +8,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
@@ -150,6 +151,7 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 	img := image.NewRGBA(imgSize)
 
 	// Blank out the pixels.
+	// TODO PERF: may be slow?
 	for x := 0; x < img.Bounds().Max.X; x++ {
 		for y := 0; y < img.Bounds().Max.Y; y++ {
 			img.Set(x, y, balance.DebugChunkBitmapBackground.ToColor())
@@ -166,6 +168,12 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 	// Blot all the pixels onto it.
 	for px := range c.Iter() {
 		var color = px.Swatch.Color
+
+		// If the swatch has a pattern, mesh it in.
+		if px.Swatch.Pattern != "" {
+			color = pattern.SampleColor(px.Swatch.Pattern, color, px.Point())
+		}
+
 		if mask != render.Invisible {
 			// A semi-transparent mask will overlay on top of the actual color.
 			if mask.Alpha < 255 {

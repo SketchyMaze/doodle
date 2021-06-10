@@ -5,6 +5,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -237,6 +238,12 @@ func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 					continue
 				}
 
+				// Does the swatch have a pattern to sample?
+				color := stroke.Color
+				if stroke.Pattern != "" {
+					color = pattern.SampleColor(stroke.Pattern, color, rect.Point())
+				}
+
 				// Destination rectangle to draw to screen, taking into account
 				// the position of the Canvas itself.
 				dest := render.Rect{
@@ -264,13 +271,19 @@ func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 				if balance.DebugCanvasStrokeColor != render.Invisible {
 					e.DrawBox(balance.DebugCanvasStrokeColor, dest)
 				} else {
-					e.DrawBox(stroke.Color, dest)
+					e.DrawBox(color, dest)
 				}
 			}
 		} else {
 			for point := range stroke.IterPoints() {
 				if !point.Inside(VP) {
 					continue
+				}
+
+				// Does the swatch have a pattern to sample?
+				color := stroke.Color
+				if stroke.Pattern != "" {
+					color = pattern.SampleColor(stroke.Pattern, color, point)
 				}
 
 				dest := render.Point{
@@ -281,7 +294,7 @@ func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 				if balance.DebugCanvasStrokeColor != render.Invisible {
 					e.DrawPoint(balance.DebugCanvasStrokeColor, dest)
 				} else {
-					e.DrawPoint(stroke.Color, dest)
+					e.DrawPoint(color, dest)
 				}
 			}
 		}

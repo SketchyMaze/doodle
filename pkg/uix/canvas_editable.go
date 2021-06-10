@@ -146,6 +146,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Pattern = w.Palette.ActiveSwatch.Pattern
 				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.AddStroke(w.currentStroke)
@@ -198,6 +199,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Line, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Pattern = w.Palette.ActiveSwatch.Pattern
 				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
@@ -219,6 +221,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Rectangle, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Pattern = w.Palette.ActiveSwatch.Pattern
 				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)
@@ -237,6 +240,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		if ev.Button1 {
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Ellipse, w.Palette.ActiveSwatch.Color)
+				w.currentStroke.Pattern = w.Palette.ActiveSwatch.Pattern
 				w.currentStroke.Thickness = w.BrushSize
 				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
 				w.currentStroke.PointA = render.NewPoint(cursor.X, cursor.Y)

@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -44,8 +45,9 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 		height = (buttonSize * balance.DoodadDropperRows) + 64 // account for button borders :(
 
 		// Column sizes of the palette table.
-		col1 = 30  // ID no.
+		col1 = 15  // ID no.
 		col2 = 24  // Color
+		col5 = 24  // Texture
 		col3 = 130 // Name
 		col4 = 140 // Attributes
 		// col5 = 150 // Delete
@@ -80,6 +82,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 	}{
 		{"ID", col1},
 		{"Col", col2},
+		{"Tex", col5},
 		{"Name", col3},
 		{"Attributes", col4},
 		// {"Delete", col5},
@@ -125,6 +128,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				row.Hide()
 			}
 
+			//////////////
 			// ID label.
 			idLabel := ui.NewLabel(ui.Label{
 				Text: idStr + ".",
@@ -135,6 +139,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				Height: 24,
 			})
 
+			//////////////
 			// Name button (click to rename the swatch)
 			btnName := ui.NewButton("Name", ui.NewLabel(ui.Label{
 				TextVariable: &swatch.Name,
@@ -157,6 +162,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			})
 			config.Supervisor.Add(btnName)
 
+			//////////////
 			// Color Choice button.
 			btnColor := ui.NewButton("Color", ui.NewFrame("Color Frame"))
 			btnColor.SetStyle(&style.Button{
@@ -209,6 +215,43 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			})
 			config.Supervisor.Add(btnColor)
 
+			//////////////
+			// Texture (pattern) option.
+			selTexture := ui.NewSelectBox("Texture", ui.Label{
+				Font: balance.MenuFont,
+			})
+			selTexture.Configure(ui.Config{
+				Width:  col5,
+				Height: 24,
+			})
+
+			for _, t := range pattern.Builtins {
+				if t.Hidden && !balance.ShowHiddenDoodads {
+					continue
+				}
+
+				selTexture.AddItem(t.Name, t.Filename, func() {})
+			}
+			selTexture.SetValue(swatch.Pattern)
+			setImageOnSelect(selTexture, swatch.Pattern)
+
+			selTexture.Handle(ui.Change, func(ed ui.EventData) error {
+				if val, ok := selTexture.GetValue(); ok {
+					filename, _ := val.Value.(string)
+					setImageOnSelect(selTexture, filename)
+
+					swatch.Pattern = filename
+					if config.OnChange != nil {
+						config.OnChange()
+					}
+				}
+				return nil
+			})
+
+			selTexture.Supervise(config.Supervisor)
+			config.Supervisor.Add(selTexture)
+
+			//////////////
 			// Attribute flags.
 			attrFrame := ui.NewFrame("Attributes")
 			attrFrame.Configure(ui.Config{
@@ -254,12 +297,17 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				}
 			}
 
+			//////////////
 			// Pack all the widgets.
 			row.Pack(idLabel, ui.Pack{
 				Side: ui.W,
 				PadX: 2,
 			})
 			row.Pack(btnColor, ui.Pack{
+				Side: ui.W,
+				PadX: 2,
+			})
+			row.Pack(selTexture, ui.Pack{
 				Side: ui.W,
 				PadX: 2,
 			})
@@ -376,4 +424,15 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 
 	window.Hide()
 	return window
+}
+
+// Helper function to get the Tex (pattern) select box to
+// show the image by its filename... for both onChange and
+// initial render needs.
+func setImageOnSelect(sel *ui.SelectBox, filename string) {
+	if image, err := pattern.GetImage(filename); err == nil {
+		sel.SetImage(image)
+	} else {
+		sel.SetImage(nil)
+	}
 }

@@ -13,6 +13,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
+	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	golog "git.kirsle.net/go/log"
 	"git.kirsle.net/go/render"
@@ -94,6 +95,9 @@ func (d *Doodle) SetupEngine() error {
 
 	// Initialize the UI modal manager.
 	modal.Initialize(d.Engine)
+
+	// Preload the builtin brush patterns.
+	pattern.LoadBuiltins(d.Engine)
 
 	return nil
 }

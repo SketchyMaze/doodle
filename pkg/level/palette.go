@@ -34,6 +34,7 @@ func DefaultPalette() *Palette {
 }
 
 // NewBlueprintPalette returns the blueprint theme's color palette.
+// DEPRECATED in favor of DefaultPalettes.
 func NewBlueprintPalette() *Palette {
 	return &Palette{
 		Swatches: []*Swatch{

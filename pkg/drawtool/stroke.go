@@ -18,6 +18,7 @@ type Stroke struct {
 	ID        int // Unique ID per each stroke
 	Shape     Shape
 	Color     render.Color
+	Pattern   string
 	Thickness int         // 0 = 1px; thickness creates a box N pixels away from each point
 	ExtraData interface{} // arbitrary storage for extra data to attach
 

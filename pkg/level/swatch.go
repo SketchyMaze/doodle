@@ -9,8 +9,9 @@ import (
 
 // Swatch holds details about a single value in the palette.
 type Swatch struct {
-	Name  string       `json:"name"`
-	Color render.Color `json:"color"`
+	Name    string       `json:"name"`
+	Color   render.Color `json:"color"`
+	Pattern string       `json:"pattern"` // like "noise.png"
 
 	// Optional attributes.
 	Solid bool `json:"solid,omitempty"`
