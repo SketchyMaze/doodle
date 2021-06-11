@@ -63,6 +63,49 @@ func ListDoodads() ([]string, error) {
 	return result, err
 }
 
+// ListBuiltin returns a listing of all built-in doodads.
+// Exactly like ListDoodads() but doesn't return user home folder doodads.
+func ListBuiltin() ([]string, error) {
+	var names []string
+
+	// List doodads embedded into the binary.
+	if files, err := bindata.AssetDir("assets/doodads"); err == nil {
+		names = append(names, files...)
+	}
+
+	// WASM
+	if runtime.GOOS == "js" {
+		// Return the array of doodads embedded in the bindata.
+		// TODO: append user doodads to the list.
+		return names, nil
+	}
+
+	// Read system-level doodads first. Ignore errors, if the system path is
+	// empty we still go on to read the user directory.
+	files, _ := ioutil.ReadDir(filesystem.SystemDoodadsPath)
+
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(strings.ToLower(name), enum.DoodadExt) {
+			names = append(names, name)
+		}
+	}
+
+	// Deduplicate names.
+	var uniq = map[string]interface{}{}
+	var result []string
+	for _, name := range names {
+		if _, ok := uniq[name]; !ok {
+			uniq[name] = nil
+			result = append(result, name)
+		}
+	}
+
+	sort.Strings(result)
+
+	return result, nil
+}
+
 // LoadFile reads a doodad file from disk, checking a few locations.
 func LoadFile(filename string) (*Doodad, error) {
 	if !strings.HasSuffix(filename, enum.DoodadExt) {

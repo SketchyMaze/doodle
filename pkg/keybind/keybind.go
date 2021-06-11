@@ -107,6 +107,20 @@ func DoodadDropper(ev *event.State) bool {
 	return ev.KeyDown("d")
 }
 
+// ShellKey (`) opens the developer console.
+func ShellKey(ev *event.State) bool {
+	v := ev.KeyDown("`")
+	ev.SetKeyDown("`", false)
+	return v
+}
+
+// Enter key.
+func Enter(ev *event.State) bool {
+	v := ev.Enter
+	ev.Enter = false
+	return v
+}
+
 // Shift key.
 func Shift(ev *event.State) bool {
 	return ev.Shift

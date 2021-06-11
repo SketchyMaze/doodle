@@ -78,6 +78,11 @@ func makeConfirm(m *Modal) *ui.Window {
 		button.Compute(engine)
 		supervisor.Add(button)
 
+		// OK Button is primary.
+		if btn.Label == "Ok" {
+			button.SetStyle(&balance.ButtonPrimary)
+		}
+
 		btnBar.Pack(button, ui.Pack{
 			Side: ui.W,
 			PadX: 2,

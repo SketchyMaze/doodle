@@ -5,6 +5,8 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -103,6 +105,40 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 			}(i, lvl)
 		}
 
+		// Browse button for local filesystem.
+		browseLevelFrame := ui.NewFrame("Browse Level Frame")
+		frame.Pack(browseLevelFrame, ui.Pack{
+			Side:   ui.N,
+			Expand: true,
+			FillX:  true,
+			PadY:   1,
+		})
+
+		browseLevelButton := ui.NewButton("Browse Level", ui.NewLabel(ui.Label{
+			Text: "Browse...",
+			Font: balance.MenuFont,
+		}))
+		browseLevelButton.SetStyle(&balance.ButtonPrimary)
+		browseLevelFrame.Pack(browseLevelButton, ui.Pack{
+			Side: ui.W,
+		})
+
+		browseLevelButton.Handle(ui.Click, func(ed ui.EventData) error {
+			filename, err := native.OpenFile("Choose a .level file", "*.level")
+			if err != nil {
+				log.Error("Couldn't show file dialog: %s", err)
+				return nil
+			}
+
+			if config.LoadForPlay {
+				config.OnPlayLevel(filename)
+			} else {
+				config.OnEditLevel(filename)
+			}
+			return nil
+		})
+		config.Supervisor.Add(browseLevelButton)
+
 		/******************
 		 * Frame for selecting User Doodads
 		 ******************/
@@ -154,6 +190,40 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 				}(i, dd)
 			}
 		}
+
+		// Browse button for local filesystem.
+		browseDoodadFrame := ui.NewFrame("Browse Doodad Frame")
+		frame.Pack(browseDoodadFrame, ui.Pack{
+			Side:   ui.N,
+			Expand: true,
+			FillX:  true,
+			PadY:   1,
+		})
+
+		browseDoodadButton := ui.NewButton("Browse Doodad", ui.NewLabel(ui.Label{
+			Text: "Browse...",
+			Font: balance.MenuFont,
+		}))
+		browseDoodadButton.SetStyle(&balance.ButtonPrimary)
+		browseDoodadFrame.Pack(browseDoodadButton, ui.Pack{
+			Side: ui.W,
+		})
+
+		browseDoodadButton.Handle(ui.Click, func(ed ui.EventData) error {
+			filename, err := native.OpenFile("Choose a .doodad file", "*.doodad")
+			if err != nil {
+				log.Error("Couldn't show file dialog: %s", err)
+				return nil
+			}
+
+			if config.LoadForPlay {
+				config.OnPlayLevel(filename)
+			} else {
+				config.OnEditLevel(filename)
+			}
+			return nil
+		})
+		config.Supervisor.Add(browseDoodadButton)
 
 		/******************
 		 * Confirm/cancel buttons.

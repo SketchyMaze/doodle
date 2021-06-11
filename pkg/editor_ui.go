@@ -49,6 +49,7 @@ type EditorUI struct {
 	doodadWindow        *ui.Window
 	paletteEditor       *ui.Window
 	layersWindow        *ui.Window
+	publishWindow       *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -522,6 +523,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			}
 		})
 	})
+
+	if balance.Feature.EmbeddableDoodads && drawingType == "level" {
+		fileMenu.AddItem("Publish level", func() {
+			u.OpenPublishWindow()
+		})
+	}
+
 	fileMenu.AddItemAccel("Open...", "Ctrl-O*", func() {
 		u.Scene.ConfirmUnload(func() {
 			d.GotoLoadMenu()

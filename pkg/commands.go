@@ -41,6 +41,11 @@ func (c Command) Run(d *Doodle) error {
 	case "alert":
 		modal.Alert(c.ArgsLiteral)
 		return nil
+	case "confirm":
+		modal.Confirm(c.ArgsLiteral).Then(func() {
+			d.Flash("Confirmed.")
+		})
+		return nil
 	case "new":
 		return c.New(d)
 	case "save":

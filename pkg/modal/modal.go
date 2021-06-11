@@ -3,6 +3,7 @@ package modal
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -46,6 +47,12 @@ func Reset() {
 func Handled(ev *event.State) bool {
 	if !ready || current == nil {
 		return false
+	}
+
+	// Enter key submits the default button.
+	if keybind.Enter(ev) {
+		current.Dismiss(true)
+		return true
 	}
 
 	supervisor.Loop(ev)

@@ -54,6 +54,7 @@ func makeAlert(m *Modal) *ui.Window {
 		Text: "Ok",
 		Font: balance.MenuFont,
 	}))
+	button.SetStyle(&balance.ButtonPrimary)
 	button.Handle(ui.Click, func(ev ui.EventData) error {
 		log.Info("clicked!")
 		m.Dismiss(true)

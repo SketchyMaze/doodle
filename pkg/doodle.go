@@ -134,10 +134,9 @@ func (d *Doodle) Run() error {
 
 		// Command line shell.
 		if d.shell.Open {
-		} else if ev.Enter {
+		} else if keybind.ShellKey(ev) {
 			log.Debug("Shell: opening shell")
 			d.shell.Open = true
-			ev.Enter = false
 		} else {
 			// Global event handlers.
 			if keybind.Shutdown(ev) {

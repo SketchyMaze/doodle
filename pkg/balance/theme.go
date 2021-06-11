@@ -3,6 +3,7 @@ package balance
 import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
+	"git.kirsle.net/go/ui/style"
 )
 
 // Theme and appearance variables.
@@ -97,4 +98,15 @@ var (
 	DoodadButtonSize       = 64
 	DoodadDropperCols      = 6 // rows/columns of buttons
 	DoodadDropperRows      = 3
+
+	// Button styles, customized in init().
+	ButtonPrimary = style.DefaultButton
 )
+
+func init() {
+	// Customize button styles.
+	ButtonPrimary.Background = render.RGBA(0, 60, 153, 255)
+	ButtonPrimary.Foreground = render.RGBA(255, 255, 254, 255)
+	ButtonPrimary.HoverBackground = render.RGBA(0, 153, 255, 255)
+	ButtonPrimary.HoverForeground = ButtonPrimary.Foreground
+}

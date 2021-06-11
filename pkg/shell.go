@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
@@ -215,7 +216,7 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 		if ev.Escape {
 			s.Close()
 			return nil
-		} else if ev.Enter {
+		} else if keybind.Enter(ev) {
 			s.Execute(s.Text)
 
 			// Auto-close the console unless in REPL mode.
@@ -223,7 +224,6 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 				s.Close()
 			}
 
-			ev.Enter = false
 			return nil
 		} else if (ev.Up || ev.Down) && len(s.History) > 0 {
 			// Paging through history.

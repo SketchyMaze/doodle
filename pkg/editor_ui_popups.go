@@ -6,6 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -43,6 +44,14 @@ func (u *EditorUI) OpenDoodadDropper() {
 	u.doodadWindow.Show()
 }
 
+// OpenPublishWindow opens the Publisher window.
+func (u *EditorUI) OpenPublishWindow() {
+	u.publishWindow.Hide()
+	u.publishWindow = nil
+	u.SetupPopups(u.d)
+	u.publishWindow.Show()
+}
+
 // SetupPopups preloads popup windows like the DoodadDropper.
 func (u *EditorUI) SetupPopups(d *Doodle) {
 	// Common window configure function.
@@ -56,6 +65,8 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			X: (d.width / 2) - (size.W / 2),
 			Y: (d.height / 2) - (size.H / 2),
 		})
+
+		window.Hide()
 	}
 
 	// Doodad Dropper.
@@ -92,6 +103,30 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			},
 		})
 		configure(u.levelSettingsWindow)
+	}
+
+	// Publish Level (embed doodads)
+	if u.publishWindow == nil {
+		scene, _ := d.Scene.(*EditorScene)
+
+		u.publishWindow = windows.NewPublishWindow(windows.Publish{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			Level:      scene.Level,
+
+			OnPublish: func() {
+				modal.Alert("Not Yet Implemented")
+				// filename, err := native.SaveFile("Save your level", "*.level")
+				// if err != nil {
+				// 	modal.Alert(err.Error())
+				// }
+				// log.Info("Write to: %s", filename)
+			},
+			OnCancel: func() {
+				u.publishWindow.Hide()
+			},
+		})
+		configure(u.publishWindow)
 	}
 
 	// Palette Editor.
