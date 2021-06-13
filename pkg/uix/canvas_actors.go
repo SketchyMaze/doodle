@@ -2,7 +2,7 @@ package uix
 
 import (
 	"errors"
-	"fmt"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -14,11 +14,14 @@ import (
 // InstallActors adds external Actors to the canvas to be superimposed on top
 // of the drawing.
 func (w *Canvas) InstallActors(actors level.ActorMap) error {
+	var errs []string
+
 	w.actors = make([]*Actor, 0)
 	for id, actor := range actors {
-		doodad, err := doodads.LoadFile(actor.Filename)
+		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level)
 		if err != nil {
-			return fmt.Errorf("InstallActors: %s", err)
+			errs = append(errs, err.Error())
+			continue
 		}
 
 		// Create the "live" Actor to exist in the world, and set its world
@@ -27,6 +30,10 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		liveActor.MoveTo(actor.Point)
 
 		w.actors = append(w.actors, liveActor)
+	}
+
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
 	}
 	return nil
 }

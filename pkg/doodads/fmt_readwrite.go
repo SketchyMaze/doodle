@@ -1,12 +1,14 @@
 package doodads
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"runtime"
 	"sort"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -14,6 +16,11 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/wasm"
+)
+
+// Errors.
+var (
+	ErrNotFound = errors.New("file not found")
 )
 
 // ListDoodads returns a listing of all available doodads between all locations,
@@ -106,7 +113,20 @@ func ListBuiltin() ([]string, error) {
 	return result, nil
 }
 
+// LoadFromEmbeddable reads a doodad file, checking a level's embeddable
+// file data in addition to the usual places.
+func LoadFromEmbeddable(filename string, fs filesystem.Embeddable) (*Doodad, error) {
+	if bin, err := fs.GetFile(balance.EmbeddedDoodadsBasePath + filename); err == nil {
+		log.Debug("doodads.LoadFromEmbeddable: found %s", filename)
+		return Deserialize(filename, bin)
+	}
+	return LoadFile(filename)
+}
+
 // LoadFile reads a doodad file from disk, checking a few locations.
+//
+// It checks for embedded bindata, system-level doodads on the filesystem,
+// and then user-owned doodads in their profile folder.
 func LoadFile(filename string) (*Doodad, error) {
 	if !strings.HasSuffix(filename, enum.DoodadExt) {
 		filename += enum.DoodadExt
@@ -176,4 +196,25 @@ func (d *Doodad) WriteFile(filename string) error {
 	}
 
 	return nil
+}
+
+// Serialize encodes a doodad to bytes and returns them, instead
+// of writing to a file.
+// WriteFile saves a doodad to disk in the user's config directory.
+func (d *Doodad) Serialize() ([]byte, error) {
+	// Set the version information.
+	d.Version = 1
+	d.GameVersion = branding.Version
+
+	bin, err := d.ToJSON()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return bin, nil
+}
+
+// Deserialize loads a doodad from its bytes format.
+func Deserialize(filename string, bin []byte) (*Doodad, error) {
+	return FromJSON(filename, bin)
 }

@@ -14,15 +14,15 @@ var (
 	ScrollboxHoz  = 256 // horizontal px from window border to start scrol
 	ScrollboxVert = 160
 	// NEW: set scrollbox bounds by percents
-	ScrollboxHozPercent float64 = 0.25
+	ScrollboxHozPercent  float64 = 0.25
 	ScrollboxVertPercent float64 = 0.40
 
 	// Player speeds
-	PlayerMaxVelocity  float64 = 6
-	PlayerAcceleration float64 = 0.9
-	Gravity            float64 = 6
+	PlayerMaxVelocity   float64 = 6
+	PlayerAcceleration  float64 = 0.9
+	Gravity             float64 = 6
 	GravityAcceleration float64 = 0.2
-	SlopeMaxHeight             = 8 // max pixel height for player to walk up a slope
+	SlopeMaxHeight              = 8 // max pixel height for player to walk up a slope
 
 	// Default chunk size for canvases.
 	ChunkSize = 128
@@ -57,8 +57,12 @@ var (
 
 	// Level attachment filename for the custom wallpaper.
 	// NOTE: due to hard-coded "assets/wallpapers/" prefix in uix/canvas.go#LoadLevel.
-	CustomWallpaperFilename = "custom.b64img"
+	CustomWallpaperFilename  = "custom.b64img"
 	CustomWallpaperEmbedPath = "assets/wallpapers/custom.b64img"
+
+	// Publishing: Doodads-embedded-within-levels.
+	EmbeddedDoodadsBasePath   = "assets/doodads/"
+	EmbeddedWallpaperBasePath = "assets/wallpapers/"
 )
 
 // Edit Mode Values

@@ -3,6 +3,7 @@ package level
 import (
 	"errors"
 	"sort"
+	"strings"
 )
 
 // FileSystem embeds a map of files inside a parent drawing.
@@ -63,4 +64,18 @@ func (l *Level) ListFiles() []string {
 
 	sort.Strings(files)
 	return files
+}
+
+// ListFilesAt returns the list of files having a common prefix.
+func (l *Level) ListFilesAt(prefix string) []string {
+	var (
+		files = l.ListFiles()
+		match = []string{}
+	)
+	for _, name := range files {
+		if strings.HasPrefix(name, prefix) {
+			match = append(match, name)
+		}
+	}
+	return match
 }

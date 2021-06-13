@@ -189,41 +189,41 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 					}
 				}(i, dd)
 			}
-		}
 
-		// Browse button for local filesystem.
-		browseDoodadFrame := ui.NewFrame("Browse Doodad Frame")
-		frame.Pack(browseDoodadFrame, ui.Pack{
-			Side:   ui.N,
-			Expand: true,
-			FillX:  true,
-			PadY:   1,
-		})
+			// Browse button for local filesystem.
+			browseDoodadFrame := ui.NewFrame("Browse Doodad Frame")
+			frame.Pack(browseDoodadFrame, ui.Pack{
+				Side:   ui.N,
+				Expand: true,
+				FillX:  true,
+				PadY:   1,
+			})
 
-		browseDoodadButton := ui.NewButton("Browse Doodad", ui.NewLabel(ui.Label{
-			Text: "Browse...",
-			Font: balance.MenuFont,
-		}))
-		browseDoodadButton.SetStyle(&balance.ButtonPrimary)
-		browseDoodadFrame.Pack(browseDoodadButton, ui.Pack{
-			Side: ui.W,
-		})
+			browseDoodadButton := ui.NewButton("Browse Doodad", ui.NewLabel(ui.Label{
+				Text: "Browse...",
+				Font: balance.MenuFont,
+			}))
+			browseDoodadButton.SetStyle(&balance.ButtonPrimary)
+			browseDoodadFrame.Pack(browseDoodadButton, ui.Pack{
+				Side: ui.W,
+			})
 
-		browseDoodadButton.Handle(ui.Click, func(ed ui.EventData) error {
-			filename, err := native.OpenFile("Choose a .doodad file", "*.doodad")
-			if err != nil {
-				log.Error("Couldn't show file dialog: %s", err)
+			browseDoodadButton.Handle(ui.Click, func(ed ui.EventData) error {
+				filename, err := native.OpenFile("Choose a .doodad file", "*.doodad")
+				if err != nil {
+					log.Error("Couldn't show file dialog: %s", err)
+					return nil
+				}
+
+				if config.LoadForPlay {
+					config.OnPlayLevel(filename)
+				} else {
+					config.OnEditLevel(filename)
+				}
 				return nil
-			}
-
-			if config.LoadForPlay {
-				config.OnPlayLevel(filename)
-			} else {
-				config.OnEditLevel(filename)
-			}
-			return nil
-		})
-		config.Supervisor.Add(browseDoodadButton)
+			})
+			config.Supervisor.Add(browseDoodadButton)
+		}
 
 		/******************
 		 * Confirm/cancel buttons.

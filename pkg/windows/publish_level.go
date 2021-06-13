@@ -3,12 +3,11 @@ package windows
 import (
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -21,7 +20,7 @@ type Publish struct {
 	Engine     render.Engine
 	Level      *level.Level
 
-	OnPublish func()
+	OnPublish func(builtinToo bool)
 	OnCancel  func()
 
 	// Private vars.
@@ -124,39 +123,40 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		PadX: 2,
 	})
 
-	// Collect all the doodad names in use in this level.
-	unique := map[string]interface{}{}
-	names := []string{}
-	if cfg.Level != nil {
-		for _, actor := range cfg.Level.Actors {
-			if _, ok := unique[actor.Filename]; ok {
-				continue
-			}
-			unique[actor.Filename] = nil
-			names = append(names, actor.Filename)
-		}
-	}
+	// // Collect all the doodad names in use in this level.
+	// unique := map[string]interface{}{}
+	// names := []string{}
+	// if cfg.Level != nil {
+	// 	for _, actor := range cfg.Level.Actors {
+	// 		if _, ok := unique[actor.Filename]; ok {
+	// 			continue
+	// 		}
+	// 		unique[actor.Filename] = nil
+	// 		names = append(names, actor.Filename)
+	// 	}
+	// }
 
-	sort.Strings(names)
+	// sort.Strings(names)
 
-	// Identify which of the doodads are built-ins.
-	usedBuiltins := []string{}
-	builtinMap := map[string]interface{}{}
-	usedCustom := []string{}
-	if builtins, err := doodads.ListBuiltin(); err == nil {
-		for _, filename := range builtins {
-			if _, ok := unique[filename]; ok {
-				usedBuiltins = append(usedBuiltins, filename)
-				builtinMap[filename] = nil
-			}
-		}
-	}
-	for _, name := range names {
-		if _, ok := builtinMap[name]; ok {
-			continue
-		}
-		usedCustom = append(usedCustom, name)
-	}
+	// // Identify which of the doodads are built-ins.
+	// usedBuiltins := []string{}
+	// builtinMap := map[string]interface{}{}
+	// usedCustom := []string{}
+	// if builtins, err := doodads.ListBuiltin(); err == nil {
+	// 	for _, filename := range builtins {
+	// 		if _, ok := unique[filename]; ok {
+	// 			usedBuiltins = append(usedBuiltins, filename)
+	// 			builtinMap[filename] = nil
+	// 		}
+	// 	}
+	// }
+	// for _, name := range names {
+	// 	if _, ok := builtinMap[name]; ok {
+	// 		continue
+	// 	}
+	// 	usedCustom = append(usedCustom, name)
+	// }
+	usedBuiltins, usedCustom := publishing.GetUsedDoodadNames(cfg.Level)
 
 	// Helper function to draw the button rows for a set of doodads.
 	mkDoodadRows := func(filenames []string, builtin bool) []*ui.Frame {
@@ -201,7 +201,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		builtinRows = []*ui.Frame{}
 		customRows  = []*ui.Frame{}
 	)
-	if len(names) > 0 {
+	if len(usedCustom) > 0 {
 		customRows = mkDoodadRows(usedCustom, false)
 		btnRows = append(btnRows, customRows...)
 	}
@@ -284,7 +284,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 	}{
 		{"Export Level", true, func() {
 			if cfg.OnPublish != nil {
-				cfg.OnPublish()
+				cfg.OnPublish(cfg.includeBuiltins)
 			}
 		}},
 		{"Close", false, func() {

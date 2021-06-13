@@ -150,12 +150,12 @@ func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 	w.Load(level.Palette, level.Chunker)
 
 	// TODO: wallpaper paths
-	filename := "assets/wallpapers/" + level.Wallpaper
+	filename := balance.EmbeddedWallpaperBasePath + level.Wallpaper
 	if runtime.GOOS != "js" {
 		// Check if the wallpaper wasn't found. Check bindata and file system.
 		if _, err := filesystem.FindFileEmbedded(filename, level); err != nil {
 			log.Error("LoadLevel: wallpaper %s did not appear to exist, default to notebook.png", filename)
-			filename = "assets/wallpapers/notebook.png"
+			filename = balance.EmbeddedWallpaperBasePath + "notebook.png"
 		}
 	}
 

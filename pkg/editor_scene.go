@@ -279,6 +279,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 
 	log.Info("Installing %d actors into the drawing", len(level.Actors))
 	if err := s.UI.Canvas.InstallActors(level.Actors); err != nil {
+		modal.Alert("This level references some doodads that were not found:\n\n%s", err).WithTitle("Level Errors")
 		return fmt.Errorf("EditorScene.LoadLevel: InstallActors: %s", err)
 	}
 

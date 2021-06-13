@@ -2,9 +2,13 @@ package doodle
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/windows"
@@ -114,13 +118,27 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			Engine:     d.Engine,
 			Level:      scene.Level,
 
-			OnPublish: func() {
-				modal.Alert("Not Yet Implemented")
-				// filename, err := native.SaveFile("Save your level", "*.level")
-				// if err != nil {
-				// 	modal.Alert(err.Error())
-				// }
-				// log.Info("Write to: %s", filename)
+			OnPublish: func(includeBuiltins bool) {
+				log.Debug("OnPublish: include builtins=%+v", includeBuiltins)
+				cwd, _ := os.Getwd()
+				d.Prompt(fmt.Sprintf("File name (relative to %s)> ", cwd), func(answer string) {
+					if answer == "" {
+						d.Flash("A file name is required to publish this level.")
+						return
+					}
+
+					if !strings.HasSuffix(answer, ".level") {
+						answer += ".level"
+					}
+
+					answer = filepath.Join(cwd, answer)
+					log.Debug("call with includeBuiltins=%+v", includeBuiltins)
+					if _, err := publishing.Publish(scene.Level, answer, includeBuiltins); err != nil {
+						modal.Alert("Error when publishing the level: %s", err)
+						return
+					}
+					d.Flash("Exported published level to: %s", answer)
+				})
 			},
 			OnCancel: func() {
 				u.publishWindow.Hide()
