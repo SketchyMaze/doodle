@@ -54,7 +54,7 @@ func (l *Level) DeleteFile(filename string) bool {
 func (l *Level) ListFiles() []string {
 	var files []string
 
-	if l.Files == nil {
+	if l == nil || l.Files == nil {
 		return files
 	}
 

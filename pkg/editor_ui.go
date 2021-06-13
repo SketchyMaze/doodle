@@ -50,27 +50,18 @@ type EditorUI struct {
 	paletteEditor       *ui.Window
 	layersWindow        *ui.Window
 	publishWindow       *ui.Window
+	filesystemWindow    *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
 	PaletteTab *ui.Frame
 	DoodadTab  *ui.Frame
 
-	// Doodad Palette window variables.
-	doodadSkip       int
-	doodadRows       []*ui.Frame
-	doodadPager      *ui.Frame
-	doodadButtonSize int
-	doodadScroller   *ui.Frame
-
 	// ToolBar window.
 	activeTool string
 
 	// Draggable Doodad canvas.
 	DraggableActor *DraggableActor
-
-	// Palette variables.
-	paletteTab string // selected tab, Palette or Doodads
 }
 
 // NewEditorUI initializes the Editor UI.
@@ -567,6 +558,10 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			u.levelSettingsWindow = nil
 			u.SetupPopups(u.d)
 			u.levelSettingsWindow.Show()
+		})
+		levelMenu.AddItem("Attached files", func() {
+			log.Info("Opening the FileSystem window")
+			u.OpenFileSystemWindow()
 		})
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()

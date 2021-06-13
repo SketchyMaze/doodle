@@ -77,6 +77,13 @@ var (
 		Color:        render.Black,
 	}
 
+	// Small font
+	SmallFont = render.Text{
+		Size:    10,
+		Padding: 4,
+		Color:   render.Black,
+	}
+
 	// Color for draggable doodad.
 	DragColor = render.MustHexColor("#0099FF")
 
@@ -101,6 +108,7 @@ var (
 
 	// Button styles, customized in init().
 	ButtonPrimary = style.DefaultButton
+	ButtonDanger  = style.DefaultButton
 )
 
 func init() {
@@ -109,4 +117,9 @@ func init() {
 	ButtonPrimary.Foreground = render.RGBA(255, 255, 254, 255)
 	ButtonPrimary.HoverBackground = render.RGBA(0, 153, 255, 255)
 	ButtonPrimary.HoverForeground = ButtonPrimary.Foreground
+
+	ButtonDanger.Background = render.RGBA(153, 30, 30, 255)
+	ButtonDanger.Foreground = render.RGBA(255, 255, 254, 255)
+	ButtonDanger.HoverBackground = render.RGBA(255, 30, 30, 255)
+	ButtonDanger.HoverForeground = ButtonPrimary.Foreground
 }

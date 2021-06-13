@@ -3,52 +3,53 @@ package windows
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
 
-// Publish window.
-type Publish struct {
+// FileSystem window shows the file attachments to the current level.
+type FileSystem struct {
 	// Settings passed in by doodle
 	Supervisor *ui.Supervisor
 	Engine     render.Engine
 	Level      *level.Level
 
-	OnPublish func(builtinToo bool)
-	OnCancel  func()
+	OnDelete func(filename string) bool
+	OnCancel func()
 
 	// Private vars.
 	includeBuiltins bool // show built-in doodads in checkbox-list.
 }
 
-// NewPublishWindow initializes the window.
-func NewPublishWindow(cfg Publish) *ui.Window {
+// NewFileSystemWindow initializes the window.
+func NewFileSystemWindow(cfg FileSystem) *ui.Window {
 	var (
-		windowWidth    = 400
-		windowHeight   = 300
-		page           = 1
-		perPage        = 4
-		pages          = 1
-		maxPageButtons = 8
+		windowColor      = render.RGBA(255, 255, 200, 255)
+		windowTitleColor = render.RGBA(255, 153, 0, 255)
+		windowWidth      = 380
+		windowHeight     = 360
+		page             = 1
+		perPage          = 6
+		pages            = 1
+		maxPageButtons   = 8
 
 		// columns and sizes to draw the doodad list
-		columns   = 3
-		btnWidth  = 120
 		btnHeight = 14
 	)
 
-	window := ui.NewWindow("Publish Level")
+	window := ui.NewWindow("Attached Files")
 	window.SetButtons(ui.CloseButton)
+	window.ActiveTitleBackground = windowTitleColor // TODO: not working?
+	window.InactiveTitleBackground = windowTitleColor.Darken(60)
+	window.InactiveTitleForeground = render.Grey
 	window.Configure(ui.Config{
 		Width:      windowWidth,
 		Height:     windowHeight,
-		Background: render.RGBA(200, 200, 255, 255),
+		Background: windowColor,
 	})
 
 	/////////////
@@ -69,13 +70,14 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 			Font: balance.LabelFont,
 		},
 		{
-			Text: "Share your level easily! If you are using custom doodads in\n" +
-				"your level, you may attach them directly to your\n" +
-				"level file -- so it can easily run on another computer!",
+			Text: "These are the files embedded inside your level data. When\n" +
+				"a level is Published, it can attach all of its custom doodads,\n" +
+				"wallpapers or other custom asset so that it easily plays on\n" +
+				"a different computer.",
 			Font: balance.UIFont,
 		},
 		{
-			Text: "List of Doodads in Your Level",
+			Text: "File Attachments",
 			Font: balance.LabelFont,
 		},
 	}
@@ -96,92 +98,59 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 	}
 
 	/////////////
-	// Custom Doodads checkbox-list.
-	doodadFrame := ui.NewFrame("Doodads Frame")
-	doodadFrame.Resize(render.Rect{
+	// Attached files table.
+	fsFrame := ui.NewFrame("Doodads Frame")
+	fsFrame.Resize(render.Rect{
 		W: windowWidth,
-		H: btnHeight*perPage + 100,
+		H: btnHeight*perPage + 140,
 	})
-	window.Pack(doodadFrame, ui.Pack{
+	window.Pack(fsFrame, ui.Pack{
 		Side:  ui.N,
 		FillX: true,
 	})
 
-	// First, the checkbox to show built-in doodads or not.
-	builtinRow := ui.NewFrame("Show Builtins Frame")
-	doodadFrame.Pack(builtinRow, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
-	builtinCB := ui.NewCheckbox("Show Builtins", &cfg.includeBuiltins, ui.NewLabel(ui.Label{
-		Text: "Attach built-in* doodads too",
-		Font: balance.UIFont,
-	}))
-	builtinCB.Supervise(cfg.Supervisor)
-	builtinRow.Pack(builtinCB, ui.Pack{
-		Side: ui.W,
-		PadX: 2,
-	})
+	var fileRows = []*ui.Frame{}
 
-	// Collect the doodads named in this level.
-	usedBuiltins, usedCustom := publishing.GetUsedDoodadNames(cfg.Level)
+	// Get the file attachments.
+	files := cfg.Level.ListFiles()
+	for _, file := range files {
+		file := file
+		row := ui.NewFrame("Row: " + file)
+		label := ui.NewLabel(ui.Label{
+			Text: file,
+			Font: balance.UIFont,
+		})
+		row.Pack(label, ui.Pack{
+			Side:    ui.W,
+			Padding: 1,
+		})
 
-	// Helper function to draw the button rows for a set of doodads.
-	mkDoodadRows := func(filenames []string, builtin bool) []*ui.Frame {
-		var (
-			curRow *ui.Frame // = ui.NewFrame("mkDoodadRows 0")
-			frames = []*ui.Frame{}
-		)
-
-		for i, name := range filenames {
-			if i%columns == 0 {
-				curRow = ui.NewFrame(fmt.Sprintf("mkDoodadRows %d", i))
-				frames = append(frames, curRow)
+		delBtn := ui.NewButton("Delete: "+file, ui.NewLabel(ui.Label{
+			Text: "Delete",
+			Font: balance.SmallFont,
+		}))
+		delBtn.SetStyle(&balance.ButtonDanger)
+		delBtn.Handle(ui.Click, func(ed ui.EventData) error {
+			if cfg.OnDelete != nil {
+				if cfg.OnDelete(file) {
+					row.Hide()
+				}
 			}
+			return nil
+		})
+		cfg.Supervisor.Add(delBtn)
+		row.Place(delBtn, ui.Place{
+			Right: 4,
+		})
 
-			font := balance.UIFont
-			if builtin {
-				font.Color = render.Blue
-				name += "*"
-			}
-
-			btn := ui.NewLabel(ui.Label{
-				Text: strings.Replace(name, ".doodad", "", 1),
-				Font: font,
-			})
-			btn.Configure(ui.Config{
-				Width:  btnWidth,
-				Height: btnHeight,
-			})
-			curRow.Pack(btn, ui.Pack{
-				Side: ui.W,
-				PadX: 2,
-				PadY: 2,
-			})
-		}
-
-		return frames
+		fileRows = append(fileRows, row)
 	}
 
-	// 1. Draw the built-in doodads in use.
-	var (
-		btnRows     = []*ui.Frame{}
-		builtinRows = []*ui.Frame{}
-		customRows  = []*ui.Frame{}
-	)
-	if len(usedCustom) > 0 {
-		customRows = mkDoodadRows(usedCustom, false)
-		btnRows = append(btnRows, customRows...)
-	}
-	if len(usedBuiltins) > 0 {
-		builtinRows = mkDoodadRows(usedBuiltins, true)
-		btnRows = append(btnRows, builtinRows...)
-	}
-
-	for i, row := range btnRows {
-		doodadFrame.Pack(row, ui.Pack{
+	for i, row := range fileRows {
+		fsFrame.Pack(row, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
+			PadY:  2,
 		})
 
 		// Hide if too long for 1st page.
@@ -202,7 +171,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 	// Pager for the doodads.
 	pages = int(
 		math.Ceil(
-			float64(len(btnRows)) / float64(perPage),
+			float64(len(fileRows)) / float64(perPage),
 		),
 	)
 	pagerOnChange := func(newPage, perPage int) {
@@ -214,7 +183,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 			minRow  = (page - 1) * perPage
 			visible = 0
 		)
-		for i, row := range btnRows {
+		for i, row := range fileRows {
 			if visible >= perPage {
 				row.Hide()
 				continue
@@ -229,7 +198,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		}
 	}
 	pager := ui.NewPager(ui.Pager{
-		Name:           "Doodads List Pager",
+		Name:           "Files List Pager",
 		Page:           page,
 		Pages:          pages,
 		PerPage:        perPage,
@@ -250,11 +219,6 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		primary bool
 		f       func()
 	}{
-		{"Export Level", true, func() {
-			if cfg.OnPublish != nil {
-				cfg.OnPublish(cfg.includeBuiltins)
-			}
-		}},
 		{"Close", false, func() {
 			if cfg.OnCancel != nil {
 				cfg.OnCancel()

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/level/publishing"
@@ -54,6 +55,14 @@ func (u *EditorUI) OpenPublishWindow() {
 	u.publishWindow = nil
 	u.SetupPopups(u.d)
 	u.publishWindow.Show()
+}
+
+// OpenPublishWindow opens the FileSystem window.
+func (u *EditorUI) OpenFileSystemWindow() {
+	u.filesystemWindow.Hide()
+	u.filesystemWindow = nil
+	u.SetupPopups(u.d)
+	u.filesystemWindow.Show()
 }
 
 // SetupPopups preloads popup windows like the DoodadDropper.
@@ -145,6 +154,54 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			},
 		})
 		configure(u.publishWindow)
+	}
+
+	// Level FileSystem Viewer.
+	if u.filesystemWindow == nil {
+		scene, _ := d.Scene.(*EditorScene)
+
+		u.filesystemWindow = windows.NewFileSystemWindow(windows.FileSystem{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			Level:      scene.Level,
+
+			OnDelete: func(filename string) bool {
+				// Check if it is an embedded doodad.
+				if strings.HasPrefix(filename, balance.EmbeddedDoodadsBasePath) {
+					// Check if we have the doodad installed locally.
+					if _, err := doodads.LoadFile(filepath.Base(filename)); err != nil {
+						modal.Alert(
+							"Cannot remove %s:\n\n"+
+								"This doodad is still in use by the level and does not\n"+
+								"exist on your local device, so can not be deleted.",
+							filepath.Base(filename),
+						).WithTitle("Cannot Remove Custom Doodad")
+						return false
+					}
+				}
+
+				// Can't delete the current wallpaper.
+				if filepath.Base(filename) == scene.Level.Wallpaper {
+					modal.Alert(
+						"This wallpaper is still in use as the level background, so can\n" +
+							"not be deleted. Change the wallpaper in the Page Settings window\n" +
+							"to one of the defaults and then you may remove this file from the level.",
+					).WithTitle("Cannot Remove Current Wallpaper")
+					return false
+				}
+
+				if ok := scene.Level.DeleteFile(filename); !ok {
+					modal.Alert("Failed to remove file from level data!")
+					return false
+				}
+
+				return true
+			},
+			OnCancel: func() {
+				u.filesystemWindow.Hide()
+			},
+		})
+		configure(u.filesystemWindow)
 	}
 
 	// Palette Editor.
