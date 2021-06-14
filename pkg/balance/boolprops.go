@@ -20,15 +20,19 @@ var (
 
 	// Temporary debug flag.
 	TempDebug bool
+
+	// Draw horizontal toolbars in Level Editor instead of vertical.
+	HorizontalToolbars bool
 )
 
 // Human friendly names for the boolProps. Not necessarily the long descriptive
 // variable names above.
 var props = map[string]*bool{
-	"showAllDoodads":    &ShowHiddenDoodads,
-	"writeLockOverride": &WriteLockOverride,
-	"prettyJSON":        &JSONIndent,
-	"tempDebug":         &TempDebug,
+	"showAllDoodads":     &ShowHiddenDoodads,
+	"writeLockOverride":  &WriteLockOverride,
+	"prettyJSON":         &JSONIndent,
+	"tempDebug":          &TempDebug,
+	"horizontalToolbars": &HorizontalToolbars,
 
 	// WARNING: SLOW!
 	"disableChunkTextureCache": &DisableChunkTextureCache,

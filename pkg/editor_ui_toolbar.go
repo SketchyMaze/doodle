@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
+	"git.kirsle.net/go/ui/style"
 )
 
 // Width of the toolbar frame.
@@ -15,8 +16,29 @@ var toolbarSpriteSize = 32 // 32x32 sprites.
 
 // SetupToolbar configures the UI for the Tools panel.
 func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
+	// Horizontal toolbar instead of vertical?
+	var (
+		isHoz       = balance.HorizontalToolbars
+		packAlign   = ui.N
+		frameSize   = render.NewRect(toolbarWidth, 100)
+		tooltipEdge = ui.Right
+		btnPack     = ui.Pack{
+			Side: packAlign,
+			PadY: 2,
+		}
+	)
+	if isHoz {
+		packAlign = ui.W
+		frameSize = render.NewRect(100, toolbarWidth)
+		tooltipEdge = ui.Bottom
+		btnPack = ui.Pack{
+			Side: packAlign,
+			PadX: 2,
+		}
+	}
+
 	frame := ui.NewFrame("Tool Bar")
-	frame.Resize(render.NewRect(toolbarWidth, 100))
+	frame.Resize(frameSize)
 	frame.Configure(ui.Config{
 		BorderSize:  2,
 		BorderStyle: ui.BorderRaised,
@@ -25,7 +47,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 	btnFrame := ui.NewFrame("Tool Buttons")
 	frame.Pack(btnFrame, ui.Pack{
-		Side: ui.N,
+		Side: packAlign,
 	})
 
 	// Buttons.
@@ -33,6 +55,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Value   string
 		Icon    string
 		Tooltip string
+		Style   *style.Button
 		Click   func()
 
 		// Optional fields.
@@ -83,6 +106,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Icon:     "assets/sprites/actor-tool.png",
 			Tooltip:  "Doodad Tool\nDrag-and-drop objects into your map",
 			NoDoodad: true,
+			Style:    &balance.ButtonBabyBlue,
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
 				u.doodadWindow.Show()
@@ -94,10 +118,10 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Value:    drawtool.LinkTool.String(),
 			Icon:     "assets/sprites/link-tool.png",
 			Tooltip:  "Link Tool\nConnect doodads to each other",
+			Style:    &balance.ButtonPink,
 			NoDoodad: true,
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
-				u.doodadWindow.Show()
 				d.Flash("Link Tool selected. Click a doodad in your level to link it to another.")
 			},
 		},
@@ -106,6 +130,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Value:   drawtool.EraserTool.String(),
 			Icon:    "assets/sprites/eraser-tool.png",
 			Tooltip: "Eraser Tool",
+			Style:   &balance.ButtonLightRed,
 			Click: func() {
 				u.Canvas.Tool = drawtool.EraserTool
 
@@ -137,6 +162,9 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			button.Value,
 			image,
 		)
+		if button.Style != nil {
+			btn.SetStyle(button.Style)
+		}
 
 		var btnSize = btn.BoxThickness(2) + toolbarSpriteSize
 		btn.Resize(render.NewRect(btnSize, btnSize))
@@ -149,13 +177,10 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 
 		ui.NewTooltip(btn, ui.Tooltip{
 			Text: button.Tooltip,
-			Edge: ui.Right,
+			Edge: tooltipEdge,
 		})
 
-		btnFrame.Pack(btn, ui.Pack{
-			Side: ui.N,
-			PadY: 2,
-		})
+		btnFrame.Pack(btn, btnPack)
 	}
 
 	// Doodad Editor: show the Layers button.
@@ -170,53 +195,59 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		})
 		u.Supervisor.Add(btn)
 		btnFrame.Pack(btn, ui.Pack{
-			Side: ui.N,
+			Side: packAlign,
 			PadY: 2,
 		})
 	}
 
 	// Spacer frame.
 	frame.Pack(ui.NewFrame("spacer"), ui.Pack{
-		Side: ui.N,
+		Side: packAlign,
 		PadY: 8,
 	})
 
+	//////////////
 	// "Brush Size" label
+	bsFrame := ui.NewFrame("Brush Size Frame")
+	frame.Pack(bsFrame, ui.Pack{
+		Side: packAlign,
+	})
+
 	bsLabel := ui.NewLabel(ui.Label{
 		Text: "Size:",
-		Font: balance.LabelFont,
+		Font: balance.SmallFont,
 	})
-	frame.Pack(bsLabel, ui.Pack{
+	bsFrame.Pack(bsLabel, ui.Pack{
 		Side: ui.N,
 	})
 
 	ui.NewTooltip(bsLabel, ui.Tooltip{
 		Text: "Set the line thickness for drawing",
-		Edge: ui.Right,
+		Edge: tooltipEdge,
 	})
 	u.Supervisor.Add(bsLabel)
+
+	sizeLabel := ui.NewLabel(ui.Label{
+		IntVariable: &u.Canvas.BrushSize,
+		Font:        balance.SmallFont,
+	})
+	sizeLabel.Configure(ui.Config{
+		BorderSize:  1,
+		BorderStyle: ui.BorderSunken,
+		Background:  render.Grey,
+	})
+	bsFrame.Pack(sizeLabel, ui.Pack{
+		Side: ui.N,
+		// FillX: true,
+		PadY: 0,
+	})
 
 	// Brush Size widget
 	{
 		sizeFrame := ui.NewFrame("Brush Size Frame")
 		frame.Pack(sizeFrame, ui.Pack{
-			Side: ui.N,
+			Side: packAlign,
 			PadY: 0,
-		})
-
-		sizeLabel := ui.NewLabel(ui.Label{
-			IntVariable: &u.Canvas.BrushSize,
-			Font:        balance.SmallMonoFont,
-		})
-		sizeLabel.Configure(ui.Config{
-			BorderSize:  1,
-			BorderStyle: ui.BorderSunken,
-			Background:  render.Grey,
-		})
-		sizeFrame.Pack(sizeLabel, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-			PadY:  2,
 		})
 
 		sizeBtnFrame := ui.NewFrame("Size Increment Button Frame")

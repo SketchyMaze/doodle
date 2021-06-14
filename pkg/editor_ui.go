@@ -159,25 +159,44 @@ func (u *EditorUI) Resized(d *Doodle) {
 
 	// Palette panel.
 	{
-		u.Palette.Configure(ui.Config{
-			Width:  paletteWidth,
-			Height: u.d.height - u.StatusBar.Size().H,
-		})
-		u.Palette.MoveTo(render.NewPoint(
-			u.d.width-u.Palette.BoxSize().W,
-			menuHeight,
-		))
+		if balance.HorizontalToolbars {
+			u.Palette.Configure(ui.Config{
+				Width:  u.d.width,
+				Height: paletteWidth,
+			})
+			u.Palette.MoveTo(render.NewPoint(
+				0,
+				u.d.height-u.Palette.BoxSize().H-u.StatusBar.Size().H,
+			))
+		} else {
+			u.Palette.Configure(ui.Config{
+				Width:  paletteWidth,
+				Height: u.d.height - u.StatusBar.Size().H,
+			})
+			u.Palette.MoveTo(render.NewPoint(
+				u.d.width-u.Palette.BoxSize().W,
+				menuHeight,
+			))
+		}
 		u.Palette.Compute(d.Engine)
 	}
 
-	var innerHeight = u.d.height - menuHeight - u.StatusBar.Size().H
+	var (
+		innerHeight = u.d.height - menuHeight - u.StatusBar.Size().H
+		innerWidth  = u.d.width
+	)
 
 	// Tool Bar.
 	{
-		u.ToolBar.Configure(ui.Config{
+		tbSize := ui.Config{
 			Width:  toolbarWidth,
 			Height: innerHeight,
-		})
+		}
+		if balance.HorizontalToolbars {
+			tbSize.Width = innerWidth
+			tbSize.Height = toolbarWidth
+		}
+		u.ToolBar.Configure(tbSize)
 		u.ToolBar.MoveTo(render.NewPoint(
 			0,
 			menuHeight,
@@ -189,14 +208,25 @@ func (u *EditorUI) Resized(d *Doodle) {
 	{
 
 		frame := u.Workspace
-		frame.MoveTo(render.NewPoint(
-			u.ToolBar.Size().W,
-			menuHeight,
-		))
-		frame.Resize(render.NewRect(
-			d.width-u.Palette.Size().W-u.ToolBar.Size().W,
-			d.height-menuHeight-u.StatusBar.Size().H,
-		))
+		if balance.HorizontalToolbars {
+			frame.MoveTo(render.NewPoint(
+				0,
+				menuHeight+u.ToolBar.Size().H,
+			))
+			frame.Resize(render.NewRect(
+				d.width,
+				d.height-menuHeight-u.StatusBar.Size().H-u.ToolBar.Size().H-u.Palette.Size().H,
+			))
+		} else {
+			frame.MoveTo(render.NewPoint(
+				u.ToolBar.Size().W,
+				menuHeight,
+			))
+			frame.Resize(render.NewRect(
+				d.width-u.Palette.Size().W-u.ToolBar.Size().W,
+				d.height-menuHeight-u.StatusBar.Size().H,
+			))
+		}
 		frame.Compute(d.Engine)
 
 		u.ExpandCanvas(d.Engine)

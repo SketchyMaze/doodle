@@ -193,6 +193,7 @@ func setResolution(value string) error {
 	case "mobile":
 		balance.Width = 375
 		balance.Height = 812
+		balance.HorizontalToolbars = true
 	case "landscape":
 		balance.Width = 812
 		balance.Height = 375

@@ -107,8 +107,11 @@ var (
 	DoodadDropperRows      = 3
 
 	// Button styles, customized in init().
-	ButtonPrimary = style.DefaultButton
-	ButtonDanger  = style.DefaultButton
+	ButtonPrimary  = style.DefaultButton
+	ButtonDanger   = style.DefaultButton
+	ButtonBabyBlue = style.DefaultButton
+	ButtonPink     = style.DefaultButton
+	ButtonLightRed = style.DefaultButton
 )
 
 func init() {
@@ -122,4 +125,13 @@ func init() {
 	ButtonDanger.Foreground = render.RGBA(255, 255, 254, 255)
 	ButtonDanger.HoverBackground = render.RGBA(255, 30, 30, 255)
 	ButtonDanger.HoverForeground = ButtonPrimary.Foreground
+
+	ButtonBabyBlue.Background = render.RGBA(0, 153, 255, 255)
+	ButtonBabyBlue.HoverBackground = render.RGBA(0, 220, 255, 255)
+
+	ButtonPink.Background = render.RGBA(255, 153, 255, 255)
+	ButtonPink.HoverBackground = render.RGBA(255, 220, 255, 255)
+
+	ButtonLightRed.Background = render.RGBA(255, 90, 90, 255)
+	ButtonLightRed.HoverBackground = render.RGBA(255, 128, 128, 255)
 }

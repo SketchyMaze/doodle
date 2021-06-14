@@ -38,6 +38,27 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	frame := ui.NewFrame("Palette Tab")
 	frame.SetBackground(balance.WindowBackground)
 
+	var (
+		packAlign  = ui.N
+		packConfig = ui.Pack{
+			Side: packAlign,
+			Fill: true,
+			PadY: 4,
+		}
+		tooltipEdge = ui.Left
+		buttonSize  = 32
+	)
+	if balance.HorizontalToolbars {
+		packAlign = ui.W
+		packConfig = ui.Pack{
+			Side: packAlign,
+			Fill: true,
+			PadX: 2,
+		}
+		tooltipEdge = ui.Top
+		buttonSize = 24
+	}
+
 	// Handler function for the radio buttons being clicked.
 	onClick := func(ed ui.EventData) error {
 		name := u.selectedSwatch
@@ -50,8 +71,6 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		u.Canvas.SetSwatch(swatch)
 		return nil
 	}
-
-	var buttonSize = 32
 
 	// Draw the radio buttons for the palette.
 	if u.Canvas != nil && u.Canvas.Palette != nil {
@@ -70,16 +89,12 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			// Add a tooltip showing the swatch attributes.
 			ui.NewTooltip(btn, ui.Tooltip{
 				Text: fmt.Sprintf("Name: %s\nAttributes: %s", swatch.Name, swatch.Attributes()),
-				Edge: ui.Left,
+				Edge: tooltipEdge,
 			})
 
 			btn.Compute(u.d.Engine)
 
-			frame.Pack(btn, ui.Pack{
-				Side: ui.N,
-				Fill: true,
-				PadY: 4,
-			})
+			frame.Pack(btn, packConfig)
 		}
 	}
 
@@ -95,11 +110,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	u.Supervisor.Add(btn)
 
 	btn.Compute(u.d.Engine)
-	frame.Pack(btn, ui.Pack{
-		Side: ui.N,
-		Fill: true,
-		PadY: 4,
-	})
+	frame.Pack(btn, packConfig)
 
 	return frame
 }
