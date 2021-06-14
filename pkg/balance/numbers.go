@@ -1,5 +1,7 @@
 package balance
 
+import "git.kirsle.net/go/render"
+
 // Numbers.
 var (
 	// Window dimensions.
@@ -10,12 +12,10 @@ var (
 	CanvasScrollSpeed = 8
 
 	// Window scrolling behavior in Play Mode.
-	// DEPRECATED: pixels close to window edges
-	ScrollboxHoz  = 256 // horizontal px from window border to start scrol
-	ScrollboxVert = 160
-	// NEW: set scrollbox bounds by percents
-	ScrollboxHozPercent  float64 = 0.25
-	ScrollboxVertPercent float64 = 0.40
+	ScrollboxOffset = render.Point{ // from center of screen
+		X: 40,
+		Y: 100,
+	}
 
 	// Player speeds
 	PlayerMaxVelocity   float64 = 6

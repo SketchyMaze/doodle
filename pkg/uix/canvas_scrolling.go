@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 )
@@ -110,8 +111,12 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 	}
 
 	var (
-		VP = w.Viewport()
-		// ScrollboxHoz = VP.
+		VP            = w.Viewport()
+		engine        = shmem.CurrentRenderEngine
+		Width, Height = engine.WindowSize()
+		midpoint      = render.NewPoint(Width/2, Height/2)
+		scrollboxHoz  = midpoint.X - balance.ScrollboxOffset.X
+		scrollboxVert = midpoint.Y - balance.ScrollboxOffset.Y
 	)
 
 	// Find the actor.
@@ -127,8 +132,8 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		)
 
 		// Scroll left
-		if APosition.X <= VP.X+balance.ScrollboxHoz {
-			var delta = VP.X + balance.ScrollboxHoz - APosition.X
+		if APosition.X <= VP.X+scrollboxHoz {
+			var delta = VP.X + scrollboxHoz - APosition.X
 
 			// constrain in case they're FAR OFF SCREEN so we don't flip back around
 			if delta < 0 {
@@ -138,14 +143,14 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		}
 
 		// Scroll right
-		if APosition.X >= VP.W-ASize.W-balance.ScrollboxHoz {
-			var delta = VP.W - ASize.W - APosition.X - balance.ScrollboxHoz
+		if APosition.X >= VP.W-ASize.W-scrollboxHoz {
+			var delta = VP.W - ASize.W - APosition.X - scrollboxHoz
 			scrollBy.X = delta
 		}
 
 		// Scroll up
-		if APosition.Y <= VP.Y+balance.ScrollboxVert {
-			var delta = VP.Y + balance.ScrollboxVert - APosition.Y
+		if APosition.Y <= VP.Y+scrollboxVert {
+			var delta = VP.Y + scrollboxVert - APosition.Y
 
 			if delta < 0 {
 				delta = -delta
@@ -154,8 +159,8 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 		}
 
 		// Scroll down
-		if APosition.Y >= VP.H-ASize.H-balance.ScrollboxVert {
-			var delta = VP.H - ASize.H - APosition.Y - balance.ScrollboxVert
+		if APosition.Y >= VP.H-ASize.H-scrollboxVert {
+			var delta = VP.H - ASize.H - APosition.Y - scrollboxVert
 			if delta > 300 {
 				delta = 300
 			} else if delta < -300 {
