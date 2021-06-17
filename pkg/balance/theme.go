@@ -127,7 +127,9 @@ func init() {
 	ButtonDanger.HoverForeground = ButtonPrimary.Foreground
 
 	ButtonBabyBlue.Background = render.RGBA(0, 153, 255, 255)
+	ButtonBabyBlue.Foreground = render.White
 	ButtonBabyBlue.HoverBackground = render.RGBA(0, 220, 255, 255)
+	ButtonBabyBlue.HoverForeground = render.White
 
 	ButtonPink.Background = render.RGBA(255, 153, 255, 255)
 	ButtonPink.HoverBackground = render.RGBA(255, 220, 255, 255)

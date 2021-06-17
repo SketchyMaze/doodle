@@ -1,4 +1,4 @@
-// doodad is the command line developer tool for Doodle.
+// doodle-admin performs secret admin tasks like generating license keys.
 package main
 
 import (
@@ -8,9 +8,8 @@ import (
 	"sort"
 	"time"
 
-	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
+	"git.kirsle.net/apps/doodle/cmd/doodle-admin/command"
 	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/license"
 	"github.com/urfave/cli/v2"
 )
 
@@ -28,18 +27,12 @@ func init() {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "doodad"
-	app.Usage = "command line interface for Doodle"
+	app.Name = "doodle-admin"
+	app.Usage = "Admin tasks for Sketchy Maze."
 
-	var freeLabel string
-	if !license.IsRegistered() {
-		freeLabel = " (shareware)"
-	}
-
-	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
+	app.Version = fmt.Sprintf("%s build %s. Built on %s",
 		branding.Version,
 		Build,
-		freeLabel,
 		BuildDate,
 	)
 
@@ -51,11 +44,9 @@ func main() {
 	}
 
 	app.Commands = []*cli.Command{
-		commands.Convert,
-		commands.Show,
-		commands.EditLevel,
-		commands.EditDoodad,
-		commands.InstallScript,
+		command.Key,
+		command.Sign,
+		command.Verify,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))

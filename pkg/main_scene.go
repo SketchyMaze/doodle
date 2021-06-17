@@ -6,12 +6,14 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/updater"
+	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -30,6 +32,8 @@ type MainScene struct {
 	labelVersion *ui.Label
 	labelHint    *ui.Label
 	frame        *ui.Frame // Main button frame
+	btnRegister  *ui.Button
+	winRegister  *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -63,7 +67,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 
 	// Version label.
 	var shareware string
-	if balance.FreeVersion {
+	if !license.IsRegistered() {
 		shareware = " (shareware)"
 	}
 	ver := ui.NewLabel(ui.Label{
@@ -105,6 +109,41 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.updateButton.Compute(d.Engine)
 	s.updateButton.Hide()
 	s.Supervisor.Add(s.updateButton)
+
+	// Register button.
+	s.btnRegister = ui.NewButton("Register", ui.NewLabel(ui.Label{
+		Text: "Register Game",
+		Font: balance.LabelFont,
+	}))
+	s.btnRegister.SetStyle(&balance.ButtonPrimary)
+	s.btnRegister.Handle(ui.Click, func(ed ui.EventData) error {
+		if s.winRegister == nil {
+			cfg := windows.License{
+				Supervisor: s.Supervisor,
+				Engine:     d.Engine,
+				OnCancel: func() {
+					s.winRegister.Hide()
+				},
+			}
+			cfg.OnLicensed = func() {
+				// License status has changed, reload the window!
+				if s.winRegister != nil {
+					s.winRegister.Hide()
+				}
+				s.winRegister = windows.MakeLicenseWindow(d.width, d.height, cfg)
+			}
+
+			cfg.OnLicensed()
+		}
+		s.winRegister.Show()
+		return nil
+	})
+	s.btnRegister.Compute(d.Engine)
+	s.Supervisor.Add(s.btnRegister)
+
+	if license.IsRegistered() {
+		s.btnRegister.Hide()
+	}
 
 	// Main UI button frame.
 	frame := ui.NewFrame("frame")
@@ -329,7 +368,7 @@ func (s *MainScene) Draw(d *Doodle) error {
 
 	// Hint label.
 	s.labelHint.MoveTo(render.Point{
-		X: d.width - s.labelHint.Size().W - 32,
+		X: (d.width / 2) - (s.labelHint.Size().W / 2),
 		Y: d.height - s.labelHint.Size().H - 32,
 	})
 	s.labelHint.Present(d.Engine, s.labelHint.Point())
@@ -347,6 +386,16 @@ func (s *MainScene) Draw(d *Doodle) error {
 		Y: 260,
 	})
 	s.frame.Present(d.Engine, s.frame.Point())
+
+	// Register button.
+	s.btnRegister.MoveTo(render.Point{
+		X: d.width - s.btnRegister.Size().W - 24,
+		Y: d.height - s.btnRegister.Size().H - 24,
+	})
+	s.btnRegister.Present(d.Engine, s.btnRegister.Point())
+
+	// Present supervised windows.
+	s.Supervisor.Present(d.Engine)
 
 	return nil
 }

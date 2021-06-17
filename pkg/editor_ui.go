@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/uix"
@@ -51,6 +52,7 @@ type EditorUI struct {
 	layersWindow        *ui.Window
 	publishWindow       *ui.Window
 	filesystemWindow    *ui.Window
+	licenseWindow       *ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -508,24 +510,22 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			d.GotoNewMenu()
 		})
 	})
-	if !balance.FreeVersion {
-		fileMenu.AddItem("New doodad", func() {
-			u.Scene.ConfirmUnload(func() {
-				d.Prompt("Doodad size [100]>", func(answer string) {
-					size := balance.DoodadSize
-					if answer != "" {
-						i, err := strconv.Atoi(answer)
-						if err != nil {
-							d.Flash("Error: Doodad size must be a number.")
-							return
-						}
-						size = i
+	fileMenu.AddItem("New doodad", func() {
+		u.Scene.ConfirmUnload(func() {
+			d.Prompt("Doodad size [100]>", func(answer string) {
+				size := balance.DoodadSize
+				if answer != "" {
+					i, err := strconv.Atoi(answer)
+					if err != nil {
+						d.Flash("Error: Doodad size must be a number.")
+						return
 					}
-					d.NewDoodad(size)
-				})
+					size = i
+				}
+				d.NewDoodad(size)
 			})
 		})
-	}
+	})
 	fileMenu.AddItemAccel("Save", "Ctrl-S*", func() {
 		if u.Scene.filename != "" {
 			saveFunc(u.Scene.filename)
@@ -688,6 +688,27 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	helpMenu.AddItemAccel("User Manual", "F1", func() {
 		native.OpenLocalURL(balance.GuidebookPath)
 	})
+	helpMenu.AddItem("Register", func() {
+		if u.licenseWindow == nil {
+			cfg := windows.License{
+				Supervisor: u.Supervisor,
+				Engine:     d.Engine,
+				OnCancel: func() {
+					u.licenseWindow.Hide()
+				},
+			}
+			cfg.OnLicensed = func() {
+				// License status has changed, reload the window!
+				if u.licenseWindow != nil {
+					u.licenseWindow.Hide()
+				}
+				u.licenseWindow = windows.MakeLicenseWindow(d.width, d.height, cfg)
+			}
+
+			cfg.OnLicensed()
+		}
+		u.licenseWindow.Show()
+	})
 	helpMenu.AddItem("About", func() {
 		if u.aboutWindow == nil {
 			u.aboutWindow = windows.NewAboutWindow(windows.About{
@@ -747,7 +768,7 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 	}
 
 	var shareware string
-	if balance.FreeVersion {
+	if !license.IsRegistered() {
 		shareware = " (shareware)"
 	}
 	extraLabel := ui.NewLabel(ui.Label{

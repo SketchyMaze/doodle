@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sound"
@@ -51,7 +52,7 @@ func main() {
 	app.Usage = fmt.Sprintf("%s - %s", branding.AppName, branding.Summary)
 
 	var freeLabel string
-	if balance.FreeVersion {
+	if !license.IsRegistered() {
 		freeLabel = " (shareware)"
 	}
 
