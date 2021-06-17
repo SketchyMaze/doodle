@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/license"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/go/render"
@@ -66,7 +67,7 @@ func NewLicenseWindow(cfg License) *ui.Window {
 	window.Configure(ui.Config{
 		Width:      windowWidth,
 		Height:     windowHeight,
-		Background: render.RGBA(200, 200, 255, 255),
+		Background: render.RGBA(255, 200, 255, 255),
 	})
 
 	var rows = []struct {
@@ -127,21 +128,21 @@ func NewLicenseWindow(cfg License) *ui.Window {
 		{
 			IfUnregistered: true,
 			Button: ui.NewButton("Key Browse", ui.NewLabel(ui.Label{
-				Text: "Upload License Key File",
+				Text: "Browse for License Key",
 				Font: balance.UIFont,
 			})),
 			ButtonStyle: &balance.ButtonPrimary,
 			Func: func() {
 				filename, err := native.OpenFile("Select License File", "*.key *.txt")
 				if err != nil {
-					modal.Alert(err.Error())
+					log.Error(err.Error())
 					return
 				}
 
 				// Upload and validate the license key.
 				reg, err := license.UploadLicenseFile(filename)
 				if err != nil {
-					modal.Alert(err.Error())
+					modal.Alert("That license key didn't seem quite right.").WithTitle("License Error")
 					return
 				}
 

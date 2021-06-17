@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
@@ -279,7 +280,13 @@ func (s *EditorScene) LoadLevel(filename string) error {
 
 	log.Info("Installing %d actors into the drawing", len(level.Actors))
 	if err := s.UI.Canvas.InstallActors(level.Actors); err != nil {
-		modal.Alert("This level references some doodads that were not found:\n\n%s", err).WithTitle("Level Errors")
+		summary := "This level references some doodads that were not found:"
+		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+			summary = "This level contains embedded doodads, but this is not\n" +
+				"available in the free version of the game. The following\n" +
+				"doodads could not be loaded:"
+		}
+		modal.Alert("%s\n\n%s", summary, err).WithTitle("Level Errors")
 		return fmt.Errorf("EditorScene.LoadLevel: InstallActors: %s", err)
 	}
 

@@ -2,6 +2,7 @@ package uix
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
@@ -20,7 +21,7 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	for id, actor := range actors {
 		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level)
 		if err != nil {
-			errs = append(errs, err.Error())
+			errs = append(errs, fmt.Sprintf("%s: %s", actor.Filename, err.Error()))
 			continue
 		}
 

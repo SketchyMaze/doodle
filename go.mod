@@ -7,6 +7,7 @@ require (
 	git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b
 	git.kirsle.net/go/render v0.0.0-20210104010442-b4a1979a8ba1
 	git.kirsle.net/go/ui v0.0.0-20200710023146-e2a561fbd04c
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gen2brain/dlgs v0.0.0-20210406143744-f512297a108e
 	github.com/google/uuid v1.1.2
@@ -24,5 +25,13 @@ require (
 )
 
 // replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
+
 // replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
+
 // replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio
+
+// replace git.kirsle.net/go/render => /run/build/doodle/deps/render
+
+// replace git.kirsle.net/go/ui => /run/build/doodle/deps/ui
+
+// replace git.kirsle.net/go/audio => /run/build/doodle/deps/audio

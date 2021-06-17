@@ -13,6 +13,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/wasm"
@@ -118,6 +119,9 @@ func ListBuiltin() ([]string, error) {
 func LoadFromEmbeddable(filename string, fs filesystem.Embeddable) (*Doodad, error) {
 	if bin, err := fs.GetFile(balance.EmbeddedDoodadsBasePath + filename); err == nil {
 		log.Debug("doodads.LoadFromEmbeddable: found %s", filename)
+		if !license.IsRegistered() {
+			return nil, license.ErrRegisteredFeature
+		}
 		return Deserialize(filename, bin)
 	}
 	return LoadFile(filename)

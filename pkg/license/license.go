@@ -13,6 +13,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// Errors
+var (
+	ErrRegisteredFeature = errors.New("feature not available")
+)
+
 // Registration object encoded into a license key file.
 type Registration struct {
 	Name  string `json:"name"`

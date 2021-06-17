@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/level/publishing"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/windows"
@@ -82,6 +83,27 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 		window.Hide()
 	}
 
+	// License Registration Window.
+	if u.licenseWindow == nil {
+		cfg := windows.License{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			OnCancel: func() {
+				u.licenseWindow.Hide()
+			},
+		}
+		cfg.OnLicensed = func() {
+			// License status has changed, reload the window!
+			if u.licenseWindow != nil {
+				u.licenseWindow.Hide()
+			}
+			u.licenseWindow = windows.MakeLicenseWindow(d.width, d.height, cfg)
+		}
+
+		cfg.OnLicensed()
+		u.licenseWindow.Hide()
+	}
+
 	// Doodad Dropper.
 	if u.doodadWindow == nil {
 		u.doodadWindow = windows.NewDoodadDropper(windows.DoodadDropper{
@@ -128,6 +150,19 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			Level:      scene.Level,
 
 			OnPublish: func(includeBuiltins bool) {
+				// XXX: Paid Version Only.
+				if !license.IsRegistered() {
+					if u.licenseWindow != nil {
+						u.licenseWindow.Show()
+						u.Supervisor.FocusWindow(u.licenseWindow)
+					}
+					d.Flash("Level Publishing is only available in the full version of the game.")
+					// modal.Alert(
+					// 	"This feature is only available in the full version of the game.",
+					// ).WithTitle("Please register")
+					return
+				}
+
 				log.Debug("OnPublish: include builtins=%+v", includeBuiltins)
 				cwd, _ := os.Getwd()
 				d.Prompt(fmt.Sprintf("File name (relative to %s)> ", cwd), func(answer string) {

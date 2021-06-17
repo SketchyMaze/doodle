@@ -689,24 +689,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		native.OpenLocalURL(balance.GuidebookPath)
 	})
 	helpMenu.AddItem("Register", func() {
-		if u.licenseWindow == nil {
-			cfg := windows.License{
-				Supervisor: u.Supervisor,
-				Engine:     d.Engine,
-				OnCancel: func() {
-					u.licenseWindow.Hide()
-				},
-			}
-			cfg.OnLicensed = func() {
-				// License status has changed, reload the window!
-				if u.licenseWindow != nil {
-					u.licenseWindow.Hide()
-				}
-				u.licenseWindow = windows.MakeLicenseWindow(d.width, d.height, cfg)
-			}
-
-			cfg.OnLicensed()
-		}
 		u.licenseWindow.Show()
 	})
 	helpMenu.AddItem("About", func() {
