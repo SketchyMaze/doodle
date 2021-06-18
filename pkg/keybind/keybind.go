@@ -45,6 +45,26 @@ func Redo(ev *event.State) bool {
 	return ev.Ctrl && ev.KeyDown("y")
 }
 
+// New Level (Ctrl-N)
+func NewLevel(ev *event.State) bool {
+	return ev.Ctrl && ev.KeyDown("n")
+}
+
+// Save (Ctrl-S)
+func Save(ev *event.State) bool {
+	return ev.Ctrl && ev.KeyDown("s")
+}
+
+// SaveAs (Shift-Ctrl-S)
+func SaveAs(ev *event.State) bool {
+	return ev.Ctrl && ev.Shift && ev.KeyDown("s")
+}
+
+// Open (Ctrl-O)
+func Open(ev *event.State) bool {
+	return ev.Ctrl && ev.KeyDown("o")
+}
+
 // ZoomIn (+)
 func ZoomIn(ev *event.State) bool {
 	return ev.KeyDown("=") || ev.KeyDown("+")

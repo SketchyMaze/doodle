@@ -196,6 +196,21 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		}
 	}
 
+	// Menu key bindings.
+	if keybind.NewLevel(ev) {
+		// Ctrl-N, New Level
+		s.MenuNewLevel()
+	} else if keybind.SaveAs(ev) {
+		// Shift-Ctrl-S, Save As
+		s.MenuSave(true)()
+	} else if keybind.Save(ev) {
+		// Ctrl-S, Save
+		s.MenuSave(false)()
+	} else if keybind.Open(ev) {
+		// Ctrl-O, Open
+		s.MenuOpen()
+	}
+
 	// Undo/Redo key bindings.
 	if keybind.Undo(ev) {
 		s.UI.Canvas.UndoStroke()
@@ -223,7 +238,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		s.UI.Canvas.ScrollTo(render.Origin)
 	}
 
-	s.UI.Loop(ev)
+	// s.UI.Loop(ev)
 
 	// Switching to Play Mode?
 	if keybind.GotoPlay(ev) {
@@ -251,6 +266,8 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	} else if keybind.DoodadDropper(ev) {
 		s.UI.doodadWindow.Show()
 	}
+
+	s.UI.Loop(ev)
 
 	return nil
 }
