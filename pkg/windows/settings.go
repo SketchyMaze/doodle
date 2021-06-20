@@ -1,6 +1,8 @@
 package windows
 
 import (
+	"strings"
+
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
@@ -274,7 +276,11 @@ func (c Settings) makeOptionsTab(Width, Height int) *ui.Frame {
 		{
 			Label: "Open profile directory",
 			Fn: func() {
-				native.OpenURL("file://" + userdir.ProfileDirectory)
+				path := strings.ReplaceAll(userdir.ProfileDirectory, "\\", "/")
+				if path[0] != '/' {
+					path = "/" + path
+				}
+				native.OpenURL("file://" + path)
 			},
 			Style: &balance.ButtonPrimary,
 		},
