@@ -29,4 +29,4 @@ mkdir -p "$APP_CONTENTS/Resources"
 
 # Copy binaries to /MacOS
 cp doodle doodad "$APP_CONTENTS/MacOS/"
-cp -r *.* rtp guidebook "$APP_CONTENTS/Resources/"
+rsync -av ./ --exclude doodle --exclude doodad --exclude "$APP_NAME" "$APP_CONTENTS/Resources/"
