@@ -169,12 +169,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	toolMenu.AddItem("Edit Palette", func() {
 		u.OpenPaletteWindow()
 	})
-	if u.Scene.DrawingType == enum.LevelDrawing {
-		toolMenu.AddItemAccel("Doodads", "d", func() {
-			log.Info("Open the DoodadDropper")
-			u.doodadWindow.Show()
-		})
-	} else if u.Scene.DrawingType == enum.DoodadDrawing {
+	if u.Scene.DrawingType == enum.DoodadDrawing {
 		toolMenu.AddItem("Layers", func() {
 			u.OpenLayersWindow()
 		})

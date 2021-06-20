@@ -1,6 +1,6 @@
 # Changes
 
-## v0.7.0 (TBD)
+## v0.7.0 (June 20 2021)
 
 This is the first release of the game where the "free version" drifts meaningfully
 away from the "full version". Free versions of the game will show the label
