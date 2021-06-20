@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"github.com/robertkrimen/otto"
 )
 
@@ -73,7 +73,7 @@ func (e *Events) OnKeypress(call otto.FunctionCall) otto.Value {
 }
 
 // RunKeypress invokes the OnCollide handler function.
-func (e *Events) RunKeypress(ev *event.State) error {
+func (e *Events) RunKeypress(ev keybind.State) error {
 	return e.run(KeypressEvent, ev)
 }
 

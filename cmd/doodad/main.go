@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sort"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/cmd/doodad/commands"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/license"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/urfave/cli/v2"
 )
 
@@ -63,6 +63,7 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		log.Error("Fatal: %s", err)
+		os.Exit(1)
 	}
 }

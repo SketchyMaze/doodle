@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sound"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli/v2"
 
@@ -54,6 +55,11 @@ func main() {
 	var freeLabel string
 	if !license.IsRegistered() {
 		freeLabel = " (shareware)"
+	}
+
+	// Load user settings from disk ASAP.
+	if err := usercfg.Load(); err != nil {
+		log.Error("Error loading user settings (defaults will be used): %s", err)
 	}
 
 	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
@@ -194,7 +200,9 @@ func setResolution(value string) error {
 	case "mobile":
 		balance.Width = 375
 		balance.Height = 812
-		balance.HorizontalToolbars = true
+		if !usercfg.Current.Initialized {
+			usercfg.Current.HorizontalToolbars = true
+		}
 	case "landscape":
 		balance.Width = 812
 		balance.Height = 375

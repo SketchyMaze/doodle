@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 )
 
 // FromJSON loads a level from JSON string.
@@ -34,7 +34,7 @@ func FromJSON(filename string, data []byte) (*Level, error) {
 func (m *Level) ToJSON() ([]byte, error) {
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
-	if balance.JSONIndent {
+	if usercfg.Current.JSONIndent {
 		encoder.SetIndent("", "\t")
 	}
 	err := encoder.Encode(m)

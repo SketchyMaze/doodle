@@ -105,6 +105,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	editMenu.AddItemAccel("Redo", "Ctrl-Y", func() {
 		u.Canvas.RedoStroke()
 	})
+	editMenu.AddSeparator()
+	editMenu.AddItem("Settings", func() {
+		if u.settingsWindow == nil {
+			u.settingsWindow = d.MakeSettingsWindow(u.Supervisor)
+		}
+		u.settingsWindow.Show()
+	})
 
 	////////
 	// Level menu

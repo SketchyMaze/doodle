@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/bindata"
@@ -34,7 +35,7 @@ func (c Command) Run(d *Doodle) error {
 		return nil
 	}
 
-	switch c.Command {
+	switch strings.ToLower(c.Command) {
 	case "echo":
 		d.Flash(c.ArgsLiteral)
 		return nil
@@ -76,7 +77,7 @@ func (c Command) Run(d *Doodle) error {
 	case "repl":
 		d.shell.Repl = true
 		d.shell.Text = "$ "
-	case "boolProp":
+	case "boolprop":
 		return c.BoolProp(d)
 	case "extract-bindata":
 		// Undocumented command to extract the binary of its assets.
@@ -150,7 +151,7 @@ func (c Command) Help(d *Doodle) error {
 		return nil
 	}
 
-	switch c.Args[0] {
+	switch strings.ToLower(c.Args[0]) {
 	case "echo":
 		d.Flash("Usage: echo <message>")
 		d.Flash("Flash a message back to the console")
@@ -183,7 +184,7 @@ func (c Command) Help(d *Doodle) error {
 		d.Flash("Evaluate a line of JavaScript on the in-game interpreter")
 	case "repl":
 		d.Flash("Enter a JavaScript shell on the in-game interpreter")
-	case "boolProp":
+	case "boolprop":
 		d.Flash("Toggle boolean values. `boolProp list` lists available")
 	case "help":
 		d.Flash("Usage: help <command>")

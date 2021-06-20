@@ -9,6 +9,80 @@ package keybind
 
 import "git.kirsle.net/go/render/event"
 
+// State returns a version of event.State which is domain specific
+// to what the game actually cares about.
+type State struct {
+	State          *event.State
+	Shutdown       bool // Escape key
+	Help           bool // F1
+	DebugOverlay   bool // F3
+	DebugCollision bool // F4
+	Undo           bool // Ctrl-Z
+	Redo           bool // Ctrl-Y
+	NewLevel       bool // Ctrl-N
+	Save           bool // Ctrl-S
+	SaveAs         bool // Shift-Ctrl-S
+	Open           bool // Ctrl-O
+	ZoomIn         bool // +
+	ZoomOut        bool // -
+	ZoomReset      bool // 1
+	Origin         bool // 0
+	GotoPlay       bool // p
+	GotoEdit       bool // e
+	PencilTool     bool
+	LineTool       bool
+	RectTool       bool
+	EllipseTool    bool
+	EraserTool     bool
+	DoodadDropper  bool
+	ShellKey       bool
+	Enter          bool
+	Left           bool
+	Right          bool
+	Up             bool
+	Down           bool
+	Use            bool
+}
+
+// FromEvent converts a render.Event readout of the current keys
+// being pressed but formats them in the way the game uses them.
+// For example, WASD and arrow keys both move the player and the
+// game only cares which direction.
+func FromEvent(ev *event.State) State {
+	return State{
+		State:          ev,
+		Shutdown:       Shutdown(ev),
+		Help:           Help(ev),
+		DebugOverlay:   DebugOverlay(ev),
+		DebugCollision: DebugCollision(ev), // F4
+		Undo:           Undo(ev),           // Ctrl-Z
+		Redo:           Redo(ev),           // Ctrl-Y
+		NewLevel:       NewLevel(ev),       // Ctrl-N
+		Save:           Save(ev),           // Ctrl-S
+		SaveAs:         SaveAs(ev),         // Shift-Ctrl-S
+		Open:           Open(ev),           // Ctrl-O
+		ZoomIn:         ZoomIn(ev),         // +
+		ZoomOut:        ZoomOut(ev),        // -
+		ZoomReset:      ZoomReset(ev),      // 1
+		Origin:         Origin(ev),         // 0
+		GotoPlay:       GotoPlay(ev),       // p
+		GotoEdit:       GotoEdit(ev),       // e
+		PencilTool:     PencilTool(ev),
+		LineTool:       LineTool(ev),
+		RectTool:       RectTool(ev),
+		EllipseTool:    EllipseTool(ev),
+		EraserTool:     EraserTool(ev),
+		DoodadDropper:  DoodadDropper(ev),
+		ShellKey:       ShellKey(ev),
+		Enter:          Enter(ev),
+		Left:           Left(ev),
+		Right:          Right(ev),
+		Up:             Up(ev),
+		Down:           Down(ev),
+		Use:            Use(ev),
+	}
+}
+
 // Shutdown (Escape) signals the game to start closing down.
 func Shutdown(ev *event.State) bool {
 	return ev.Escape

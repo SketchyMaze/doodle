@@ -5,37 +5,42 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 )
 
-// Fun bool props to wreak havoc in the game.
-var (
-	// Force show hidden doodads in the palette in Editor Mode.
-	ShowHiddenDoodads bool
+/*
+Boolprop is a boolean setting that can be toggled in the game using the
+developer console. Many of these consist of usercfg settings that are
+not exposed to the Settings UI window, and secret testing functions.
+Where one points to usercfg, check usercfg.Settings for documentation
+about what that boolean does.
+*/
+type Boolprop struct {
+	Name string
+	Get  func() bool
+	Set  func(bool)
+}
 
-	// Force ability to edit Locked levels and doodads.
-	WriteLockOverride bool
-
-	// Pretty-print JSON files when writing.
-	JSONIndent bool
-
-	// Temporary debug flag.
-	TempDebug bool
-
-	// Draw horizontal toolbars in Level Editor instead of vertical.
-	HorizontalToolbars bool
-)
-
-// Human friendly names for the boolProps. Not necessarily the long descriptive
-// variable names above.
-var props = map[string]*bool{
-	"showAllDoodads":     &ShowHiddenDoodads,
-	"writeLockOverride":  &WriteLockOverride,
-	"prettyJSON":         &JSONIndent,
-	"tempDebug":          &TempDebug,
-	"horizontalToolbars": &HorizontalToolbars,
-
-	// WARNING: SLOW!
-	"disableChunkTextureCache": &DisableChunkTextureCache,
+// Boolprops are the map of available boolprops, shown in the dev
+// console when you type: "boolProp list"
+var Boolprops = map[string]Boolprop{
+	"show-hidden-doodads": {
+		Get: func() bool { return usercfg.Current.ShowHiddenDoodads },
+		Set: func(v bool) { usercfg.Current.ShowHiddenDoodads = v },
+	},
+	"write-lock-override": {
+		Get: func() bool { return usercfg.Current.WriteLockOverride },
+		Set: func(v bool) { usercfg.Current.WriteLockOverride = v },
+	},
+	"pretty-json": {
+		Get: func() bool { return usercfg.Current.JSONIndent },
+		Set: func(v bool) { usercfg.Current.JSONIndent = v },
+	},
+	"horizontal-toolbars": {
+		Get: func() bool { return usercfg.Current.HorizontalToolbars },
+		Set: func(v bool) { usercfg.Current.HorizontalToolbars = v },
+	},
 }
 
 // GetBoolProp reads the current value of a boolProp.
@@ -43,25 +48,25 @@ var props = map[string]*bool{
 func GetBoolProp(name string) (bool, error) {
 	if name == "list" {
 		var keys []string
-		for k := range props {
+		for k := range Boolprops {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
 		return false, fmt.Errorf(
-			"Boolprops: %s",
+			"boolprops: %s",
 			strings.Join(keys, ", "),
 		)
 	}
-	if prop, ok := props[name]; ok {
-		return *prop, nil
+	if prop, ok := Boolprops[name]; ok {
+		return prop.Get(), nil
 	}
 	return false, errors.New("no such boolProp")
 }
 
 // BoolProp allows easily setting a boolProp by name.
 func BoolProp(name string, v bool) error {
-	if prop, ok := props[name]; ok {
-		*prop = v
+	if prop, ok := Boolprops[name]; ok {
+		prop.Set(v)
 		return nil
 	}
 	return errors.New("no such boolProp")

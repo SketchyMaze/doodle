@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -81,7 +82,7 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		}
 
 		// Skip hidden doodads.
-		if doodad.Hidden && !balance.ShowHiddenDoodads {
+		if doodad.Hidden && !usercfg.Current.ShowHiddenDoodads {
 			continue
 		}
 

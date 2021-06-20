@@ -5,6 +5,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/sprites"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"
@@ -18,7 +19,7 @@ var toolbarSpriteSize = 32 // 32x32 sprites.
 func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 	// Horizontal toolbar instead of vertical?
 	var (
-		isHoz       = balance.HorizontalToolbars
+		isHoz       = usercfg.Current.HorizontalToolbars
 		packAlign   = ui.N
 		frameSize   = render.NewRect(toolbarWidth, 100)
 		tooltipEdge = ui.Right

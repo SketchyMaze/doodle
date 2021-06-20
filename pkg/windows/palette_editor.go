@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"
@@ -226,7 +227,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			})
 
 			for _, t := range pattern.Builtins {
-				if t.Hidden && !balance.ShowHiddenDoodads {
+				if t.Hidden && !usercfg.Current.ShowHiddenDoodads {
 					continue
 				}
 

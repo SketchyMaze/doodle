@@ -15,9 +15,12 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/apps/doodle/pkg/windows"
 	golog "git.kirsle.net/go/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 const (
@@ -208,11 +211,30 @@ func (d *Doodle) Run() error {
 		d.TrackFPS(delay)
 
 		// Consume any lingering key sym.
-		ev.ResetKeyDown()
+		// ev.ResetKeyDown()
 	}
 
 	log.Warn("Main Loop Exited! Shutting down...")
 	return nil
+}
+
+// MakeSettingsWindow initializes the windows/settings.go window
+// from anywhere you need it, binding all the variables in.
+func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
+	cfg := windows.Settings{
+		Supervisor: supervisor,
+		Engine:     d.Engine,
+		SceneName:  d.Scene.Name(),
+		OnApply: func() {
+
+		},
+
+		// Boolean checkbox bindings
+		DebugOverlay:       &DebugOverlay,
+		DebugCollision:     &DebugCollision,
+		HorizontalToolbars: &usercfg.Current.HorizontalToolbars,
+	}
+	return windows.MakeSettingsWindow(d.width, d.height, cfg)
 }
 
 // ConfirmExit may shut down Doodle gracefully after showing the user a

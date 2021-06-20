@@ -551,7 +551,7 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 	// If the "Use" key is pressed, set an actor flag on the player.
 	s.Player.SetUsing(keybind.Use(ev))
 
-	s.scripting.To(s.Player.ID()).Events.RunKeypress(ev)
+	s.scripting.To(s.Player.ID()).Events.RunKeypress(keybind.FromEvent(ev))
 }
 
 // Drawing returns the private world drawing, for debugging with the console.

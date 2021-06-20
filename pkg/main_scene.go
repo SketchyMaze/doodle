@@ -34,6 +34,7 @@ type MainScene struct {
 	frame        *ui.Frame // Main button frame
 	btnRegister  *ui.Button
 	winRegister  *ui.Window
+	winSettings  *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -169,10 +170,15 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Name: "Edit a Level",
 			Func: d.GotoLoadMenu,
 		},
-		// {
-		// 	Name: "Settings",
-		// 	Func: d.GotoSettingsMenu,
-		// },
+		{
+			Name: "Settings",
+			Func: func() {
+				if s.winSettings == nil {
+					s.winSettings = d.MakeSettingsWindow(s.Supervisor)
+				}
+				s.winSettings.Show()
+			},
+		},
 	}
 	for _, button := range buttons {
 		button := button
@@ -345,12 +351,19 @@ func (s *MainScene) Draw(d *Doodle) error {
 	s.canvas.Present(d.Engine, render.Origin)
 
 	// Draw a sheen over the level for clarity.
-	d.Engine.DrawBox(render.RGBA(255, 255, 254, 128), render.Rect{
+	d.Engine.DrawBox(render.RGBA(255, 255, 254, 96), render.Rect{
 		X: 0,
 		Y: 0,
 		W: d.width,
 		H: d.height,
 	})
+
+	// Draw out bounding boxes.
+	if DebugCollision {
+		for _, actor := range s.canvas.Actors() {
+			d.DrawCollisionBox(s.canvas, actor)
+		}
+	}
 
 	// App title label.
 	s.labelTitle.MoveTo(render.Point{

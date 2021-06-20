@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -50,6 +51,7 @@ type EditorUI struct {
 	publishWindow       *ui.Window
 	filesystemWindow    *ui.Window
 	licenseWindow       *ui.Window
+	settingsWindow      *ui.Window // lazy loaded
 
 	// Palette window.
 	Palette    *ui.Window
@@ -158,7 +160,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 
 	// Palette panel.
 	{
-		if balance.HorizontalToolbars {
+		if usercfg.Current.HorizontalToolbars {
 			u.Palette.Configure(ui.Config{
 				Width:  u.d.width,
 				Height: paletteWidth,
@@ -191,7 +193,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 			Width:  toolbarWidth,
 			Height: innerHeight,
 		}
-		if balance.HorizontalToolbars {
+		if usercfg.Current.HorizontalToolbars {
 			tbSize.Width = innerWidth
 			tbSize.Height = toolbarWidth
 		}
@@ -207,7 +209,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 	{
 
 		frame := u.Workspace
-		if balance.HorizontalToolbars {
+		if usercfg.Current.HorizontalToolbars {
 			frame.MoveTo(render.NewPoint(
 				0,
 				menuHeight+u.ToolBar.Size().H,

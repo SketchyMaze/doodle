@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -93,7 +94,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 
 		// Write locked level?
 		if s.Level != nil && s.Level.Locked {
-			if balance.WriteLockOverride {
+			if usercfg.Current.WriteLockOverride {
 				d.Flash("Note: write lock has been overridden")
 			} else {
 				d.Flash("That level is write-protected and cannot be viewed in the editor.")
@@ -123,7 +124,7 @@ func (s *EditorScene) Setup(d *Doodle) error {
 
 		// Write locked doodad?
 		if s.Doodad != nil && s.Doodad.Locked {
-			if balance.WriteLockOverride {
+			if usercfg.Current.WriteLockOverride {
 				d.Flash("Note: write lock has been overridden")
 			} else {
 				d.Flash("That doodad is write-protected and cannot be viewed in the editor.")

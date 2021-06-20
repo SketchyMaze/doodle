@@ -5,6 +5,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/ui"
 )
 
@@ -48,7 +49,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		tooltipEdge = ui.Left
 		buttonSize  = 32
 	)
-	if balance.HorizontalToolbars {
+	if usercfg.Current.HorizontalToolbars {
 		packAlign = ui.W
 		packConfig = ui.Pack{
 			Side: packAlign,

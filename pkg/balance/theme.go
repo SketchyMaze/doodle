@@ -77,6 +77,14 @@ var (
 		Color:        render.Black,
 	}
 
+	// CodeLiteralFont for rendering <code>-like text.
+	CodeLiteralFont = render.Text{
+		Size:         11,
+		PadX:         3,
+		FontFilename: "DejaVuSansMono.ttf",
+		Color:        render.Magenta,
+	}
+
 	// Small font
 	SmallFont = render.Text{
 		Size:    10,
