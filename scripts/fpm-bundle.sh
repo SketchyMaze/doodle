@@ -2,6 +2,10 @@
 
 # fpm-bundle: create bundles for the app.
 
+# Add the user-level "gem install fpm" to the $PATH.
+# Might need fixing over time.
+export PATH="$PATH:$HOME/.local/share/gem/ruby/3.0.0/bin"
+
 VERSION=`egrep -e 'Version\s+=' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
 INSTALL_ROOT="/opt/sketchy-maze"
 LAUNCHER_FILE="../../etc/linux/net.kirsle.ProjectDoodle.desktop"
