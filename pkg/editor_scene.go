@@ -215,8 +215,10 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	// Undo/Redo key bindings.
 	if keybind.Undo(ev) {
 		s.UI.Canvas.UndoStroke()
+		ev.ResetKeyDown()
 	} else if keybind.Redo(ev) {
 		s.UI.Canvas.RedoStroke()
+		ev.ResetKeyDown()
 	}
 
 	// Zoom in/out.
@@ -224,12 +226,15 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		if keybind.ZoomIn(ev) {
 			d.Flash("Zoom in")
 			s.UI.Canvas.Zoom++
+			ev.ResetKeyDown()
 		} else if keybind.ZoomOut(ev) {
 			d.Flash("Zoom out")
 			s.UI.Canvas.Zoom--
+			ev.ResetKeyDown()
 		} else if keybind.ZoomReset(ev) {
 			d.Flash("Reset zoom")
 			s.UI.Canvas.Zoom = 0
+			ev.ResetKeyDown()
 		}
 	}
 
@@ -237,6 +242,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	if keybind.Origin(ev) {
 		d.Flash("Scrolled back to level origin (0,0)")
 		s.UI.Canvas.ScrollTo(render.Origin)
+		ev.ResetKeyDown()
 	}
 
 	// s.UI.Loop(ev)

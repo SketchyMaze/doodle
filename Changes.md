@@ -5,8 +5,8 @@
 This is the first release of the game where the "free version" drifts meaningfully
 away from the "full version". Free versions of the game will show the label
 "(shareware)" next to the game version numbers and will not support embedding
-doodads inside of level files -- for creating them or playing them. Check the
-website for how you can register the full version of the game.
+doodads inside of level files -- for creating them or playing them.
+Check the website for how you can register the full version of the game.
 
 This release brings several improvements to the game:
 
@@ -22,26 +22,34 @@ This release brings several improvements to the game:
   file, it will "just play" on someone else's computer, and they don't need to copy
   all your custom doodads for it to work! But, free versions of the game will not
   get to enjoy this feature.
+* **Settings UI**: a "Settings" button on the home screen (or the Edit->Settings
+  menu in the editor) will open a settings window. Check it out!
+* **Horizontal Toolbars option:** if enabled in the Settings window, the toolbar
+  and palette in the Editor will be horizontal instead of vertical, along the top
+  and bottom of the screen. This may be better optimized for smartphone-sized
+  screens like the Pinephone. If the program is started with `-w mobile` the first
+  time, it will use horizontal toolbars by default.
 
 Some small bits of polish in the game's user interface:
 
 * Some buttons are more colorful! The "Ok" button in alert boxes is blue and pressing
-  Enter will select the "Ok" button.
-* When opening a Level or Doodad to play or edit, a blue **Browse...** button is
+  Enter will select the blue button.
+* When opening a drawing to play or edit, a blue **Browse...** button is
   added so you can more easily find downloaded custom levels and play them.
 * In the Level Editor, the "Level ->  **Attached Files**" menu will let you see
   and manage files attached to your level, such as its custom wallpaper image or
   any custom doodads that were published with the level.
 * The keyboard shortcut to open the developer console is now the tilde/grave key
-  instead of Enter.
+  (`) instead of Enter.
 
-This release also makes the game a little bit more functional on smartphone-sized
-devices like the Pine64 Pinephone:
+Bugs fixed:
 
-* **Horizontal Toolbars** option for the Level Editor. If the game is started with
-  the `-w mobile` command line option, the game window takes on a mobile form factor
-  and the Horizontal Toolbars are enabled by default.
-* Alternatively, press the tilde/grave key and type: `boolProp horizontalToolbars true`
+* The WASD keys to move the player character (as an alternative to the arrow keys)
+  now works more reliably. Previously, they were affected by key-repeat so Boy would
+  do a quick hop followed by a longer one when pressing W to jump. Also, his
+  animation would not update correctly when moving via the WASD keys. Both bugs
+  are fixed in this release.
+* Shortcut keys advertised in the menu, such as Ctrl-N and Ctrl-S, now actually work.
 
 ## v0.6.0-alpha (June 6 2021)
 

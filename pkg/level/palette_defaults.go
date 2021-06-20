@@ -13,85 +13,99 @@ var (
 	}
 
 	DefaultPalettes = map[string]*Palette{
-		"Default": &Palette{
+		"Default": {
 			Swatches: []*Swatch{
-				&Swatch{
-					Name:  "solid",
-					Color: render.Black,
-					Solid: true,
+				{
+					Name:    "solid",
+					Color:   render.MustHexColor("#777"),
+					Solid:   true,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name:  "decoration",
-					Color: render.Grey,
+				{
+					Name:    "decoration",
+					Color:   render.MustHexColor("#CCC"),
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name:  "fire",
-					Color: render.Red,
-					Fire:  true,
+				{
+					Name:    "fire",
+					Color:   render.Red,
+					Fire:    true,
+					Pattern: "marker.png",
 				},
-				&Swatch{
-					Name:  "water",
-					Color: render.RGBA(0, 0, 255, 180),
-					Water: true,
+				{
+					Name:    "water",
+					Color:   render.MustHexColor("#09F"),
+					Water:   true,
+					Pattern: "ink.png",
 				},
 			},
 		},
 
-		"Colored Pencil": &Palette{
+		"Colored Pencil": {
 			Swatches: []*Swatch{
-				&Swatch{
-					Name: "grass",
-					Color: render.DarkGreen,
-					Solid: true,
+				{
+					Name:    "grass",
+					Color:   render.DarkGreen,
+					Solid:   true,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name: "dirt",
-					Color: render.RGBA(100, 64, 0, 255),
-					Solid: true,
+				{
+					Name:    "dirt",
+					Color:   render.MustHexColor("#960"),
+					Solid:   true,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name: "stone",
-					Color: render.DarkGrey,
-					Solid: true,
+				{
+					Name:    "stone",
+					Color:   render.Grey,
+					Solid:   true,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name: "fire",
-					Color: render.Red,
-					Fire: true,
+				{
+					Name:    "fire",
+					Color:   render.Red,
+					Fire:    true,
+					Pattern: "marker.png",
 				},
-				&Swatch{
-					Name: "water",
-					Color: render.RGBA(0, 153, 255, 255),
-					Water: true,
+				{
+					Name:    "water",
+					Color:   render.RGBA(0, 153, 255, 255),
+					Water:   true,
+					Pattern: "ink.png",
 				},
 			},
 		},
 
-		"Blueprint": &Palette{
+		"Blueprint": {
 			Swatches: []*Swatch{
-				&Swatch{
-					Name:  "solid",
-					Color: render.RGBA(254, 254, 254, 255),
-					Solid: true,
+				{
+					Name:    "solid",
+					Color:   render.RGBA(254, 254, 254, 255),
+					Solid:   true,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name:  "decoration",
-					Color: render.Grey,
+				{
+					Name:    "decoration",
+					Color:   render.Grey,
+					Pattern: "noise.png",
 				},
-				&Swatch{
-					Name:  "fire",
-					Color: render.RGBA(255, 80, 0, 255),
-					Fire:  true,
+				{
+					Name:    "fire",
+					Color:   render.RGBA(255, 80, 0, 255),
+					Fire:    true,
+					Pattern: "marker.png",
 				},
-				&Swatch{
-					Name:  "water",
-					Color: render.RGBA(0, 153, 255, 255),
-					Water: true,
+				{
+					Name:    "water",
+					Color:   render.RGBA(0, 153, 255, 255),
+					Water:   true,
+					Pattern: "ink.png",
 				},
-				&Swatch{
-					Name:  "electric",
-					Color: render.RGBA(255, 255, 0, 255),
-					Solid: true,
+				{
+					Name:    "electric",
+					Color:   render.RGBA(255, 255, 0, 255),
+					Solid:   true,
+					Pattern: "marker.png",
 				},
 			},
 		},

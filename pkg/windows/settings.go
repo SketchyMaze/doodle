@@ -144,8 +144,6 @@ func saveGameSettings() {
 func (c Settings) makeOptionsTab(Width, Height int) *ui.Frame {
 	tab := ui.NewFrame("Options Tab")
 
-	log.Error("c.Super: %+v", c.Supervisor)
-
 	// Common click handler for all settings,
 	// so we can write the updated info to disk.
 	onClick := func(ed ui.EventData) error {
@@ -176,7 +174,7 @@ func (c Settings) makeOptionsTab(Width, Height int) *ui.Frame {
 			name:    "toolbars",
 		},
 		{
-			Header: "Debug Options",
+			Header: "Debug Options (temporary)",
 		},
 		{
 			Boolean: c.DebugOverlay,
