@@ -51,6 +51,13 @@ Bugs fixed:
   are fixed in this release.
 * Shortcut keys advertised in the menu, such as Ctrl-N and Ctrl-S, now actually work.
 
+### v0.7.1 (July 11 2021)
+
+Fixes a bug on the Windows version:
+
+* Built-in wallpapers other than the default Notebook were failing to
+  load in the Windows release of v0.7.0
+
 ## v0.6.0-alpha (June 6 2021)
 
 This release brings less jank and some new features.
