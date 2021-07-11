@@ -87,7 +87,8 @@ func FindFile(filename string) (string, error) {
 	var filetype string
 
 	// If the filename has path separators, return it as-is.
-	if strings.ContainsRune(filename, filepath.Separator) {
+	if strings.ContainsRune(filename, filepath.Separator) ||
+		strings.ContainsRune(filename, '/') {
 		return filename, nil
 	}
 
