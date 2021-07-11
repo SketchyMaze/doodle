@@ -78,7 +78,6 @@ func (w *Canvas) InstallScripts() error {
 		}
 
 		// Call the main() function.
-		log.Debug("Calling Main() for %s", actor.ID())
 		if err := vm.Main(); err != nil {
 			log.Error("main() for actor %s errored: %s", actor.ID(), err)
 		}

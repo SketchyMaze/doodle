@@ -218,7 +218,7 @@ func (s *MainScene) checkUpdate() {
 		return
 	}
 
-	if info.LatestVersion != branding.Version {
+	if info.IsNewerVersionThan(branding.Version) {
 		s.updateInfo = info
 		s.updateButton.Show()
 	}

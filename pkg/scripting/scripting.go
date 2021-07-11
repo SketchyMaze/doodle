@@ -69,8 +69,6 @@ func (s *Supervisor) InstallScripts(level *level.Level) error {
 
 // AddLevelScript adds a script to the supervisor with level hooks.
 func (s *Supervisor) AddLevelScript(id string) error {
-	log.Debug("InstallScripts: load script from Actor %s", id)
-
 	if _, ok := s.scripts[id]; ok {
 		return fmt.Errorf("duplicate actor ID %s in level", id)
 	}
