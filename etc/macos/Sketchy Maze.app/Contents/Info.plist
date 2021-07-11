@@ -5,7 +5,7 @@
   <key>CFBundleGetInfoString</key>
   <string>Project: Doodle</string>
   <key>CFBundleExecutable</key>
-  <string>doodle</string>
+  <string>sketchymaze</string>
   <key>CFBundleIdentifier</key>
   <string>net.kirsle.ProjectDoodle</string>
   <key>CFBundleName</key>

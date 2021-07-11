@@ -6,10 +6,10 @@
 VERSION=`grep -e 'Version =' ../../pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
 INSTALL_ROOT="/opt/sketchy-maze"
 APP_NAME="Sketchy Maze.app"
-APP_FOLDER="../../etc/macos/$APP_NAME"
+APP_FOLDER="../../../../etc/macos/$APP_NAME"
 APP_CONTENTS="$APP_NAME/Contents"
 
-if [[ ! -f "./doodle" ]]; then
+if [[ ! -f "./sketchymaze" ]]; then
 	echo Run this script from the directory containing the Doodle binary.
 	echo This is usually at /dist/doodle-VERSION/ relative to the git root.
 	exit 1
@@ -28,5 +28,5 @@ mkdir -p "$APP_CONTENTS/MacOS"
 mkdir -p "$APP_CONTENTS/Resources"
 
 # Copy binaries to /MacOS
-cp doodle doodad "$APP_CONTENTS/MacOS/"
-rsync -av ./ --exclude doodle --exclude doodad --exclude "$APP_NAME" "$APP_CONTENTS/Resources/"
+cp sketchymaze doodad "$APP_CONTENTS/MacOS/"
+rsync -av ./ --exclude sketchymaze --exclude doodad --exclude "$APP_NAME" "$APP_CONTENTS/Resources/"

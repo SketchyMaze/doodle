@@ -5,9 +5,10 @@
 # folder into Linux and Windows versions and zip them up
 # for release.
 #
-# For Mac OS releases, after `make dist` run `release-osx.sh`
-# instead.
-
+# If run on a Mac OS system, it runs only the Mac OS code
+# path; it does not expect any Windows .exe files or .dll's,
+# the dist folder should be a Mac only build of the game.
+#
 # Add the user-level "gem install fpm" to the $PATH.
 # Might need fixing over time.
 export PATH="$PATH:$HOME/.local/share/gem/ruby/3.0.0/bin"
@@ -77,6 +78,35 @@ windows() {
     zip -r "${RELEASE_PATH}/windows/sketchymaze-${VERSION}-windows-64bit.zip" .
     cd -
 }
+macos() {
+    # Check for OSX binaries in the dist folder.
+    if [[ ! -f "${DIST_PATH}/doodad" ]]; then
+        echo No binaries found, skipping Mac release.
+        return
+    fi
 
-linux
-windows
+    # Prepare the OSX release.
+    mkdir -p ${STAGE_PATH} "${RELEASE_PATH}/macos"
+    cp -r $DIST_PATH "${STAGE_PATH}/macos"
+    cd "$STAGE_PATH/macos"
+
+    # Zip it.
+    zip -r "${RELEASE_PATH}/macos/sketchymaze-${VERSION}-macos-x64.zip" .
+
+    # Create the .app bundle.
+    ../../../../scripts/mac-app.sh
+
+    # Remove redundant Mac binaries from stage folder.
+    rm ./sketchymaze ./doodad
+    hdiutil create "${RELEASE_PATH}/macos/sketchymaze-${VERSION}-macOS-x64.dmg" \
+        -ov -volname "SketchyMaze" -fs HFS+ -srcfolder $(pwd)
+
+    cd -
+}
+
+if [[ `uname` == "Darwin" ]]; then
+    macos
+else
+    linux
+    windows
+fi
