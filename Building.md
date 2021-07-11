@@ -7,6 +7,21 @@
 * [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
 * [Old Docs](#old-docs)
 
+# Automated Release Scripts
+
+For the quickest ways to fully end-to-end build Sketchy Maze for various
+platforms to produce public release artifacts, see the following repos:
+
+* [doodle-docker](https://git.kirsle.net/doodle-docker) provides a Dockerfile that
+  fully end-to-end releases the latest version of the game for Linux and Windows:
+  * Windows: .zip file
+  * Linux: .tar.gz, .rpm, .deb
+* [flatpak](https://code.sketchymaze.com/game/flatpak) is a Flatpak manifest for
+  Linux distributions.
+
+The Docker container depends on all the git servers being up, but if you have
+the uber blob source code you can read the Dockerfile to see what it does.
+
 # Quickstart with bootstrap.py
 
 From any Unix-like system (Fedora, Ubuntu, macOS) the bootstrap.py script

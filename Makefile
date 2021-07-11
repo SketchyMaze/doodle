@@ -18,7 +18,7 @@ setup: clean
 # `make build` to build the binary.
 .PHONY: build
 build:
-	go build $(LDFLAGS) -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -i -o bin/sketchymaze cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 
 # `make buildall` to run all build steps including doodads and bindata.
@@ -29,14 +29,14 @@ buildall: doodads bindata build
 .PHONY: build-free
 build-free:
 	gofmt -w .
-	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="shareware" -i -o bin/sketchymaze cmd/doodle/main.go
 	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad cmd/doodad/main.go
 
 # `make build-debug` to build the binary in developer mode.
 .PHONY: build-debug
 build-debug:
 	gofmt -w .
-	go build $(LDFLAGS) -tags="developer" -i -o bin/doodle cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="developer" -i -o bin/sketchymaze cmd/doodle/main.go
 	go build $(LDFLAGS) -tags="developer" -i -o bin/doodad cmd/doodad/main.go
 
 # `make bindata` generates the embedded binary assets package.
@@ -75,21 +75,36 @@ doodads:
 mingw: doodads bindata
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -i -o bin/doodle.exe cmd/doodle/main.go
-		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
-			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-			go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
 mingw-free: doodads bindata
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/doodle.exe cmd/doodle/main.go
-		env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
-			GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-			go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/sketchymaze.exe cmd/doodle/main.go
+	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad.exe cmd/doodad/main.go
 
+# `make release` runs the release.sh script, must be run
+# after `make dist`
+.PHONY: release
+release:
+	./scripts/release.sh
+
+# `make mingw-release` runs a FULL end-to-end release of Linux and Windows
+# binaries of the game, zipped and tagged and ready to go.
+.PHONY: mingw-release
+mingw-release: doodads bindata build mingw __dist-common release
+
+# `make osx` to cross-compile a Mac OS binary with osxcross.
+# .PHONY: osx
+# osx: doodads bindata
+# 	CGO_ENABLED=1 CC=[path-to-osxcross]/target/bin/[arch]-apple-darwin[version]-clang GOOS=darwin GOARCH=[arch] go build -tags static -ldflags "-s -w" -a
 
 
 # `make run` to run it in debug mode.
@@ -118,13 +133,14 @@ dist-free: doodads bindata build-free __dist-common
 # Common logic behind `make dist`
 .PHONY: __dist-common
 __dist-common:
-	mkdir -p dist/doodle-$(VERSION)
-	cp bin/* dist/doodle-$(VERSION)/
-	cp -r README.md Changes.md "Open Source Licenses.md" rtp dist/doodle-$(VERSION)/
-	rm -rf dist/doodle-$(VERSION)/rtp/.git
-	ln -sf doodle-$(VERSION) dist/doodle-latest
-	cd dist && tar -czvf doodle-$(VERSION).tar.gz doodle-$(VERSION)
-	cd dist && zip -r doodle-$(VERSION).zip doodle-$(VERSION)
+	mkdir -p dist/sketchymaze-$(VERSION)
+	cp bin/* dist/sketchymaze-$(VERSION)/
+	cp -r README.md Changes.md "Open Source Licenses.md" rtp dist/sketchymaze-$(VERSION)/
+	if [[ -d ./guidebook ]]; then cp -r guidebook dist/sketchymaze-$(VERSION)/; fi
+	rm -rf dist/sketchymaze-$(VERSION)/rtp/.git
+	ln -sf sketchymaze-$(VERSION) dist/sketchymaze-latest
+	cd dist && tar -czvf sketchymaze-$(VERSION).tar.gz sketchymaze-$(VERSION)
+	cd dist && zip -r sketchymaze-$(VERSION).zip sketchymaze-$(VERSION)
 
 # `make docker` to run the Docker builds
 .PHONY: docker docker.ubuntu docker.debian docker.fedora __docker.dist
