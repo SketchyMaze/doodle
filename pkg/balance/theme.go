@@ -15,6 +15,19 @@ var (
 		Stroke: render.SkyBlue,
 		Shadow: render.Black,
 	}
+	TitleScreenSubtitleFont = render.Text{
+		FontFilename: "DejaVuSans.ttf",
+		Size:         18,
+		Color:        render.SkyBlue,
+		Shadow:       render.SkyBlue.Darken(128),
+		// Color:        render.RGBA(255, 153, 0, 255),
+		// Shadow:       render.RGBA(200, 80, 0, 255),
+	}
+	TitleScreenVersionFont = render.Text{
+		Size:   14,
+		Color:  render.Grey,
+		Shadow: render.Black,
+	}
 
 	// Window and panel styles.
 	TitleConfig = ui.Config{

@@ -61,12 +61,36 @@ func (w *Canvas) ZoomMultiply(value int) int {
 }
 
 /*
+ZoomDivide divides an integer by the zoom inversely.
+*/
+func (w *Canvas) ZoomDivide(value int) int {
+	var divider float64
+	switch w.Zoom {
+	case -2:
+		divider = 2
+	case -1:
+		divider = 2
+	case 0:
+		divider = 1
+	case 1:
+		divider = 0.5
+	case 2:
+		divider = 0.25
+	case 3:
+		divider = 0.125
+	default:
+		divider = 1
+	}
+	return int(float64(value) * divider)
+}
+
+/*
 ZoomStroke adjusts a drawn stroke on the canvas to account for the zoom level.
 
 Returns a copy Stroke value without changing the original.
 */
-func (w *Canvas) ZoomStroke(stroke *drawtool.Stroke) drawtool.Stroke {
-	copy := drawtool.Stroke{
+func (w *Canvas) ZoomStroke(stroke *drawtool.Stroke) *drawtool.Stroke {
+	copy := &drawtool.Stroke{
 		ID:             stroke.ID,
 		Shape:          stroke.Shape,
 		Color:          stroke.Color,
@@ -82,8 +106,8 @@ func (w *Canvas) ZoomStroke(stroke *drawtool.Stroke) drawtool.Stroke {
 	// Multiply all coordinates in this stroke, which should be World
 	// Coordinates in the level data, by the zoom multiplier.
 	adjust := func(p render.Point) render.Point {
-		p.X = w.ZoomMultiply(p.X)
-		p.Y = w.ZoomMultiply(p.Y)
+		p.X = w.ZoomDivide(p.X)
+		p.Y = w.ZoomDivide(p.Y)
 		return p
 	}
 

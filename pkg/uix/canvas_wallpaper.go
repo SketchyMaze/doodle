@@ -74,9 +74,10 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 // top-left corner of the Canvas widget relative to the application window.
 func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	var (
-		wp   = w.wallpaper
-		S    = w.Size()
-		size = wp.corner.Size()
+		wp       = w.wallpaper
+		S        = w.Size()
+		size     = wp.corner.Size()
+		sizeOrig = wp.corner.Size()
 
 		// Get the relative viewport of world coordinates looked at by the canvas.
 		// The X,Y values are the negative Scroll value
@@ -187,16 +188,19 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				H: src.H,
 			}
 
-			// Zoom the output texture.
-			if w.Zoom != 0 {
-				// dst.X = w.ZoomMultiply(dst.X - p.X)
-				// dst.Y = w.ZoomMultiply(dst.Y - p.Y)
-				// dst.W = w.ZoomMultiply(dst.W)
-				// dst.H = w.ZoomMultiply(dst.H)
-			}
-
 			// Trim the edges of the destination box, like in canvas.go#Present
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
+
+			// When zooming OUT, make sure the source rect is at least the
+			// full size of the chunk texture; otherwise the ZoomMultiplies
+			// above do correctly scale e.g. 128x128 to 64x64, but it only
+			// samples the top-left 64x64 then and not the full texture so
+			// it more crops it than scales it, but does fit it neatly with
+			// its neighbors.
+			if w.Zoom < 0 {
+				src.W = sizeOrig.W
+				src.H = sizeOrig.H
+			}
 
 			e.Copy(wp.repeat, src, dst)
 		}
@@ -216,12 +220,10 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				H: src.H,
 			}
 
-			// Zoom the output texture.
-			if w.Zoom != 0 {
-				// dst.X = w.ZoomMultiply(dst.X - origin.X)
-				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
-				// dst.W = w.ZoomMultiply(dst.W)
-				// dst.H = w.ZoomMultiply(dst.H)
+			// Zoom-out min size constraint.
+			if w.Zoom < 0 {
+				src.W = sizeOrig.W
+				src.H = sizeOrig.H
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
@@ -241,12 +243,10 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				H: src.H,
 			}
 
-			// Zoom the output texture.
-			if w.Zoom != 0 {
-				// dst.X = w.ZoomMultiply(dst.X - origin.X)
-				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
-				// dst.W = w.ZoomMultiply(dst.W)
-				// dst.H = w.ZoomMultiply(dst.H)
+			// Zoom-out min size constraint.
+			if w.Zoom < 0 {
+				src.W = sizeOrig.W
+				src.H = sizeOrig.H
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
@@ -266,12 +266,10 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				H: src.H,
 			}
 
-			// Zoom the output texture.
-			if w.Zoom != 0 {
-				// dst.X = w.ZoomMultiply(dst.X - origin.X)
-				// dst.Y = w.ZoomMultiply(dst.Y - origin.Y)
-				// dst.W = w.ZoomMultiply(dst.W)
-				// dst.H = w.ZoomMultiply(dst.H)
+			// Zoom out min size constraint.
+			if w.Zoom < 0 {
+				src.W = sizeOrig.W
+				src.H = sizeOrig.H
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))

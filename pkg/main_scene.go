@@ -28,13 +28,14 @@ type MainScene struct {
 	canvas    *uix.Canvas
 
 	// UI components.
-	labelTitle   *ui.Label
-	labelVersion *ui.Label
-	labelHint    *ui.Label
-	frame        *ui.Frame // Main button frame
-	btnRegister  *ui.Button
-	winRegister  *ui.Window
-	winSettings  *ui.Window
+	labelTitle    *ui.Label
+	labelSubtitle *ui.Label
+	labelVersion  *ui.Label
+	labelHint     *ui.Label
+	frame         *ui.Frame // Main button frame
+	btnRegister   *ui.Button
+	winRegister   *ui.Window
+	winSettings   *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -66,6 +67,13 @@ func (s *MainScene) Setup(d *Doodle) error {
 	})
 	s.labelTitle.Compute(d.Engine)
 
+	// Subtitle/byline.
+	s.labelSubtitle = ui.NewLabel(ui.Label{
+		Text: branding.Byline,
+		Font: balance.TitleScreenSubtitleFont,
+	})
+	s.labelSubtitle.Compute(d.Engine)
+
 	// Version label.
 	var shareware string
 	if !license.IsRegistered() {
@@ -73,11 +81,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 	}
 	ver := ui.NewLabel(ui.Label{
 		Text: fmt.Sprintf("v%s%s", branding.Version, shareware),
-		Font: render.Text{
-			Size:   18,
-			Color:  render.Grey,
-			Shadow: render.Black,
-		},
+		Font: balance.TitleScreenVersionFont,
 	})
 	ver.Compute(d.Engine)
 	s.labelVersion = ver
@@ -372,10 +376,17 @@ func (s *MainScene) Draw(d *Doodle) error {
 	})
 	s.labelTitle.Present(d.Engine, s.labelTitle.Point())
 
+	// App subtitle label (byline).
+	s.labelSubtitle.MoveTo(render.Point{
+		X: (d.width / 2) - (s.labelSubtitle.Size().W / 2),
+		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
+	})
+	s.labelSubtitle.Present(d.Engine, s.labelSubtitle.Point())
+
 	// Version label
 	s.labelVersion.MoveTo(render.Point{
 		X: (d.width / 2) - (s.labelVersion.Size().W / 2),
-		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
+		Y: s.labelSubtitle.Point().Y + s.labelSubtitle.Size().H + 8,
 	})
 	s.labelVersion.Present(d.Engine, s.labelVersion.Point())
 

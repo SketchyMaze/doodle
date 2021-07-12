@@ -29,8 +29,7 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 	}
 
 	// Zoom the stroke coordinates (this modifies the pointer)
-	zStroke := w.ZoomStroke(w.currentStroke)
-	_ = zStroke
+	w.currentStroke = w.ZoomStroke(w.currentStroke)
 
 	// Mark the canvas as modified.
 	w.modified = true

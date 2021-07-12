@@ -15,6 +15,11 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	var (
 		S        = w.Size()
 		Viewport = w.Viewport()
+		// Bezel    = render.NewRect(
+		// 	p.X+w.Scroll.X+w.BoxThickness(1),
+		// 	p.Y+w.Scroll.Y+w.BoxThickness(1),
+		// )
+		// zoomMultiplier = int(w.GetZoomMultiplier())
 	)
 	// w.MoveTo(p) // TODO: when uncommented the canvas will creep down the Workspace frame in EditorMode
 	w.DrawBox(e, p)
@@ -44,7 +49,11 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			}
 
 			// Zoom in the texture.
-			texSize := tex.Size()
+			var (
+				texSize     = tex.Size()
+				texSizeOrig = tex.Size()
+			)
+
 			if w.Zoom != 0 {
 				texSize.W = w.ZoomMultiply(texSize.W)
 				texSize.H = w.ZoomMultiply(texSize.H)
@@ -66,24 +75,14 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			}
 
 			dst := render.Rect{
-				X: p.X + w.Scroll.X + w.BoxThickness(1) + (coord.X * chunk.Size),
-				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + (coord.Y * chunk.Size),
+				X: p.X + w.Scroll.X + w.BoxThickness(1) + w.ZoomMultiply(coord.X*chunk.Size),
+				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + w.ZoomMultiply(coord.Y*chunk.Size),
 
 				// src.W and src.H will be AT MOST the full width and height of
 				// a Canvas widget. Subtract the scroll offset to keep it bounded
 				// visually on its right and bottom sides.
 				W: src.W,
 				H: src.H,
-			}
-
-			// Zoom the destination rect.
-			if w.Zoom != 0 {
-				// dst.X += int(w.GetZoomMultiplier())
-				// dst.Y += int(w.GetZoomMultiplier())
-				// dst.X = w.ZoomMultiply(dst.X)
-				// dst.Y = w.ZoomMultiply(dst.Y)
-				// dst.W = w.ZoomMultiply(dst.W)
-				// dst.H = w.ZoomMultiply(dst.H)
 			}
 
 			// TODO: all this shit is in TrimBox(), make it DRY
@@ -142,6 +141,21 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// Trim the destination width so it doesn't overlap the Canvas border.
 			if dst.W >= S.W-w.BoxThickness(1) {
 				dst.W = S.W - w.BoxThickness(1)
+			}
+
+			if w.Zoom < 0 {
+				log.Warn("dst: %+v", dst)
+			}
+
+			// When zooming OUT, make sure the source rect is at least the
+			// full size of the chunk texture; otherwise the ZoomMultiplies
+			// above do correctly scale e.g. 128x128 to 64x64, but it only
+			// samples the top-left 64x64 then and not the full texture so
+			// it more crops it than scales it, but does fit it neatly with
+			// its neighbors.
+			if w.Zoom < 0 {
+				src.W = texSizeOrig.W
+				src.H = texSizeOrig.H
 			}
 
 			e.Copy(tex, src, dst)
