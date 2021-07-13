@@ -198,7 +198,7 @@ func EraserTool(ev *event.State) bool {
 
 // DoodadDropper (D) opens the doodad dropper in the editor.
 func DoodadDropper(ev *event.State) bool {
-	return ev.KeyDown("d")
+	return ev.KeyDown("q")
 }
 
 // ShellKey (`) opens the developer console.

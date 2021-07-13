@@ -39,11 +39,41 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	}
 
 	// Scale the viewport to account for zoom level.
-	if w.Zoom < 0 {
+	if w.Zoom != 0 {
 		// Zoomed out (level go tiny)
-		// TODO: seems unstable as shit on Zoom In.
+		// TODO: seems unstable as shit on Zoom In??
 		Viewport.W = w.ZoomDivide(Viewport.W)
 		Viewport.H = w.ZoomDivide(Viewport.W)
+	}
+
+	// Disappearing chunks issue:
+	// When at the top-left corner of a bounded level,
+	// And Zoom=2 (200% zoom), Level Chunk Size=128,
+	// When you scroll down exactly -128 pixels, the whole row
+	// of chunks along the top edge of the viewport unload.
+	// At -256, the next row of chunks unloads.
+	// At -383, another row - it's creeping down the page with
+	//    the top 1/3 of the level editor showing blank wallpaper
+	// At -768, about 3/4 the level editor is blank
+	//
+	// It must think the upper 128px of chunks had left the
+	// viewport when in fact the bottom half of them was still
+	// in view, not respecting the 2X zoom level.
+	//
+	// Viewport is like: Rect<128,0,1058,721>
+	// Level chunks would be:
+	//   (0, 0) = (0,0, 127,127)      chunk A
+	//   (1, 0) = (128,128, 255,255)  chunk B
+	// At 2x zoom, Chunk A is still half on screen at -128 scroll
+	if w.Zoom > 0 {
+		// Since disappearing chunks happens on Zoom In the most?
+		// Grow the viewport's X and Y offsets back the other
+		// way, so chunks sliding off the screen don't unload early.
+		// This kinda thing makes no difference at all?
+		// var orig = render.NewPoint(Viewport.X, Viewport.Y)
+		// Viewport.X -= 256 //w.ZoomMultiply(w.chunks.Size)
+		// Viewport.Y -= 256 //w.ZoomMultiply(w.chunks.Size)
+		// log.Info("Viewport: %s   was: %s", Viewport, orig)
 	}
 
 	// Get the chunks in the viewport and cache their textures.

@@ -394,7 +394,7 @@ func (c Settings) makeControlsTab(Width, Height int) *ui.Frame {
 			Label:    "Scroll to origin",
 		},
 		{
-			Shortcut: "d",
+			Shortcut: "q",
 			Label:    "Doodads",
 		},
 		{

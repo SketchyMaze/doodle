@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
@@ -29,16 +30,25 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 	}
 
 	// Arrow keys to scroll the view.
-	scrollBy := render.Point{}
-	if ev.Right {
-		scrollBy.X -= balance.CanvasScrollSpeed
-	} else if ev.Left {
-		scrollBy.X += balance.CanvasScrollSpeed
+	// Shift key to scroll very slowly.
+	var (
+		scrollBy    = render.Point{}
+		scrollSpeed = balance.CanvasScrollSpeed
+	)
+	if keybind.Shift(ev) {
+		scrollSpeed = 1
 	}
-	if ev.Down {
-		scrollBy.Y -= balance.CanvasScrollSpeed
-	} else if ev.Up {
-		scrollBy.Y += balance.CanvasScrollSpeed
+
+	// Arrow key handlers.
+	if keybind.Right(ev) {
+		scrollBy.X -= scrollSpeed
+	} else if keybind.Left(ev) {
+		scrollBy.X += scrollSpeed
+	}
+	if keybind.Down(ev) {
+		scrollBy.Y -= scrollSpeed
+	} else if keybind.Up(ev) {
+		scrollBy.Y += scrollSpeed
 	}
 	if !scrollBy.IsZero() {
 		w.ScrollBy(scrollBy)

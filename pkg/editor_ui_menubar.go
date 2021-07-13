@@ -203,7 +203,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	})
 
 	if u.Scene.DrawingType == enum.LevelDrawing {
-		toolMenu.AddItemAccel("Doodads", "d", func() {
+		toolMenu.AddItemAccel("Doodads", "q", func() {
 			log.Info("Open the DoodadDropper")
 			u.doodadWindow.Show()
 		})

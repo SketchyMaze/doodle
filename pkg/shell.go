@@ -274,7 +274,14 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 			} else {
 				s.Text += key
 			}
-			ev.SetKeyDown(key, false)
+			// HACK: I wanted to do:
+			// ev.SetKeyDown(key, false)
+			// But, ev.KeysDown(shifted=true) returns letter keys
+			// like 'M' when the key we wanted to unset was 'm',
+			// or we got '$' when we want to unset '5'... so all
+			// shifted chars got duplicated 3+ times on key press!
+			// So, just reset ALL key press states to work around it:
+			ev.ResetKeyDown()
 		}
 
 		// How tall is the box?
