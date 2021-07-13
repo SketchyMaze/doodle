@@ -38,6 +38,14 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		}
 	}
 
+	// Scale the viewport to account for zoom level.
+	if w.Zoom < 0 {
+		// Zoomed out (level go tiny)
+		// TODO: seems unstable as shit on Zoom In.
+		Viewport.W = w.ZoomDivide(Viewport.W)
+		Viewport.H = w.ZoomDivide(Viewport.W)
+	}
+
 	// Get the chunks in the viewport and cache their textures.
 	for coord := range w.chunks.IterViewportChunks(Viewport) {
 		if chunk, ok := w.chunks.GetChunk(coord); ok {
@@ -141,10 +149,6 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// Trim the destination width so it doesn't overlap the Canvas border.
 			if dst.W >= S.W-w.BoxThickness(1) {
 				dst.W = S.W - w.BoxThickness(1)
-			}
-
-			if w.Zoom < 0 {
-				log.Warn("dst: %+v", dst)
 			}
 
 			// When zooming OUT, make sure the source rect is at least the

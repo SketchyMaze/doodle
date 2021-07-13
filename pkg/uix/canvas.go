@@ -299,9 +299,19 @@ func (w *Canvas) WorldIndexAt(screenPixel render.Point) render.Point {
 
 	// Handle Zoomies
 	if w.Zoom != 0 {
-		world.X = w.ZoomMultiply(world.X)
-		world.Y = w.ZoomMultiply(world.Y)
+		// Zoom Out - logic is 100% correct, do not touch.
+		// ZoomDivide's logic at time of writing is to:
+		//    return int(float64(v) * divider)
+		// Where divider is a map of w.Zoom to:
+		//    -2=4  -1=2  0=1  1=0.5  2=0.25  3=0.125
+		// The -2 and -1 do the right things (zoom out), zoom
+		// in was jank. NOW FIXED with the following maps:
+		//    -2=4  -1=2  0=1  1=0.675  2=0.5  3=0.404
+		// Values for zoom levels 1 and 3 are jank but works?
+		world.X = w.ZoomDivide(world.X)
+		world.Y = w.ZoomDivide(world.Y)
 	}
+
 	return world
 }
 

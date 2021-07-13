@@ -62,22 +62,38 @@ func (w *Canvas) ZoomMultiply(value int) int {
 
 /*
 ZoomDivide divides an integer by the zoom inversely.
+
+The algo is: int(float64(value) * divider)
+
+Where the divider is a map of:
+
+	w.Zoom => divider
+	-2 => 4
+	-1 => 2
+	0  => 1
+	1  => 0.675*
+	2  => 0.5
+	3  => 0.404*
+
+The 0.675 and 0.404 numbers I don't understand but were
+discovered the hard way when the 1.5x and 2.5x zoom levels
+were coming out jank. Expected to be 0.25 and 0.75.
 */
 func (w *Canvas) ZoomDivide(value int) int {
 	var divider float64
 	switch w.Zoom {
 	case -2:
-		divider = 2
+		divider = 4
 	case -1:
 		divider = 2
 	case 0:
 		divider = 1
 	case 1:
-		divider = 0.5
+		divider = 0.675 // JANK
 	case 2:
-		divider = 0.25
+		divider = 0.5 // GOOD, 2x (200%) zoom in
 	case 3:
-		divider = 0.125
+		divider = 0.404 // JANK
 	default:
 		divider = 1
 	}
