@@ -55,7 +55,7 @@ def main():
         "Ensure your SSH keys are set up on git.kirsle.net to easily clone repos.\n"
         "Also check your $GOPATH is set and your $PATH will run binaries installed,\n"
         "for e.g. GOPATH=$HOME/go and PATH includes $HOME/go/bin; otherwise the\n"
-        "go-bindata command won't function later."
+        "'make doodads' command won't function later."
         .format(root=ROOT)
     )
     input("Press Enter to begin.")
@@ -85,12 +85,6 @@ def install_deps():
         must_shell("sudo pacman -S {}".format(' '.join(dep_arch)))
     else:
         print("Warning: didn't detect your package manager to install SDL2 and other dependencies")
-
-    # Get the bindata command. Do this from OUTSIDE a Go module folder, so that
-    # it installs the command globally.
-    os.chdir("/tmp")
-    shell("go get -u git.kirsle.net/go/bindata/...")
-    os.chdir(ROOT)
 
 
 
@@ -133,7 +127,6 @@ def copy_assets():
 
 def install_doodad():
     """Install the doodad CLI tool from the doodle repo."""
-    must_shell("make bindata-dev")
     must_shell("go install git.kirsle.net/apps/doodle/cmd/doodad")
 
 
