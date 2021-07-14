@@ -2,15 +2,15 @@ package wallpaper
 
 import (
 	"bytes"
+	"encoding/base64"
 	"image"
 	"image/draw"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"encoding/base64"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
@@ -84,7 +84,7 @@ func FromFile(e render.Engine, filename string, embeddable filesystem.Embeddable
 		log.Debug("wallpaper.FromFile(%s): found in embedded level files", filename)
 		bin, _ := base64.StdEncoding.DecodeString(string(data))
 		img, format, imgErr = image.Decode(bytes.NewReader(bin))
-	} else if data, err := bindata.Asset(filename); err == nil {
+	} else if data, err := assets.Asset(filename); err == nil {
 		log.Debug("wallpaper.FromFile(%s): found in program bindata", filename)
 		fh := bytes.NewBuffer(data)
 		img, format, imgErr = image.Decode(fh)

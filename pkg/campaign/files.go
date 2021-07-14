@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sort"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -22,7 +22,7 @@ func List() ([]string, error) {
 	var names []string
 
 	// List built-in bindata campaigns.
-	if files, err := bindata.AssetDir("assets/campaigns"); err == nil {
+	if files, err := assets.AssetDir("assets/campaigns"); err == nil {
 		names = append(names, files...)
 	}
 

@@ -8,7 +8,7 @@ import (
 	"os"
 	"runtime"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/wasm"
 	"git.kirsle.net/go/render"
@@ -21,7 +21,7 @@ import (
 // NOTE: only .png images supported as of now. TODO
 func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
 	// Try the bindata first.
-	if data, err := bindata.Asset(filename); err == nil {
+	if data, err := assets.Asset(filename); err == nil {
 		log.Debug("sprites.LoadImage: %s from bindata", filename)
 
 		img, err := png.Decode(bytes.NewBuffer(data))

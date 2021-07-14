@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
+	"git.kirsle.net/apps/doodle/assets"
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -142,9 +142,9 @@ func main() {
 		)
 
 		// Load the SDL fonts in from bindata storage.
-		if fonts, err := bindata.AssetDir("assets/fonts"); err == nil {
+		if fonts, err := assets.AssetDir("assets/fonts"); err == nil {
 			for _, file := range fonts {
-				data, err := bindata.Asset("assets/fonts/" + file)
+				data, err := assets.Asset("assets/fonts/" + file)
 				if err != nil {
 					panic(err)
 				}

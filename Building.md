@@ -46,8 +46,6 @@ $ python3 bootstrap.py
 The bootstrap script will take care of the rest:
 
 * `apt install` all the dependencies (golang, SDL2, etc.)
-* Install the `go-bindata` command, needed to bundle assets like doodads
-  and fonts into the program.
 * `git clone` various other repositories into a "deps/" folder in doodle's
   directory. These are things like my Go render library `go/render` and
   `go/ui` as well as the doodle-rtp runtime package (sound effects, etc.)
@@ -100,16 +98,8 @@ cp ../masters/levels assets/levels
 cp ../vendor/fonts assets/fonts
 mkdir rtp && cp -r ../rtp/* rtp/
 
-# Ensure you have bindata CLI command. NOTE: below repo is
-# my fork of go-bindata, can find it elsewhere instead.
-# Future Go 1.16 will have native support to embed files and
-# go-bindata will be not needed.
-go get -u git.kirsle.net/go/bindata/...
-
-# From the doodle repo: `make bindata-dev` will populate dummy .go
-# files for bindata and allow the app to actually BUILD, otherwise the
-# `go get` would fail.
-make bindata-dev
+# From the doodle repo:
+make setup  # -or-
 go get ./...      # install dependencies etc.
 
 # The app should build now. Build and install the doodad tool.
@@ -123,7 +113,12 @@ doodad --version
 make dist
 
 # Build a cross-compiled Windows target from Linux.
+# (you'd run before `make dist` to make an uber release)
 make mingw
+
+# After make dist, `make release` will carve up Linux
+# and Windows (mingw) builds and zip them up nicely.
+make release
 ```
 
 The `make setup` command tries to do the above.
@@ -132,7 +127,7 @@ The `make setup` command tries to do the above.
 will build an app for distribution in the dist/ folder.
 
 Levels should be copied in from the doodle-masters repo into the
-assets/levels/ folder before running `make bindata` to release the game.
+assets/levels/ folder before building the game.
 
 ## Fonts
 
@@ -159,11 +154,8 @@ Makefile commands for Unix-likes:
 
 * `make setup`: install Go dependencies and set up the build environment
 * `make doodads`: build the default Doodads from sources in `dev-assets/`
-* `make bindata`: embed the default doodads, levels and other assets into the
-  Go program. `make bindata-dev` for lightweight dev versions that will read
-  from the filesystem at runtime instead.
 * `make build`: build the Doodle and Doodad binaries to the `bin/` folder.
-* `make buildall`: runs all build steps: doodads, bindata, build.
+* `make buildall`: runs all build steps: doodads, build.
 * `make build-free`: build the shareware binaries to the `bin/` folder. See
   Build Tags below.
 * `make build-debug`: build a debug binary (not release-mode) to the `bin/`

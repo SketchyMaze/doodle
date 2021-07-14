@@ -1,6 +1,6 @@
 module git.kirsle.net/apps/doodle
 
-go 1.15
+go 1.16
 
 require (
 	git.kirsle.net/go/audio v0.0.0-20200429055451-ae3b0695ba6f
@@ -30,8 +30,8 @@ require (
 
 // replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio
 
-// replace git.kirsle.net/go/render => /run/build/doodle/deps/render
+// replace git.kirsle.net/go/render => /run/build/sketchymaze/deps/render
 
-// replace git.kirsle.net/go/ui => /run/build/doodle/deps/ui
+// replace git.kirsle.net/go/ui => /run/build/sketchymaze/deps/ui
 
-// replace git.kirsle.net/go/audio => /run/build/doodle/deps/audio
+// replace git.kirsle.net/go/audio => /run/build/sketchymaze/deps/audio

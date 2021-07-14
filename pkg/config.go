@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -38,7 +38,7 @@ func (d *Doodle) EditFile(filename string) error {
 		extension := strings.ToLower(filepath.Ext(filename))
 
 		// Check the system level storage. TODO: no editing of system levels
-		if _, err := bindata.Asset("assets/levels/" + filename); err == nil {
+		if _, err := assets.Asset("assets/levels/" + filename); err == nil {
 			log.Info("Found level %s in bindata", filename)
 			return d.EditDrawing(filename)
 		}

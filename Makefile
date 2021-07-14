@@ -12,7 +12,6 @@ LDFLAGS_W := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE) -H
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup
 setup: clean
-	go get -u git.kirsle.net/go/bindata/...
 	go get ./...
 
 # `make build` to build the binary.
@@ -21,9 +20,9 @@ build:
 	go build $(LDFLAGS) -i -o bin/sketchymaze cmd/doodle/main.go
 	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
 
-# `make buildall` to run all build steps including doodads and bindata.
+# `make buildall` to run all build steps including doodads.
 .PHONY: buildall
-buildall: doodads bindata build
+buildall: doodads build
 
 # `make build-free` to build the binary in free mode.
 .PHONY: build-free
@@ -42,12 +41,12 @@ build-debug:
 # `make bindata` generates the embedded binary assets package.
 .PHONY: bindata
 bindata:
-	go-bindata -pkg bindata -o pkg/bindata/bindata.go assets/...
+	echo "make bindata: deprecated in favor of Go 1.16 embed; nothing was done"
 
 # `make bindata-dev` generates the debug version of bindata package.
 .PHONY: bindata-dev
 bindata-dev:
-	go-bindata -debug -pkg bindata -o pkg/bindata/bindata.go assets/...
+	echo "make bindata-dev: deprecated in favor of Go 1.16 embed; nothing was done"
 
 # `make wasm` builds the WebAssembly port.
 .PHONY: wasm
@@ -72,7 +71,7 @@ doodads:
 
 # `make mingw` to cross-compile a Windows binary with mingw.
 .PHONY: mingw
-mingw: doodads bindata
+mingw: doodads
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
@@ -82,7 +81,7 @@ mingw: doodads bindata
 
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
-mingw-free: doodads bindata
+mingw-free: doodads
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/sketchymaze.exe cmd/doodle/main.go
@@ -99,11 +98,11 @@ release:
 # `make mingw-release` runs a FULL end-to-end release of Linux and Windows
 # binaries of the game, zipped and tagged and ready to go.
 .PHONY: mingw-release
-mingw-release: doodads bindata build mingw __dist-common release
+mingw-release: doodads build mingw __dist-common release
 
 # `make osx` to cross-compile a Mac OS binary with osxcross.
 # .PHONY: osx
-# osx: doodads bindata
+# osx: doodads
 # 	CGO_ENABLED=1 CC=[path-to-osxcross]/target/bin/[arch]-apple-darwin[version]-clang GOOS=darwin GOARCH=[arch] go build -tags static -ldflags "-s -w" -a
 
 
@@ -124,11 +123,11 @@ test:
 
 # `make dist` builds and tars up a release.
 .PHONY: dist
-dist: doodads bindata build __dist-common
+dist: doodads build __dist-common
 
 # `make dist-free` builds and tars up a release in shareware mode.
 .PHONY: dist-free
-dist-free: doodads bindata build-free __dist-common
+dist-free: doodads build-free __dist-common
 
 # Common logic behind `make dist`
 .PHONY: __dist-common

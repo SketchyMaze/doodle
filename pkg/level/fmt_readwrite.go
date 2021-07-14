@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
@@ -21,7 +21,7 @@ func ListSystemLevels() ([]string, error) {
 	var names = []string{}
 
 	// Add the levels embedded inside the binary.
-	if levels, err := bindata.AssetDir("assets/levels"); err == nil {
+	if levels, err := assets.AssetDir("assets/levels"); err == nil {
 		names = append(names, levels...)
 	}
 
@@ -56,7 +56,7 @@ func LoadFile(filename string) (*Level, error) {
 	}
 
 	// Do we have the file in bindata?
-	if jsonData, err := bindata.Asset(filename); err == nil {
+	if jsonData, err := assets.Asset(filename); err == nil {
 		log.Debug("Level %s: loaded from embedded bindata", filename)
 		return FromJSON(filename, jsonData)
 	}

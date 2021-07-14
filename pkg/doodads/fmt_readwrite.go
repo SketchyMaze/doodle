@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
@@ -30,7 +30,7 @@ func ListDoodads() ([]string, error) {
 	var names []string
 
 	// List doodads embedded into the binary.
-	if files, err := bindata.AssetDir("assets/doodads"); err == nil {
+	if files, err := assets.AssetDir("assets/doodads"); err == nil {
 		names = append(names, files...)
 	}
 
@@ -77,7 +77,7 @@ func ListBuiltin() ([]string, error) {
 	var names []string
 
 	// List doodads embedded into the binary.
-	if files, err := bindata.AssetDir("assets/doodads"); err == nil {
+	if files, err := assets.AssetDir("assets/doodads"); err == nil {
 		names = append(names, files...)
 	}
 
@@ -143,7 +143,7 @@ func LoadFile(filename string) (*Doodad, error) {
 	}
 
 	// Do we have the file in bindata?
-	if jsonData, err := bindata.Asset(filename); err == nil {
+	if jsonData, err := assets.Asset(filename); err == nil {
 		return FromJSON(filename, jsonData)
 	}
 

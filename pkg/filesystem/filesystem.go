@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/bindata"
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -105,7 +105,7 @@ func FindFile(filename string) (string, error) {
 		candidate := filepath.Join(SystemLevelsPath, filename)
 
 		// embedded system doodad?
-		if _, err := bindata.Asset(candidate); err == nil {
+		if _, err := assets.Asset(candidate); err == nil {
 			return candidate, nil
 		}
 
@@ -133,7 +133,7 @@ func FindFile(filename string) (string, error) {
 		candidate := filepath.Join(SystemDoodadsPath, filename)
 
 		// embedded system doodad?
-		if _, err := bindata.Asset(candidate); err == nil {
+		if _, err := assets.Asset(candidate); err == nil {
 			return candidate, nil
 		}
 

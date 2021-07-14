@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/bindata"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -114,11 +114,11 @@ func (c Command) ExtractBindata(d *Doodle, path string) error {
 		return err
 	}
 
-	for _, filename := range bindata.AssetNames() {
+	for _, filename := range assets.AssetNames() {
 		outfile := filepath.Join(path, filename)
 		log.Info("Extracting bindata: %s    to: %s", filename, outfile)
 
-		data, err := bindata.Asset(filename)
+		data, err := assets.Asset(filename)
 		if err != nil {
 			d.Flash("error on file %s: %s", filename, err)
 			continue
