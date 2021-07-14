@@ -182,8 +182,13 @@ func (s *EditorScene) ConfirmUnload(fn func()) {
 func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	// Update debug overlay values.
 	*s.debTool = s.UI.Canvas.Tool.String()
-	*s.debSwatch = s.UI.Canvas.Palette.ActiveSwatch.Name
+	*s.debSwatch = "???"
 	*s.debWorldIndex = s.UI.Canvas.WorldIndexAt(s.UI.cursor).String()
+
+	// Safely...
+	if s.UI.Canvas.Palette != nil && s.UI.Canvas.Palette.ActiveSwatch != nil {
+		*s.debSwatch = s.UI.Canvas.Palette.ActiveSwatch.Name
+	}
 
 	// Has the window been resized?
 	if ev.WindowResized {

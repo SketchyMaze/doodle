@@ -5,14 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 )
 
-// ToJSON serializes the doodad as JSON.
+// ToJSON serializes the doodad as JSON (gzip supported).
+//
+// If balance.CompressLevels=true the doodad will be gzip compressed
+// and the return value is gz bytes and not the raw JSON.
 func (d *Doodad) ToJSON() ([]byte, error) {
+	// Gzip compressing?
+	if balance.CompressDrawings {
+		return d.ToGzip()
+	}
+
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
 	if usercfg.Current.JSONIndent {
@@ -22,16 +31,32 @@ func (d *Doodad) ToJSON() ([]byte, error) {
 	return out.Bytes(), err
 }
 
-// FromJSON loads a doodad from JSON string.
+// FromJSON loads a doodad from JSON string (gzip supported).
 func FromJSON(filename string, data []byte) (*Doodad, error) {
 	var doodad = &Doodad{}
-	err := json.Unmarshal(data, doodad)
+
+	// Inspect the headers of the file to see how it was encoded.
+	if len(data) > 0 && data[0] == '{' {
+		// Looks standard JSON.
+		err := json.Unmarshal(data, doodad)
+		if err != nil {
+			return nil, err
+		}
+	} else if len(data) > 1 && data[0] == 0x1f && data[1] == 0x8b {
+		// Gzip compressed. `1F8B` is gzip magic number.
+		log.Debug("Decompress doodad %s", filename)
+		if gzd, err := FromGzip(data); err != nil {
+			return nil, err
+		} else {
+			doodad = gzd
+		}
+	}
 
 	// Inflate the chunk metadata to map the pixels to their palette indexes.
 	doodad.Filename = filepath.Base(filename)
 	doodad.Inflate()
 
-	return doodad, err
+	return doodad, nil
 }
 
 // WriteJSON writes a Doodad to JSON on disk.
@@ -52,22 +77,10 @@ func (d *Doodad) WriteJSON(filename string) error {
 
 // LoadJSON loads a map from JSON file.
 func LoadJSON(filename string) (*Doodad, error) {
-	fh, err := os.Open(filename)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer fh.Close()
 
-	// Decode the JSON file from disk.
-	d := New(0)
-	decoder := json.NewDecoder(fh)
-	err = decoder.Decode(&d)
-	if err != nil {
-		return d, fmt.Errorf("doodad.LoadJSON: JSON decode error: %s", err)
-	}
-
-	// Inflate the chunk metadata to map the pixels to their palette indexes.
-	d.Filename = filepath.Base(filename)
-	d.Inflate()
-	return d, err
+	return FromJSON(filename, data)
 }

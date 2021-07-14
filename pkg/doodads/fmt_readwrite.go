@@ -204,7 +204,6 @@ func (d *Doodad) WriteFile(filename string) error {
 
 // Serialize encodes a doodad to bytes and returns them, instead
 // of writing to a file.
-// WriteFile saves a doodad to disk in the user's config directory.
 func (d *Doodad) Serialize() ([]byte, error) {
 	// Set the version information.
 	d.Version = 1

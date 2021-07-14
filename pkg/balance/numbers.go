@@ -63,6 +63,9 @@ var (
 	// Publishing: Doodads-embedded-within-levels.
 	EmbeddedDoodadsBasePath   = "assets/doodads/"
 	EmbeddedWallpaperBasePath = "assets/wallpapers/"
+
+	// File formats: save new levels and doodads gzip compressed
+	CompressDrawings = true
 )
 
 // Edit Mode Values
