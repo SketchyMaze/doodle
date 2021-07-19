@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -160,8 +161,9 @@ func (d *Doodle) Run() error {
 				DebugCollision = !DebugCollision
 			}
 
-			// Is a UI modal active?
-			if modal.Handled(ev) == false {
+			// Make sure no UI modals (alerts, confirms)
+			// or loadscreen are currently visible.
+			if !modal.Handled(ev) {
 				// Run the scene's logic.
 				err = d.Scene.Loop(d, ev)
 				if err != nil {
@@ -173,6 +175,9 @@ func (d *Doodle) Run() error {
 
 		// Draw the scene.
 		d.Scene.Draw(d)
+
+		// Draw the loadscreen if it is active.
+		loadscreen.Loop(render.NewRect(d.width, d.height), d.Engine)
 
 		// Draw modals on top of the game UI.
 		modal.Draw()

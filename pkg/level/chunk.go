@@ -32,6 +32,7 @@ type Chunk struct {
 
 	// Texture cache properties so we don't redraw pixel-by-pixel every frame.
 	uuid               uuid.UUID
+	bitmap             image.Image
 	texture            render.Texturer
 	textureMasked      render.Texturer
 	textureMaskedColor render.Color
@@ -78,7 +79,7 @@ func NewChunk() *Chunk {
 func (c *Chunk) Texture(e render.Engine) render.Texturer {
 	if c.texture == nil || c.dirty {
 		// Generate the normal bitmap and one with a color mask if applicable.
-		tex, err := c.toBitmap(render.Invisible)
+		tex, err := c.generateTexture(render.Invisible)
 		if err != nil {
 			log.Error("Texture: %s", err)
 		}
@@ -93,8 +94,9 @@ func (c *Chunk) Texture(e render.Engine) render.Texturer {
 // TextureMasked returns a cached texture with the ColorMask applied.
 func (c *Chunk) TextureMasked(e render.Engine, mask render.Color) render.Texturer {
 	if c.textureMasked == nil || c.textureMaskedColor != mask {
-		// Generate the normal bitmap and one with a color mask if applicable.
-		tex, err := c.toBitmap(mask)
+		// Force regenerate with the new mask color.
+		c.dirty = true
+		tex, err := c.generateTexture(mask)
 		if err != nil {
 			log.Error("Texture: %s", err)
 		}
@@ -111,8 +113,24 @@ func (c *Chunk) SetDirty() {
 	c.dirty = true
 }
 
-// toBitmap puts the texture in a well named bitmap path in the cache folder.
-func (c *Chunk) toBitmap(mask render.Color) (render.Texturer, error) {
+// CachedBitmap returns a cached render of the chunk as a bitmap image.
+//
+// This is like Texture() but skips the step of actually producing an
+// (SDL2) texture. The benefit of this is that you can call it from
+// your non-main threads and offload the bitmap work into background
+// tasks, then when SDL2 needs the Texture, the cached bitmap is
+// immediately there saving time on the main thread.
+func (c *Chunk) CachedBitmap(mask render.Color) image.Image {
+	if c.bitmap == nil || c.dirty {
+		c.bitmap = c.ToBitmap(mask)
+	}
+	return c.bitmap
+}
+
+// generateTexture takes the chunk's Bitmap, turns it into an (SDL2)
+// texture, and caches the texture in memory until the chunk is marked
+// as dirty.
+func (c *Chunk) generateTexture(mask render.Color) (render.Texturer, error) {
 	// Generate a unique name for this chunk cache.
 	var name string
 	if c.uuid == uuid.Nil {
@@ -126,12 +144,21 @@ func (c *Chunk) toBitmap(mask render.Color) (render.Texturer, error) {
 		)
 	}
 
-	// Get the temp bitmap image.
-	return c.ToBitmap(name, mask)
+	// Get (and/or cache) the chunk to a bitmap image.
+	// Note: the 1st call to Bitmap or after SetDirty will
+	// generate the image and store it cached.
+	bitmap := c.CachedBitmap(mask)
+
+	// Cache the texture data with the current renderer.
+	tex, err := shmem.CurrentRenderEngine.StoreTexture(name, bitmap)
+	return tex, err
 }
 
 // ToBitmap exports the chunk's pixels as a bitmap image.
-func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, error) {
+// NOT CACHED! This will always run the logic. Use Bitmap() if you
+// want a cached bitmap image that only generates itself once, and
+// again when marked dirty.
+func (c *Chunk) ToBitmap(mask render.Color) image.Image {
 	canvas := c.SizePositive()
 	imgSize := image.Rectangle{
 		Min: image.Point{},
@@ -189,9 +216,7 @@ func (c *Chunk) ToBitmap(filename string, mask render.Color) (render.Texturer, e
 		)
 	}
 
-	// Cache the texture data with the current renderer.
-	tex, err := shmem.CurrentRenderEngine.StoreTexture(filename, img)
-	return tex, err
+	return img
 }
 
 // Set proxies to the accessor and flags the texture as dirty.

@@ -37,7 +37,11 @@ var Builtins = []Pattern{
 		Filename: "ink.png",
 	},
 	{
-		Name:     "Dashed Lines",
+		Name:     "Perlin Noise",
+		Filename: "perlin-noise.png",
+	},
+	{
+		Name:     "Bubbles",
 		Filename: "circles.png",
 	},
 	{

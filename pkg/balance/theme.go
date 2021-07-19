@@ -29,6 +29,22 @@ var (
 		Shadow: render.Black,
 	}
 
+	// Loading Screen fonts.
+	LoadScreenFont = render.Text{
+		Size:   46,
+		Color:  render.Pink,
+		Stroke: render.SkyBlue,
+		Shadow: render.Black,
+	}
+	LoadScreenSecondaryFont = render.Text{
+		FontFilename: "DejaVuSans.ttf",
+		Size:         18,
+		Color:        render.SkyBlue,
+		Shadow:       render.SkyBlue.Darken(128),
+		// Color:        render.RGBA(255, 153, 0, 255),
+		// Shadow:       render.RGBA(200, 80, 0, 255),
+	}
+
 	// Window and panel styles.
 	TitleConfig = ui.Config{
 		Background:   render.MustHexColor("#FF9900"),

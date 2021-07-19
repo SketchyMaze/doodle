@@ -107,15 +107,18 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 		FillX: true,
 	})
 
-	u.PlayButton = ui.NewButton("Play", ui.NewLabel(ui.Label{
-		Text: "Play (P)",
-		Font: balance.PlayButtonFont,
-	}))
-	u.PlayButton.Handle(ui.Click, func(ed ui.EventData) error {
-		u.Scene.Playtest()
-		return nil
-	})
-	u.Supervisor.Add(u.PlayButton)
+	// Play Button, for levels only.
+	if s.DrawingType == enum.LevelDrawing {
+		u.PlayButton = ui.NewButton("Play", ui.NewLabel(ui.Label{
+			Text: "Play (P)",
+			Font: balance.PlayButtonFont,
+		}))
+		u.PlayButton.Handle(ui.Click, func(ed ui.EventData) error {
+			u.Scene.Playtest()
+			return nil
+		})
+		u.Supervisor.Add(u.PlayButton)
+	}
 
 	// Position the Canvas inside the frame.
 	u.Workspace.Pack(u.Canvas, ui.Pack{
@@ -234,7 +237,7 @@ func (u *EditorUI) Resized(d *Doodle) {
 	}
 
 	// Position the Play button over the workspace.
-	{
+	if u.PlayButton != nil {
 		btn := u.PlayButton
 		btn.Compute(d.Engine)
 
@@ -330,7 +333,9 @@ func (u *EditorUI) Present(e render.Engine) {
 	u.MenuBar.Present(e, u.MenuBar.Point())
 	u.StatusBar.Present(e, u.StatusBar.Point())
 	u.ToolBar.Present(e, u.ToolBar.Point())
-	u.PlayButton.Present(e, u.PlayButton.Point())
+	if u.PlayButton != nil {
+		u.PlayButton.Present(e, u.PlayButton.Point())
+	}
 
 	u.screen.Present(e, render.Origin)
 

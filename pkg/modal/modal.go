@@ -4,6 +4,7 @@ package modal
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -44,7 +45,16 @@ func Reset() {
 
 // Handled runs the modal manager's logic. Returns true if a modal
 // is presently active, to signal to Doodle not to run game logic.
+//
+// This function also returns true if the pkg/modal/loadscreen is
+// currently active.
 func Handled(ev *event.State) bool {
+	// The loadscreen counts as a modal for this purpose.
+	if loadscreen.IsActive() {
+		return true
+	}
+
+	// Check if we have a modal currently active.
 	if !ready || current == nil {
 		return false
 	}

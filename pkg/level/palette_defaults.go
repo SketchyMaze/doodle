@@ -62,6 +62,12 @@ var (
 					Pattern: "noise.png",
 				},
 				{
+					Name:    "sandstone",
+					Color:   render.RGBA(215, 114, 44, 255),
+					Solid:   true,
+					Pattern: "perlin-noise.png",
+				},
+				{
 					Name:    "fire",
 					Color:   render.Red,
 					Fire:    true,

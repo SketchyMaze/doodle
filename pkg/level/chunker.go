@@ -188,6 +188,43 @@ func (c *Chunker) Redraw() {
 	}
 }
 
+// Prerender visits every chunk and fetches its texture, in order to pre-load
+// the whole drawing for smooth gameplay rather than chunks lazy rendering as
+// they enter the screen.
+func (c *Chunker) Prerender() {
+	for _, chunk := range c.Chunks {
+		_ = chunk.CachedBitmap(render.Invisible)
+	}
+}
+
+// PrerenderN will pre-render the texture for N number of chunks and then
+// yield back to the caller. Returns the number of chunks that still need
+// textures rendered; zero when the last chunk has been prerendered.
+func (c *Chunker) PrerenderN(n int) (remaining int) {
+	var (
+		total         int // total no. of chunks available
+		totalRendered int // no. of chunks with textures
+		modified      int // number modified this call
+	)
+
+	for _, chunk := range c.Chunks {
+		total++
+		if chunk.bitmap != nil {
+			totalRendered++
+			continue
+		}
+
+		if modified < n {
+			_ = chunk.CachedBitmap(render.Invisible)
+			totalRendered++
+			modified++
+		}
+	}
+
+	remaining = total - totalRendered
+	return
+}
+
 // Get a pixel at the given coordinate. Returns the Palette entry for that
 // pixel or else returns an error if not found.
 func (c *Chunker) Get(p render.Point) (*Swatch, error) {
