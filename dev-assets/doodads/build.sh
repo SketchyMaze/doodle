@@ -127,6 +127,12 @@ objects() {
 	doodad install-script crumbly-floor.js crumbly-floor.doodad
 	cp *.doodad ../../../assets/doodads/
 
+	cd ../box
+
+	doodad convert -t "Box" box-1.png box-2.png box-3.png box-4.png box.doodad
+	doodad install-script box.js box.doodad
+	cp *.doodad ../../../assets/doodads/
+
 	cd ..
 }
 
