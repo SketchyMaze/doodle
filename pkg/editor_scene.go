@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
@@ -64,6 +65,21 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		{"Swatch:", s.debSwatch},
 	}
 
+	// Show the loading screen.
+	loadscreen.ShowWithProgress()
+	go func() {
+		if err := s.setupAsync(d); err != nil {
+			log.Error("EditorScene.setupAsync: %s", err)
+		}
+		loadscreen.Hide()
+	}()
+
+	return nil
+}
+
+// setupAsync initializes trhe editor scene in the background,
+// underneath a loading screen.
+func (s *EditorScene) setupAsync(d *Doodle) error {
 	// Initialize the user interface. It references the palette and such so it
 	// must be initialized after those things.
 	s.d = d
@@ -81,10 +97,17 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	case enum.LevelDrawing:
 		if s.Level != nil {
 			log.Debug("EditorScene.Setup: received level from scene caller")
+			loadscreen.SetSubtitle(
+				"Opening: "+s.Level.Title,
+				"by "+s.Level.Author,
+			)
 			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
 			s.UI.Canvas.InstallActors(s.Level.Actors)
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
+			loadscreen.SetSubtitle(
+				"Opening: " + s.filename,
+			)
 			if err := s.LoadLevel(s.filename); err != nil {
 				d.Flash("LoadLevel error: %s", err)
 			} else {
@@ -113,6 +136,12 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			s.UI.Canvas.ScrollTo(render.Origin)
 			s.UI.Canvas.Scrollable = true
 		}
+
+		// Update the loading screen with level info.
+		loadscreen.SetSubtitle(
+			"Opening: "+s.Level.Title,
+			"by "+s.Level.Author,
+		)
 	case enum.DoodadDrawing:
 		// Getting a doodad from file?
 		if s.filename != "" && s.OpenFile {
@@ -140,6 +169,12 @@ func (s *EditorScene) Setup(d *Doodle) error {
 			s.UI.Canvas.LoadDoodad(s.Doodad)
 		}
 
+		// Update the loading screen with level info.
+		loadscreen.SetSubtitle(
+			s.Doodad.Title,
+			"by "+s.Doodad.Author,
+		)
+
 		// TODO: move inside the UI. Just an approximate position for now.
 		s.UI.Canvas.Resize(render.NewRect(s.DoodadSize, s.DoodadSize))
 		s.UI.Canvas.ScrollTo(render.Origin)
@@ -147,10 +182,20 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		s.UI.Workspace.Compute(d.Engine)
 	}
 
+	// Pre-cache all bitmap images from the level chunks.
+	// Note: we are not running on the main thread, so SDL2 Textures
+	// don't get created yet, but we do the full work of caching bitmap
+	// images which later get fed directly into SDL2 saving speed at
+	// runtime, + the bitmap generation is pretty wicked fast anyway.
+	loadscreen.PreloadAllChunkBitmaps(s.UI.Canvas.Chunker())
+
 	// Recompute the UI Palette window for the level's palette.
 	s.UI.FinishSetup(d)
 
-	d.Flash("Editor Mode. Press 'P' to play this map.")
+	d.Flash("Editor Mode.")
+	if s.DrawingType == enum.LevelDrawing {
+		d.Flash("Press 'P' to playtest this level.")
+	}
 
 	return nil
 }
@@ -180,6 +225,11 @@ func (s *EditorScene) ConfirmUnload(fn func()) {
 
 // Loop the editor scene.
 func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
+	// Skip if still loading.
+	if loadscreen.IsActive() {
+		return nil
+	}
+
 	// Update debug overlay values.
 	*s.debTool = s.UI.Canvas.Tool.String()
 	*s.debSwatch = "???"
@@ -253,7 +303,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	// s.UI.Loop(ev)
 
 	// Switching to Play Mode?
-	if keybind.GotoPlay(ev) {
+	if s.DrawingType == enum.LevelDrawing && keybind.GotoPlay(ev) {
 		s.Playtest()
 	} else if keybind.LineTool(ev) {
 		d.Flash("Line Tool selected.")
@@ -286,6 +336,11 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 
 // Draw the current frame.
 func (s *EditorScene) Draw(d *Doodle) error {
+	// Skip if still loading.
+	if loadscreen.IsActive() {
+		return nil
+	}
+
 	// Clear the canvas and fill it with magenta so it's clear if any spots are missed.
 	d.Engine.Clear(render.RGBA(160, 120, 160, 255))
 

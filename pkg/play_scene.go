@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/uix"
@@ -75,6 +76,23 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	s.scripting = scripting.NewSupervisor()
 	s.supervisor = ui.NewSupervisor()
 
+	// Show the loading screen.
+	loadscreen.ShowWithProgress()
+	go func() {
+		if err := s.setupAsync(d); err != nil {
+			log.Error("PlayScene.setupAsync: %s", err)
+			return
+		}
+
+		loadscreen.Hide()
+	}()
+
+	return nil
+}
+
+// setupAsync initializes the play screen in the background, underneath
+// a Loading screen.
+func (s *PlayScene) setupAsync(d *Doodle) error {
 	// Create an invisible 'screen' frame for UI elements to use for positioning.
 	s.screen = ui.NewFrame("Screen")
 	s.screen.Resize(render.NewRect(d.width, d.height))
@@ -156,6 +174,7 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.drawing.LoadLevel(d.Engine, s.Level)
 		s.drawing.InstallActors(s.Level.Actors)
 	} else if s.Filename != "" {
+		loadscreen.SetSubtitle("Opening: " + s.Filename)
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
 		// NOTE: s.LoadLevel also calls s.drawing.InstallActors
 		s.LoadLevel(s.Filename)
@@ -167,6 +186,12 @@ func (s *PlayScene) Setup(d *Doodle) error {
 		s.drawing.LoadLevel(d.Engine, s.Level)
 		s.drawing.InstallActors(s.Level.Actors)
 	}
+
+	// Set the loading screen text with the level metadata.
+	loadscreen.SetSubtitle(
+		s.Level.Title,
+		"by "+s.Level.Author,
+	)
 
 	// Load all actor scripts.
 	s.drawing.SetScriptSupervisor(s.scripting)
@@ -187,6 +212,13 @@ func (s *PlayScene) Setup(d *Doodle) error {
 	} else {
 		d.Flash("%s", s.Level.Title)
 	}
+
+	// Pre-cache all bitmap images from the level chunks.
+	// Note: we are not running on the main thread, so SDL2 Textures
+	// don't get created yet, but we do the full work of caching bitmap
+	// images which later get fed directly into SDL2 saving speed at
+	// runtime, + the bitmap generation is pretty wicked fast anyway.
+	loadscreen.PreloadAllChunkBitmaps(s.Level.Chunker)
 
 	s.running = true
 
@@ -374,6 +406,11 @@ func (s *PlayScene) DieByFire(name string) {
 
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
+	// Skip if still loading.
+	if loadscreen.IsActive() {
+		return nil
+	}
+
 	// Update debug overlay values.
 	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX, ev.CursorY)).String()
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
@@ -420,6 +457,11 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 
 // Draw the pixels on this frame.
 func (s *PlayScene) Draw(d *Doodle) error {
+	// Skip if still loading.
+	if loadscreen.IsActive() {
+		return nil
+	}
+
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
 

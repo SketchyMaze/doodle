@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -84,6 +85,13 @@ func NewShell(d *Doodle) Shell {
 				d.Flash(row)
 			}
 			return ""
+		},
+		"loadscreen": map[string]interface{}{
+			"Show":             loadscreen.Show,
+			"ShowWithProgress": loadscreen.ShowWithProgress,
+			"Hide":             loadscreen.Hide,
+			"IsActive":         loadscreen.IsActive,
+			"SetProgress":      loadscreen.SetProgress,
 		},
 	}
 	for name, v := range bindings {
