@@ -22,6 +22,9 @@ var Embedded embed.FS
 
 // AssetDir returns the list of embedded files at the directory name.
 func AssetDir(name string) ([]string, error) {
+	// normalize path separators, for Windows
+	name = strings.ReplaceAll(name, "\\", "/")
+
 	var result []string
 
 	name = strings.TrimPrefix(name, "assets/")
@@ -42,6 +45,9 @@ func AssetDir(name string) ([]string, error) {
 
 // Asset returns the byte data of an embedded asset.
 func Asset(name string) ([]byte, error) {
+	// normalize path separators, for Windows
+	name = strings.ReplaceAll(name, "\\", "/")
+
 	return Embedded.ReadFile(strings.TrimPrefix(name, "assets/"))
 }
 
