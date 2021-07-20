@@ -8,9 +8,15 @@ function main() {
     Self.SetHitbox(0, 0, size, size);
 
     Events.OnCollide(function (e) {
+        // Ignore events from neighboring Boxes.
+        if (e.Actor.Actor.Filename === "box.doodad") {
+            return false;
+        }
+
         if (e.Actor.IsMobile() && e.InHitbox) {
             var overlap = e.Overlap;
-            if (overlap.Y === 0) {
+
+            if (overlap.Y === 0 && !(overlap.X === 0 && overlap.W < 5) && !(overlap.X === size)) {
                 // Standing on top, ignore.
                 return false;
             } else if (overlap.Y === size) {

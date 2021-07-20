@@ -1,5 +1,49 @@
 # Changes
 
+## v0.7.2 (July 19 2021)
+
+This release brings some new features and some new content.
+
+New features:
+
+* **Loading screens** have been added. In previous versions, 'chunks'
+  of a level were rendered on-demand as they first scrolled onto the
+  screen, but busy new chunks would cause gameplay to stutter. The
+  loading screen is able to _pre-render_ the entire level up front
+  to ensure gameplay is smooth(er).
+* **Compression for Levels and Doodads:** levels and doodads are now compressed
+  with Gzip for an average 88% smaller file size on disk. The example level,
+  "Tutorial 2.level" shrank from 2.2 MB to 414 KB with compression. The game
+  can still read old (uncompressed) files, but will compress them on save.
+
+Some new content:
+
+* **New Levels:** two desert-themed levels were added. One has you
+  platforming and climbing the outside of a pyramid; the next is
+  inside the pyramid and has puzzles involving movable boxes.
+* **New Doodad:** Box is a pushable crate that is affected by
+  gravity. It is taller than Boy and can be used to gain some extra
+  height and reach higher platforms.
+* **New Palette:** To the "Colored Pencil" palette was added a new
+  default color: Sandstone (solid).
+* **New Pattern:** Perlin Noise was added as one of the available
+  brush patterns. Sandstone uses this pattern by default.
+
+Some miscellaneous changes:
+
+* **Slowly scroll in editor:** holding down the Shift key while scrolling the
+  level editor will scroll your drawing _very_ slowly.
+* **'Doodads' Hotkey:** in the Level Editor, the `Q` key will open
+  the Doodads window instead of the `D` key, as the `D` key is now
+  part of WASD for scrolling the drawing.
+
+## v0.7.1 (July 11 2021)
+
+Fixes a bug on the Windows version:
+
+* Built-in wallpapers other than the default Notebook were failing to
+  load in the Windows release of v0.7.0
+
 ## v0.7.0 (June 20 2021)
 
 This is the first release of the game where the "free version" drifts meaningfully
@@ -50,13 +94,6 @@ Bugs fixed:
   animation would not update correctly when moving via the WASD keys. Both bugs
   are fixed in this release.
 * Shortcut keys advertised in the menu, such as Ctrl-N and Ctrl-S, now actually work.
-
-### v0.7.1 (July 11 2021)
-
-Fixes a bug on the Windows version:
-
-* Built-in wallpapers other than the default Notebook were failing to
-  load in the Windows release of v0.7.0
 
 ## v0.6.0-alpha (June 6 2021)
 
