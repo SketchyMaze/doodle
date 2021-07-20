@@ -244,7 +244,7 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 
 	// Title screen level to load.
 	if lvl, err := level.LoadFile(balance.DemoLevelName); err == nil {
-		s.canvas.LoadLevel(d.Engine, lvl)
+		s.canvas.LoadLevel(lvl)
 		s.canvas.InstallActors(lvl.Actors)
 
 		// Load all actor scripts.

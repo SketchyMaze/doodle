@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
@@ -108,7 +109,7 @@ func setup() {
 
 	// Create the parent container that will stretch full screen.
 	window = ui.NewFrame("Loadscreen Window")
-	window.SetBackground(render.RGBA(0, 0, 1, 40))
+	window.SetBackground(render.RGBA(0, 0, 1, 40)) // makes the wallpaper darker? :/
 
 	// "Loading" text.
 	label := ui.NewLabel(ui.Label{
@@ -167,7 +168,7 @@ func Loop(windowSize render.Rect, e render.Engine) {
 		// Initialize the wallpaper canvas?
 		if canvas == nil {
 			canvas = uix.NewCanvas(128, false)
-			canvas.LoadLevel(e, &level.Level{
+			canvas.LoadLevel(&level.Level{
 				Chunker:   level.NewChunker(100),
 				Palette:   level.NewPalette(),
 				PageType:  level.Bounded,
@@ -215,8 +216,13 @@ func Loop(windowSize render.Rect, e render.Engine) {
 // of chunks vs. chunks remaining to pre-cache bitmaps from.
 func PreloadAllChunkBitmaps(chunker *level.Chunker) {
 	loadChunksTarget := len(chunker.Chunks)
+	// if loadChunksTarget == 0 {
+	// 	return
+	// }
+
 	for {
 		remaining := chunker.PrerenderN(10)
+		log.Info("Remain: %d", remaining)
 
 		// Set the load screen progress % based on number of chunks to render.
 		if loadChunksTarget > 0 {

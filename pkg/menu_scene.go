@@ -96,7 +96,7 @@ func (s *MenuScene) Setup(d *Doodle) error {
 		W: d.width,
 		H: d.height,
 	})
-	s.canvas.LoadLevel(d.Engine, &level.Level{
+	s.canvas.LoadLevel(&level.Level{
 		Chunker:   level.NewChunker(100),
 		Palette:   level.NewPalette(),
 		PageType:  level.Bounded,
@@ -135,8 +135,8 @@ func (s *MenuScene) Setup(d *Doodle) error {
 
 // configureCanvas updates the settings of the background canvas, so a live
 // preview of the wallpaper and wrapping type can be shown.
-func (s *MenuScene) configureCanvas(e render.Engine, pageType level.PageType, wallpaper string) {
-	s.canvas.LoadLevel(e, &level.Level{
+func (s *MenuScene) configureCanvas(pageType level.PageType, wallpaper string) {
+	s.canvas.LoadLevel(&level.Level{
 		Chunker:   level.NewChunker(100),
 		Palette:   level.NewPalette(),
 		PageType:  pageType,
@@ -151,7 +151,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 		Engine:     d.Engine,
 		OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
 			log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
-			s.configureCanvas(d.Engine, pageType, wallpaper)
+			s.configureCanvas(pageType, wallpaper)
 		},
 		OnCreateNewLevel: func(lvl *level.Level) {
 			d.Goto(&EditorScene{

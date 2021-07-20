@@ -48,19 +48,19 @@ type Wallpaper struct {
 // FromImage creates a Wallpaper from an image.Image.
 // If the renger.Engine is nil it will compute images but not pre-cache any
 // textures yet.
-func FromImage(e render.Engine, img *image.RGBA, name string) (*Wallpaper, error) {
+func FromImage(img *image.RGBA, name string) (*Wallpaper, error) {
 	wp := &Wallpaper{
 		Name:  name,
 		Image: img,
 	}
-	wp.cache(e)
+	wp.cache()
 	return wp, nil
 }
 
 // FromFile creates a Wallpaper from a file on disk.
 // If the renger.Engine is nil it will compute images but not pre-cache any
 // textures yet.
-func FromFile(e render.Engine, filename string, embeddable filesystem.Embeddable) (*Wallpaper, error) {
+func FromFile(filename string, embeddable filesystem.Embeddable) (*Wallpaper, error) {
 	// Default object to return on errors.
 	var defaultWP = &Wallpaper{
 		Name:  strings.Split(filepath.Base(filename), ".")[0],
@@ -118,12 +118,12 @@ func FromFile(e render.Engine, filename string, embeddable filesystem.Embeddable
 		Image:  rgba,
 		ready:  true,
 	}
-	wp.cache(e)
+	wp.cache()
 	return wp, nil
 }
 
 // cache the bitmap images.
-func (wp *Wallpaper) cache(e render.Engine) {
+func (wp *Wallpaper) cache() {
 	// Zero-bound the rect cuz an image.Rect doesn't necessarily contain 0,0
 	var rect = wp.Image.Bounds()
 	if rect.Min.X < 0 {
@@ -162,6 +162,11 @@ func (wp *Wallpaper) cache(e render.Engine) {
 // QuarterSize returns the width and height of the quarter images.
 func (wp *Wallpaper) QuarterSize() (int, int) {
 	return wp.quarterWidth, wp.quarterHeight
+}
+
+// QuarterRect returns a Rect of the size of the quarter images.
+func (wp *Wallpaper) QuarterRect() render.Rect {
+	return render.NewRect(wp.QuarterSize())
 }
 
 // Corner returns the top left corner image.

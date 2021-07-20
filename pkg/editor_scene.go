@@ -101,7 +101,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 				"Opening: "+s.Level.Title,
 				"by "+s.Level.Author,
 			)
-			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
+			s.UI.Canvas.LoadLevel(s.Level)
 			s.UI.Canvas.InstallActors(s.Level.Actors)
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
@@ -132,7 +132,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 			log.Debug("EditorScene.Setup: initializing a new Level")
 			s.Level = level.New()
 			s.Level.Palette = level.DefaultPalette()
-			s.UI.Canvas.LoadLevel(d.Engine, s.Level)
+			s.UI.Canvas.LoadLevel(s.Level)
 			s.UI.Canvas.ScrollTo(render.Origin)
 			s.UI.Canvas.Scrollable = true
 		}
@@ -360,7 +360,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 
 	s.DrawingType = enum.LevelDrawing
 	s.Level = level
-	s.UI.Canvas.LoadLevel(s.d.Engine, s.Level)
+	s.UI.Canvas.LoadLevel(s.Level)
 
 	log.Info("Installing %d actors into the drawing", len(level.Actors))
 	if err := s.UI.Canvas.InstallActors(level.Actors); err != nil {

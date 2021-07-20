@@ -131,7 +131,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
 				scene.Level.PageType = pageType
 				scene.Level.Wallpaper = wallpaper
-				u.Canvas.LoadLevel(d.Engine, scene.Level)
+				u.Canvas.LoadLevel(scene.Level)
 			},
 			OnCancel: func() {
 				u.levelSettingsWindow.Hide()
@@ -261,7 +261,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				// Reload the level.
 				if scene.Level != nil {
 					log.Warn("RELOAD LEVEL")
-					u.Canvas.LoadLevel(d.Engine, scene.Level)
+					u.Canvas.LoadLevel(scene.Level)
 					scene.Level.Chunker.Redraw()
 				} else if scene.Doodad != nil {
 					log.Warn("RELOAD DOODAD")

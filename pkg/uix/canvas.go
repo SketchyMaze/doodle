@@ -145,7 +145,7 @@ func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 }
 
 // LoadLevel initializes a Canvas from a Level object.
-func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
+func (w *Canvas) LoadLevel(level *level.Level) {
 	w.level = level
 	w.Load(level.Palette, level.Chunker)
 
@@ -159,14 +159,14 @@ func (w *Canvas) LoadLevel(e render.Engine, level *level.Level) {
 		}
 	}
 
-	wp, err := wallpaper.FromFile(e, filename, level)
+	wp, err := wallpaper.FromFile(filename, level)
 	if err != nil {
 		log.Error("wallpaper FromFile(%s): %s", filename, err)
 	}
 
 	w.wallpaper.maxWidth = level.MaxWidth
 	w.wallpaper.maxHeight = level.MaxHeight
-	err = w.wallpaper.Load(e, level.PageType, wp)
+	err = w.wallpaper.Load(level.PageType, wp)
 	if err != nil {
 		log.Error("wallpaper Load: %s", err)
 	}

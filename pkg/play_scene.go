@@ -171,7 +171,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// Given a filename or map data to play?
 	if s.Level != nil {
 		log.Debug("PlayScene.Setup: received level from scene caller")
-		s.drawing.LoadLevel(d.Engine, s.Level)
+		s.drawing.LoadLevel(s.Level)
 		s.drawing.InstallActors(s.Level.Actors)
 	} else if s.Filename != "" {
 		loadscreen.SetSubtitle("Opening: " + s.Filename)
@@ -183,7 +183,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	if s.Level == nil {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
 		s.Level = level.New()
-		s.drawing.LoadLevel(d.Engine, s.Level)
+		s.drawing.LoadLevel(s.Level)
 		s.drawing.InstallActors(s.Level.Actors)
 	}
 
@@ -611,7 +611,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 	}
 
 	s.Level = level
-	s.drawing.LoadLevel(s.d.Engine, s.Level)
+	s.drawing.LoadLevel(s.Level)
 	s.drawing.InstallActors(s.Level.Actors)
 
 	return nil

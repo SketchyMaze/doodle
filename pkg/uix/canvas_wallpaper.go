@@ -11,16 +11,15 @@ type Wallpaper struct {
 	pageType  level.PageType
 	maxWidth  int64
 	maxHeight int64
-	corner    render.Texturer
-	top       render.Texturer
-	left      render.Texturer
-	repeat    render.Texturer
+
+	// Pointer to the Wallpaper datum.
+	WP *wallpaper.Wallpaper
 }
 
 // Valid returns whether the Wallpaper is configured. Only Levels should
 // have wallpapers and Doodads will have nil ones.
 func (wp *Wallpaper) Valid() bool {
-	return wp.repeat != nil
+	return wp.WP != nil && wp.WP.Repeat() != nil
 }
 
 // Canvas Loop() task that keeps mobile actors constrained inside the borders
@@ -76,8 +75,8 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 	var (
 		wp       = w.wallpaper
 		S        = w.Size()
-		size     = wp.corner.Size()
-		sizeOrig = wp.corner.Size()
+		size     = wp.WP.QuarterRect()
+		sizeOrig = wp.WP.QuarterRect()
 
 		// Get the relative viewport of world coordinates looked at by the canvas.
 		// The X,Y values are the negative Scroll value
@@ -202,7 +201,9 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 				src.H = sizeOrig.H
 			}
 
-			e.Copy(wp.repeat, src, dst)
+			if tex, err := wp.WP.RepeatTexture(e); err == nil {
+				e.Copy(tex, src, dst)
+			}
 		}
 	}
 
@@ -227,7 +228,9 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
-			e.Copy(wp.left, src, dst)
+			if tex, err := wp.WP.LeftTexture(e); err == nil {
+				e.Copy(tex, src, dst)
+			}
 		}
 
 		// The top edge tiled along the top edge.
@@ -250,7 +253,9 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
-			e.Copy(wp.top, src, dst)
+			if tex, err := wp.WP.TopTexture(e); err == nil {
+				e.Copy(tex, src, dst)
+			}
 		}
 
 		// The top left corner for all page types except Unbounded.
@@ -273,38 +278,17 @@ func (w *Canvas) PresentWallpaper(e render.Engine, p render.Point) error {
 			}
 
 			render.TrimBox(&src, &dst, p, S, w.BoxThickness(1))
-			e.Copy(wp.corner, src, dst)
+			if tex, err := wp.WP.CornerTexture(e); err == nil {
+				e.Copy(tex, src, dst)
+			}
 		}
 	}
 	return nil
 }
 
 // Load the wallpaper settings from a level.
-func (wp *Wallpaper) Load(e render.Engine, pageType level.PageType, v *wallpaper.Wallpaper) error {
+func (wp *Wallpaper) Load(pageType level.PageType, v *wallpaper.Wallpaper) error {
 	wp.pageType = pageType
-	if tex, err := v.CornerTexture(e); err == nil {
-		wp.corner = tex
-	} else {
-		return err
-	}
-
-	if tex, err := v.TopTexture(e); err == nil {
-		wp.top = tex
-	} else {
-		return err
-	}
-
-	if tex, err := v.LeftTexture(e); err == nil {
-		wp.left = tex
-	} else {
-		return err
-	}
-
-	if tex, err := v.RepeatTexture(e); err == nil {
-		wp.repeat = tex
-	} else {
-		return err
-	}
-
+	wp.WP = v
 	return nil
 }

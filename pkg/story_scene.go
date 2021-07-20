@@ -48,7 +48,7 @@ func (s *StoryScene) Setup(d *Doodle) error {
 	// Set up the background wallpaper canvas.
 	s.canvas = uix.NewCanvas(100, false)
 	s.canvas.Resize(render.NewRect(d.width, d.height))
-	s.canvas.LoadLevel(d.Engine, &level.Level{
+	s.canvas.LoadLevel(&level.Level{
 		Chunker:   level.NewChunker(100),
 		Palette:   level.NewPalette(),
 		PageType:  level.Bounded,
