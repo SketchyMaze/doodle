@@ -50,17 +50,9 @@ func MakeSettingsWindow(windowWidth, windowHeight int, cfg Settings) *ui.Window 
 // NewSettingsWindow initializes the window.
 func NewSettingsWindow(cfg Settings) *ui.Window {
 	var (
-		Width     = 400
-		Height    = 400
-		ActiveTab = "index"
-
-		// The tab frames
-		TabOptions  *ui.Frame // index
-		TabControls *ui.Frame // controls
+		Width  = 400
+		Height = 400
 	)
-	if cfg.ActiveTab != "" {
-		ActiveTab = cfg.ActiveTab
-	}
 
 	window := ui.NewWindow("Settings")
 	window.SetButtons(ui.CloseButton)
@@ -72,63 +64,22 @@ func NewSettingsWindow(cfg Settings) *ui.Window {
 
 	///////////
 	// Tab Bar
-	tabFrame := ui.NewFrame("Tab Bar")
+	tabFrame := ui.NewTabFrame("Tab Frame")
 	tabFrame.SetBackground(render.DarkGrey)
 	window.Pack(tabFrame, ui.Pack{
 		Side:  ui.N,
 		FillX: true,
 	})
-	for _, tab := range []struct {
-		label string
-		value string
-	}{
-		{"Options", "index"},
-		{"Controls", "controls"},
-	} {
-		radio := ui.NewRadioButton(tab.label, &ActiveTab, tab.value, ui.NewLabel(ui.Label{
-			Text: tab.label,
-			Font: balance.UIFont,
-		}))
-		radio.SetStyle(&balance.ButtonBabyBlue)
-		radio.Handle(ui.Click, func(ed ui.EventData) error {
-			switch ActiveTab {
-			case "index":
-				TabOptions.Show()
-				TabControls.Hide()
-			case "controls":
-				TabOptions.Hide()
-				TabControls.Show()
-			}
-			return nil
-		})
-		cfg.Supervisor.Add(radio)
-		tabFrame.Pack(radio, ui.Pack{
-			Side:   ui.W,
-			Expand: true,
-		})
-	}
 
 	///////////
 	// Options (index) Tab
-	TabOptions = cfg.makeOptionsTab(Width, Height)
-	if ActiveTab != "index" {
-		TabOptions.Hide()
-	}
-	window.Pack(TabOptions, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
+	cfg.makeOptionsTab(tabFrame, Width, Height)
 
 	///////////
 	// Controls Tab
-	TabControls = cfg.makeControlsTab(Width, Height)
-	if ActiveTab != "controls" {
-		TabControls.Hide()
-	}
-	window.Pack(TabControls, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
+	cfg.makeControlsTab(tabFrame, Width, Height)
+
+	tabFrame.Supervise(cfg.Supervisor)
 
 	return window
 }
@@ -143,8 +94,12 @@ func saveGameSettings() {
 }
 
 // Settings Window "Options" Tab
-func (c Settings) makeOptionsTab(Width, Height int) *ui.Frame {
-	tab := ui.NewFrame("Options Tab")
+func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.Frame {
+	tab := tabFrame.AddTab("Options", ui.NewLabel(ui.Label{
+		Text: "Options",
+		Font: balance.TabFont,
+	}))
+	tab.Resize(render.NewRect(Width-4, Height-tab.Size().H-46))
 
 	// Common click handler for all settings,
 	// so we can write the updated info to disk.
@@ -307,7 +262,13 @@ func (c Settings) makeOptionsTab(Width, Height int) *ui.Frame {
 }
 
 // Settings Window "Controls" Tab
-func (c Settings) makeControlsTab(Width, Height int) *ui.Frame {
+func (c Settings) makeControlsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.Frame {
+	frame := tabFrame.AddTab("Controls", ui.NewLabel(ui.Label{
+		Text: "Controls",
+		Font: balance.TabFont,
+	}))
+	frame.Resize(render.NewRect(Width-4, Height-frame.Size().H-46))
+
 	var (
 		halfWidth        = (Width - 4) / 2 // the 4 is for window borders, TODO
 		shortcutTabWidth = float64(halfWidth) * 0.5
@@ -317,7 +278,6 @@ func (c Settings) makeControlsTab(Width, Height int) *ui.Frame {
 		shortcutTabSize = render.NewRect(int(shortcutTabWidth), rowHeight)
 		infoTabSize     = render.NewRect(int(infoTabWidth), rowHeight)
 	)
-	frame := ui.NewFrame("Controls Tab")
 
 	controls := []struct {
 		Header   string

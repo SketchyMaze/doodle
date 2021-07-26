@@ -3,6 +3,7 @@ package windows
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
@@ -40,33 +41,9 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		// size of the doodad window
 		width  = buttonSize * columns
 		height = (buttonSize * rows) + 64 // account for button borders :(
-
-		// pagination values
-		page           = 1
-		pages          int
-		perPage        = 20
-		maxPageButtons = 10
 	)
 
-	window := ui.NewWindow(title)
-	window.SetButtons(ui.CloseButton)
-	window.Configure(ui.Config{
-		Width:      width,
-		Height:     height,
-		Background: render.Grey,
-	})
-
-	frame := ui.NewFrame("Window Body Frame")
-	window.Pack(frame, ui.Pack{
-		Side:   ui.N,
-		Fill:   true,
-		Expand: true,
-	})
-
-	/*******
-	 * Display the Doodads in rows of buttons
-	 *******/
-
+	// Get all the doodads.
 	doodadsAvailable, err := doodads.ListDoodads()
 	if err != nil {
 		log.Error("NewDoodadDropper: doodads.ListDoodads: %s", err)
@@ -89,6 +66,76 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		doodad.Filename = filename
 		items = append(items, doodad)
 	}
+
+	window := ui.NewWindow(title)
+	window.SetButtons(ui.CloseButton)
+	window.Configure(ui.Config{
+		Width:      width,
+		Height:     height + 30,
+		Background: render.Grey,
+	})
+
+	tabFrame := ui.NewTabFrame("Category Tabs")
+	window.Pack(tabFrame, ui.Pack{
+		Side:   ui.N,
+		Fill:   true,
+		Expand: true,
+	})
+
+	// The Category Tabs.
+	categories := []struct {
+		ID   string
+		Name string
+	}{
+		{"objects", "Objects"},
+		{"doors", "Doors"},
+		{"gizmos", "Gizmos"},
+		{"creatures", "Creatures"},
+		{"", "All"},
+	}
+	for _, category := range categories {
+		tab1 := tabFrame.AddTab(category.Name, ui.NewLabel(ui.Label{
+			Text: category.Name,
+			Font: balance.TabFont,
+		}))
+		makeDoodadTab(config, tab1, render.NewRect(width-4, height-60), category.ID, items)
+	}
+
+	tabFrame.Supervise(config.Supervisor)
+
+	window.Hide()
+	return window
+}
+
+// Function to generate the TabFrame frame of the Doodads window.
+func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, category string, available []*doodads.Doodad) {
+	var (
+		buttonSize = balance.DoodadButtonSize
+		columns    = balance.DoodadDropperCols
+		rows       = balance.DoodadDropperRows
+
+		// pagination values
+		page           = 1
+		pages          int
+		perPage        = 20
+		maxPageButtons = 10
+	)
+	frame.Resize(size)
+
+	// Trim the available doodads to those fitting the category.
+	var items = []*doodads.Doodad{}
+	for _, candidate := range available {
+		if value, ok := candidate.Tags["category"]; ok {
+			if category != "" && !strings.Contains(value, category) {
+				continue
+			}
+		} else if category != "" {
+			continue
+		}
+		items = append(items, candidate)
+	}
+
+	doodads.SortByName(items)
 
 	// Compute the number of pages for the pager widget.
 	pages = int(
@@ -176,7 +223,7 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 
 		bottomFrame := ui.NewFrame("Button Frame")
 		frame.Pack(bottomFrame, ui.Pack{
-			Side:  ui.S,
+			Side:  ui.N,
 			FillX: true,
 		})
 
@@ -242,7 +289,4 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 			})
 		}
 	}
-
-	window.Hide()
-	return window
 }

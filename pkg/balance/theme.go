@@ -73,6 +73,13 @@ var (
 		PadX:         4,
 	}
 
+	// TabFrame styles.
+	TabFont = render.Text{
+		Size: 12,
+		PadX: 8,
+		PadY: 4,
+	}
+
 	// Modal backdrop color.
 	ModalBackdrop = render.RGBA(1, 1, 1, 42)
 

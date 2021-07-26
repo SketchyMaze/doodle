@@ -33,6 +33,9 @@ buttons() {
 	doodad convert -t "Button Type B" typeB1.png typeB2.png button-typeB.doodad
 	doodad install-script button.js button-typeB.doodad
 
+	# Tag the category for these doodads
+	for i in *.doodad; do doodad edit-doodad --tag "category=gizmos" $i; done
+
 	cp button*.doodad ../../../assets/doodads/
 	cd ..
 }
@@ -49,6 +52,9 @@ switches() {
 	doodad install-script switch.js switch-down.doodad
 	doodad install-script switch.js switch-left.doodad
 	doodad install-script switch.js switch-right.doodad
+
+	# Tag the category for these doodads
+	for i in *.doodad; do doodad edit-doodad --tag "category=gizmos" $i; done
 
 	cp *.doodad ../../../assets/doodads/
 	cd ..
@@ -77,6 +83,9 @@ trapdoors() {
 	doodad edit-doodad -q --tag direction=right trapdoor-right.doodad
 	doodad edit-doodad -q --tag direction=up trapdoor-up.doodad
 
+	# Tag the category for these doodads
+	for i in *.doodad; do doodad edit-doodad --tag "category=doors" $i; done
+
 	cp trapdoor-*.doodad ../../../assets/doodads/
 
 	cd ..
@@ -93,6 +102,9 @@ azulians() {
 		red-wr{1,2,3,4}.png red-wl{1,2,3,4}.png azu-red.doodad
 	doodad install-script azulian-red.js azu-red.doodad
 
+	# Tag the category for these doodads
+	for i in *.doodad; do doodad edit-doodad --tag "category=creatures" $i; done
+
 	cp azu-*.doodad ../../../assets/doodads/
 
 	cd ..
@@ -104,6 +116,9 @@ mobs() {
 	doodad convert -t "Bird (red)" left-1.png left-2.png right-1.png right-2.png \
 		dive-left.png dive-right.png bird-red.doodad
 	doodad install-script bird.js bird-red.doodad
+
+	# Tag the category for these doodads
+	for i in *.doodad; do doodad edit-doodad --tag "category=creatures" $i; done
 
 	cp *.doodad ../../../assets/doodads/
 	cd ..
@@ -117,6 +132,7 @@ objects() {
 
 	doodad convert -t "Start Flag" start-flag.png start-flag.doodad
 
+	for i in *.doodad; do doodad edit-doodad --tag "category=objects" $i; done
 	cp *.doodad ../../../assets/doodads/
 
 	cd ../crumbly-floor
@@ -125,12 +141,14 @@ objects() {
 		fall1.png fall2.png fall3.png fall4.png fallen.png \
 		crumbly-floor.doodad
 	doodad install-script crumbly-floor.js crumbly-floor.doodad
+	for i in *.doodad; do doodad edit-doodad --tag "category=objects" $i; done
 	cp *.doodad ../../../assets/doodads/
 
 	cd ../box
 
 	doodad convert -t "Box" box-1.png box-2.png box-3.png box-4.png box.doodad
 	doodad install-script box.js box.doodad
+	for i in *.doodad; do doodad edit-doodad --tag "category=objects" $i; done
 	cp *.doodad ../../../assets/doodads/
 
 	cd ..
@@ -147,6 +165,8 @@ onoff() {
 
 	doodad convert -t "State Block (Orange)" orange-off.png orange-on.png state-block-orange.doodad
 	doodad install-script state-block-orange.js state-block-orange.doodad
+
+	for i in *.doodad; do doodad edit-doodad --tag "category=gizmos" $i; done
 
 	cp *.doodad ../../../assets/doodads/
 
@@ -169,6 +189,9 @@ warpdoor() {
 		warp-door-orange.doodad
 	doodad edit-doodad -q --tag color=orange warp-door-orange.doodad
 	doodad install-script warp-door.js warp-door-orange.doodad
+
+	for i in *.doodad; do doodad edit-doodad --tag "category=doors" $i; done
+	for i in warp-door-*.doodad; do doodad edit-doodad --tag "category=doors,gizmos" $i; done
 
 	cp *.doodad ../../../assets/doodads/
 
