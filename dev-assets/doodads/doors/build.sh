@@ -49,4 +49,4 @@ doodad install-script electric-door.js door-electric.doodad
 for i in *.doodad; do doodad edit-doodad --tag "category=doors" $i; done
 doodad edit-doodad --tag "category=doors,gizmos" door-electric.doodad
 
-cp door-*.doodad key-*.doodad small-*.doodad ../../../assets/doodads/
+cp *.doodad ../../../assets/doodads/

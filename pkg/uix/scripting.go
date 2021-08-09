@@ -1,5 +1,7 @@
 package uix
 
+import "git.kirsle.net/go/render"
+
 // Functions relating to the Doodad JavaScript API for Canvas Actors.
 
 // MakeSelfAPI generates the `Self` object for the scripting API in
@@ -10,9 +12,13 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Title":    actor.Doodad().Title,
 
 		// functions
-		"ID":             actor.ID,
-		"GetTag":         actor.Doodad().Tag,
-		"Position":       actor.Position,
+		"ID":       actor.ID,
+		"GetTag":   actor.Doodad().Tag,
+		"Position": actor.Position,
+		"MoveTo": func(p render.Point) {
+			actor.MoveTo(p)
+			actor.SetGrounded(false)
+		},
 		"SetHitbox":      actor.SetHitbox,
 		"SetVelocity":    actor.SetVelocity,
 		"SetMobile":      actor.SetMobile,

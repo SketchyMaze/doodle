@@ -38,6 +38,16 @@ function main() {
         Self.SetVelocity(Vector(0, 0));
     });
 
+    // When we receive power, we reset to our original position.
+    var origPoint = Self.Position();
+    Message.Subscribe("power", function (powered) {
+        console.error("Box received power! %+v", powered);
+        console.error("MoveTo: %+v", origPoint);
+        console.error("Keys: %+v", Object.keys(Self));
+        Self.MoveTo(origPoint);
+        Self.SetVelocity(Vector(0, 0));
+    });
+
     // Start animation on a loop.
     animate();
 }
