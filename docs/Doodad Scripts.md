@@ -30,6 +30,7 @@ type API interface {
 
     // Game functions.k
     EndLevel()  // Exit the current level with a victory
+    FailLevel(message)
 
     /************************************
      * Event Handler Callback Functions *

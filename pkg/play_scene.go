@@ -41,6 +41,7 @@ type PlayScene struct {
 	// buttons what to do next.
 	alertBox          *ui.Window
 	alertBoxLabel     *ui.Label
+	alertBoxValue     string
 	alertReplayButton *ui.Button // Replay level
 	alertEditButton   *ui.Button // Edit Level
 	alertNextButton   *ui.Button // Next Level
@@ -118,6 +119,29 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		s.alertExitButton.Show()
 
 		// Show the alert box.
+		s.alertBox.Title = "Level Completed"
+		s.alertBoxValue = "Congratulations on clearing the level!"
+		s.alertBox.Show()
+	})
+	s.scripting.OnLevelFail(func(message string) {
+		d.Flash(message)
+
+		// Pause the simulation.
+		s.running = false
+
+		// Toggle the relevant buttons on.
+		if s.CanEdit {
+			s.alertEditButton.Show()
+		}
+		s.alertNextButton.Hide()
+
+		// Always-visible buttons.
+		s.alertReplayButton.Show()
+		s.alertExitButton.Show()
+
+		// Show the alert box.
+		s.alertBox.Title = "You've died!"
+		s.alertBoxValue = message
 		s.alertBox.Show()
 	})
 
@@ -310,8 +334,8 @@ func (s *PlayScene) SetupAlertbox() {
 		 ******************/
 
 		s.alertBoxLabel = ui.NewLabel(ui.Label{
-			Text: "Congratulations on clearing the level!",
-			Font: balance.LabelFont,
+			TextVariable: &s.alertBoxValue,
+			Font:         balance.LabelFont,
 		})
 		frame.Pack(s.alertBoxLabel, ui.Pack{
 			Side:  ui.N,
@@ -390,7 +414,7 @@ func (s *PlayScene) RestartLevel() {
 func (s *PlayScene) DieByFire(name string) {
 	log.Info("Watch out for %s!", name)
 	s.alertBox.Title = "You've died!"
-	s.alertBoxLabel.Text = fmt.Sprintf("Watch out for %s!", name)
+	s.alertBoxValue = fmt.Sprintf("Watch out for %s!", name)
 
 	s.alertReplayButton.Show()
 	if s.CanEdit {

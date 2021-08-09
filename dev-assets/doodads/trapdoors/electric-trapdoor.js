@@ -49,6 +49,11 @@ function setPoweredState(powered) {
         Self.PlayAnimation("open", function () {
             isOpen = true;
             animating = false;
+
+            // Had we lost power quickly?
+            if (!powerState) {
+                setPoweredState(false);
+            }
         });
     } else {
         animating = true;

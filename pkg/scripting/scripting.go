@@ -17,6 +17,7 @@ type Supervisor struct {
 
 	// Global event handlers.
 	onLevelExit func()
+	onLevelFail func(message string)
 }
 
 // NewSupervisor creates a new JavaScript Supervior.

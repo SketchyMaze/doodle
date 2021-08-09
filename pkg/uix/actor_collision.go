@@ -207,6 +207,7 @@ func (w *Canvas) loopActorCollision() error {
 							// Are they on top?
 							aHitbox := collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
 							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
+								// log.Error("ActorCollision: onTop=true at Y=%s", test.Y)
 								onTop = true
 								onTopY = test.Y
 							}
@@ -217,6 +218,7 @@ func (w *Canvas) loopActorCollision() error {
 									lockY = lastGoodBox.Y
 								}
 								if onTop {
+									// log.Error("ActorCollision: setGrounded(true)", test.Y)
 									b.SetGrounded(true)
 								}
 							}

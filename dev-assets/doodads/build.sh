@@ -58,6 +58,10 @@ objects() {
 	cd box/
 	make
 	cd ..
+
+	cd crumbly-floor/
+	make
+	cd ..
 }
 
 onoff() {

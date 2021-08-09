@@ -7,13 +7,13 @@ function main() {
 	var state = false;
 	var collide = false;
 
-	Message.Subscribe("power", function(powered) {
+	Message.Subscribe("power", function (powered) {
 		state = powered;
 		showState(state);
 	});
 
-	Events.OnCollide(function(e) {
-		if (!e.Settled) {
+	Events.OnCollide(function (e) {
+		if (!e.Settled || !e.Actor.IsMobile()) {
 			return;
 		}
 
@@ -30,7 +30,7 @@ function main() {
 		}
 	});
 
-	Events.OnLeave(function(e) {
+	Events.OnLeave(function (e) {
 		collide = false;
 	});
 }
