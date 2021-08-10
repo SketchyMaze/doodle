@@ -19,8 +19,6 @@ This adds the global methods `Message.Subscribe(name, func)` and
 `Message.Publish(name, args)` to the JavaScript VM's scope.
 */
 func RegisterPublishHooks(s *Supervisor, vm *VM) {
-	log.Error("RegisterPublishHooks called with %+v %+v", s, vm)
-
 	// Goroutine to watch the VM's inbound channel and invoke Subscribe handlers
 	// for any matching messages received.
 	go func() {

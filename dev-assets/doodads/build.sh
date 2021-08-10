@@ -12,6 +12,10 @@ boy() {
 	cd boy/
 	make
 	cd ..
+
+	cd thief/
+	make
+	cd ..
 }
 
 buttons() {

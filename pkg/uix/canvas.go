@@ -61,7 +61,7 @@ type Canvas struct {
 	actors []*Actor // if this canvas CONTAINS actors (i.e., is a level)
 
 	// Collision memory for the actors.
-	collidingActors map[string]string // mapping their IDs to each other
+	collidingActors map[*Actor]*Actor // mapping their IDs to each other
 
 	// Doodad scripting engine supervisor.
 	// NOTE: initialized and managed by the play_scene.

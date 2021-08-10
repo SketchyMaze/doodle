@@ -8,12 +8,13 @@ function main() {
 	var animFrame = animStart;
 
 	Self.SetMobile(true);
+	Self.SetInventory(true);
 	Self.SetGravity(true);
 	Self.SetHitbox(0, 0, 32, 52);
 	Self.AddAnimation("walk-left", 200, ["stand-left", "walk-left-1", "walk-left-2", "walk-left-3", "walk-left-2", "walk-left-1"]);
 	Self.AddAnimation("walk-right", 200, ["stand-right", "walk-right-1", "walk-right-2", "walk-right-3", "walk-right-2", "walk-right-1"]);
 
-	Events.OnKeypress(function(ev) {
+	Events.OnKeypress(function (ev) {
 		Vx = 0;
 		Vy = 0;
 

@@ -538,7 +538,7 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 	)
 
 	// Antigravity: player can move anywhere with arrow keys.
-	if s.antigravity {
+	if s.antigravity || !s.Player.HasGravity() {
 		velocity.X = 0
 		velocity.Y = 0
 

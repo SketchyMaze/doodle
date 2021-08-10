@@ -2,7 +2,6 @@ package uix
 
 import (
 	"errors"
-	"sync"
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -36,11 +35,14 @@ func (w *Canvas) loopActorCollision() error {
 
 	// Loop over all the actors in parallel, processing their movement and
 	// checking collision data against the level geometry.
-	var wg sync.WaitGroup
+	// NOTE: parallelism wasn't good for race conditions like the Thief
+	//       trying to take your inventory.
+	// var wg sync.WaitGroup
 	for i, a := range w.actors {
-		wg.Add(1)
-		go func(i int, a *Actor) {
-			defer wg.Done()
+		// wg.Add(1)
+		//go
+		func(i int, a *Actor) {
+			// defer wg.Done()
 			originalPositions[a.ID()] = a.Position()
 
 			// Advance any animations for this actor.
@@ -114,10 +116,10 @@ func (w *Canvas) loopActorCollision() error {
 			// Store this actor's bounding box after they've moved.
 			boxes[i] = collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
 		}(i, a)
-		wg.Wait()
+		// wg.Wait()
 	}
 
-	var collidingActors = map[string]string{}
+	var collidingActors = map[*Actor]*Actor{}
 	for tuple := range collision.BetweenBoxes(boxes) {
 		a, b := w.actors[tuple.A], w.actors[tuple.B]
 
@@ -126,7 +128,7 @@ func (w *Canvas) loopActorCollision() error {
 			continue
 		}
 
-		collidingActors[a.ID()] = b.ID()
+		collidingActors[a] = b
 
 		// log.Error("between boxes: %+v  <%s> <%s>", tuple, a.ID(), b.ID())
 
@@ -293,9 +295,12 @@ func (w *Canvas) loopActorCollision() error {
 	}
 
 	// Check for lacks of collisions since last frame.
-	for sourceID, targetID := range w.collidingActors {
-		if _, ok := collidingActors[sourceID]; !ok {
-			w.scripting.To(sourceID).Events.RunLeave(targetID)
+	for sourceActor, targetActor := range w.collidingActors {
+		if _, ok := collidingActors[sourceActor]; !ok {
+			w.scripting.To(sourceActor.ID()).Events.RunLeave(&CollideEvent{
+				Actor:   targetActor,
+				Settled: true,
+			})
 		}
 	}
 

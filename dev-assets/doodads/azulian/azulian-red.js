@@ -7,6 +7,7 @@ function main() {
 
 	Self.SetHitbox(0, 0, 32, 32)
 	Self.SetMobile(true);
+	Self.SetInventory(true);
 	Self.SetGravity(true);
 	Self.AddAnimation("walk-left", 100, ["red-wl1", "red-wl2", "red-wl3", "red-wl4"]);
 	Self.AddAnimation("walk-right", 100, ["red-wr1", "red-wr2", "red-wr3", "red-wr4"]);
@@ -16,7 +17,7 @@ function main() {
 	var sampleRate = 5;
 	var lastSampledX = 0;
 
-	setInterval(function() {
+	setInterval(function () {
 		if (sampleTick % sampleRate === 0) {
 			var curX = Self.Position().X;
 			var delta = Math.abs(curX - lastSampledX);
@@ -33,7 +34,7 @@ function main() {
 		Self.SetVelocity(Vector(Vx, 0.0));
 
 		if (!Self.IsAnimating()) {
-			Self.PlayAnimation("walk-"+direction, null);
+			Self.PlayAnimation("walk-" + direction, null);
 		}
 	}, 100);
 }

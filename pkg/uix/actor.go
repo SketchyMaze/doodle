@@ -34,14 +34,15 @@ type Actor struct {
 	flagUsing   bool // flag that the (player) has pressed the Use key.
 
 	// Actor runtime variables.
-	hasGravity bool
-	isMobile   bool // Mobile character, such as the player or an enemy
-	noclip     bool // Disable collision detection
-	hidden     bool // invisible, via Hide() and Show()
-	frozen     bool // Frozen, via Freeze() and Unfreeze()
-	hitbox     render.Rect
-	inventory  map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
-	data       map[string]string // arbitrary key/value store. DEPRECATED ??
+	hasGravity   bool
+	hasInventory bool
+	isMobile     bool // Mobile character, such as the player or an enemy
+	noclip       bool // Disable collision detection
+	hidden       bool // invisible, via Hide() and Show()
+	frozen       bool // Frozen, via Freeze() and Unfreeze()
+	hitbox       render.Rect
+	inventory    map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
+	data         map[string]string // arbitrary key/value store. DEPRECATED ??
 
 	// Movement data.
 	position render.Point
@@ -114,6 +115,11 @@ func (a *Actor) SetMobile(v bool) {
 	a.isMobile = v
 }
 
+// SetInventory configures whether the actor is capable of carrying items.
+func (a *Actor) SetInventory(v bool) {
+	a.hasInventory = true
+}
+
 // IsMobile returns whether the actor is a mobile character.
 func (a *Actor) IsMobile() bool {
 	return a.isMobile
@@ -123,6 +129,16 @@ func (a *Actor) IsMobile() bool {
 // It's true when the Actor ID is "PLAYER"
 func (a *Actor) IsPlayer() bool {
 	return a.Canvas.Name == "PLAYER"
+}
+
+// HasInventory returns if the actor is capable of carrying items.
+func (a *Actor) HasInventory() bool {
+	return a.hasInventory
+}
+
+// HasGravity returns if gravity applies to the actor.
+func (a *Actor) HasGravity() bool {
+	return a.hasGravity
 }
 
 // Size returns the size of the actor, from the underlying doodads.Drawing.
