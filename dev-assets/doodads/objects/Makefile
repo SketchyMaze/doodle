@@ -4,6 +4,7 @@ ALL: build
 build:
 	# Start Flag
 	doodad convert -t "Start Flag" start-flag.png start-flag.doodad
+	doodad install-script start-flag.js start-flag.doodad
 
 	# Exit Flag
 	doodad convert -t "Exit Flag" exit-flag.png exit-flag.doodad

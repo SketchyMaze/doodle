@@ -251,39 +251,50 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 
 // setupPlayer creates and configures the Player Character in the level.
 func (s *PlayScene) setupPlayer() {
-	// Load in the player character.
-	player, err := doodads.LoadFile(balance.PlayerCharacterDoodad)
-	if err != nil {
-		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
-		player = doodads.NewDummy(32)
-	}
-
 	// Find the spawn point of the player. Search the level for the
 	// "start-flag.doodad"
 	var (
+		playerCharacterFilename = balance.PlayerCharacterDoodad
+
 		spawn     render.Point
+		flag      *level.Actor
+		flagSize  = render.NewRect(86, 86) // TODO: start-flag.doodad is 86x86 px
 		flagCount int
 	)
 	for actorID, actor := range s.Level.Actors {
 		if actor.Filename == "start-flag.doodad" {
-			if flagCount > 1 {
+			// Support alternative player characters: if the Start Flag is linked
+			// to another actor, that actor becomes the player character.
+			for _, linkID := range actor.Links {
+				if linkedActor, ok := s.Level.Actors[linkID]; ok {
+					playerCharacterFilename = linkedActor.Filename
+					log.Info("Playing as: %s", playerCharacterFilename)
+				}
 				break
 			}
 
 			// TODO: start-flag.doodad is 86x86 pixels but we can't tell that
 			// from right here.
-			size := render.NewRect(86, 86)
 			log.Info("Found start-flag.doodad at %s (ID %s)", actor.Point, actorID)
-			spawn = render.NewPoint(
-				// X: centered inside the flag.
-				actor.Point.X+(size.W/2)-(player.Layers[0].Chunker.Size/2),
-
-				// Y: the bottom of the flag, 4 pixels from the floor.
-				actor.Point.Y+size.H-4-(player.Layers[0].Chunker.Size),
-			)
-			flagCount++
+			flag = actor
+			break
 		}
 	}
+
+	// Load in the player character.
+	player, err := doodads.LoadFile(playerCharacterFilename)
+	if err != nil {
+		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
+		player = doodads.NewDummy(32)
+	}
+
+	spawn = render.NewPoint(
+		// X: centered inside the flag.
+		flag.Point.X+(flagSize.W/2)-(player.Layers[0].Chunker.Size/2),
+
+		// Y: the bottom of the flag, 4 pixels from the floor.
+		flag.Point.Y+flagSize.H-4-(player.Layers[0].Chunker.Size),
+	)
 
 	// Surface warnings around the spawn flag.
 	if flagCount == 0 {

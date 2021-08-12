@@ -378,6 +378,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 			for _, actor := range actors {
 				u.Scene.Level.Actors.Remove(actor)
 			}
+			u.Scene.Level.PruneLinks()
 			drawing.InstallActors(u.Scene.Level.Actors)
 		}
 	}
@@ -395,8 +396,15 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		// The actors are a uix.Actor which houses a level.Actor which we
 		// want to update to map each other's IDs.
 		idA, idB := a.Actor.ID(), b.Actor.ID()
-		a.Actor.AddLink(idB)
-		b.Actor.AddLink(idA)
+
+		// Are they already linked?
+		if a.Actor.IsLinked(idB) || b.Actor.IsLinked(idA) {
+			a.Actor.Unlink(idB)
+			b.Actor.Unlink(idA)
+		} else {
+			a.Actor.AddLink(idB)
+			b.Actor.AddLink(idA)
+		}
 
 		// Reset the Link tool.
 		d.Flash("Linked '%s' and '%s' together", a.Doodad().Title, b.Doodad().Title)

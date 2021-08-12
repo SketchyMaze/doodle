@@ -22,7 +22,7 @@ type Drawing struct {
 // an empty ID string, it will make a random UUIDv4 ID.
 func NewDrawing(id string, doodad *Doodad) *Drawing {
 	if id == "" {
-		id = uuid.Must(uuid.NewRandom()).String()
+		id = uuid.Must(uuid.NewUUID()).String()
 	}
 	return &Drawing{
 		id:     id,

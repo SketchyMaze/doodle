@@ -91,5 +91,5 @@ objects
 onoff
 warpdoor
 doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad
-doodad edit-doodad -hide ../../assets/doodads/azu-blu.doodad
+doodad edit-doodad ../../assets/doodads/azu-blu.doodad
 doodad edit-doodad -hide ../../assets/doodads/boy.doodad

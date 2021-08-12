@@ -63,7 +63,7 @@ type Actor struct {
 // If the id is blank, a new UUIDv4 is generated.
 func NewActor(id string, levelActor *level.Actor, doodad *doodads.Doodad) *Actor {
 	if id == "" {
-		id = uuid.Must(uuid.NewRandom()).String()
+		id = uuid.Must(uuid.NewUUID()).String()
 	}
 
 	size := doodad.Layers[0].Chunker.Size

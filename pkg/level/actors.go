@@ -19,7 +19,7 @@ func (m ActorMap) Inflate() {
 // given a random UUIDv4 ID.
 func (m ActorMap) Add(a *Actor) {
 	if a.id == "" {
-		a.id = uuid.Must(uuid.NewRandom()).String()
+		a.id = uuid.Must(uuid.NewUUID()).String()
 	}
 	m[a.id] = a
 }
@@ -56,4 +56,26 @@ func (a *Actor) AddLink(id string) {
 		}
 	}
 	a.Links = append(a.Links, id)
+}
+
+// Unlink removes the linked actor's ID.
+func (a *Actor) Unlink(id string) {
+	var newLinks []string
+	for _, exist := range a.Links {
+		if exist == id {
+			continue
+		}
+		newLinks = append(newLinks, exist)
+	}
+	a.Links = newLinks
+}
+
+// IsLinked checks if the actor is linked to the other actor's ID.
+func (a *Actor) IsLinked(id string) bool {
+	for _, exist := range a.Links {
+		if exist == id {
+			return true
+		}
+	}
+	return false
 }

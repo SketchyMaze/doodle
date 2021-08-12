@@ -134,7 +134,7 @@ func (c *Chunk) generateTexture(mask render.Color) (render.Texturer, error) {
 	// Generate a unique name for this chunk cache.
 	var name string
 	if c.uuid == uuid.Nil {
-		c.uuid = uuid.Must(uuid.NewRandom())
+		c.uuid = uuid.Must(uuid.NewUUID())
 	}
 	name = c.uuid.String()
 

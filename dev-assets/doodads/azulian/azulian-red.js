@@ -1,3 +1,6 @@
+// Azulian (Red)
+// DEPRECATED: they both share azulian.js now.
+
 function main() {
 	var playerSpeed = 4;
 	var gravity = 4;

@@ -13,7 +13,7 @@ var (
 
 	// Window scrolling behavior in Play Mode.
 	ScrollboxOffset = render.Point{ // from center of screen
-		X: 40,
+		X: 60,
 		Y: 100,
 	}
 
