@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 )
 
@@ -44,7 +43,6 @@ func FromJSON(filename string, data []byte) (*Doodad, error) {
 		}
 	} else if len(data) > 1 && data[0] == 0x1f && data[1] == 0x8b {
 		// Gzip compressed. `1F8B` is gzip magic number.
-		log.Debug("Decompress doodad %s", filename)
 		if gzd, err := FromGzip(data); err != nil {
 			return nil, err
 		} else {

@@ -2,6 +2,8 @@ package windows
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -66,6 +68,13 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 		// Embedded levels, TODO
 		sysLevels, _ := level.ListSystemLevels()
 		levels = append(levels, sysLevels...)
+
+		// Sort them!
+		sort.Slice(
+			levels, func(i, j int) bool {
+				return strings.ToLower(levels[i]) < strings.ToLower(levels[j])
+			},
+		)
 
 		lvlRow := ui.NewFrame("Level Row 0")
 		frame.Pack(lvlRow, ui.Pack{
@@ -156,6 +165,14 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 			})
 
 			files, _ := userdir.ListDoodads()
+
+			// Sort them!
+			sort.Slice(
+				files, func(i, j int) bool {
+					return strings.ToLower(files[i]) < strings.ToLower(files[j])
+				},
+			)
+
 			ddRow := ui.NewFrame("Doodad Row 0")
 			frame.Pack(ddRow, ui.Pack{
 				Side:  ui.N,

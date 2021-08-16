@@ -234,6 +234,7 @@ func (s *PlayScene) setupPlayer() {
 			// from right here.
 			log.Info("Found start-flag.doodad at %s (ID %s)", actor.Point, actorID)
 			flag = actor
+			flagCount++
 			break
 		}
 	}
