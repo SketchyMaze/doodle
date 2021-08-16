@@ -38,11 +38,22 @@ var (
 					Water:   true,
 					Pattern: "ink.png",
 				},
+				{
+					Name:    "hint",
+					Color:   render.MustHexColor("#F0F"),
+					Pattern: "marker.png",
+				},
 			},
 		},
 
 		"Colored Pencil": {
 			Swatches: []*Swatch{
+				{
+					Name:    "darkstone",
+					Color:   render.MustHexColor("#777"),
+					Pattern: "noise.png",
+					Solid:   true,
+				},
 				{
 					Name:    "grass",
 					Color:   render.DarkGreen,
@@ -79,6 +90,11 @@ var (
 					Water:   true,
 					Pattern: "ink.png",
 				},
+				{
+					Name:    "hint",
+					Color:   render.MustHexColor("#F0F"),
+					Pattern: "marker.png",
+				},
 			},
 		},
 
@@ -111,6 +127,11 @@ var (
 					Name:    "electric",
 					Color:   render.RGBA(255, 255, 0, 255),
 					Solid:   true,
+					Pattern: "marker.png",
+				},
+				{
+					Name:    "hint",
+					Color:   render.MustHexColor("#F0F"),
 					Pattern: "marker.png",
 				},
 			},

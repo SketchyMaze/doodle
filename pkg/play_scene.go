@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
@@ -38,16 +39,6 @@ type PlayScene struct {
 	screen     *ui.Frame // A window sized invisible frame to position UI elements.
 	editButton *ui.Button
 
-	// The alert box shows up when the level goal is reached and includes
-	// buttons what to do next.
-	alertBox          *ui.Window
-	alertBoxLabel     *ui.Label
-	alertBoxValue     string
-	alertReplayButton *ui.Button // Replay level
-	alertEditButton   *ui.Button // Edit Level
-	alertNextButton   *ui.Button // Next Level
-	alertExitButton   *ui.Button // Exit to menu
-
 	// Custom debug labels.
 	debPosition   *string
 	debViewport   *string
@@ -57,6 +48,7 @@ type PlayScene struct {
 	// Player character
 	Player            *uix.Actor
 	playerPhysics     *physics.Mover
+	lastCheckpoint    render.Point
 	antigravity       bool // Cheat: disable player gravity
 	noclip            bool // Cheat: disable player clipping
 	playerJumpCounter int  // limit jump length
@@ -100,51 +92,9 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	s.screen.Resize(render.NewRect(d.width, d.height))
 
 	// Level Exit handler.
-	s.SetupAlertbox()
-	s.scripting.OnLevelExit(func() {
-		d.Flash("Hurray!")
-
-		// Pause the simulation.
-		s.running = false
-
-		// Toggle the relevant buttons on.
-		if s.CanEdit {
-			s.alertEditButton.Show()
-		}
-		if s.HasNext {
-			s.alertNextButton.Show()
-		}
-
-		// Always-visible buttons.
-		s.alertReplayButton.Show()
-		s.alertExitButton.Show()
-
-		// Show the alert box.
-		s.alertBox.Title = "Level Completed"
-		s.alertBoxValue = "Congratulations on clearing the level!"
-		s.alertBox.Show()
-	})
-	s.scripting.OnLevelFail(func(message string) {
-		d.Flash(message)
-
-		// Pause the simulation.
-		s.running = false
-
-		// Toggle the relevant buttons on.
-		if s.CanEdit {
-			s.alertEditButton.Show()
-		}
-		s.alertNextButton.Hide()
-
-		// Always-visible buttons.
-		s.alertReplayButton.Show()
-		s.alertExitButton.Show()
-
-		// Show the alert box.
-		s.alertBox.Title = "You've died!"
-		s.alertBoxValue = message
-		s.alertBox.Show()
-	})
+	s.scripting.OnLevelExit(s.BeatLevel)
+	s.scripting.OnLevelFail(s.FailLevel)
+	s.scripting.OnSetCheckpoint(s.SetCheckpoint)
 
 	// Initialize debug overlay values.
 	s.debPosition = new(string)
@@ -288,6 +238,9 @@ func (s *PlayScene) setupPlayer() {
 		}
 	}
 
+	// The Start Flag becomes the player's initial checkpoint.
+	s.lastCheckpoint = flag.Point
+
 	// Load in the player character.
 	player, err := doodads.LoadFile(playerCharacterFilename)
 	if err != nil {
@@ -329,86 +282,6 @@ func (s *PlayScene) setupPlayer() {
 	}
 }
 
-// SetupAlertbox configures the alert box UI.
-func (s *PlayScene) SetupAlertbox() {
-	window := ui.NewWindow("Level Completed")
-	window.Configure(ui.Config{
-		Width:      320,
-		Height:     160,
-		Background: render.Grey,
-	})
-	window.Compute(s.d.Engine)
-
-	{
-		frame := ui.NewFrame("Open Drawing Frame")
-		window.Pack(frame, ui.Pack{
-			Side:   ui.N,
-			Fill:   true,
-			Expand: true,
-		})
-
-		/******************
-		 * Frame for selecting User Levels
-		 ******************/
-
-		s.alertBoxLabel = ui.NewLabel(ui.Label{
-			TextVariable: &s.alertBoxValue,
-			Font:         balance.LabelFont,
-		})
-		frame.Pack(s.alertBoxLabel, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-			PadY:  16,
-		})
-
-		/******************
-		 * Confirm/cancel buttons.
-		 ******************/
-
-		bottomFrame := ui.NewFrame("Button Frame")
-		frame.Pack(bottomFrame, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-			PadY:  8,
-		})
-
-		// Button factory for the various options.
-		makeButton := func(text string, handler func()) *ui.Button {
-			btn := ui.NewButton(text, ui.NewLabel(ui.Label{
-				Font: balance.LabelFont,
-				Text: text,
-			}))
-			btn.Handle(ui.Click, func(ed ui.EventData) error {
-				handler()
-				return nil
-			})
-			bottomFrame.Pack(btn, ui.Pack{
-				Side: ui.W,
-				PadX: 2,
-			})
-			s.supervisor.Add(btn)
-			btn.Hide() // all buttons hidden by default
-			return btn
-		}
-
-		s.alertReplayButton = makeButton("Play Again", func() {
-			s.RestartLevel()
-		})
-		s.alertEditButton = makeButton("Edit Level", func() {
-			s.EditLevel()
-		})
-		s.alertNextButton = makeButton("Next Level", func() {
-			s.d.Flash("Not Implemented")
-		})
-		s.alertExitButton = makeButton("Exit to Menu", func() {
-			s.d.Goto(&MainScene{})
-		})
-	}
-
-	s.alertBox = window
-	s.alertBox.Hide()
-}
-
 // EditLevel toggles out of Play Mode to edit the level.
 func (s *PlayScene) EditLevel() {
 	log.Info("Edit Mode, Go!")
@@ -428,19 +301,67 @@ func (s *PlayScene) RestartLevel() {
 	})
 }
 
+// SetCheckpoint sets the player's checkpoint.
+func (s *PlayScene) SetCheckpoint(where render.Point) {
+	s.lastCheckpoint = where
+}
+
+// RetryCheckpoint moves the player back to their last checkpoint.
+func (s *PlayScene) RetryCheckpoint() {
+	log.Info("Move player back to last checkpoint")
+	s.Player.MoveTo(s.lastCheckpoint)
+	s.running = true
+}
+
+// BeatLevel handles the level success condition.
+func (s *PlayScene) BeatLevel() {
+	s.d.Flash("Hurray!")
+	s.ShowEndLevelModal(
+		true,
+		"Level Completed",
+		"Congratulations on clearing the level!",
+	)
+}
+
+// FailLevel handles a level failure triggered by a doodad.
+func (s *PlayScene) FailLevel(message string) {
+	s.d.Flash(message)
+	s.ShowEndLevelModal(
+		false,
+		"You've died!",
+		message,
+	)
+}
+
 // DieByFire ends the level by "fire", or w/e the swatch is named.
 func (s *PlayScene) DieByFire(name string) {
-	log.Info("Watch out for %s!", name)
-	s.alertBox.Title = "You've died!"
-	s.alertBoxValue = fmt.Sprintf("Watch out for %s!", name)
+	s.FailLevel(fmt.Sprintf("Watch out for %s!", name))
+}
 
-	s.alertReplayButton.Show()
-	if s.CanEdit {
-		s.alertEditButton.Show()
+// ShowEndLevelModal centralizes the EndLevel modal config.
+// This is the common handler function between easy methods such as
+// BeatLevel, FailLevel, and DieByFire.
+func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
+	config := modal.ConfigEndLevel{
+		Success:           success,
+		OnRestartLevel:    s.RestartLevel,
+		OnRetryCheckpoint: s.RetryCheckpoint,
+		OnExitToMenu: func() {
+			s.d.Goto(&MainScene{})
+		},
 	}
-	s.alertExitButton.Show()
 
-	s.alertBox.Show()
+	if s.CanEdit {
+		config.OnEditLevel = s.EditLevel
+	}
+
+	// Beaten the level?
+	if success {
+		config.OnRetryCheckpoint = nil
+	}
+
+	// Show the modal.
+	modal.EndLevel(config, title, message)
 
 	// Stop the simulation.
 	s.running = false
@@ -537,16 +458,6 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		Y: canSize.H - size.H - padding,
 	})
 	s.editButton.Present(d.Engine, s.editButton.Point())
-
-	// Draw the alert box window.
-	if !s.alertBox.Hidden() {
-		s.alertBox.Compute(d.Engine)
-		s.alertBox.MoveTo(render.Point{
-			X: (d.width / 2) - (s.alertBox.Size().W / 2),
-			Y: (d.height / 2) - (s.alertBox.Size().H / 2),
-		})
-		s.alertBox.Present(d.Engine, s.alertBox.Point())
-	}
 
 	return nil
 }

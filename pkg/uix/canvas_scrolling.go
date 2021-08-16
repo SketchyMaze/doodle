@@ -179,6 +179,18 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 			scrollBy.Y = delta
 		}
 
+		// Constrain the maximum scroll speed.
+		if scrollBy.X > balance.FollowActorMaxScrollSpeed {
+			scrollBy.X = balance.FollowActorMaxScrollSpeed
+		} else if scrollBy.X < -balance.FollowActorMaxScrollSpeed {
+			scrollBy.X = -balance.FollowActorMaxScrollSpeed
+		}
+		if scrollBy.Y > balance.FollowActorMaxScrollSpeed {
+			scrollBy.Y = balance.FollowActorMaxScrollSpeed
+		} else if scrollBy.Y < -balance.FollowActorMaxScrollSpeed {
+			scrollBy.Y = -balance.FollowActorMaxScrollSpeed
+		}
+
 		if scrollBy != render.Origin {
 			w.ScrollBy(scrollBy)
 		}

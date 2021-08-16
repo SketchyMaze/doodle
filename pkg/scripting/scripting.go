@@ -8,6 +8,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 )
 
 // Supervisor manages the JavaScript VMs for each doodad by its
@@ -16,8 +17,9 @@ type Supervisor struct {
 	scripts map[string]*VM
 
 	// Global event handlers.
-	onLevelExit func()
-	onLevelFail func(message string)
+	onLevelExit     func()
+	onLevelFail     func(message string)
+	onSetCheckpoint func(where render.Point)
 }
 
 // NewSupervisor creates a new JavaScript Supervior.

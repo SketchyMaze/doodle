@@ -9,7 +9,8 @@ var (
 	Height = 768
 
 	// Speed to scroll a canvas with arrow keys in Edit Mode.
-	CanvasScrollSpeed = 8
+	CanvasScrollSpeed         = 8
+	FollowActorMaxScrollSpeed = 64
 
 	// Window scrolling behavior in Play Mode.
 	ScrollboxOffset = render.Point{ // from center of screen
