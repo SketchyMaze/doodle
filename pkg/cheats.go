@@ -1,5 +1,7 @@
 package doodle
 
+import "git.kirsle.net/apps/doodle/pkg/balance"
+
 // cheatCommand is a subroutine of the Command.Run() method of the Doodle
 // developer shell (commands.go). It looks for special cheat codes entered
 // into the command shell and executes them.
@@ -85,6 +87,22 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		} else {
 			d.Flash("Use this cheat in Play Mode to clear your inventory.")
 		}
+
+	case "fly like a bird":
+		balance.PlayerCharacterDoodad = "bird-red.doodad"
+		d.Flash("Set default player character to Bird (red)")
+
+	case "pinocchio":
+		balance.PlayerCharacterDoodad = "boy.doodad"
+		d.Flash("Set default player character to Boy")
+
+	case "the cell":
+		balance.PlayerCharacterDoodad = "azu-blu.doodad"
+		d.Flash("Set default player character to Blue Azulian")
+
+	case "play as thief":
+		balance.PlayerCharacterDoodad = "thief.doodad"
+		d.Flash("Set default player character to Thief")
 
 	default:
 		return false

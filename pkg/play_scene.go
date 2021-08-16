@@ -27,10 +27,11 @@ type PlayScene struct {
 	HasNext  bool // has a next level to load next
 
 	// Private variables.
-	d         *Doodle
-	drawing   *uix.Canvas
-	scripting *scripting.Supervisor
-	running   bool
+	d            *Doodle
+	drawing      *uix.Canvas
+	scripting    *scripting.Supervisor
+	running      bool
+	deathBarrier int // Y position of death barrier in case of falling OOB.
 
 	// UI widgets.
 	supervisor *ui.Supervisor
@@ -211,6 +212,12 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		s.drawing.InstallActors(s.Level.Actors)
 	}
 
+	// Choose a death barrier in case the user falls off the map,
+	// so they don't fall forever.
+	worldSize := s.Level.Chunker.WorldSize()
+	s.deathBarrier = worldSize.H + 1000
+	log.Debug("Death barrier at %d", s.deathBarrier)
+
 	// Set the loading screen text with the level metadata.
 	loadscreen.SetSubtitle(
 		s.Level.Title,
@@ -257,7 +264,7 @@ func (s *PlayScene) setupPlayer() {
 		playerCharacterFilename = balance.PlayerCharacterDoodad
 
 		spawn     render.Point
-		flag      *level.Actor
+		flag      = &level.Actor{}
 		flagSize  = render.NewRect(86, 86) // TODO: start-flag.doodad is 86x86 px
 		flagCount int
 	)
@@ -481,6 +488,11 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 		s.movePlayer(ev)
 		if err := s.drawing.Loop(ev); err != nil {
 			log.Error("Drawing loop error: %s", err.Error())
+		}
+
+		// Check if the player hit the death barrier.
+		if s.Player.Position().Y > s.deathBarrier {
+			s.DieByFire("falling off the map")
 		}
 
 		// Update the inventory HUD.
