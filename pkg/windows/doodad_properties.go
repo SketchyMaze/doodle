@@ -1,11 +1,13 @@
 package windows
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 
+	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -15,6 +17,37 @@ import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
+
+// Some generic built-in doodad scripts users can attach.
+var GenericScripts = []struct {
+	Label    string
+	Help     string
+	Filename string
+}{
+	{
+		Label: "Generic Solid",
+		Help: "The whole canvas of your doodad acts solid.\n" +
+			"The player and other mobile doodads can walk on\n" +
+			"top of it, and it blocks movement from the sides.",
+		Filename: "assets/scripts/generic-solid.js",
+	},
+	{
+		Label: "Generic Fire",
+		Help: "The whole canvas of your doodad acts like fire.\n" +
+			"Mobile doodads who touch it turn dark, and if\n" +
+			"the player touches it - game over! The failure\n" +
+			"message says: 'Watch out for (title)!'",
+		Filename: "assets/scripts/generic-fire.js",
+	},
+	{
+		Label: "Generic Anvil",
+		Help: "This doodad will behave like the Anvil: fall with\n" +
+			"gravity and be deadly to any mobile doodad that it\n" +
+			"lands on! The failure message says:\n" +
+			"'Watch out for (title)!'",
+		Filename: "assets/scripts/generic-anvil.js",
+	},
+}
 
 // DoodadProperties window.
 type DoodadProperties struct {
@@ -247,39 +280,147 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 		})
 	}
 
-	// Browse Script button.
-	btnBrowse := ui.NewButton("Browse Script", ui.NewLabel(ui.Label{
-		Text: "Attach a script...",
-		Font: balance.MenuFont,
-	}))
-	btnBrowse.SetStyle(&balance.ButtonPrimary)
-	btnBrowse.Handle(ui.Click, func(ed ui.EventData) error {
-		filename, err := native.OpenFile("Choose a .js file", "*.js")
-		if err != nil {
-			shmem.Flash("Couldn't show file dialog: %s", err)
+	// Attaching a Script Frame
+	{
+		label := ui.NewLabel(ui.Label{
+			Text: "Attach a Script",
+			Font: balance.LabelFont,
+		})
+		tab.Pack(label, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+		})
+
+		frame := ui.NewFrame("Attach Script Frame")
+		tab.Pack(frame, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+		})
+
+		// Browse Script label.
+		lblBrowse := ui.NewLabel(ui.Label{
+			Text: "Browse and attach a .js file:",
+			Font: balance.MenuFont,
+		})
+		frame.Pack(lblBrowse, ui.Pack{
+			Side: ui.W,
+		})
+
+		// Browse Script button.
+		btnBrowse := ui.NewButton("Browse Script", ui.NewLabel(ui.Label{
+			Text: "Attach a script...",
+			Font: balance.MenuFont,
+		}))
+		btnBrowse.SetStyle(&balance.ButtonPrimary)
+		btnBrowse.Handle(ui.Click, func(ed ui.EventData) error {
+			filename, err := native.OpenFile("Choose a .js file", "*.js")
+			if err != nil {
+				shmem.Flash("Couldn't show file dialog: %s", err)
+				return nil
+			}
+
+			data, err := ioutil.ReadFile(filename)
+			if err != nil {
+				shmem.Flash("Couldn't read file: %s", err)
+				return nil
+			}
+
+			c.EditDoodad.Script = string(data)
+			shmem.Flash("Attached %d-byte script to this doodad.", len(c.EditDoodad.Script))
+
+			// Toggle the if/else frames.
+			ifScript.Show()
+			elseScript.Hide()
+
 			return nil
-		}
+		})
+		c.Supervisor.Add(btnBrowse)
+		frame.Pack(btnBrowse, ui.Pack{
+			Side: ui.E,
+		})
+	}
 
-		data, err := ioutil.ReadFile(filename)
-		if err != nil {
-			shmem.Flash("Couldn't read file: %s", err)
+	// Built-in Generic Scripts Frame
+	{
+		frame := ui.NewFrame("Generic Scripts Frame")
+		tab.Pack(frame, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+			PadY:  4,
+		})
+
+		label := ui.NewLabel(ui.Label{
+			Text: "Or select from a generic script:",
+			Font: ui.MenuFont,
+		})
+		frame.Pack(label, ui.Pack{
+			Side: ui.W,
+		})
+
+		// SelectBox for the built-ins.
+		sb := ui.NewSelectBox("Select", ui.Label{
+			Font: ui.MenuFont,
+		})
+		tab.Pack(sb, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+		})
+
+		for _, script := range GenericScripts {
+			sb.AddItem(script.Label, script.Filename, func() {})
+		}
+		sb.SetValue(GenericScripts[0].Filename)
+		sb.AlwaysChange = true
+		sb.Handle(ui.Change, func(ed ui.EventData) error {
+			if selection, ok := sb.GetValue(); ok {
+				if filename, ok := selection.Value.(string); ok {
+					// Get this script from the built-in assets.
+					data, err := assets.Asset(filename)
+					if err != nil {
+						shmem.Flash("Couldn't get script: %s", err)
+						return nil
+					}
+
+					// Find the data from the builtins.
+					var label, help string
+					for _, script := range GenericScripts {
+						if script.Filename == filename {
+							label = script.Label
+							help = script.Help
+							break
+						}
+					}
+
+					// Prompt the user + a description of this option.
+					var (
+						basename    = filepath.Base(filename)
+						description = fmt.Sprintf(
+							"Do you want to install %s to your doodad?\n\n"+
+								"%s\n\n%s",
+							basename,
+							label,
+							help,
+						)
+					)
+
+					modal.Confirm(description).Then(func() {
+						c.EditDoodad.Script = string(data)
+
+						shmem.Flash("Attached %s to your doodad", filepath.Base(filename))
+
+						// Toggle the if/else frames.
+						ifScript.Show()
+						elseScript.Hide()
+					})
+				}
+			}
+
 			return nil
-		}
+		})
 
-		c.EditDoodad.Script = string(data)
-		shmem.Flash("Attached %d-byte script to this doodad.", len(c.EditDoodad.Script))
-
-		// Toggle the if/else frames.
-		ifScript.Show()
-		elseScript.Hide()
-
-		return nil
-	})
-	c.Supervisor.Add(btnBrowse)
-	tab.Pack(btnBrowse, ui.Pack{
-		Side:    ui.N,
-		Padding: 4,
-	})
+		sb.Supervise(c.Supervisor)
+		c.Supervisor.Add(sb)
+	}
 
 	// Show/hide appropriate frames.
 	if c.EditDoodad.Script == "" {

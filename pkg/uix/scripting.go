@@ -12,7 +12,11 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Title":    actor.Doodad().Title,
 
 		// functions
-		"ID":       actor.ID,
+		"ID": actor.ID,
+		"Size": func() render.Rect {
+			var size = actor.Doodad().ChunkSize()
+			return render.NewRect(size, size)
+		},
 		"GetTag":   actor.Doodad().Tag,
 		"Position": actor.Position,
 		"MoveTo": func(p render.Point) {
