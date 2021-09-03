@@ -50,7 +50,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		newPageType = config.EditLevel.PageType.String()
 		newWallpaper = config.EditLevel.Wallpaper
 		paletteName = textCurrentPalette
-		title = "Page Settings"
+		title = "Level Properties"
 	}
 
 	window := ui.NewWindow(title)
@@ -84,7 +84,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			Font: balance.LabelFont,
 		})
 		typeFrame.Pack(label1, ui.Pack{
-			Side:  ui.W,
+			Side: ui.W,
 		})
 
 		type typeObj struct {
@@ -102,7 +102,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			Font: ui.MenuFont,
 		})
 		typeFrame.Pack(typeBtn, ui.Pack{
-			Side: ui.W,
+			Side:   ui.W,
 			Expand: true,
 		})
 
@@ -146,7 +146,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		frame.Pack(wpFrame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
-			PadY: 2,
+			PadY:  2,
 		})
 
 		label2 := ui.NewLabel(ui.Label{
@@ -154,7 +154,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			Font: balance.LabelFont,
 		})
 		wpFrame.Pack(label2, ui.Pack{
-			Side:  ui.W,
+			Side: ui.W,
 			PadY: 2,
 		})
 
@@ -177,7 +177,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 		})
 		wallBtn.AlwaysChange = true
 		wpFrame.Pack(wallBtn, ui.Pack{
-			Side: ui.W,
+			Side:   ui.W,
 			Expand: true,
 		})
 
@@ -249,7 +249,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			frame.Pack(palFrame, ui.Pack{
 				Side:  ui.N,
 				FillX: true,
-				PadY: 4,
+				PadY:  4,
 			})
 
 			label3 := ui.NewLabel(ui.Label{
@@ -257,7 +257,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 				Font: balance.LabelFont,
 			})
 			palFrame.Pack(label3, ui.Pack{
-				Side:  ui.W,
+				Side: ui.W,
 			})
 
 			palBtn := ui.NewSelectBox("Palette Select", ui.Label{
@@ -266,13 +266,13 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 			palBtn.AlwaysChange = true
 
 			palFrame.Pack(palBtn, ui.Pack{
-				Side: ui.W,
+				Side:   ui.W,
 				Expand: true,
 			})
 
 			if config.EditLevel != nil {
 				palBtn.AddItem(paletteName, paletteName, func() {})
-				palBtn.AddSeparator();
+				palBtn.AddSeparator()
 			}
 
 			for _, palName := range level.DefaultPaletteNames {
@@ -406,12 +406,12 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 				// If we're editing a level, did we select a new palette?
 				if paletteName != textCurrentPalette {
 					modal.Confirm(
-						"Are you sure you want to change the level palette?\n"+
-						"Existing pixels drawn on your level may change, and\n"+
-						"if the new palette is smaller, some pixels may be\n"+
-						"lost from your level. OK to continue?",
+						"Are you sure you want to change the level palette?\n" +
+							"Existing pixels drawn on your level may change, and\n" +
+							"if the new palette is smaller, some pixels may be\n" +
+							"lost from your level. OK to continue?",
 					).WithTitle("Change Level Palette").Then(func() {
-						config.OnCancel();
+						config.OnCancel()
 					})
 					return nil
 				}

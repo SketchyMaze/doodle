@@ -1,9 +1,14 @@
 // Exit Flag.
 function main() {
-	Self.SetHitbox(22+16, 16, 75-16, 86);
+	Self.SetHitbox(22 + 16, 16, 75 - 16, 86);
 
-	Events.OnCollide(function(e) {
+	Events.OnCollide(function (e) {
 		if (!e.Settled) {
+			return;
+		}
+
+		// Only care if it's the player.
+		if (!e.Actor.IsPlayer()) {
 			return;
 		}
 

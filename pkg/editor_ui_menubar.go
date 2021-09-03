@@ -117,7 +117,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	// Level menu
 	if u.Scene.DrawingType == enum.LevelDrawing {
 		levelMenu := menu.AddMenu("Level")
-		levelMenu.AddItem("Page settings", func() {
+		levelMenu.AddItem("Level Properties", func() {
 			log.Info("Opening the window")
 
 			// Open the New Level window in edit-settings mode.
@@ -132,6 +132,25 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
+		})
+	}
+
+	////////
+	// Doodad Menu
+	if u.Scene.DrawingType == enum.DoodadDrawing {
+		levelMenu := menu.AddMenu("Doodad")
+		levelMenu.AddItem("Doodad Properties", func() {
+			log.Info("Opening the window")
+
+			// Open the New Level window in edit-settings mode.
+			u.doodadPropertiesWindow.Hide()
+			u.doodadPropertiesWindow = nil
+			u.SetupPopups(u.d)
+			u.doodadPropertiesWindow.Show()
+		})
+
+		levelMenu.AddItem("Layers", func() {
+			u.OpenLayersWindow()
 		})
 	}
 
@@ -169,11 +188,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	toolMenu.AddItem("Edit Palette", func() {
 		u.OpenPaletteWindow()
 	})
-	if u.Scene.DrawingType == enum.DoodadDrawing {
-		toolMenu.AddItem("Layers", func() {
-			u.OpenLayersWindow()
-		})
-	}
 
 	// Draw Tools
 	toolMenu.AddItemAccel("Pencil Tool", "F", func() {

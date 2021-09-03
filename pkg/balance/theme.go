@@ -105,6 +105,13 @@ var (
 		Color:        render.Black,
 	}
 
+	LargeLabelFont = render.Text{
+		Size:         18,
+		FontFilename: "DejaVuSans-Bold.ttf",
+		Padding:      4,
+		Color:        render.Black,
+	}
+
 	// SmallMonoFont for cramped spaces like the +/- buttons on Toolbar.
 	SmallMonoFont = render.Text{
 		Size:         14,

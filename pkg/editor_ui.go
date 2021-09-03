@@ -43,15 +43,16 @@ type EditorUI struct {
 	PlayButton *ui.Button
 
 	// Popup windows.
-	levelSettingsWindow *ui.Window
-	aboutWindow         *ui.Window
-	doodadWindow        *ui.Window
-	paletteEditor       *ui.Window
-	layersWindow        *ui.Window
-	publishWindow       *ui.Window
-	filesystemWindow    *ui.Window
-	licenseWindow       *ui.Window
-	settingsWindow      *ui.Window // lazy loaded
+	levelSettingsWindow    *ui.Window
+	doodadPropertiesWindow *ui.Window
+	aboutWindow            *ui.Window
+	doodadWindow           *ui.Window
+	paletteEditor          *ui.Window
+	layersWindow           *ui.Window
+	publishWindow          *ui.Window
+	filesystemWindow       *ui.Window
+	licenseWindow          *ui.Window
+	settingsWindow         *ui.Window // lazy loaded
 
 	// Palette window.
 	Palette    *ui.Window

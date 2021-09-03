@@ -140,6 +140,28 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 		configure(u.levelSettingsWindow)
 	}
 
+	// Doodad Properties
+	if u.doodadPropertiesWindow == nil {
+		scene, _ := d.Scene.(*EditorScene)
+
+		cfg := &windows.DoodadProperties{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			EditDoodad: scene.Doodad,
+		}
+
+		// Rebuild the window. TODO: hacky af.
+		cfg.OnRefresh = func() {
+			u.doodadPropertiesWindow.Hide()
+			u.doodadPropertiesWindow = nil
+			u.SetupPopups(u.d)
+			u.doodadPropertiesWindow.Show()
+		}
+
+		u.doodadPropertiesWindow = windows.NewDoodadPropertiesWindow(cfg)
+		configure(u.doodadPropertiesWindow)
+	}
+
 	// Publish Level (embed doodads)
 	if u.publishWindow == nil {
 		scene, _ := d.Scene.(*EditorScene)
