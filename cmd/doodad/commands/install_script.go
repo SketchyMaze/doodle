@@ -26,7 +26,7 @@ func init() {
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() != 2 {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Usage: doodad install-script <script.js> <filename.doodad>",
 					1,
 				)
@@ -41,12 +41,12 @@ func init() {
 			// Read the JavaScript source.
 			javascript, err := ioutil.ReadFile(scriptFile)
 			if err != nil {
-				return cli.NewExitError(err.Error(), 1)
+				return cli.Exit(err.Error(), 1)
 			}
 
 			doodad, err := doodads.LoadJSON(doodadFile)
 			if err != nil {
-				return cli.NewExitError(
+				return cli.Exit(
 					fmt.Sprintf("Failed to read doodad file: %s", err),
 					1,
 				)

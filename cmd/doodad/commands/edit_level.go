@@ -58,7 +58,7 @@ func init() {
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Usage: doodad edit-level <filename.level>",
 					1,
 				)
@@ -151,7 +151,7 @@ func editLevel(c *cli.Context, filename string) error {
 
 	if modified {
 		if err := lvl.WriteFile(filename); err != nil {
-			return cli.NewExitError(fmt.Sprintf("Write error: %s", err), 1)
+			return cli.Exit(fmt.Sprintf("Write error: %s", err), 1)
 		}
 	} else {
 		log.Warn("Note: No changes made to level")

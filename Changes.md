@@ -1,15 +1,31 @@
 # Changes
 
-## v0.8.0 (TBD)
-
-To Do:
-* Thief needs animations
-* New levels
+## v0.8.0 (September 3, 2021)
 
 This release brings some new features, new doodads, and new levels.
 
 New features:
 
+* **Checkpoints** for gameplay will ease the pain of dying to fire
+  pixels or Anvils by teleporting you back to the checkpoint instead
+  of resetting the whole level.
+* The **Doodad Properties** window while editing a doodad grants access
+  to many features which were previously only available via the
+  `doodad` tool, such as:
+    * Edit metadata like the Title and Author of your doodad
+    * Set the default hitbox of your doodad.
+    * Attach, open, and delete the JavaScript for your doodad
+    * Manage tags (key/value store) on your doodads: how you can
+      communicate settings to the JavaScript which can receive the
+      tags via `Self.GetTag("name")`
+* Some **Generic Doodad Scripts** are built in. Using only the in-game
+  tools, it is possible to create custom doodads which have some basic
+  in-game logic and you don't need to write any code. The generic
+  scripts include:
+    * Generic Solid: the hitbox is solid
+    * Generic Fire: its hitbox harms the player
+    * Generic Anvil: harmless, deadly when falling
+    * Generic Collectible Item: it goes in your inventory
 * **All Characters are Playable!** Use the Link Tool to connect your
   Start Flag with another doodad on your level, and you will play
   **as** that doodad when the level starts. The Creature doodads are
@@ -31,6 +47,18 @@ New doodads have been added:
 * The **Blue Azulian** is now selectable from the Doodads menu. It
   behaves like the Red Azulian but moves at half the speed. The
   Azulians can pick up items and open doors.
+* The **Checkpoint Flag** will remember the player's spot in the level.
+  Dying to fire pixels or Anvils no longer forces a restart of the
+  level - you can resume from your last checkpoint, or the Start Flag
+  by default.
+
+New levels have been added:
+
+* **Castle.level:** introduces the new Thief character. Castle-themed
+  level showing off various new doodads.
+* **Thief 1.level:** a level where you play as the Thief! You need to
+  steal Small Keys from dozens of Azulians and even steal items back
+  from another Thief who has already stolen some of the keys.
 
 Some doodads have changed behavior:
 
@@ -52,12 +80,11 @@ The user interface has been improved:
     5. All: a classic view paging over all doodads (and doodads
        not fitting any of the above categories).
 
-  doodad edit-doodad --tag "categories=doors,gizmos" filename.doodad
-
 New functions are available in the JavaScript API for custom doodads:
 
 * FailLevel(message string): global function that kills the player
   with a custom death message.
+* SetCheckpoint(Point): set the player respawn location
 * Self.MoveTo(Point(x, y int))
 * Self.IsPlayer() bool
 * Self.SetInventory(bool): turn on or off inventory. Keys and other
@@ -69,6 +96,7 @@ New functions are available in the JavaScript API for custom doodads:
 * Self.RemoveItem(filename string, quantity int)
 * Self.HasItem(filename string)
 * Self.Inventory() map[string]int
+* Self.Hitbox() - also see Self.Hitbox.IsEmpty()
 
 The Events.OnLeave() callback now receives a CollideEvent argument,
 like OnCollide, instead of the useless actor ID string. Notable
@@ -87,6 +115,12 @@ Other miscellaneous changes:
 * A **death barrier** will prevent Boy from falling forever on unbounded
   maps should he somehow fall off the level. The death barrier is a
   Y value 1,000 pixels below the lowest pixel on your map.
+* Mobile doodads no longer "moonwalk" when they change directions.
+* A new color is added to all default palettes: "hint" (pink) for
+  writing hint notes.
+* A maximum scroll speed on the "follow the player character" logic
+  makes for cooler animations when the character teleports around.
+* Levels and Doodads are now sorted on the Open menu.
 
 ## v0.7.2 (July 19 2021)
 

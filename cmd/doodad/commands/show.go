@@ -34,9 +34,9 @@ func init() {
 				Usage: "print the script from a doodad file and exit",
 			},
 			&cli.StringFlag{
-				Name: "attachment",
+				Name:    "attachment",
 				Aliases: []string{"a"},
-				Usage: "print the contents of the attached filename to terminal",
+				Usage:   "print the contents of the attached filename to terminal",
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -46,7 +46,7 @@ func init() {
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Usage: doodad show <.level .doodad ...>",
 					1,
 				)
@@ -58,12 +58,12 @@ func init() {
 				case enum.LevelExt:
 					if err := showLevel(c, filename); err != nil {
 						log.Error(err.Error())
-						return cli.NewExitError("Error", 1)
+						return cli.Exit("Error", 1)
 					}
 				case enum.DoodadExt:
 					if err := showDoodad(c, filename); err != nil {
 						log.Error(err.Error())
-						return cli.NewExitError("Error", 1)
+						return cli.Exit("Error", 1)
 					}
 				default:
 					log.Error("File %s: not a level or doodad", filename)
@@ -172,6 +172,7 @@ func showDoodad(c *cli.Context, filename string) error {
 	fmt.Printf("  Game version: %s\n", dd.GameVersion)
 	fmt.Printf("  Doodad title: %s\n", dd.Title)
 	fmt.Printf("        Author: %s\n", dd.Author)
+	fmt.Printf("        Hitbox: %s\n", dd.Hitbox)
 	fmt.Printf("        Locked: %+v\n", dd.Locked)
 	fmt.Printf("        Hidden: %+v\n", dd.Hidden)
 	fmt.Printf("   Script size: %d bytes\n", len(dd.Script))

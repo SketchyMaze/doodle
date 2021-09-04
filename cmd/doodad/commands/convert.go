@@ -48,7 +48,7 @@ func init() {
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 2 {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Usage: doodad convert <input.png...> <output.doodad>\n"+
 						"   Image file types: png, bmp\n"+
 						"   Drawing file types: level, doodad",
@@ -59,7 +59,7 @@ func init() {
 			// Parse the chroma key.
 			chroma, err := render.HexColor(c.String("key"))
 			if err != nil {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Chrome key not a valid color: "+err.Error(),
 					1,
 				)
@@ -76,22 +76,22 @@ func init() {
 			if inputType == extPNG || inputType == extBMP {
 				if outputType == extLevel || outputType == extDoodad {
 					if err := imageToDrawing(c, chroma, inputFiles, outputFile); err != nil {
-						return cli.NewExitError(err.Error(), 1)
+						return cli.Exit(err.Error(), 1)
 					}
 					return nil
 				}
-				return cli.NewExitError("Image inputs can only output to Doodle drawings", 1)
+				return cli.Exit("Image inputs can only output to Doodle drawings", 1)
 			} else if inputType == extLevel || inputType == extDoodad {
 				if outputType == extPNG || outputType == extBMP {
 					if err := drawingToImage(c, chroma, inputFiles, outputFile); err != nil {
-						return cli.NewExitError(err.Error(), 1)
+						return cli.Exit(err.Error(), 1)
 					}
 					return nil
 				}
-				return cli.NewExitError("Doodle drawing inputs can only output to image files", 1)
+				return cli.Exit("Doodle drawing inputs can only output to image files", 1)
 			}
 
-			return cli.NewExitError("File types must be: png, bmp, level, doodad", 1)
+			return cli.Exit("File types must be: png, bmp, level, doodad", 1)
 		},
 	}
 }
@@ -107,13 +107,13 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	for i, filename := range inputFiles {
 		reader, err := os.Open(filename)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return cli.Exit(err.Error(), 1)
 		}
 
 		img, format, err := image.Decode(reader)
 		log.Info("Parsed image %d of %d. Format: %s", i+1, len(inputFiles), format)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return cli.Exit(err.Error(), 1)
 		}
 
 		// Get the bounding box information of the source image.
@@ -131,7 +131,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 				chunkSize = imageSize.Y
 			}
 		} else if imageSize != imageBounds {
-			return cli.NewExitError("your source images are not all the same dimensions", 1)
+			return cli.Exit("your source images are not all the same dimensions", 1)
 		}
 
 		images = append(images, img)
@@ -177,7 +177,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 
 		err := doodad.WriteJSON(outputFile)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return cli.Exit(err.Error(), 1)
 		}
 	case extLevel:
 		log.Info("Output is a Level file: %s", outputFile)
@@ -198,10 +198,10 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 
 		err := lvl.WriteJSON(outputFile)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return cli.Exit(err.Error(), 1)
 		}
 	default:
-		return cli.NewExitError("invalid output file: not a Doodle drawing", 1)
+		return cli.Exit("invalid output file: not a Doodle drawing", 1)
 	}
 
 	return nil

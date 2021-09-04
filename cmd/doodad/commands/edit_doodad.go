@@ -3,10 +3,12 @@ package commands
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 	"github.com/urfave/cli/v2"
 )
 
@@ -32,6 +34,10 @@ func init() {
 				Name:  "author",
 				Usage: "set the doodad author",
 			},
+			&cli.StringFlag{
+				Name:  "hitbox",
+				Usage: "set the doodad hitbox (X,Y,W,H or W,H format)",
+			},
 			&cli.StringSliceFlag{
 				Name:    "tag",
 				Aliases: []string{"t"},
@@ -56,7 +62,7 @@ func init() {
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
-				return cli.NewExitError(
+				return cli.Exit(
 					"Usage: doodad edit-doodad <filename.doodad>",
 					1,
 				)
@@ -98,6 +104,34 @@ func editDoodad(c *cli.Context, filename string) error {
 		dd.Author = c.String("author")
 		log.Info("Set author: %s", dd.Author)
 		modified = true
+	}
+
+	if c.String("hitbox") != "" {
+		// Setting a hitbox, parse it out.
+		parts := strings.Split(c.String("hitbox"), ",")
+		var ints []int
+		for _, part := range parts {
+			a, err := strconv.Atoi(strings.TrimSpace(part))
+			if err != nil {
+				return err
+			}
+			ints = append(ints, a)
+		}
+
+		if len(ints) == 2 {
+			dd.Hitbox = render.NewRect(ints[0], ints[1])
+			modified = true
+		} else if len(ints) == 4 {
+			dd.Hitbox = render.Rect{
+				X: ints[0],
+				Y: ints[1],
+				W: ints[2],
+				H: ints[3],
+			}
+			modified = true
+		} else {
+			return cli.Exit("Hitbox should be in X,Y,W,H or just W,H format, 2 or 4 numbers.", 1)
+		}
 	}
 
 	// Tags.
@@ -152,7 +186,7 @@ func editDoodad(c *cli.Context, filename string) error {
 
 	if modified {
 		if err := dd.WriteJSON(filename); err != nil {
-			return cli.NewExitError(fmt.Sprintf("Write error: %s", err), 1)
+			return cli.Exit(fmt.Sprintf("Write error: %s", err), 1)
 		}
 	} else {
 		log.Warn("Note: No changes made to level")

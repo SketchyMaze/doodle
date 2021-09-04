@@ -385,8 +385,8 @@ func (s *MainScene) Draw(d *Doodle) error {
 
 	// Version label
 	s.labelVersion.MoveTo(render.Point{
-		X: (d.width / 2) - (s.labelVersion.Size().W / 2),
-		Y: s.labelSubtitle.Point().Y + s.labelSubtitle.Size().H + 8,
+		X: (d.width) - (s.labelVersion.Size().W) - 20,
+		Y: 20,
 	})
 	s.labelVersion.Present(d.Engine, s.labelVersion.Point())
 
