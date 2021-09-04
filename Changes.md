@@ -1,6 +1,6 @@
 # Changes
 
-## v0.8.0 (September 3, 2021)
+## v0.8.0 (September 4, 2021)
 
 This release brings some new features, new doodads, and new levels.
 
