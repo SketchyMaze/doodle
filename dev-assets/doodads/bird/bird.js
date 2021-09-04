@@ -5,7 +5,8 @@ function main() {
 	var Vx = Vy = 0;
 	var altitude = Self.Position().Y; // original height in the level
 
-	var direction = "left";
+	var direction = "left",
+		lastDirection = "left";
 	var states = {
 		flying: 0,
 		diving: 1,
@@ -51,9 +52,17 @@ function main() {
 		var Vx = parseFloat(speed * (direction === "left" ? -1 : 1));
 		Self.SetVelocity(Vector(Vx, 0.0));
 
+		// If we changed directions, stop animating now so we can
+		// turn around quickly without moonwalking.
+		if (direction !== lastDirection) {
+			Self.StopAnimation();
+		}
+
 		if (!Self.IsAnimating()) {
 			Self.PlayAnimation("fly-" + direction, null);
 		}
+
+		lastDirection = direction;
 	}, 100);
 }
 

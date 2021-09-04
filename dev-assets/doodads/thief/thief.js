@@ -5,8 +5,8 @@ function main() {
     Self.SetGravity(true);
     Self.SetInventory(true);
     Self.SetHitbox(0, 0, 32, 58);
-    Self.AddAnimation("walk-left", 200, ["stand-left"]); //, "walk-left-1", "walk-left-2", "walk-left-3", "walk-left-2", "walk-left-1"]);
-    Self.AddAnimation("walk-right", 200, ["stand-right"]); //, "walk-right-1", "walk-right-2", "walk-right-3", "walk-right-2", "walk-right-1"]);
+    Self.AddAnimation("walk-left", 200, ["stand-left", "walk-left-1", "walk-left-2", "walk-left-3", "walk-left-2", "walk-left-1"]);
+    Self.AddAnimation("walk-right", 200, ["stand-right", "walk-right-1", "walk-right-2", "walk-right-3", "walk-right-2", "walk-right-1"]);
 
     // All thieves can steal items.
     stealable();
@@ -71,6 +71,7 @@ function ai() {
     var Vx = Vy = 0.0,
         playerSpeed = 4,
         direction = "right",
+        lastDirection = "right",
         lastSampledX = 0,
         sampleTick = 0,
         sampleRate = 2;
@@ -89,8 +90,17 @@ function ai() {
         Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1));
         Self.SetVelocity(Vector(Vx, Vy));
 
-        Self.StopAnimation();
-        Self.PlayAnimation("walk-" + direction, null);
+        // If we changed directions, stop animating now so we can
+        // turn around quickly without moonwalking.
+        if (direction !== lastDirection) {
+            Self.StopAnimation();
+        }
+
+        if (!Self.IsAnimating()) {
+            Self.PlayAnimation("walk-" + direction, null);
+        }
+
+        lastDirection = direction;
     }, 100);
 }
 

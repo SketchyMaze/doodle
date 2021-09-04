@@ -1,7 +1,8 @@
 // Azulian (Red and Blue)
 var playerSpeed = 12,
 	animating = false,
-	direction = "right";
+	direction = "right",
+	lastDirection = "right";
 
 function setupAnimations(color) {
 	var left = color === 'blue' ? 'blu-wl' : 'red-wl',
@@ -49,9 +50,17 @@ function main() {
 		var Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1));
 		Self.SetVelocity(Vector(Vx, 0.0));
 
+		// If we changed directions, stop animating now so we can
+		// turn around quickly without moonwalking.
+		if (direction !== lastDirection) {
+			Self.StopAnimation();
+		}
+
 		if (!Self.IsAnimating()) {
 			Self.PlayAnimation("walk-" + direction, null);
 		}
+
+		lastDirection = direction;
 	}, 100);
 }
 
