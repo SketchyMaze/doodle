@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -14,6 +16,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -23,6 +26,7 @@ var GenericScripts = []struct {
 	Label    string
 	Help     string
 	Filename string
+	SetTags  map[string]string
 }{
 	{
 		Label: "Generic Solid",
@@ -46,6 +50,16 @@ var GenericScripts = []struct {
 			"lands on! The failure message says:\n" +
 			"'Watch out for (title)!'",
 		Filename: "assets/scripts/generic-anvil.js",
+	},
+	{
+		Label: "Generic Collectible Item",
+		Help: "This doodad will behave like a pocketable item, like\n" +
+			"the Keys. Tip: set a Doodad tag like quantity=0 to set\n" +
+			"the item quantity when picked up (default is 1).",
+		Filename: "assets/scripts/generic-item.js",
+		SetTags: map[string]string{
+			"quantity": "1",
+		},
 	},
 }
 
@@ -120,8 +134,10 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 
 	//////////////
 	// Draw the editable metadata form.
+	var hitboxString = c.EditDoodad.Hitbox.String()
 	for _, data := range []struct {
 		Label    string
+		Prompt   string // optional
 		Variable *string
 		Update   func(string)
 	}{
@@ -137,6 +153,40 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 			Variable: &c.EditDoodad.Author,
 			Update: func(v string) {
 				c.EditDoodad.Author = v
+			},
+		},
+		{
+			Label:    "Hitbox:",
+			Prompt:   "Enter hitbox in X,Y,W,H or just W,H format: ",
+			Variable: &hitboxString,
+			Update: func(v string) {
+				// Parse it.
+				parts := strings.Split(v, ",")
+				var ints []int
+				for _, part := range parts {
+					a, err := strconv.Atoi(strings.TrimSpace(part))
+					if err != nil {
+						shmem.Flash("Invalid format for hitbox, using the default")
+						return
+					}
+					ints = append(ints, a)
+				}
+
+				if len(ints) == 2 {
+					c.EditDoodad.Hitbox = render.NewRect(ints[0], ints[1])
+				} else if len(ints) == 4 {
+					c.EditDoodad.Hitbox = render.Rect{
+						X: ints[0],
+						Y: ints[1],
+						W: ints[2],
+						H: ints[3],
+					}
+				} else {
+					shmem.Flash("Hitbox should be in X,Y,W,H or just W,H format, 2 or 4 numbers.")
+					return
+				}
+
+				hitboxString = c.EditDoodad.Hitbox.String()
 			},
 		},
 	} {
@@ -166,7 +216,12 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 			Font:         balance.MenuFont,
 		}))
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
-			shmem.Prompt("Enter a new "+data.Label+" ", func(answer string) {
+			var prompt = data.Prompt
+			if prompt == "" {
+				prompt = "Enter a new " + data.Label + ": "
+			}
+
+			shmem.Prompt(prompt, func(answer string) {
 				if answer != "" {
 					data.Update(answer)
 				}
@@ -236,13 +291,23 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 			PadX: 2,
 		})
 
-		// Save Button
-		saveBtn := ui.NewButton("Save", ui.NewLabel(ui.Label{
-			Text: "Save",
+		// Open Button
+		saveBtn := ui.NewButton("Open", ui.NewLabel(ui.Label{
+			Text: "View",
 			Font: balance.MenuFont,
 		}))
 		saveBtn.SetStyle(&balance.ButtonPrimary)
 		saveBtn.Handle(ui.Click, func(ed ui.EventData) error {
+			// Write the js file to cache and try and open it in the user's
+			// native text editor program.
+			outname := filepath.Join(userdir.CacheDirectory, c.EditDoodad.Filename+".js")
+			err := ioutil.WriteFile(outname, []byte(c.EditDoodad.Script), 0644)
+			if err == nil {
+				native.OpenLocalURL(outname)
+				return nil
+			}
+
+			// Otherwise, prompt the user for their filepath.
 			shmem.Prompt("Save script as (*.js): ", func(answer string) {
 				if answer != "" {
 					cwd, _ := os.Getwd()
@@ -251,6 +316,7 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 						shmem.Flash(err.Error())
 					} else {
 						shmem.Flash("Written to: %s (%d bytes)", filepath.Join(cwd, answer), len(c.EditDoodad.Script))
+						native.OpenLocalURL(filepath.Join(cwd, answer))
 					}
 				}
 			})
@@ -383,10 +449,12 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 
 					// Find the data from the builtins.
 					var label, help string
+					var setTags map[string]string
 					for _, script := range GenericScripts {
 						if script.Filename == filename {
 							label = script.Label
 							help = script.Help
+							setTags = script.SetTags
 							break
 						}
 					}
@@ -407,6 +475,14 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 						c.EditDoodad.Script = string(data)
 
 						shmem.Flash("Attached %s to your doodad", filepath.Base(filename))
+
+						// Set any tags that come with this script.
+						if setTags != nil && len(setTags) > 0 {
+							for k, v := range setTags {
+								log.Info("Set doodad tag %s=%s", k, v)
+								c.EditDoodad.Tags[k] = v
+							}
+						}
 
 						// Toggle the if/else frames.
 						ifScript.Show()

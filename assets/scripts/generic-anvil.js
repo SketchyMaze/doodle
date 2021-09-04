@@ -10,8 +10,10 @@ var falling = false;
 function main() {
     // Make the hitbox be the full canvas size of this doodad.
     // Adjust if you want a narrower hitbox.
-    var size = Self.Size()
-    Self.SetHitbox(0, 0, size.W, size.H)
+    if (Self.Hitbox().IsZero()) {
+        var size = Self.Size()
+        Self.SetHitbox(0, 0, size.W, size.H)
+    }
 
     // Note: doodad is not "solid" but hurts if it falls on you.
     Self.SetMobile(true);

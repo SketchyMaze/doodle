@@ -9,8 +9,10 @@ Can be attached to any doodad.
 function main() {
     // Make the hitbox be the full canvas size of this doodad.
     // Adjust if you want a narrower hitbox.
-    var size = Self.Size()
-    Self.SetHitbox(0, 0, size.W, size.H)
+    if (Self.Hitbox().IsZero()) {
+        var size = Self.Size()
+        Self.SetHitbox(0, 0, size.W, size.H)
+    }
 
     // Solid to all collisions.
     Events.OnCollide(function (e) {

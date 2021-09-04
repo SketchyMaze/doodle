@@ -14,6 +14,7 @@ type Doodad struct {
 	Hidden   bool              `json:"hidden,omitempty"`
 	Palette  *level.Palette    `json:"palette"`
 	Script   string            `json:"script"`
+	Hitbox   render.Rect       `json:"hitbox"`
 	Layers   []Layer           `json:"layers"`
 	Tags     map[string]string `json:"data"` // arbitrary key/value data storage
 }
@@ -35,6 +36,7 @@ func New(size int) *Doodad {
 			Version: 1,
 		},
 		Palette: level.DefaultPalette(),
+		Hitbox:  render.NewRect(size, size),
 		Layers: []Layer{
 			{
 				Name:    "main",

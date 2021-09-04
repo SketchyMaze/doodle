@@ -326,8 +326,12 @@ func (a *Actor) SetHitbox(x, y, w, h int) {
 	}
 }
 
-// Hitbox returns the actor's elected hitbox.
+// Hitbox returns the actor's elected hitbox. If the JavaScript did not set
+// a hitbox, it defers to the Doodad's metadata hitbox.
 func (a *Actor) Hitbox() render.Rect {
+	if a.hitbox.IsZero() && !a.Drawing.Doodad.Hitbox.IsZero() {
+		return a.Drawing.Doodad.Hitbox
+	}
 	return a.hitbox
 }
 
