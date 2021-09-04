@@ -218,7 +218,7 @@ func (c DoodadProperties) makeMetaTab(tabFrame *ui.TabFrame, Width, Height int) 
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			var prompt = data.Prompt
 			if prompt == "" {
-				prompt = "Enter a new " + data.Label + ": "
+				prompt = "Enter a new " + data.Label + " "
 			}
 
 			shmem.Prompt(prompt, func(answer string) {
