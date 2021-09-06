@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 ALL: build
 
 .PHONY: build
