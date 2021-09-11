@@ -3,6 +3,7 @@ package doodle
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -259,7 +260,29 @@ func (d *Doodle) NewMap() {
 }
 
 // NewDoodad loads a new Doodad in Edit Mode.
+// If size is zero, it prompts the user to select a size or accept the default size.
 func (d *Doodle) NewDoodad(size int) {
+	if size == 0 {
+		d.Prompt(fmt.Sprintf("Doodad size or %d>", balance.DoodadSize), func(answer string) {
+			size := balance.DoodadSize
+			if answer != "" {
+				i, err := strconv.Atoi(answer)
+				if err != nil {
+					d.Flash("Error: Doodad size must be a number.")
+					return
+				}
+				size = i
+			}
+
+			// Recurse with the proper answer.
+			if size <= 0 {
+				d.Flash("Error: Doodad size must be a positive number.")
+			}
+			d.NewDoodad(size)
+		})
+		return
+	}
+
 	log.Info("Starting a new doodad")
 	scene := &EditorScene{
 		DrawingType: enum.DoodadDrawing,

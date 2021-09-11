@@ -17,6 +17,7 @@ import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
+	"git.kirsle.net/go/ui/style"
 )
 
 // MainScene implements the main menu of Doodle.
@@ -155,24 +156,35 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.frame = frame
 
 	var buttons = []struct {
-		Name string
-		Func func()
+		Name  string
+		Func  func()
+		Style *style.Button
 	}{
 		// {
 		// 	Name: "Story Mode",
 		// 	Func: d.GotoStoryMenu,
 		// },
 		{
-			Name: "Play a Level",
-			Func: d.GotoPlayMenu,
+			Name:  "Play a Level",
+			Func:  d.GotoPlayMenu,
+			Style: &balance.ButtonBabyBlue,
 		},
 		{
-			Name: "Create a New Level",
-			Func: d.GotoNewMenu,
+			Name:  "Create a Level",
+			Func:  d.GotoNewMenu,
+			Style: &balance.ButtonPink,
 		},
 		{
-			Name: "Edit a Level",
-			Func: d.GotoLoadMenu,
+			Name: "Create a Doodad",
+			Func: func() {
+				d.NewDoodad(0)
+			},
+			Style: &balance.ButtonPink,
+		},
+		{
+			Name:  "Edit a Drawing",
+			Func:  d.GotoLoadMenu,
+			Style: &balance.ButtonPrimary,
 		},
 		{
 			Name: "Settings",
@@ -194,6 +206,9 @@ func (s *MainScene) Setup(d *Doodle) error {
 			button.Func()
 			return nil
 		})
+		if button.Style != nil {
+			btn.SetStyle(button.Style)
+		}
 		s.Supervisor.Add(btn)
 		frame.Pack(btn, ui.Pack{
 			Side: ui.N,

@@ -5,8 +5,6 @@ package doodle
 // The rest of it is controlled in editor_ui.go
 
 import (
-	"strconv"
-
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -56,18 +54,8 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	fileMenu.AddItemAccel("New level", "Ctrl-N", u.Scene.MenuNewLevel)
 	fileMenu.AddItem("New doodad", func() {
 		u.Scene.ConfirmUnload(func() {
-			d.Prompt("Doodad size [100]>", func(answer string) {
-				size := balance.DoodadSize
-				if answer != "" {
-					i, err := strconv.Atoi(answer)
-					if err != nil {
-						d.Flash("Error: Doodad size must be a number.")
-						return
-					}
-					size = i
-				}
-				d.NewDoodad(size)
-			})
+			// New doodad size with prompt.
+			d.NewDoodad(0)
 		})
 	})
 	fileMenu.AddItemAccel("Save", "Ctrl-S", u.Scene.MenuSave(false))

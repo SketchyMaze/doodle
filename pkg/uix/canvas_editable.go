@@ -28,7 +28,8 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 		return
 	}
 
-	// Zoom the stroke coordinates (this modifies the pointer)
+	// Zoom the stroke coordinates (this modifies the pointer).
+	// Note: all the points on the stroke were mouse cursor coordinates on the screen.
 	w.currentStroke = w.ZoomStroke(w.currentStroke)
 
 	// Mark the canvas as modified.

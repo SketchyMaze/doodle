@@ -117,7 +117,6 @@ func (w *Canvas) ZoomStroke(stroke *drawtool.Stroke) *drawtool.Stroke {
 		Points:         stroke.Points,
 		OriginalPoints: stroke.OriginalPoints,
 	}
-	return copy
 
 	// Multiply all coordinates in this stroke, which should be World
 	// Coordinates in the level data, by the zoom multiplier.

@@ -165,22 +165,24 @@ var (
 	ButtonLightRed = style.DefaultButton
 )
 
+// Customize the various button styles.
 func init() {
-	// Customize button styles.
+	// Primary: white on rich blue color
 	ButtonPrimary.Background = render.RGBA(0, 60, 153, 255)
 	ButtonPrimary.Foreground = render.RGBA(255, 255, 254, 255)
 	ButtonPrimary.HoverBackground = render.RGBA(0, 153, 255, 255)
 	ButtonPrimary.HoverForeground = ButtonPrimary.Foreground
 
+	// Danger: white on red
 	ButtonDanger.Background = render.RGBA(153, 30, 30, 255)
 	ButtonDanger.Foreground = render.RGBA(255, 255, 254, 255)
 	ButtonDanger.HoverBackground = render.RGBA(255, 30, 30, 255)
 	ButtonDanger.HoverForeground = ButtonPrimary.Foreground
 
-	ButtonBabyBlue.Background = render.RGBA(0, 153, 255, 255)
-	ButtonBabyBlue.Foreground = render.White
+	ButtonBabyBlue.Background = render.RGBA(40, 200, 255, 255)
+	ButtonBabyBlue.Foreground = render.Black
 	ButtonBabyBlue.HoverBackground = render.RGBA(0, 220, 255, 255)
-	ButtonBabyBlue.HoverForeground = render.White
+	ButtonBabyBlue.HoverForeground = render.Black
 
 	ButtonPink.Background = render.RGBA(255, 153, 255, 255)
 	ButtonPink.HoverBackground = render.RGBA(255, 220, 255, 255)
