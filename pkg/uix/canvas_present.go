@@ -69,15 +69,10 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	//   (0, 0) = (0,0, 127,127)      chunk A
 	//   (1, 0) = (128,128, 255,255)  chunk B
 	// At 2x zoom, Chunk A is still half on screen at -128 scroll
-	if w.Zoom > 0 {
-		// Since disappearing chunks happens on Zoom In the most?
-		// Grow the viewport's X and Y offsets back the other
-		// way, so chunks sliding off the screen don't unload early.
-		// This kinda thing makes no difference at all?
-		// var orig = Viewport
-		// Viewport.X = w.ZoomDivide(w.chunks.Size)
-		// Viewport.Y = w.ZoomDivide(w.chunks.Size)
-	}
+	// if w.Zoom > 0 {
+	// 	Viewport.X = w.ZoomDivide(w.chunks.Size)
+	// 	Viewport.Y = w.ZoomDivide(w.chunks.Size)
+	// }
 
 	// Get the chunks in the viewport and cache their textures.
 	for coord := range w.chunks.IterViewportChunks(Viewport) {

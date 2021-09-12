@@ -304,9 +304,20 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 
 		var deleteActors = []*level.Actor{}
 		for _, actor := range w.actors {
+
+			// Compute the bounding box on screen where this doodad
+			// visually appears.
+			var scrollBias = render.Point{
+				X: w.Scroll.X,
+				Y: w.Scroll.Y,
+			}
+			if w.Zoom != 0 {
+				scrollBias.X = w.ZoomDivide(scrollBias.X)
+				scrollBias.Y = w.ZoomDivide(scrollBias.Y)
+			}
 			box := render.Rect{
-				X: actor.Actor.Point.X - P.X - w.Scroll.X,
-				Y: actor.Actor.Point.Y - P.Y - w.Scroll.Y,
+				X: actor.Actor.Point.X - P.X - scrollBias.X,
+				Y: actor.Actor.Point.Y - P.Y - scrollBias.Y,
 				W: actor.Canvas.Size().W,
 				H: actor.Canvas.Size().H,
 			}
@@ -356,9 +367,19 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				continue
 			}
 
+			// Compute the bounding box on screen where this doodad
+			// visually appears.
+			var scrollBias = render.Point{
+				X: w.Scroll.X,
+				Y: w.Scroll.Y,
+			}
+			if w.Zoom != 0 {
+				scrollBias.X = w.ZoomDivide(scrollBias.X)
+				scrollBias.Y = w.ZoomDivide(scrollBias.Y)
+			}
 			box := render.Rect{
-				X: actor.Actor.Point.X - P.X - w.Scroll.X,
-				Y: actor.Actor.Point.Y - P.Y - w.Scroll.Y,
+				X: actor.Actor.Point.X - P.X - scrollBias.X,
+				Y: actor.Actor.Point.Y - P.Y - scrollBias.Y,
 				W: actor.Canvas.Size().W,
 				H: actor.Canvas.Size().H,
 			}
