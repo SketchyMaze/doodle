@@ -43,10 +43,12 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		// Zoomed out (level go tiny)
 		// TODO: seems unstable as shit on Zoom In??
 		Viewport.W = w.ZoomDivide(Viewport.W)
-		Viewport.H = w.ZoomDivide(Viewport.W)
+		Viewport.H = w.ZoomDivide(Viewport.H)
 		if w.Zoom > 0 {
-			Viewport.X = w.ZoomDivide(w.chunks.Size)
-			Viewport.Y = w.ZoomDivide(w.chunks.Size)
+			// Viewport.X = w.ZoomDivide(w.chunks.Size)
+			// Viewport.Y = w.ZoomDivide(w.chunks.Size)
+			Viewport.X = w.ZoomDivide(Viewport.X)
+			Viewport.Y = w.ZoomDivide(Viewport.Y)
 		}
 	}
 
@@ -73,6 +75,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	// 	Viewport.X = w.ZoomDivide(w.chunks.Size)
 	// 	Viewport.Y = w.ZoomDivide(w.chunks.Size)
 	// }
+	// Seems resolved now?
 
 	// Get the chunks in the viewport and cache their textures.
 	for coord := range w.chunks.IterViewportChunks(Viewport) {

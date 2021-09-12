@@ -16,22 +16,10 @@ require (
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/tomnomnom/xtermcolor v0.0.0-20160428124646-b78803f00a7e // indirect
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/veandco/go-sdl2 v0.4.8
+	github.com/veandco/go-sdl2 v0.4.10
 	github.com/vmihailenco/msgpack v3.3.3+incompatible
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
-
-// replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
-
-// replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
-
-// replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio
-
-// replace git.kirsle.net/go/render => /run/build/sketchymaze/deps/render
-
-// replace git.kirsle.net/go/ui => /run/build/sketchymaze/deps/ui
-
-// replace git.kirsle.net/go/audio => /run/build/sketchymaze/deps/audio

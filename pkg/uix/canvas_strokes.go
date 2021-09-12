@@ -186,9 +186,14 @@ func (w *Canvas) presentActorLinks(e render.Engine) {
 				bS = actorMap[linkID].Size()
 			)
 
+			// Adapt actor positions per the zoom level.
+			aP.X = w.ZoomMultiply(aP.X)
+			aP.Y = w.ZoomMultiply(aP.Y)
+			bP.X = w.ZoomMultiply(bP.X)
+			bP.Y = w.ZoomMultiply(bP.Y)
+
 			// Draw a line connecting the centers of each actor together.
 			stroke := drawtool.NewStroke(drawtool.Line, color)
-			stroke.Thickness = 1
 			stroke.PointA = render.Point{
 				X: aP.X + (aS.W / 2),
 				Y: aP.Y + (aS.H / 2),
@@ -275,13 +280,36 @@ func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 				}
 			}
 		} else {
+			var color = stroke.Color
+			if balance.DebugCanvasStrokeColor != render.Invisible {
+				color = balance.DebugCanvasStrokeColor
+			}
+
+			// TODO: iterating all the points is very costly!
+			// Strokes don't properly render your Pattern anyway (glitchy mess),
+			// so let them just be simple DrawLine etc. calls.
+			// This optimization specifically speeds up the Actor Link Lines.
+			if stroke.Shape == drawtool.Line {
+				var (
+					pointA = render.Point{
+						X: P.X + w.Scroll.X + w.BoxThickness(1) + stroke.PointA.X,
+						Y: P.Y + w.Scroll.Y + w.BoxThickness(1) + stroke.PointA.Y,
+					}
+					pointB = render.Point{
+						X: P.X + w.Scroll.X + w.BoxThickness(1) + stroke.PointB.X,
+						Y: P.Y + w.Scroll.Y + w.BoxThickness(1) + stroke.PointB.Y,
+					}
+				)
+				e.DrawLine(color, pointA, pointB)
+				continue
+			}
+
 			for point := range stroke.IterPoints() {
 				if !point.Inside(VP) {
 					continue
 				}
 
 				// Does the swatch have a pattern to sample?
-				color := stroke.Color
 				if stroke.Pattern != "" {
 					color = pattern.SampleColor(stroke.Pattern, color, point)
 				}
@@ -291,11 +319,7 @@ func (w *Canvas) DrawStrokes(e render.Engine, strokes []*drawtool.Stroke) {
 					Y: P.Y + w.Scroll.Y + w.BoxThickness(1) + point.Y,
 				}
 
-				if balance.DebugCanvasStrokeColor != render.Invisible {
-					e.DrawPoint(balance.DebugCanvasStrokeColor, dest)
-				} else {
-					e.DrawPoint(color, dest)
-				}
+				e.DrawPoint(color, dest)
 			}
 		}
 	}

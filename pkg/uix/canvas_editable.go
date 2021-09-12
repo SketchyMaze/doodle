@@ -316,8 +316,8 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				scrollBias.Y = w.ZoomDivide(scrollBias.Y)
 			}
 			box := render.Rect{
-				X: actor.Actor.Point.X - P.X - scrollBias.X,
-				Y: actor.Actor.Point.Y - P.Y - scrollBias.Y,
+				X: actor.Actor.Point.X - scrollBias.X - w.ZoomDivide(P.X),
+				Y: actor.Actor.Point.Y - scrollBias.Y - w.ZoomDivide(P.Y),
 				W: actor.Canvas.Size().W,
 				H: actor.Canvas.Size().H,
 			}
@@ -378,8 +378,8 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				scrollBias.Y = w.ZoomDivide(scrollBias.Y)
 			}
 			box := render.Rect{
-				X: actor.Actor.Point.X - P.X - scrollBias.X,
-				Y: actor.Actor.Point.Y - P.Y - scrollBias.Y,
+				X: actor.Actor.Point.X - scrollBias.X - w.ZoomDivide(P.X),
+				Y: actor.Actor.Point.Y - scrollBias.Y - w.ZoomDivide(P.Y),
 				W: actor.Canvas.Size().W,
 				H: actor.Canvas.Size().H,
 			}

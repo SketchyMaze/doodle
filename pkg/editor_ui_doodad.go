@@ -39,10 +39,16 @@ func (u *EditorUI) startDragActor(doodad *doodads.Doodad, actor *level.Actor) {
 		}
 	}
 
+	// Size and scale this doodad according to the zoom level.
+	size := doodad.Rect()
+	size.W = u.Canvas.ZoomMultiply(size.W)
+	size.H = u.Canvas.ZoomMultiply(size.H)
+
 	// Create the canvas to render on the mouse cursor.
 	drawing := uix.NewCanvas(doodad.Layers[0].Chunker.Size, false)
 	drawing.LoadDoodad(doodad)
-	drawing.Resize(doodad.Rect())
+	drawing.Resize(size)
+	drawing.Zoom = u.Canvas.Zoom
 	drawing.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO: invisible becomes white
 	drawing.MaskColor = balance.DragColor          // blueprint effect
 	u.DraggableActor = &DraggableActor{
