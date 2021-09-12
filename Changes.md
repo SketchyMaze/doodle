@@ -1,5 +1,28 @@
 # Changes
 
+## v0.8.1 (September 12, 2021)
+
+New features:
+
+* **Enable Experimental Features UI:** in the game's Settings window
+  there is a tab to enable experimental features. It is equivalent to
+  running the game with the `--experimental` option but the setting
+  in-game is persistent across runs of the game.
+* **Zoom In/Out:** the Zoom feature _mostly_ works but has a couple
+  small bugs. The `+` and `-` keys on your number bar (-=) will zoom in
+  or out in the Editor. Press `1` to reset zoom to 100% and press `0`
+  to scroll the level back to origin. These controls are also
+  available in the "View" menu of the editor.
+* **Replace Palette:** with experimental features on it is possible to
+  select a different palette for your already-created level. This will
+  replace colors on your palette until the template palette has been
+  filled in, and pixels already drawn on your level will update too.
+
+Other changes:
+
+* The title screen buttons are more colorful.
+* This release begins to target 32-bit Windows and Linux among its builds.
+
 ## v0.8.0 (September 4, 2021)
 
 This release brings some new features, new doodads, and new levels.
