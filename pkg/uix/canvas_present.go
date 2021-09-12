@@ -44,6 +44,10 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		// TODO: seems unstable as shit on Zoom In??
 		Viewport.W = w.ZoomDivide(Viewport.W)
 		Viewport.H = w.ZoomDivide(Viewport.W)
+		if w.Zoom > 0 {
+			Viewport.X = w.ZoomDivide(w.chunks.Size)
+			Viewport.Y = w.ZoomDivide(w.chunks.Size)
+		}
 	}
 
 	// Disappearing chunks issue:
@@ -70,10 +74,9 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		// Grow the viewport's X and Y offsets back the other
 		// way, so chunks sliding off the screen don't unload early.
 		// This kinda thing makes no difference at all?
-		// var orig = render.NewPoint(Viewport.X, Viewport.Y)
-		// Viewport.X -= 256 //w.ZoomMultiply(w.chunks.Size)
-		// Viewport.Y -= 256 //w.ZoomMultiply(w.chunks.Size)
-		// log.Info("Viewport: %s   was: %s", Viewport, orig)
+		// var orig = Viewport
+		// Viewport.X = w.ZoomDivide(w.chunks.Size)
+		// Viewport.Y = w.ZoomDivide(w.chunks.Size)
 	}
 
 	// Get the chunks in the viewport and cache their textures.

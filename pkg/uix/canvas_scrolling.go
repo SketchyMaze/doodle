@@ -87,14 +87,17 @@ func (w *Canvas) loopConstrainScroll() error {
 			mw       = int(w.wallpaper.maxWidth)
 			mh       = int(w.wallpaper.maxHeight)
 			Viewport = w.Viewport()
+			vw       = w.ZoomDivide(Viewport.W)
+			vh       = w.ZoomDivide(Viewport.H)
 		)
-		if Viewport.W > mw {
-			delta := Viewport.W - mw
+
+		if vw > mw {
+			delta := vw - mw
 			w.Scroll.X += delta
 			capped = true
 		}
-		if Viewport.H > mh {
-			delta := Viewport.H - mh
+		if vh > mh {
+			delta := vh - mh
 			w.Scroll.Y += delta
 			capped = true
 		}
