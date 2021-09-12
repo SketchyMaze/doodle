@@ -67,18 +67,6 @@ func (w *Canvas) loopConstrainScroll() error {
 
 	var capped bool
 
-	// Constrain the top and left edges.
-	if w.wallpaper.pageType > level.Unbounded {
-		if w.Scroll.X > 0 {
-			w.Scroll.X = 0
-			capped = true
-		}
-		if w.Scroll.Y > 0 {
-			w.Scroll.Y = 0
-			capped = true
-		}
-	}
-
 	// Constrain the bottom and right for limited world sizes.
 	if w.wallpaper.pageType >= level.Bounded &&
 		w.wallpaper.maxWidth+w.wallpaper.maxHeight > 0 {
@@ -99,6 +87,18 @@ func (w *Canvas) loopConstrainScroll() error {
 		if vh > mh {
 			delta := vh - mh
 			w.Scroll.Y += delta
+			capped = true
+		}
+	}
+
+	// Constrain the top and left edges.
+	if w.wallpaper.pageType > level.Unbounded {
+		if w.Scroll.X > 0 {
+			w.Scroll.X = 0
+			capped = true
+		}
+		if w.Scroll.Y > 0 {
+			w.Scroll.Y = 0
 			capped = true
 		}
 	}
