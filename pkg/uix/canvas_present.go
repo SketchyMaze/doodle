@@ -44,9 +44,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		// TODO: seems unstable as shit on Zoom In??
 		Viewport.W = w.ZoomDivide(Viewport.W)
 		Viewport.H = w.ZoomDivide(Viewport.H)
-		if w.Zoom > 0 {
-			// Viewport.X = w.ZoomDivide(w.chunks.Size)
-			// Viewport.Y = w.ZoomDivide(w.chunks.Size)
+		if w.Zoom != 0 {
 			Viewport.X = w.ZoomDivide(Viewport.X)
 			Viewport.Y = w.ZoomDivide(Viewport.Y)
 		}
