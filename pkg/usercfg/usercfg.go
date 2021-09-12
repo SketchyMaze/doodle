@@ -29,6 +29,7 @@ type Settings struct {
 
 	// Configurable settings (pkg/windows/settings.go)
 	HorizontalToolbars bool `json:",omitempty"`
+	EnableFeatures     bool `json:",omitempty"`
 
 	// Secret boolprops from balance/boolprops.go
 	ShowHiddenDoodads bool `json:",omitempty"`

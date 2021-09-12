@@ -116,7 +116,17 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			can        = a.Canvas // Canvas widget that draws the actor
 			actorPoint = a.Position()
 			actorSize  = a.Size()
+			resizeTo   = actorSize
 		)
+
+		// Adjust actor position and size by the zoom level.
+		actorPoint.X = w.ZoomMultiply(actorPoint.X)
+		actorPoint.Y = w.ZoomMultiply(actorPoint.Y)
+		resizeTo.W = w.ZoomMultiply(resizeTo.W)
+		resizeTo.H = w.ZoomMultiply(resizeTo.H)
+
+		// Tell the actor's canvas to copy our zoom level so it resizes its image too.
+		can.Zoom = w.Zoom
 
 		// Create a box of World Coordinates that this actor occupies. The
 		// Actor X,Y from level data is already a World Coordinate;
@@ -137,7 +147,6 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			X: p.X + w.Scroll.X + actorPoint.X + w.BoxThickness(1),
 			Y: p.Y + w.Scroll.Y + actorPoint.Y + w.BoxThickness(1),
 		}
-		resizeTo := actorSize
 
 		// XXX TODO: when an Actor hits the left or top edge and shrinks,
 		// scrolling to offset that shrink is currently hard to solve.

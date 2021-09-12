@@ -125,7 +125,7 @@ func main() {
 		}
 
 		// Enable feature flags?
-		if c.Bool("experimental") {
+		if c.Bool("experimental") || usercfg.Current.EnableFeatures {
 			balance.FeaturesOn()
 		}
 

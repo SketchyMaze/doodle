@@ -133,6 +133,10 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				scene.Level.Wallpaper = wallpaper
 				u.Canvas.LoadLevel(scene.Level)
 			},
+			OnReload: func() {
+				log.Warn("RELOAD LEVEL")
+				scene.Reset()
+			},
 			OnCancel: func() {
 				u.levelSettingsWindow.Hide()
 			},

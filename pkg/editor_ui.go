@@ -347,6 +347,13 @@ func (u *EditorUI) Present(e render.Engine) {
 	if u.Supervisor.IsDragging() {
 		if actor := u.DraggableActor; actor != nil {
 			var size = actor.canvas.Size()
+
+			// Scale the actor up or down by the zoom level of the Editor Canvas.
+			// TODO: didn't seem to make a difference
+			// size.W = u.Canvas.ZoomMultiply(size.W)
+			// size.H = u.Canvas.ZoomMultiply(size.H)
+			// actor.canvas.Zoom = u.Canvas.Zoom
+
 			actor.canvas.Present(u.d.Engine, render.NewPoint(
 				u.cursor.X-(size.W/2),
 				u.cursor.Y-(size.H/2),
@@ -415,7 +422,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
 	// Doodad Palette buttons.
 	drawing.Handle(ui.Drop, func(ed ui.EventData) error {
-		log.Info("Drawing canvas has received a drop!")
+		// Editor Canvas's position relative to the window.
 		var P = ui.AbsolutePosition(drawing)
 
 		// Was it an actor from the Doodad Palette?
@@ -445,6 +452,10 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 					Y: (u.cursor.Y - drawing.Scroll.Y - (size.H / 2)) - P.Y,
 				}
 			)
+
+			// Adjust the level position per the zoom factor.
+			position.X = drawing.ZoomDivide(position.X)
+			position.Y = drawing.ZoomDivide(position.Y)
 
 			// Was it an already existing actor to re-add to the map?
 			if actor.actor != nil {

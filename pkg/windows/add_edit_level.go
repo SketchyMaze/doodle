@@ -22,6 +22,7 @@ type AddEditLevel struct {
 	// Callback functions.
 	OnChangePageTypeAndWallpaper func(pageType level.PageType, wallpaper string)
 	OnCreateNewLevel             func(*level.Level)
+	OnReload                     func()
 	OnCancel                     func()
 }
 
@@ -411,7 +412,11 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 							"if the new palette is smaller, some pixels may be\n" +
 							"lost from your level. OK to continue?",
 					).WithTitle("Change Level Palette").Then(func() {
-						config.OnCancel()
+						// Install the new level palette.
+						config.EditLevel.ReplacePalette(level.DefaultPalettes[paletteName])
+						if config.OnReload != nil {
+							config.OnReload()
+						}
 					})
 					return nil
 				}

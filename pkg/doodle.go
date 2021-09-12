@@ -239,6 +239,7 @@ func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
 		DebugOverlay:       &DebugOverlay,
 		DebugCollision:     &DebugCollision,
 		HorizontalToolbars: &usercfg.Current.HorizontalToolbars,
+		EnableFeatures:     &usercfg.Current.EnableFeatures,
 	}
 	return windows.MakeSettingsWindow(d.width, d.height, cfg)
 }

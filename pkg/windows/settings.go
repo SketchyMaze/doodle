@@ -23,6 +23,7 @@ type Settings struct {
 	DebugOverlay       *bool
 	DebugCollision     *bool
 	HorizontalToolbars *bool
+	EnableFeatures     *bool
 
 	// Configuration options.
 	SceneName string // name of scene which called this window
@@ -71,13 +72,10 @@ func NewSettingsWindow(cfg Settings) *ui.Window {
 		FillX: true,
 	})
 
-	///////////
-	// Options (index) Tab
+	// Make the tabs
 	cfg.makeOptionsTab(tabFrame, Width, Height)
-
-	///////////
-	// Controls Tab
 	cfg.makeControlsTab(tabFrame, Width, Height)
+	cfg.makeExperimentalTab(tabFrame, Width, Height)
 
 	tabFrame.Supervise(cfg.Supervisor)
 
@@ -454,4 +452,130 @@ func (c Settings) makeControlsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.
 	}
 
 	return frame
+}
+
+// Settings Window "Experimental" Tab
+func (c Settings) makeExperimentalTab(tabFrame *ui.TabFrame, Width, Height int) *ui.Frame {
+	tab := tabFrame.AddTab("Experimental", ui.NewLabel(ui.Label{
+		Text: "Experimental",
+		Font: balance.TabFont,
+	}))
+	tab.Resize(render.NewRect(Width-4, Height-tab.Size().H-46))
+
+	// Common click handler for all settings,
+	// so we can write the updated info to disk.
+	onClick := func(ed ui.EventData) error {
+		saveGameSettings()
+		return nil
+	}
+
+	rows := []struct {
+		Header       string
+		Text         string
+		Boolean      *bool
+		TextVariable *string
+		PadY         int
+		PadX         int
+		name         string // for special cases
+	}{
+		{
+			Header: "Enable Experimental Features",
+		},
+		{
+			Text: "The setting below can enable experimental features in this\n" +
+				"game. These are features which are still in development and\n" +
+				"may have unstable or buggy behavior.",
+			PadY: 2,
+		},
+		{
+			Header: "Zoom In/Out",
+		},
+		{
+			Text: "This adds Zoom options to the level editor. It has a few\n" +
+				"bugs around scrolling but may be useful already.",
+			PadY: 2,
+		},
+		{
+			Header: "Replace Level Palette",
+		},
+		{
+			Text: "This adds an option to the Level Properties dialog to\n" +
+				"replace your level palette with one of the defaults,\n" +
+				"like on the New Level screen. It might not actually work.",
+			PadY: 2,
+		},
+		{
+			Boolean: c.EnableFeatures,
+			Text:    "Enable experimental features",
+			PadX:    4,
+		},
+		{
+			Text: "Restart the game for changes to take effect.",
+			PadY: 2,
+		},
+	}
+	for _, row := range rows {
+		row := row
+		frame := ui.NewFrame("Frame")
+		tab.Pack(frame, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+			PadY:  row.PadY,
+		})
+
+		// Headers get their own row to themselves.
+		if row.Header != "" {
+			label := ui.NewLabel(ui.Label{
+				Text: row.Header,
+				Font: balance.LabelFont,
+			})
+			frame.Pack(label, ui.Pack{
+				Side: ui.W,
+				PadX: row.PadX,
+			})
+			continue
+		}
+
+		// Checkboxes get their own row.
+		if row.Boolean != nil {
+			cb := ui.NewCheckbox(row.Text, row.Boolean, ui.NewLabel(ui.Label{
+				Text: row.Text,
+				Font: balance.UIFont,
+			}))
+			cb.Handle(ui.Click, onClick)
+			cb.Supervise(c.Supervisor)
+
+			// Add warning to the toolbars option if the EditMode is currently active.
+			if row.name == "toolbars" && c.SceneName == "Edit" {
+				ui.NewTooltip(cb, ui.Tooltip{
+					Text: "Note: reload your level after changing this option.\n" +
+						"Playtesting and returning will do.",
+					Edge: ui.Top,
+				})
+			}
+
+			frame.Pack(cb, ui.Pack{
+				Side: ui.W,
+				PadX: row.PadX,
+			})
+			continue
+		}
+
+		// Any leftover Text gets packed to the left.
+		if row.Text != "" {
+			tf := ui.NewFrame("TextFrame")
+			label := ui.NewLabel(ui.Label{
+				Text: row.Text,
+				Font: balance.UIFont,
+			})
+			tf.Pack(label, ui.Pack{
+				Side: ui.W,
+			})
+			frame.Pack(tf, ui.Pack{
+				Side: ui.W,
+			})
+		}
+	}
+
+	return tab
 }

@@ -77,6 +77,23 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	return nil
 }
 
+// Reset the editor scene from scratch. Good nuclear option when you change the level's
+// palette on-the-fly or some other sticky situation and want to reload the editor.
+func (s *EditorScene) Reset() {
+	if s.Level != nil {
+		s.Level.Chunker.Redraw()
+	}
+	if s.Doodad != nil {
+		s.Doodad.Layers[s.ActiveLayer].Chunker.Redraw()
+	}
+
+	s.d.Goto(&EditorScene{
+		Filename: s.Filename,
+		Level:    s.Level,
+		Doodad:   s.Doodad,
+	})
+}
+
 // setupAsync initializes trhe editor scene in the background,
 // underneath a loading screen.
 func (s *EditorScene) setupAsync(d *Doodle) error {

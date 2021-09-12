@@ -42,11 +42,7 @@ func FromJSON(filename string, data []byte) (*Level, error) {
 	}
 
 	// Inflate the chunk metadata to map the pixels to their palette indexes.
-	m.Chunker.Inflate(m.Palette)
-	m.Actors.Inflate()
-
-	// Inflate the private instance values.
-	m.Palette.Inflate()
+	m.Inflate()
 
 	return m, nil
 }

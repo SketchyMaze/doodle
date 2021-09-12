@@ -134,3 +134,28 @@ func (p *Palette) update() {
 		}
 	}
 }
+
+// ReplacePalette installs a new palette into your level.
+// Your existing level colors, by index, are replaced by the incoming
+// palette. If the new palette is smaller, extraneous indices are
+// left alone.
+func (l *Level) ReplacePalette(pal *Palette) {
+	for i, swatch := range pal.Swatches {
+		if i >= len(l.Palette.Swatches) {
+			l.Palette.Swatches = append(l.Palette.Swatches, swatch)
+			continue
+		}
+
+		// Ugly code, but can't just replace the swatch
+		// wholesale -- the inflated level data means existing
+		// pixels already have refs to their Swatch and they
+		// will keep those refs until you fully save and exit
+		// out of the editor.
+		l.Palette.Swatches[i].Name = swatch.Name
+		l.Palette.Swatches[i].Color = swatch.Color
+		l.Palette.Swatches[i].Pattern = swatch.Pattern
+		l.Palette.Swatches[i].Solid = swatch.Solid
+		l.Palette.Swatches[i].Fire = swatch.Fire
+		l.Palette.Swatches[i].Water = swatch.Water
+	}
+}
