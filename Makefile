@@ -79,6 +79,16 @@ mingw: doodads
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
+# `make mingw32` to cross-compile a Windows binary with mingw (32-bit).
+.PHONY: mingw32
+mingw32: doodads
+	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
+		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
+		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
 mingw-free: doodads
@@ -99,6 +109,9 @@ release:
 # binaries of the game, zipped and tagged and ready to go.
 .PHONY: mingw-release
 mingw-release: doodads build mingw __dist-common release
+
+.PHONY: mingw32-release
+mingw32-release: doodads build mingw32 __dist-common release
 
 # `make osx` to cross-compile a Mac OS binary with osxcross.
 # .PHONY: osx
