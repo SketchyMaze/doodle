@@ -76,10 +76,11 @@ func NewShell(d *Doodle) Shell {
 
 	// Make the Doodle instance available to the shell.
 	bindings := map[string]interface{}{
-		"d":     d,
-		"RGBA":  render.RGBA,
-		"Point": render.NewPoint,
-		"Rect":  render.NewRect,
+		"d":       d,
+		"Execute": s.Execute,
+		"RGBA":    render.RGBA,
+		"Point":   render.NewPoint,
+		"Rect":    render.NewRect,
 		"Tree": func(w ui.Widget) string {
 			for _, row := range ui.WidgetTree(w) {
 				d.Flash(row)

@@ -1,6 +1,8 @@
 package doodle
 
-import "git.kirsle.net/apps/doodle/pkg/balance"
+import (
+	"git.kirsle.net/apps/doodle/pkg/balance"
+)
 
 // cheatCommand is a subroutine of the Command.Run() method of the Doodle
 // developer shell (commands.go). It looks for special cheat codes entered
@@ -66,6 +68,16 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			}
 		} else {
 			d.Flash("Use this cheat in Play Mode to disable clipping for the player character.")
+		}
+
+	case "show all actors":
+		if isPlay {
+			for _, actor := range playScene.drawing.Actors() {
+				actor.Show()
+			}
+			d.Flash("All invisible actors made visible.")
+		} else {
+			d.Flash("Use this cheat in Play Mode to show hidden actors, such as technical doodads.")
 		}
 
 	case "give all keys":

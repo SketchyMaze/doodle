@@ -6,6 +6,10 @@ build:
 	doodad convert -t "Goal Region" goal-128.png reg-goal.doodad
 	doodad install-script goal.js reg-goal.doodad
 
+	# Checkpoint Region
+	doodad convert -t "Checkpoint Region" checkpoint-128.png reg-checkpoint.doodad
+	doodad install-script checkpoint.js reg-checkpoint.doodad
+
 	# Fire Region
 	doodad convert -t "Fire Region" fire-128.png reg-fire.doodad
 	doodad install-script fire.js reg-fire.doodad
