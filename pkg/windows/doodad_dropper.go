@@ -91,6 +91,7 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		{"doors", "Doors"},
 		{"gizmos", "Gizmos"},
 		{"creatures", "Creatures"},
+		{"technical", "Technical"},
 		{"", "All"},
 	}
 	for _, category := range categories {
@@ -113,6 +114,10 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 		buttonSize = balance.DoodadButtonSize
 		columns    = balance.DoodadDropperCols
 		rows       = balance.DoodadDropperRows
+
+		// Count how many doodad buttons we need vs. how many can fit.
+		iconsDrawn    int
+		iconsPossible = columns * rows
 
 		// pagination values
 		page           = 1
@@ -144,6 +149,50 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 		),
 	)
 
+	// First, draw the empty grid of inset frames to serve as the 'background'
+	// of the drawer. This both serves an aesthetic purpose and reserves space
+	// in the widget for short page views.
+	{
+		var (
+			decorFrame = ui.NewFrame("Background Slots")
+			row        *ui.Frame
+		)
+
+		for i := 0; i < iconsPossible; i++ {
+			if row == nil || i%columns == 0 {
+				row = ui.NewFrame("BG Row")
+				decorFrame.Pack(row, ui.Pack{
+					Side: ui.N,
+				})
+			}
+
+			spacer := ui.NewFrame("Spacer")
+			spacer.Configure(ui.Config{
+				BorderSize:  2,
+				BorderStyle: ui.BorderSunken,
+				Background:  render.Grey.Darken(20),
+			})
+			spacer.Resize(render.NewRect(
+				buttonSize-2, // TODO: without the -2 the button border
+				buttonSize-2, // rests on top of the window border
+			))
+			spacer.Compute(config.Engine)
+			row.Pack(spacer, ui.Pack{
+				Side: ui.W,
+			})
+		}
+
+		decorFrame.Compute(config.Engine)
+
+		// frame.Pack(decorFrame, ui.Pack{
+		// 	Side: ui.NW,
+		// })
+		frame.Place(decorFrame, ui.Place{
+			Top:  0,
+			Left: 0,
+		})
+	}
+
 	// Draw the doodad buttons in rows.
 	var btnRows = []*ui.Frame{}
 	{
@@ -151,7 +200,8 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			row      *ui.Frame
 			rowCount int // for labeling the ui.Frame for each row
 
-			// TODO: pre-size btnRows by calculating how many needed
+			// the state we end up at when we exhaust all doodads
+			lastColumn int // last position in current row
 		)
 
 		for i, doodad := range items {
@@ -162,17 +212,21 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 				rowCount++
 
 				row = ui.NewFrame(fmt.Sprintf("Doodad Row %d", rowCount))
-				row.SetBackground(balance.DoodadButtonBackground)
+
+				row.Resize(render.NewRect(size.W, buttonSize))
+				row.Compute(config.Engine)
 				btnRows = append(btnRows, row)
 				frame.Pack(row, ui.Pack{
 					Side: ui.N,
-					// Fill: true,
 				})
 
-				// Hide overflowing rows until we scroll to them.
+				// Hide overflowing rows until we page to them.
 				if hidden {
 					row.Hide()
 				}
+
+				// New row, new columns.
+				lastColumn = 0
 			}
 
 			can := uix.NewCanvas(int(buttonSize), true)
@@ -213,6 +267,62 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			))
 
 			btn.Compute(config.Engine)
+
+			iconsDrawn++
+			lastColumn++
+		}
+
+		// If we have fewer doodad icons than this page can hold,
+		// fill out dummy placeholder cells to maintain the UI shape.
+		// TODO: this is very redundant compared to the ATTEMPT above
+		// to only do this once. It seems our background widget doesn't
+		// size up the full tab height properly, so doodad tabs that
+		// have fewer than one page worth (short first page) the sizing
+		// was wrong. The below hack pads out the screen for short first
+		// pages only. There is still a bug with short LAST pages where
+		// it doesn't hold height and the pager buttons come up.
+		if iconsDrawn < iconsPossible {
+			for i := lastColumn; i < iconsPossible; i++ {
+				if row == nil || i%columns == 0 {
+					var hidden = rowCount >= rows
+					rowCount++
+
+					row = ui.NewFrame(fmt.Sprintf("Doodad Row %d", rowCount))
+					row.SetBackground(balance.DoodadButtonBackground)
+					btnRows = append(btnRows, row)
+					frame.Pack(row, ui.Pack{
+						Side: ui.N,
+					})
+
+					// Hide overflowing rows until we page to them.
+					if hidden {
+						row.Hide()
+					}
+				}
+
+				spacer := ui.NewFrame("Spacer")
+				spacer.Configure(ui.Config{
+					BorderSize:  2,
+					BorderStyle: ui.BorderSunken,
+					Background:  render.Grey,
+				})
+				spacer.Resize(render.NewRect(
+					buttonSize-2, // TODO: without the -2 the button border
+					buttonSize-2, // rests on top of the window border
+				))
+				spacer.Compute(config.Engine)
+				row.Pack(spacer, ui.Pack{
+					Side: ui.W,
+				})
+
+				// debug
+				// lbl := ui.NewLabel(ui.Label{
+				// 	Text: fmt.Sprintf("i=%d\nrow=%d", i, rowCount),
+				// })
+				// spacer.Pack(lbl, ui.Pack{
+				// 	Side: ui.NW,
+				// })
+			}
 		}
 	}
 

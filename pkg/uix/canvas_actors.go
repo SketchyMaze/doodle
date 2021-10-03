@@ -83,6 +83,15 @@ func (w *Canvas) InstallScripts() error {
 		}
 	}
 
+	// Broadcast the "ready" signal to any actors that want to publish
+	// messages ASAP on level start.
+	for _, actor := range w.actors {
+		w.scripting.To(actor.ID()).Inbound <- scripting.Message{
+			Name: "broadcast:ready",
+			Args: nil,
+		}
+	}
+
 	return nil
 }
 

@@ -66,6 +66,10 @@ objects() {
 	cd crumbly-floor/
 	make
 	cd ..
+
+	cd regions/
+	make
+	cd ..
 }
 
 onoff() {

@@ -43,6 +43,8 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"HasItem":        actor.HasItem,
 		"ClearInventory": actor.ClearInventory,
 		"Destroy":        actor.Destroy,
+		"Hide":           actor.Hide,
+		"Show":           actor.Show,
 		"GetLinks": func() []map[string]interface{} {
 			var result = []map[string]interface{}{}
 			for _, linked := range w.GetLinkedActors(actor) {
