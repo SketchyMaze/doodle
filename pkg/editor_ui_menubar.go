@@ -137,6 +137,18 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		levelMenu.AddItem("Open screenshot folder", func() {
 			native.OpenLocalURL(userdir.ScreenshotDirectory)
 		})
+
+		levelMenu.AddSeparator()
+		levelMenu.AddItem("New viewport", func() {
+			pip := windows.MakePiPWindow(340, 480, windows.PiP{
+				Supervisor: u.Supervisor,
+				Engine:     u.d.Engine,
+				Level:      u.Scene.Level,
+				Event:      u.d.event,
+			})
+
+			pip.Show()
+		})
 	}
 
 	////////
