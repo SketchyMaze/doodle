@@ -8,8 +8,10 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/level/giant_screenshot"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -120,6 +122,20 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
+		})
+
+		levelMenu.AddSeparator()
+		levelMenu.AddItem("Giant Screenshot", func() {
+			filename, err := giant_screenshot.SaveGiantScreenshot(u.Scene.Level)
+			if err != nil {
+				d.Flash(err.Error())
+				return
+			}
+
+			d.Flash("Saved screenshot to: %s", filename)
+		})
+		levelMenu.AddItem("Open screenshot folder", func() {
+			native.OpenLocalURL(userdir.ScreenshotDirectory)
 		})
 	}
 

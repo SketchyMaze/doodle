@@ -131,34 +131,12 @@ func (c *Chunker) IterPixels() <-chan Pixel {
 // manage: the lowest pixels from the lowest chunks to the highest pixels of
 // the highest chunks.
 func (c *Chunker) WorldSize() render.Rect {
-	// Lowest and highest chunks.
-	var (
-		chunkLowest  render.Point
-		chunkHighest render.Point
-		size         = c.Size
-	)
-
-	for coord := range c.Chunks {
-		if coord.X < chunkLowest.X {
-			chunkLowest.X = coord.X
-		}
-		if coord.Y < chunkLowest.Y {
-			chunkLowest.Y = coord.Y
-		}
-
-		if coord.X > chunkHighest.X {
-			chunkHighest.X = coord.X
-		}
-		if coord.Y > chunkHighest.Y {
-			chunkHighest.Y = coord.Y
-		}
-	}
-
+	chunkLowest, chunkHighest := c.Bounds()
 	return render.Rect{
-		X: chunkLowest.X * size,
-		Y: chunkLowest.Y * size,
-		W: (chunkHighest.X * size) + (size - 1),
-		H: (chunkHighest.Y * size) + (size - 1),
+		X: chunkLowest.X * c.Size,
+		Y: chunkLowest.Y * c.Size,
+		W: (chunkHighest.X * c.Size) + (c.Size - 1),
+		H: (chunkHighest.Y * c.Size) + (c.Size - 1),
 	}
 }
 
@@ -172,6 +150,28 @@ func (c *Chunker) WorldSizePositive() render.Rect {
 		W: int(math.Abs(float64(S.X))) + S.W,
 		H: int(math.Abs(float64(S.Y))) + S.H,
 	}
+}
+
+// Bounds returns the boundary points of the lowest and highest chunk which
+// have any data in them.
+func (c *Chunker) Bounds() (low, high render.Point) {
+	for coord := range c.Chunks {
+		if coord.X < low.X {
+			low.X = coord.X
+		}
+		if coord.Y < low.Y {
+			low.Y = coord.Y
+		}
+
+		if coord.X > high.X {
+			high.X = coord.X
+		}
+		if coord.Y > high.Y {
+			high.Y = coord.Y
+		}
+	}
+
+	return low, high
 }
 
 // GetChunk gets a chunk at a certain position. Returns false if not found.

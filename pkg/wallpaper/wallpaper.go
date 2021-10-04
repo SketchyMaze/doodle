@@ -156,7 +156,6 @@ func (wp *Wallpaper) cache() {
 	wp.top = slice(wp.quarterWidth, 0)
 	wp.left = slice(0, wp.quarterHeight)
 	wp.repeat = slice(wp.quarterWidth, wp.quarterHeight)
-
 }
 
 // QuarterSize returns the width and height of the quarter images.

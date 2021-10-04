@@ -15,10 +15,11 @@ import (
 var (
 	ConfigDirectoryName = "doodle"
 
-	ProfileDirectory  string
-	LevelDirectory    string
-	DoodadDirectory   string
-	CampaignDirectory string
+	ProfileDirectory    string
+	LevelDirectory      string
+	DoodadDirectory     string
+	CampaignDirectory   string
+	ScreenshotDirectory string
 
 	CacheDirectory string
 	FontDirectory  string
@@ -36,6 +37,7 @@ func init() {
 	LevelDirectory = configdir.LocalConfig(ConfigDirectoryName, "levels")
 	DoodadDirectory = configdir.LocalConfig(ConfigDirectoryName, "doodads")
 	CampaignDirectory = configdir.LocalConfig(ConfigDirectoryName, "campaigns")
+	ScreenshotDirectory = configdir.LocalConfig(ConfigDirectoryName, "screenshots")
 
 	// Cache directory to extract font files to.
 	CacheDirectory = configdir.LocalCache(ConfigDirectoryName)
@@ -48,6 +50,7 @@ func init() {
 		configdir.MakePath(DoodadDirectory)
 		configdir.MakePath(CampaignDirectory)
 		configdir.MakePath(FontDirectory)
+		configdir.MakePath(ScreenshotDirectory)
 	}
 }
 
