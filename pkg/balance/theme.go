@@ -45,6 +45,16 @@ var (
 		// Shadow:       render.RGBA(200, 80, 0, 255),
 	}
 
+	// Play Mode Touch UI Hints Font
+	TouchHintsFont = render.Text{
+		FontFilename: "DejaVuSans.ttf",
+		Size:         14,
+		Color:        render.SkyBlue,
+		Shadow:       render.SkyBlue.Darken(128),
+		Padding:      8,
+		PadY:         12,
+	}
+
 	// Window and panel styles.
 	TitleConfig = ui.Config{
 		Background:   render.MustHexColor("#FF9900"),

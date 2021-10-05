@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
@@ -57,6 +58,12 @@ type PlayScene struct {
 	invenFrame   *ui.Frame
 	invenItems   []string // item list
 	invenDoodads map[string]*uix.Canvas
+
+	// Touchscreen controls state.
+	isTouching    bool
+	playerIsIdle  bool // LoopTouchable watches for inactivity on input controls.
+	idleLastStart time.Time
+	idleHelpAlpha int // fade in UI hints
 }
 
 // Name of the scene.
@@ -407,6 +414,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 			log.Error("PlayScene.Loop: scripting.Loop: %s", err)
 		}
 
+		// Touch regions.
+		s.LoopTouchable(ev)
+
 		s.movePlayer(ev)
 		if err := s.drawing.Loop(ev); err != nil {
 			log.Error("Drawing loop error: %s", err.Error())
@@ -459,6 +469,9 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		Y: canSize.H - size.H - padding,
 	})
 	s.editButton.Present(d.Engine, s.editButton.Point())
+
+	// Visualize the touch regions?
+	s.DrawTouchable()
 
 	return nil
 }

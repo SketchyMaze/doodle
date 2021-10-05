@@ -1,6 +1,10 @@
 package balance
 
-import "git.kirsle.net/go/render"
+import (
+	"time"
+
+	"git.kirsle.net/go/render"
+)
 
 // Numbers.
 var (
@@ -15,7 +19,7 @@ var (
 	// Window scrolling behavior in Play Mode.
 	ScrollboxOffset = render.Point{ // from center of screen
 		X: 60,
-		Y: 100,
+		Y: 60,
 	}
 
 	// Player speeds
@@ -67,6 +71,11 @@ var (
 
 	// File formats: save new levels and doodads gzip compressed
 	CompressDrawings = true
+
+	// Play Mode Touchscreen controls.
+	PlayModeIdleTimeout = 2200 * time.Millisecond
+	PlayModeAlphaStep   = 8 // 0-255 alpha, steps per tick for fade in
+	PlayModeAlphaMax    = 220
 )
 
 // Edit Mode Values
