@@ -244,3 +244,8 @@ func Down(ev *event.State) bool {
 func Use(ev *event.State) bool {
 	return ev.Space || ev.KeyDown("q")
 }
+
+// MiddleClick of the mouse for panning the level.
+func MiddleClick(ev *event.State) bool {
+	return ev.Button2
+}

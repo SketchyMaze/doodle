@@ -54,6 +54,24 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 		w.ScrollBy(scrollBy)
 	}
 
+	// Middle click of the mouse to pan the level.
+	// NOTE: returns are below!
+	if keybind.MiddleClick(ev) {
+		if !w.scrollDragging {
+			w.scrollDragging = true
+			w.scrollStartAt = shmem.Cursor
+			w.scrollWasAt = w.Scroll
+		} else {
+			delta := shmem.Cursor.Compare(w.scrollStartAt)
+			w.Scroll = w.scrollWasAt
+			w.Scroll.Subtract(delta)
+		}
+	} else {
+		if w.scrollDragging {
+			w.scrollDragging = false
+		}
+	}
+
 	return nil
 }
 

@@ -95,7 +95,10 @@ type Canvas struct {
 	lastPixel     *level.Pixel
 
 	// We inherit the ui.Widget which manages the width and height.
-	Scroll render.Point // Scroll offset for which parts of canvas are visible.
+	Scroll         render.Point // Scroll offset for which parts of canvas are visible.
+	scrollDragging bool         // Middle-click to pan scroll
+	scrollStartAt  render.Point // Cursor point at beginning of pan
+	scrollWasAt    render.Point // copy of Scroll at beginning of pan
 }
 
 // NewCanvas initializes a Canvas widget.

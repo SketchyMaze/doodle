@@ -25,10 +25,11 @@ import (
 // EditorScene manages the "Edit Level" game mode.
 type EditorScene struct {
 	// Configuration for the scene initializer.
-	DrawingType enum.DrawingType
-	OpenFile    bool
-	Filename    string
-	DoodadSize  int
+	DrawingType            enum.DrawingType
+	OpenFile               bool
+	Filename               string
+	DoodadSize             int
+	RememberScrollPosition render.Point // Play mode remembers it for us
 
 	UI *EditorUI
 	d  *Doodle
@@ -209,6 +210,11 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 	// Recompute the UI Palette window for the level's palette.
 	s.UI.FinishSetup(d)
 
+	// Scroll the level to the remembered position from when we went
+	// to Play Mode and back. If no remembered position, this is zero
+	// anyway.
+	s.UI.Canvas.ScrollTo(s.RememberScrollPosition)
+
 	d.Flash("Editor Mode.")
 	if s.DrawingType == enum.LevelDrawing {
 		d.Flash("Press 'P' to playtest this level.")
@@ -221,9 +227,10 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 func (s *EditorScene) Playtest() {
 	log.Info("Play Mode, Go!")
 	s.d.Goto(&PlayScene{
-		Filename: s.filename,
-		Level:    s.Level,
-		CanEdit:  true,
+		Filename:               s.filename,
+		Level:                  s.Level,
+		CanEdit:                true,
+		RememberScrollPosition: s.UI.Canvas.Scroll,
 	})
 }
 

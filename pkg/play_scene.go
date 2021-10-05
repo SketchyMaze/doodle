@@ -23,10 +23,11 @@ import (
 // PlayScene manages the "Edit Level" game mode.
 type PlayScene struct {
 	// Configuration attributes.
-	Filename string
-	Level    *level.Level
-	CanEdit  bool // i.e. you came from the Editor Mode
-	HasNext  bool // has a next level to load next
+	Filename               string
+	Level                  *level.Level
+	CanEdit                bool         // i.e. you came from the Editor Mode
+	HasNext                bool         // has a next level to load next
+	RememberScrollPosition render.Point // for the Editor quality of life
 
 	// Private variables.
 	d            *Doodle
@@ -294,8 +295,9 @@ func (s *PlayScene) setupPlayer() {
 func (s *PlayScene) EditLevel() {
 	log.Info("Edit Mode, Go!")
 	s.d.Goto(&EditorScene{
-		Filename: s.Filename,
-		Level:    s.Level,
+		Filename:               s.Filename,
+		Level:                  s.Level,
+		RememberScrollPosition: s.RememberScrollPosition,
 	})
 }
 
