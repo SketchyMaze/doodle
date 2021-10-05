@@ -6,11 +6,13 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
@@ -114,6 +116,15 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 			Text: "Play (P)",
 			Font: balance.PlayButtonFont,
 		}))
+		u.PlayButton.Handle(ui.MouseDown, func(ed ui.EventData) error {
+			// Ugly hack: reuse the doodad dropper drag/drop function,
+			// smuggle state by the special filename >.<
+			doodad, _ := doodads.LoadFile(balance.PlayerCharacterDoodad)
+			u.startDragActor(doodad, &level.Actor{
+				Filename: "__play_from_here__",
+			})
+			return nil
+		})
 		u.PlayButton.Handle(ui.Click, func(ed ui.EventData) error {
 			u.Scene.Playtest()
 			return nil
@@ -461,6 +472,16 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 			if actor.actor != nil {
 				actor.actor.Point = position
 				u.Scene.Level.Actors.Add(actor.actor)
+
+				// Was this doodad drop, the Play Level button?
+				if actor.actor.Filename == "__play_from_here__" {
+					if shmem.Cursor.Inside(u.PlayButton.Rect()) {
+						u.Scene.Playtest()
+					} else {
+						u.Scene.PlaytestFrom(position)
+					}
+					return nil
+				}
 			} else {
 				u.Scene.Level.Actors.Add(&level.Actor{
 					Point:    position,

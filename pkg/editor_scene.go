@@ -234,6 +234,18 @@ func (s *EditorScene) Playtest() {
 	})
 }
 
+// PlaytestFrom enters play mode starting at a custom spawn point.
+func (s *EditorScene) PlaytestFrom(p render.Point) {
+	log.Info("Play Mode, Go!")
+	s.d.Goto(&PlayScene{
+		Filename:               s.filename,
+		Level:                  s.Level,
+		CanEdit:                true,
+		RememberScrollPosition: s.UI.Canvas.Scroll,
+		SpawnPoint:             p,
+	})
+}
+
 // ConfirmUnload may pop up a confirmation modal to save the level before the
 // user performs an action that may close the level, such as click File->New.
 func (s *EditorScene) ConfirmUnload(fn func()) {

@@ -28,6 +28,7 @@ type PlayScene struct {
 	CanEdit                bool         // i.e. you came from the Editor Mode
 	HasNext                bool         // has a next level to load next
 	RememberScrollPosition render.Point // for the Editor quality of life
+	SpawnPoint             render.Point // if not zero, overrides Start Flag
 
 	// Private variables.
 	d            *Doodle
@@ -257,13 +258,17 @@ func (s *PlayScene) setupPlayer() {
 		player = doodads.NewDummy(32)
 	}
 
-	spawn = render.NewPoint(
-		// X: centered inside the flag.
-		flag.Point.X+(flagSize.W/2)-(player.Layers[0].Chunker.Size/2),
+	if !s.SpawnPoint.IsZero() {
+		spawn = s.SpawnPoint
+	} else {
+		spawn = render.NewPoint(
+			// X: centered inside the flag.
+			flag.Point.X+(flagSize.W/2)-(player.Layers[0].Chunker.Size/2),
 
-		// Y: the bottom of the flag, 4 pixels from the floor.
-		flag.Point.Y+flagSize.H-4-(player.Layers[0].Chunker.Size),
-	)
+			// Y: the bottom of the flag, 4 pixels from the floor.
+			flag.Point.Y+flagSize.H-4-(player.Layers[0].Chunker.Size),
+		)
+	}
 
 	// Surface warnings around the spawn flag.
 	if flagCount == 0 {
