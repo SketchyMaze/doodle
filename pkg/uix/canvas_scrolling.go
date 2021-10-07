@@ -54,8 +54,41 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 		w.ScrollBy(scrollBy)
 	}
 
+	// Multitouch events to pan the level, like middle click on desktop.
+	if ev.Touching {
+		// Intention: user drags with 2 fingers to scroll the canvas.
+		// SDL2 will register one finger also as a Button1 mouse click.
+		// We need to record the "mouse cursor" as start point but then
+		// fake that no click occurs so we don't nick the drawing.
+		if !w.scrollDragging {
+			w.scrollDragging = true
+			w.scrollStartAt = shmem.Cursor
+			w.scrollWasAt = w.Scroll
+			w.scrollLastDelta = render.Point{}
+		} else {
+			delta := shmem.Cursor.Compare(w.scrollStartAt)
+			w.Scroll = w.scrollWasAt
+			w.Scroll.Subtract(delta)
+
+			// So, SDL2 spams us with events for every subtle movement of 2+ fingers
+			// on the screen, but we don't know when that STOPS. As a heuristic, it
+			// seems we can tell by if the delta stops updating.
+			if !w.scrollLastDelta.IsZero() {
+				if w.scrollLastDelta == delta {
+					ev.Touching = false
+				}
+			}
+
+			w.scrollLastDelta = delta
+		}
+
+		// Lift the mouse button.
+		ev.Button1 = false
+
+		return nil
+	}
+
 	// Middle click of the mouse to pan the level.
-	// NOTE: returns are below!
 	if keybind.MiddleClick(ev) {
 		if !w.scrollDragging {
 			w.scrollDragging = true
