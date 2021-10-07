@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -18,6 +17,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 )
@@ -288,52 +288,109 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		}
 	}
 
-	// Menu key bindings.
-	if keybind.NewLevel(ev) {
-		// Ctrl-N, New Level
-		s.MenuNewLevel()
-	} else if keybind.SaveAs(ev) {
-		// Shift-Ctrl-S, Save As
-		s.MenuSave(true)()
-	} else if keybind.Save(ev) {
-		// Ctrl-S, Save
-		s.MenuSave(false)()
-	} else if keybind.Open(ev) {
-		// Ctrl-O, Open
-		s.MenuOpen()
-	}
+	// Run all of the keybinds.
+	binders := []struct {
+		v bool
+		f func()
+	}{
+		{
+			keybind.NewLevel(ev), func() {
+				// Ctrl-N, New Level
+				s.MenuNewLevel()
+			},
+		},
+		{
+			keybind.SaveAs(ev), func() {
+				// Shift-Ctrl-S, Save As
+				s.MenuSave(true)()
+			},
+		},
+		{
+			keybind.Save(ev), func() {
+				// Ctrl-S, Save
+				s.MenuSave(false)()
+			},
+		},
+		{
+			keybind.Open(ev), func() {
+				// Ctrl-O, Open
+				s.MenuOpen()
+			},
+		},
+		{
+			keybind.Undo(ev), func() {
+				// Ctrl-Z, Undo
+				s.UI.Canvas.UndoStroke()
+				ev.ResetKeyDown()
+			},
+		},
+		{
+			keybind.Redo(ev), func() {
+				// Ctrl-Y, Undo
+				s.UI.Canvas.RedoStroke()
+				ev.ResetKeyDown()
+			},
+		},
+		{
 
-	// Undo/Redo key bindings.
-	if keybind.Undo(ev) {
-		s.UI.Canvas.UndoStroke()
-		ev.ResetKeyDown()
-	} else if keybind.Redo(ev) {
-		s.UI.Canvas.RedoStroke()
-		ev.ResetKeyDown()
-	}
+			keybind.ZoomIn(ev), func() {
+				s.UI.Canvas.Zoom++
+				ev.ResetKeyDown()
+			},
+		},
+		{
+			keybind.ZoomOut(ev), func() {
+				s.UI.Canvas.Zoom--
+				ev.ResetKeyDown()
+			},
+		},
+		{
+			keybind.ZoomReset(ev), func() {
+				s.UI.Canvas.Zoom = 0
+				ev.ResetKeyDown()
+			},
+		},
+		{
+			keybind.Origin(ev), func() {
+				d.Flash("Scrolled back to level origin (0,0)")
+				s.UI.Canvas.ScrollTo(render.Origin)
+				ev.ResetKeyDown()
+			},
+		},
+		{
+			keybind.CloseAllWindows(ev), func() {
+				s.UI.Supervisor.CloseAllWindows()
+			},
+		},
+		{
+			keybind.CloseTopmostWindow(ev), func() {
+				s.UI.Supervisor.CloseActiveWindow()
+			},
+		},
+		{
+			keybind.NewViewport(ev), func() {
+				if s.DrawingType != enum.LevelDrawing {
+					return
+				}
 
-	// Zoom in/out.
-	if balance.Feature.Zoom {
-		if keybind.ZoomIn(ev) {
-			d.Flash("Zoom in")
-			s.UI.Canvas.Zoom++
-			ev.ResetKeyDown()
-		} else if keybind.ZoomOut(ev) {
-			d.Flash("Zoom out")
-			s.UI.Canvas.Zoom--
-			ev.ResetKeyDown()
-		} else if keybind.ZoomReset(ev) {
-			d.Flash("Reset zoom")
-			s.UI.Canvas.Zoom = 0
-			ev.ResetKeyDown()
+				pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{
+					Supervisor: s.UI.Supervisor,
+					Engine:     s.d.Engine,
+					Level:      s.Level,
+					Event:      s.d.event,
+
+					Tool:      &s.UI.Canvas.Tool,
+					BrushSize: &s.UI.Canvas.BrushSize,
+				})
+
+				pip.Show()
+			},
+		},
+	}
+	for _, bind := range binders {
+		if bind.v {
+			bind.f()
 		}
-	}
-
-	// More keybinds
-	if keybind.Origin(ev) {
-		d.Flash("Scrolled back to level origin (0,0)")
-		s.UI.Canvas.ScrollTo(render.Origin)
-		ev.ResetKeyDown()
 	}
 
 	// s.UI.Loop(ev)

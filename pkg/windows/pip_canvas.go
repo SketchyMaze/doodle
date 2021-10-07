@@ -18,6 +18,12 @@ type PiP struct {
 	Engine     render.Engine
 	Level      *level.Level
 	Event      *event.State
+	Tool       *drawtool.Tool
+	BrushSize  *int
+
+	// Or sensible defaults:
+	Width  int
+	Height int
 
 	OnCancel func()
 }
@@ -43,29 +49,53 @@ func MakePiPWindow(windowWidth, windowHeight int, cfg PiP) *ui.Window {
 func NewPiPWindow(cfg PiP) *ui.Window {
 	var (
 		windowWidth  = 340
-		windowHeight = 320
+		windowHeight = 300
 	)
 
-	window := ui.NewWindow("Viewport (WORK IN PROGRESS!)")
+	if cfg.Width+cfg.Height > 0 {
+		windowWidth = cfg.Width
+		windowHeight = cfg.Height
+	}
+
+	var (
+		canvasWidth  = windowWidth - 8
+		canvasHeight = windowHeight - 4 - 48 // for the titlebar?
+	)
+
+	window := ui.NewWindow("Viewport")
 	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
-		Width:      windowWidth,
-		Height:     windowHeight,
-		Background: render.RGBA(255, 200, 255, 255),
+		Width:  windowWidth,
+		Height: windowHeight,
 	})
 
 	canvas := uix.NewCanvas(128, true)
-	canvas.Name = "Viewport"
+	canvas.Name = "Viewport (WIP)"
 	canvas.LoadLevel(cfg.Level)
 	canvas.InstallActors(cfg.Level.Actors)
 	canvas.Scrollable = true
 	canvas.Editable = true
-	canvas.Resize(render.NewRect(windowWidth, windowHeight))
+	canvas.Resize(render.NewRect(canvasWidth, canvasHeight))
 
 	// NOTE: my UI toolkit calls this every tick, if this is "fixed"
 	// in the future make one that does.
+	var (
+		curTool  = *cfg.Tool
+		curThicc = *cfg.BrushSize
+	)
+	canvas.Tool = curTool
 	window.Handle(ui.MouseMove, func(ed ui.EventData) error {
 		canvas.Loop(cfg.Event)
+
+		// Check if bound values have modified.
+		if *cfg.Tool != curTool {
+			curTool = *cfg.Tool
+			canvas.Tool = curTool
+		}
+		if *cfg.BrushSize != curThicc {
+			curThicc = *cfg.BrushSize
+			canvas.BrushSize = curThicc
+		}
 		return nil
 	})
 
@@ -81,31 +111,46 @@ func NewPiPWindow(cfg PiP) *ui.Window {
 	window.Pack(bottomFrame, ui.Pack{
 		Side:  ui.N,
 		FillX: true,
+		PadY:  4,
 	})
 
 	frame := ui.NewFrame("Button frame")
 	buttons := []struct {
 		label   string
 		tooltip string
-		down    func()
 		f       func()
 	}{
-		{"^", "Scroll up", func() {
-			canvas.ScrollBy(render.NewPoint(0, 64))
-		}, nil},
-		{"v", "Scroll down", func() {
-			canvas.ScrollBy(render.NewPoint(0, -64))
-		}, nil},
-		{"<", "Scroll left", func() {
-			canvas.ScrollBy(render.NewPoint(64, 0))
-		}, nil},
-		{">", "Scroll right", func() {
-			canvas.ScrollBy(render.NewPoint(-64, 0))
-		}, nil},
-		{"0", "Reset to origin", nil, func() {
-			canvas.ScrollTo(render.Origin)
+		{"Smaller", "Shrink this viewport window by 20%", func() {
+			// Make a smaller version of the same window, and close.
+			cfg.Width = int(float64(windowWidth) * 0.8)
+			cfg.Height = int(float64(windowHeight) * 0.8)
+			pip := MakePiPWindow(cfg.Width, cfg.Height, cfg)
+			pip.MoveTo(window.Point())
+			window.Close()
+			pip.Show()
 		}},
-		{"???", "Load a different drawing", nil, func() {
+		{"Larger", "Grow this viewport window by 20%", func() {
+			// Make a smaller version of the same window, and close.
+			cfg.Width = int(float64(windowWidth) * 1.2)
+			cfg.Height = int(float64(windowHeight) * 1.2)
+			pip := MakePiPWindow(cfg.Width, cfg.Height, cfg)
+			pip.MoveTo(window.Point())
+			window.Close()
+			pip.Show()
+		}},
+		{"Refresh", "Update the state of doodads placed in this level", func() {
+			canvas.ClearActors()
+			canvas.InstallActors(cfg.Level.Actors)
+		}},
+		{"Rename", "Give this viewport window a custom name", func() {
+			shmem.Prompt("Give this viewport a name: ", func(answer string) {
+				if answer == "" {
+					return
+				}
+				window.Title = answer
+			})
+		}},
+		{"???", "Load a different drawing (experimental!)", func() {
 			shmem.Prompt("Filename to open: ", func(answer string) {
 				if answer == "" {
 					return
@@ -121,27 +166,25 @@ func NewPiPWindow(cfg PiP) *ui.Window {
 			})
 		}},
 	}
-	for _, button := range buttons {
+	for i, button := range buttons {
+		// Start axing buttons if window size is too small.
+		if windowWidth < 150 && i > 1 {
+			break
+		} else if windowWidth < 250 && i > 2 {
+			break
+		}
+
 		button := button
 
 		btn := ui.NewButton(button.label, ui.NewLabel(ui.Label{
 			Text: button.label,
-			Font: balance.MenuFont,
+			Font: balance.SmallFont,
 		}))
 
-		if button.down != nil {
-			btn.Handle(ui.MouseDown, func(ed ui.EventData) error {
-				button.down()
-				return nil
-			})
-		}
-
-		if button.f != nil {
-			btn.Handle(ui.Click, func(ed ui.EventData) error {
-				button.f()
-				return nil
-			})
-		}
+		btn.Handle(ui.Click, func(ed ui.EventData) error {
+			button.f()
+			return nil
+		})
 
 		btn.Compute(cfg.Engine)
 		cfg.Supervisor.Add(btn)
@@ -153,55 +196,16 @@ func NewPiPWindow(cfg PiP) *ui.Window {
 
 		frame.Pack(btn, ui.Pack{
 			Side:   ui.W,
-			PadX:   4,
+			PadX:   1,
 			Expand: true,
 			Fill:   true,
 		})
 	}
 
-	// Tool selector.
-	toolBtn := ui.NewSelectBox("Tool Select", ui.Label{
-		Font: ui.MenuFont,
-	})
-	toolBtn.AlwaysChange = true
-	frame.Pack(toolBtn, ui.Pack{
-		Side:   ui.W,
-		Expand: true,
-	})
-
-	toolBtn.AddItem("Pencil", drawtool.PencilTool, func() {})
-	toolBtn.AddItem("Line", drawtool.LineTool, func() {})
-	toolBtn.AddItem("Rectangle", drawtool.RectTool, func() {})
-	toolBtn.AddItem("Ellipse", drawtool.EllipseTool, func() {})
-
-	// TODO: Actor and Link Tools don't work as the canvas needs
-	// hooks for their events. The code in EditorUI#SetupCanvas should
-	// be made reusable here.
-	// toolBtn.AddItem("Link", drawtool.LinkTool, func() {})
-	// toolBtn.AddItem("Actor", drawtool.ActorTool, func() {})
-
-	toolBtn.Handle(ui.Change, func(ed ui.EventData) error {
-		selection, _ := toolBtn.GetValue()
-		tool, _ := selection.Value.(drawtool.Tool)
-
-		// log.Error("Change: %d, b4: %s", value, canvas.Tool)
-		canvas.Tool = tool
-
-		return nil
-	})
-
-	ui.NewTooltip(toolBtn, ui.Tooltip{
-		Text: "Draw tool (viewport only)",
-		Edge: ui.Top,
-	})
-
-	toolBtn.Supervise(cfg.Supervisor)
-	cfg.Supervisor.Add(toolBtn)
-
 	bottomFrame.Pack(frame, ui.Pack{
 		Side: ui.N,
 		PadX: 8,
-		PadY: 12,
+		PadY: 0,
 	})
 
 	return window

@@ -11,4 +11,5 @@ const (
 
 	// Update check URL
 	UpdateCheckJSON = "https://download.sketchymaze.com/version.json"
+	GuidebookURL    = "https://www.sketchymaze.com/guidebook/"
 )

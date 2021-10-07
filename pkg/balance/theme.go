@@ -141,7 +141,7 @@ var (
 	// Small font
 	SmallFont = render.Text{
 		Size:    10,
-		Padding: 4,
+		Padding: 2,
 		Color:   render.Black,
 	}
 

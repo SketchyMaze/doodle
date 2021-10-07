@@ -6,6 +6,7 @@ package doodle
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level/giant_screenshot"
@@ -139,12 +140,15 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 
 		levelMenu.AddSeparator()
-		levelMenu.AddItem("New viewport", func() {
-			pip := windows.MakePiPWindow(340, 480, windows.PiP{
+		levelMenu.AddItemAccel("New viewport", "v", func() {
+			pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{
 				Supervisor: u.Supervisor,
 				Engine:     u.d.Engine,
 				Level:      u.Scene.Level,
 				Event:      u.d.event,
+
+				Tool:      &u.Scene.UI.Canvas.Tool,
+				BrushSize: &u.Scene.UI.Canvas.BrushSize,
 			})
 
 			pip.Show()
@@ -172,21 +176,28 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	////////
 	// View menu
-	if balance.Feature.Zoom {
-		viewMenu := menu.AddMenu("View")
-		viewMenu.AddItemAccel("Zoom in", "+", func() {
-			u.Canvas.Zoom++
-		})
-		viewMenu.AddItemAccel("Zoom out", "-", func() {
-			u.Canvas.Zoom--
-		})
-		viewMenu.AddItemAccel("Reset zoom", "1", func() {
-			u.Canvas.Zoom = 0
-		})
-		viewMenu.AddItemAccel("Scroll drawing to origin", "0", func() {
-			u.Canvas.ScrollTo(render.Origin)
-		})
-	}
+	viewMenu := menu.AddMenu("View")
+	viewMenu.AddItemAccel("Zoom in", "+", func() {
+		u.Canvas.Zoom++
+	})
+	viewMenu.AddItemAccel("Zoom out", "-", func() {
+		u.Canvas.Zoom--
+	})
+	viewMenu.AddItemAccel("Reset zoom", "1", func() {
+		u.Canvas.Zoom = 0
+	})
+	viewMenu.AddItemAccel("Scroll drawing to origin", "0", func() {
+		u.Canvas.ScrollTo(render.Origin)
+	})
+
+	viewMenu.AddSeparator()
+
+	viewMenu.AddItemAccel("Close window", "←", func() {
+		u.Supervisor.CloseActiveWindow()
+	})
+	viewMenu.AddItemAccel("Close all windows", "Shift-←", func() {
+		u.Supervisor.CloseAllWindows()
+	})
 
 	////////
 	// Tools menu
@@ -269,6 +280,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			})
 		}
 		u.aboutWindow.Show()
+	})
+	helpMenu.AddSeparator()
+	helpMenu.AddItem("Go to Website", func() {
+		native.OpenURL(branding.Website)
+	})
+	helpMenu.AddItem("Guidebook Online", func() {
+		native.OpenURL(branding.GuidebookURL)
 	})
 
 	menu.Supervise(u.Supervisor)

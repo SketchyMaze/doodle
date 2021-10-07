@@ -109,6 +109,31 @@ func DebugCollision(ev *event.State) bool {
 	return result
 }
 
+// CloseTopmostWindow (Backspace)
+func CloseTopmostWindow(ev *event.State) bool {
+	result := ev.KeyDown(`\b`)
+	ev.SetKeyDown(`\b`, false)
+	return result
+}
+
+// CloseAllWindows (Shift+Backspace)
+func CloseAllWindows(ev *event.State) bool {
+	result := ev.KeyDown(`\b`) && ev.Shift
+	if result {
+		ev.SetKeyDown(`\b`, false)
+	}
+	return result
+}
+
+// NewViewport (V)
+func NewViewport(ev *event.State) bool {
+	result := ev.KeyDown("v")
+	if result {
+		ev.SetKeyDown("v", false)
+	}
+	return result
+}
+
 // Undo (Ctrl-Z)
 func Undo(ev *event.State) bool {
 	return ev.Ctrl && ev.KeyDown("z")
