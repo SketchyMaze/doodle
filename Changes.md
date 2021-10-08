@@ -1,5 +1,88 @@
 # Changes
 
+## v0.9.0 (TBD)
+
+New features:
+
+* **Touch controls:** the game is now fully playable on small
+  touchscreen devices! For gameplay, touch the middle of the screen
+  to "use" objects and touch anywhere _around_ that to move the
+  player character in that direction. In the level editor, swipe
+  with two fingers to pan and scroll the viewport.
+* **Proper platforming physics:** the player character "jumps" by
+  setting a velocity and letting gravity take care of the rest,
+  rather than the old timer-based flat jump speed approach. Most
+  levels play about the same but the jump reach _is_ slightly
+  different than before!
+* **Giant Screenshot:** in the Level Editor you can take a "Giant
+  Screenshot" of your _entire_ level as it appears in the editor
+  as a large PNG image in your game's screenshots folder. This is
+  found in the "Level" menu in the editor.
+* **Picture-in-Picture Viewport:** in the Level Editor you can open
+  another viewport window into your level. This window can be resized,
+  moved around, and can look at a different part of your level from
+  your main editor window. Mouse over the viewport and your arrow keys
+  scroll it instead of the main window.
+* **"Playtest from here":** if you click and drag from the "Play (P)"
+  button of the level editor, you can drop your player character
+  anywhere you want on your level, and play from there instead of
+  the Start Flag.
+* **Middle-click to pan the level:** holding the middle click button
+  and dragging your mouse cursor will scroll the level in the editor
+  and on the title screen. This can be faster than the arrow keys to
+  scroll quickly!
+* **Zoom in/out** support has come out of "experimental" status. It's
+  still a _little_ finicky but workable!
+
+Some new "technical" doodads are added to the game. These doodads are
+generally invisible during gameplay and have various effects which can
+be useful to set up your level the right way:
+
+* **Goal Region:** a 128x128 region that acts as an Exit Flag and will
+  win the level if touched by the player.
+* **Checkpoint Region:** a 128x128 invisible checkpoint flag that sets
+  the player's spawn point.
+* **Fire Region:** a 128x128 region that triggers the level fail
+  condition, behaving like fire pixels.
+* **Power Source:** a 64x64 invisible source of power. Link it to doodads
+  like the Electric Door and it will emit a power(true) signal on level
+  start, causing the door to "begin" in an opened state.
+* **Stall Player (250ms):** when the player touches this doodad, control
+  freezes for 250ms, one time. If this doodad receives power from a linked
+  button or switch, it will reset the trap, and stall the player once more
+  should they contact it again.
+
+The Doodad Dropper window has a dedicated category for these
+technical doodads.
+
+New methods available to the Doodad JavaScript API:
+
+* `Self.Hide()` and `Self.Show()` to turn invisible and back.
+* `Self.GetVelocity()` that returns a Vector of the actor's current speed.
+* New broadcast message type: `broadcast:ready` (no arguments). Subscribe
+  to this to know the gameplay is ready and you can safely publish messages
+  to your linked doodads or whatever, which could've ended up in deadlocks
+  if done too early!
+
+Some slight UI polish:
+
+* The **Doodad Dropper** window of the level editor now shows a slotted
+  background where there are any empty doodad slots on the current page.
+* Your **scroll position** is remembered when you playtest the level; so
+  coming back to the editor, your viewport into the level as where you
+  left it!
+* New **keybinds** are added to the Level & Doodad Editor:
+    * `Backspace` to close the current popup UI modal
+    * `Shift+Backspace` to close _all_ popup UI modals
+    * `v` to open a new Viewport window
+* Some **flashed messages** are orange instead of blue to denote an 'error'
+  status. The colors of the fonts are softened a bit.
+* New **cheat code**: `show all actors` to make all invisible actors shown
+  during Play Mode. You would be able to see all the technical doodads
+  this way!
+* New command for the doodad CLI tool: `doodad edit-level --remove-actor`
+  to remove actors by name or UUID from a level file.
+
 ## v0.8.1 (September 12, 2021)
 
 New features:
