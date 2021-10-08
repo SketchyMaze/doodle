@@ -470,9 +470,6 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 
 			// Was it an already existing actor to re-add to the map?
 			if actor.actor != nil {
-				actor.actor.Point = position
-				u.Scene.Level.Actors.Add(actor.actor)
-
 				// Was this doodad drop, the Play Level button?
 				if actor.actor.Filename == "__play_from_here__" {
 					if shmem.Cursor.Inside(u.PlayButton.Rect()) {
@@ -482,6 +479,9 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 					}
 					return nil
 				}
+
+				actor.actor.Point = position
+				u.Scene.Level.Actors.Add(actor.actor)
 			} else {
 				u.Scene.Level.Actors.Add(&level.Actor{
 					Point:    position,

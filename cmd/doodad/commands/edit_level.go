@@ -55,6 +55,10 @@ func init() {
 				Name:  "unlock",
 				Usage: "remove the write-lock on the level file",
 			},
+			&cli.StringFlag{
+				Name:  "remove-actor",
+				Usage: "Remove all instances of the actor from the level. Value is their filename or UUID.",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
@@ -143,6 +147,29 @@ func editLevel(c *cli.Context, filename string) error {
 		lvl.Wallpaper = c.String("wallpaper")
 		log.Info("Set wallpaper: %s", c.String("wallpaper"))
 		modified = true
+	}
+
+	if c.String("remove-actor") != "" {
+		var (
+			match     = c.String("remove-actor")
+			removeIDs = []string{}
+		)
+
+		for id, actor := range lvl.Actors {
+			if id == match || actor.Filename == match {
+				removeIDs = append(removeIDs, id)
+			}
+		}
+
+		if len(removeIDs) > 0 {
+			for _, id := range removeIDs {
+				delete(lvl.Actors, id)
+			}
+			log.Info("Removed %d instances of actor %s from the level.", len(removeIDs), match)
+			modified = true
+		} else {
+			log.Error("Did not find any actors like %s in the level.", match)
+		}
 	}
 
 	/******************************

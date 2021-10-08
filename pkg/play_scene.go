@@ -541,7 +541,6 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		// Moving left or right? Interpolate their velocity by acceleration.
 		if direction != 0 {
 			if s.playerLastDirection != direction {
-				log.Error("Changed directions!")
 				velocity.X = 0
 			}
 

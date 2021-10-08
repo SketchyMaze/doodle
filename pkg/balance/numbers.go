@@ -24,7 +24,7 @@ var (
 
 	// Player speeds
 	PlayerMaxVelocity   float64 = 7
-	PlayerJumpVelocity  float64 = -20
+	PlayerJumpVelocity  float64 = -23
 	PlayerAcceleration  float64 = 0.12
 	Gravity             float64 = 7
 	GravityAcceleration float64 = 0.1

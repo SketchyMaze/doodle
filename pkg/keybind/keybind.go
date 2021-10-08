@@ -151,7 +151,11 @@ func NewLevel(ev *event.State) bool {
 
 // Save (Ctrl-S)
 func Save(ev *event.State) bool {
-	return ev.Ctrl && ev.KeyDown("s")
+	var result = ev.Ctrl && ev.KeyDown("s")
+	if result {
+		ev.SetKeyDown("s", false)
+	}
+	return result
 }
 
 // SaveAs (Shift-Ctrl-S)
