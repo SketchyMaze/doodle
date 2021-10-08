@@ -33,7 +33,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		drawingType = "level"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveLevel(filename); err != nil {
-				d.Flash("Error: %s", err)
+				d.FlashError("Error: %s", err)
 			} else {
 				d.Flash("Saved level: %s", filename)
 			}
@@ -42,13 +42,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		drawingType = "doodad"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveDoodad(filename); err != nil {
-				d.Flash("Error: %s", err)
+				d.FlashError("Error: %s", err)
 			} else {
 				d.Flash("Saved doodad: %s", filename)
 			}
 		}
 	default:
-		d.Flash("Error: Scene.DrawingType is not a valid type")
+		d.FlashError("Error: Scene.DrawingType is not a valid type")
 	}
 
 	////////
@@ -127,13 +127,17 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 		levelMenu.AddSeparator()
 		levelMenu.AddItem("Giant Screenshot", func() {
-			filename, err := giant_screenshot.SaveGiantScreenshot(u.Scene.Level)
-			if err != nil {
-				d.Flash(err.Error())
-				return
-			}
+			// It takes a LONG TIME to render for medium+ maps.
+			// Do so on a background thread.
+			go func() {
+				filename, err := giant_screenshot.SaveGiantScreenshot(u.Scene.Level)
+				if err != nil {
+					d.FlashError("Error: %s", err.Error())
+					return
+				}
 
-			d.Flash("Saved screenshot to: %s", filename)
+				d.FlashError("Giant screenshot saved as: %s", filename)
+			}()
 		})
 		levelMenu.AddItem("Open screenshot folder", func() {
 			native.OpenLocalURL(userdir.ScreenshotDirectory)
@@ -326,7 +330,7 @@ func (s *EditorScene) MenuSave(as bool) func() {
 			// drawingType = "level"
 			saveFunc = func(filename string) {
 				if err := s.SaveLevel(filename); err != nil {
-					s.d.Flash("Error: %s", err)
+					s.d.FlashError("Error: %s", err)
 				} else {
 					s.d.Flash("Saved level: %s", filename)
 				}
@@ -335,13 +339,13 @@ func (s *EditorScene) MenuSave(as bool) func() {
 			// drawingType = "doodad"
 			saveFunc = func(filename string) {
 				if err := s.SaveDoodad(filename); err != nil {
-					s.d.Flash("Error: %s", err)
+					s.d.FlashError("Error: %s", err)
 				} else {
 					s.d.Flash("Saved doodad: %s", filename)
 				}
 			}
 		default:
-			s.d.Flash("Error: Scene.DrawingType is not a valid type")
+			s.d.FlashError("Error: Scene.DrawingType is not a valid type")
 		}
 
 		// "Save As"?

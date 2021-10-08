@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -20,6 +21,12 @@ import (
 func (d *Doodle) Flash(template string, v ...interface{}) {
 	log.Warn(template, v...)
 	d.shell.Write(fmt.Sprintf(template, v...))
+}
+
+// FlashError flashes an error-colored message to the user.
+func (d *Doodle) FlashError(template string, v ...interface{}) {
+	log.Error(template, v...)
+	d.shell.WriteColorful(fmt.Sprintf(template, v...), balance.FlashErrorColor)
 }
 
 // Prompt the user for a question in the dev console.
@@ -59,6 +66,7 @@ type Shell struct {
 type Flash struct {
 	Text    string
 	Expires uint64 // tick that it expires
+	Color   render.Color
 }
 
 // NewShell initializes the shell helper (the "Shellper").
@@ -80,6 +88,7 @@ func NewShell(d *Doodle) Shell {
 		"Execute": s.Execute,
 		"RGBA":    render.RGBA,
 		"Point":   render.NewPoint,
+		"Vector":  physics.NewVector,
 		"Rect":    render.NewRect,
 		"Tree": func(w ui.Widget) string {
 			for _, row := range ui.WidgetTree(w) {
@@ -156,6 +165,16 @@ func (s *Shell) Write(line string) {
 	s.Output = append(s.Output, line)
 	s.Flashes = append(s.Flashes, Flash{
 		Text:    line,
+		Expires: shmem.Tick + balance.FlashTTL,
+	})
+}
+
+// WriteError writes a line of error (red) text to the console.
+func (s *Shell) WriteColorful(line string, color render.Color) {
+	s.Output = append(s.Output, line)
+	s.Flashes = append(s.Flashes, Flash{
+		Text:    line,
+		Color:   color,
 		Expires: shmem.Tick + balance.FlashTTL,
 	})
 }
@@ -352,14 +371,15 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 				continue
 			}
 
+			var text = balance.FlashFont(flash.Text)
+			if !flash.Color.IsZero() {
+				text.Color = flash.Color
+				text.Stroke = text.Color.Darken(balance.FlashStrokeDarken)
+				text.Shadow = text.Color.Darken(balance.FlashShadowDarken)
+			}
+
 			d.Engine.DrawText(
-				render.Text{
-					Text:   flash.Text,
-					Size:   balance.ShellFontSize,
-					Color:  render.SkyBlue,
-					Stroke: render.Grey,
-					Shadow: render.Black,
-				},
+				text,
 				render.Point{
 					X: balance.ShellPadding + toolbarWidth,
 					Y: outputY,

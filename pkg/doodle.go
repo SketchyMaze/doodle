@@ -269,7 +269,7 @@ func (d *Doodle) NewDoodad(size int) {
 			if answer != "" {
 				i, err := strconv.Atoi(answer)
 				if err != nil {
-					d.Flash("Error: Doodad size must be a number.")
+					d.FlashError("Error: Doodad size must be a number.")
 					return
 				}
 				size = i
@@ -277,7 +277,7 @@ func (d *Doodle) NewDoodad(size int) {
 
 			// Recurse with the proper answer.
 			if size <= 0 {
-				d.Flash("Error: Doodad size must be a positive number.")
+				d.FlashError("Error: Doodad size must be a positive number.")
 			}
 			d.NewDoodad(size)
 		})

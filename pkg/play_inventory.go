@@ -65,7 +65,7 @@ func (s *PlayScene) computeInventory() {
 			// Cache miss. Load the doodad here.
 			doodad, err := doodads.LoadFile(filename)
 			if err != nil {
-				s.d.Flash("Inventory item '%s' error: %s", filename, err)
+				s.d.FlashError("Inventory item '%s' error: %s", filename, err)
 				continue
 			}
 

@@ -182,7 +182,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 						u.licenseWindow.Show()
 						u.Supervisor.FocusWindow(u.licenseWindow)
 					}
-					d.Flash("Level Publishing is only available in the full version of the game.")
+					d.FlashError("Level Publishing is only available in the full version of the game.")
 					// modal.Alert(
 					// 	"This feature is only available in the full version of the game.",
 					// ).WithTitle("Please register")
@@ -193,7 +193,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				cwd, _ := os.Getwd()
 				d.Prompt(fmt.Sprintf("File name (relative to %s)> ", cwd), func(answer string) {
 					if answer == "" {
-						d.Flash("A file name is required to publish this level.")
+						d.FlashError("A file name is required to publish this level.")
 						return
 					}
 
@@ -364,7 +364,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			},
 			OnChangeLayer: func(index int) {
 				if index < 0 || index >= len(scene.Doodad.Layers) {
-					d.Flash("OnChangeLayer: layer %d out of range", index)
+					d.FlashError("OnChangeLayer: layer %d out of range", index)
 					return
 				}
 

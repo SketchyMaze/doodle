@@ -1,6 +1,7 @@
 package giant_screenshot
 
 import (
+	"errors"
 	"image"
 	"image/draw"
 	"image/png"
@@ -11,6 +12,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
@@ -20,8 +22,25 @@ import (
 Giant Screenshot functionality for the Level Editor.
 */
 
+var locked bool
+
 // GiantScreenshot returns a rendered RGBA image of the entire level.
-func GiantScreenshot(lvl *level.Level) image.Image {
+//
+// Only one thread should be doing this at a time. A sync.Mutex will cause
+// an error to return if another goroutine is already in the process of
+// generating a screenshot, and you'll have to wait and try later.
+func GiantScreenshot(lvl *level.Level) (image.Image, error) {
+	// Lock this to one user at a time.
+	if locked {
+		return nil, errors.New("a giant screenshot is still being processed; try later...")
+	}
+	locked = true
+	defer func() {
+		locked = false
+	}()
+
+	shmem.Flash("Saving a giant screenshot (this takes a moment)...")
+
 	// How big will our image be?
 	var (
 		size                = lvl.Chunker.WorldSizePositive()
@@ -110,7 +129,7 @@ func GiantScreenshot(lvl *level.Level) image.Image {
 
 	}
 
-	return img
+	return img, nil
 }
 
 // SaveGiantScreenshot will take a screenshot and write it to a file on disk,
@@ -118,7 +137,10 @@ func GiantScreenshot(lvl *level.Level) image.Image {
 func SaveGiantScreenshot(level *level.Level) (string, error) {
 	var filename = time.Now().Format("2006-01-02_15-04-05.png")
 
-	img := GiantScreenshot(level)
+	img, err := GiantScreenshot(level)
+	if err != nil {
+		return "", err
+	}
 
 	fh, err := os.Create(filepath.Join(userdir.ScreenshotDirectory, filename))
 	if err != nil {

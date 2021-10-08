@@ -28,7 +28,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			playScene.drawing.Editable = true
 			d.Flash("Level canvas is now editable. Don't edit and drive!")
 		} else {
-			d.Flash("Use this cheat in Play Mode to make the level canvas editable.")
+			d.FlashError("Use this cheat in Play Mode to make the level canvas editable.")
 		}
 
 	case "scroll scroll scroll your boat":
@@ -36,7 +36,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			playScene.drawing.Scrollable = true
 			d.Flash("Level canvas is now scrollable with the arrow keys.")
 		} else {
-			d.Flash("Use this cheat in Play Mode to make the level scrollable.")
+			d.FlashError("Use this cheat in Play Mode to make the level scrollable.")
 		}
 
 	case "import antigravity":
@@ -50,7 +50,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 				d.Flash("Gravity restored for player character.")
 			}
 		} else {
-			d.Flash("Use this cheat in Play Mode to disable gravity for the player character.")
+			d.FlashError("Use this cheat in Play Mode to disable gravity for the player character.")
 		}
 
 	case "ghost mode":
@@ -67,7 +67,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 				d.Flash("Clipping and gravity restored for player character.")
 			}
 		} else {
-			d.Flash("Use this cheat in Play Mode to disable clipping for the player character.")
+			d.FlashError("Use this cheat in Play Mode to disable clipping for the player character.")
 		}
 
 	case "show all actors":
@@ -77,7 +77,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			}
 			d.Flash("All invisible actors made visible.")
 		} else {
-			d.Flash("Use this cheat in Play Mode to show hidden actors, such as technical doodads.")
+			d.FlashError("Use this cheat in Play Mode to show hidden actors, such as technical doodads.")
 		}
 
 	case "give all keys":
@@ -89,7 +89,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			playScene.Player.AddItem("small-key.doodad", 99)
 			d.Flash("Given all keys to the player character.")
 		} else {
-			d.Flash("Use this cheat in Play Mode to get all colored keys.")
+			d.FlashError("Use this cheat in Play Mode to get all colored keys.")
 		}
 
 	case "drop all items":
@@ -97,7 +97,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			playScene.Player.ClearInventory()
 			d.Flash("Cleared inventory of player character.")
 		} else {
-			d.Flash("Use this cheat in Play Mode to clear your inventory.")
+			d.FlashError("Use this cheat in Play Mode to clear your inventory.")
 		}
 
 	case "fly like a bird":

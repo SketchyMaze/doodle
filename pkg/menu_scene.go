@@ -117,7 +117,7 @@ func (s *MenuScene) Setup(d *Doodle) error {
 			return err
 		}
 	default:
-		d.Flash("No Valid StartupMenu Given to MenuScene")
+		d.FlashError("No Valid StartupMenu Given to MenuScene")
 	}
 
 	// Whatever window we got, give it window manager controls under Supervisor.

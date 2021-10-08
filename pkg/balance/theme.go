@@ -71,6 +71,20 @@ var (
 	WindowBackground = render.MustHexColor("#cdb689")
 	WindowBorder     = render.Grey
 
+	// Developer Shell and Flashed Messages styles.
+	FlashStrokeDarken = 60
+	FlashShadowDarken = 120
+	FlashFont         = func(text string) render.Text {
+		return render.Text{
+			Text:   text,
+			Size:   18,
+			Color:  render.SkyBlue,
+			Stroke: render.SkyBlue.Darken(FlashStrokeDarken),
+			Shadow: render.SkyBlue.Darken(FlashShadowDarken),
+		}
+	}
+	FlashErrorColor = render.MustHexColor("#FF9900")
+
 	// Menu bar styles.
 	MenuBackground = render.Black
 	MenuFont       = render.Text{

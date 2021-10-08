@@ -39,6 +39,9 @@ func (c Command) Run(d *Doodle) error {
 	case "echo":
 		d.Flash(c.ArgsLiteral)
 		return nil
+	case "error":
+		d.FlashError(c.ArgsLiteral)
+		return nil
 	case "alert":
 		modal.Alert(c.ArgsLiteral)
 		return nil
@@ -104,13 +107,13 @@ func (c Command) Close(d *Doodle) error {
 // ExtractBindata dumps the app's embedded bindata to the filesystem.
 func (c Command) ExtractBindata(d *Doodle, path string) error {
 	if len(path) == 0 || path[0] != '/' {
-		d.Flash("Required: an absolute path to a directory to extract to.")
+		d.FlashError("Required: an absolute path to a directory to extract to.")
 		return nil
 	}
 
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
-		d.Flash("MkdirAll: %s", err)
+		d.FlashError("MkdirAll: %s", err)
 		return err
 	}
 
@@ -120,7 +123,7 @@ func (c Command) ExtractBindata(d *Doodle, path string) error {
 
 		data, err := assets.Asset(filename)
 		if err != nil {
-			d.Flash("error on file %s: %s", filename, err)
+			d.FlashError("error on file %s: %s", filename, err)
 			continue
 		}
 
@@ -131,7 +134,7 @@ func (c Command) ExtractBindata(d *Doodle, path string) error {
 
 		fh, err := os.Create(outfile)
 		if err != nil {
-			d.Flash("error writing file %s: %s", outfile, err)
+			d.FlashError("error writing file %s: %s", outfile, err)
 			continue
 		}
 		fh.Write(data)
@@ -145,7 +148,7 @@ func (c Command) ExtractBindata(d *Doodle, path string) error {
 // Help prints the help info.
 func (c Command) Help(d *Doodle) error {
 	if len(c.Args) == 0 {
-		d.Flash("Available commands: new save edit play quit echo")
+		d.Flash("Available commands: new save edit play quit echo error")
 		d.Flash("     alert clear help boolProp eval repl")
 		d.Flash("Type `help` and then the command, like: `help edit`")
 		return nil
@@ -155,6 +158,9 @@ func (c Command) Help(d *Doodle) error {
 	case "echo":
 		d.Flash("Usage: echo <message>")
 		d.Flash("Flash a message back to the console")
+	case "error":
+		d.Flash("Usage: error <message>")
+		d.Flash("Flash an error message back to the console")
 	case "alert":
 		d.Flash("Usage: alert <message>")
 		d.Flash("Pop up an Alert box with a custom message")
@@ -294,7 +300,7 @@ func (c Command) BoolProp(d *Doodle) error {
 	} else {
 		// Try the global boolProps in balance package.
 		if err := balance.BoolProp(name, truthy); err != nil {
-			d.Flash("%s", err)
+			d.FlashError("%s", err)
 		} else {
 			d.Flash("%s: %+v", name, truthy)
 		}
@@ -307,7 +313,7 @@ func (c Command) BoolProp(d *Doodle) error {
 func (c Command) RunScript(d *Doodle, code interface{}) (otto.Value, error) {
 	defer func() {
 		if err := recover(); err != nil {
-			d.Flash("Panic: %s", err)
+			d.FlashError("Command.RunScript: Panic: %s", err)
 		}
 	}()
 	out, err := d.shell.js.Run(code)

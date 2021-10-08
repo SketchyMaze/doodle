@@ -49,12 +49,13 @@ type PlayScene struct {
 	debWorldIndex *string
 
 	// Player character
-	Player            *uix.Actor
-	playerPhysics     *physics.Mover
-	lastCheckpoint    render.Point
-	antigravity       bool // Cheat: disable player gravity
-	noclip            bool // Cheat: disable player clipping
-	playerJumpCounter int  // limit jump length
+	Player              *uix.Actor
+	playerPhysics       *physics.Mover
+	lastCheckpoint      render.Point
+	playerLastDirection float64 // player's heading last tick
+	antigravity         bool    // Cheat: disable player gravity
+	noclip              bool    // Cheat: disable player clipping
+	playerJumpCounter   int     // limit jump length
 
 	// Inventory HUD. Impl. in play_inventory.go
 	invenFrame   *ui.Frame
@@ -200,7 +201,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	if s.CanEdit {
 		d.Flash("Entered Play Mode. Press 'E' to edit this map.")
 	} else {
-		d.Flash("%s", s.Level.Title)
+		d.FlashError("%s", s.Level.Title)
 	}
 
 	// Pre-cache all bitmap images from the level chunks.
@@ -272,9 +273,9 @@ func (s *PlayScene) setupPlayer() {
 
 	// Surface warnings around the spawn flag.
 	if flagCount == 0 {
-		s.d.Flash("Warning: this level contained no Start Flag.")
+		s.d.FlashError("Warning: this level contained no Start Flag.")
 	} else if flagCount > 1 {
-		s.d.Flash("Warning: this level contains multiple Start Flags. Player spawn point is ambiguous.")
+		s.d.FlashError("Warning: this level contains multiple Start Flags. Player spawn point is ambiguous.")
 	}
 
 	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
@@ -340,7 +341,7 @@ func (s *PlayScene) BeatLevel() {
 
 // FailLevel handles a level failure triggered by a doodad.
 func (s *PlayScene) FailLevel(message string) {
-	s.d.Flash(message)
+	s.d.FlashError(message)
 	s.ShowEndLevelModal(
 		false,
 		"You've died!",
@@ -521,17 +522,29 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		}
 
 		// Up button to signal they want to jump.
-		if keybind.Up(ev) && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
-			jumping = true
-
+		if keybind.Up(ev) {
 			if s.Player.Grounded() {
-				// Allow them to sustain the jump this many ticks.
-				s.playerJumpCounter = 32
+				velocity.Y = balance.PlayerJumpVelocity
 			}
+		} else if velocity.Y < 0 {
+			velocity.Y = 0
 		}
+		// if keybind.Up(ev) && (s.Player.Grounded() || s.playerJumpCounter >= 0) {
+		// 	jumping = true
+
+		// 	if s.Player.Grounded() {
+		// 		// Allow them to sustain the jump this many ticks.
+		// 		s.playerJumpCounter = 32
+		// 	}
+		// }
 
 		// Moving left or right? Interpolate their velocity by acceleration.
 		if direction != 0 {
+			if s.playerLastDirection != direction {
+				log.Error("Changed directions!")
+				velocity.X = 0
+			}
+
 			// TODO: fast turn-around if they change directions so they don't
 			// slip and slide while their velocity updates.
 			velocity.X = physics.Lerp(
@@ -559,6 +572,8 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 			s.playerJumpCounter--
 		}
 	}
+
+	s.playerLastDirection = direction
 
 	// Move the player unless frozen.
 	// TODO: if Y=0 then gravity fails, but not doing this allows the

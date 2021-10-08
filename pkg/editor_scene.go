@@ -127,7 +127,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 				"Opening: " + s.filename,
 			)
 			if err := s.LoadLevel(s.filename); err != nil {
-				d.Flash("LoadLevel error: %s", err)
+				d.FlashError("LoadLevel error: %s", err)
 			} else {
 				s.UI.Canvas.InstallActors(s.Level.Actors)
 			}
@@ -138,7 +138,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 			if usercfg.Current.WriteLockOverride {
 				d.Flash("Note: write lock has been overridden")
 			} else {
-				d.Flash("That level is write-protected and cannot be viewed in the editor.")
+				d.FlashError("That level is write-protected and cannot be viewed in the editor.")
 				s.Level = nil
 				s.UI.Canvas.ClearActors()
 				s.filename = ""
@@ -165,7 +165,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading doodad from filename at %s", s.filename)
 			if err := s.LoadDoodad(s.filename); err != nil {
-				d.Flash("LoadDoodad error: %s", err)
+				d.FlashError("LoadDoodad error: %s", err)
 			}
 		}
 
@@ -174,7 +174,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 			if usercfg.Current.WriteLockOverride {
 				d.Flash("Note: write lock has been overridden")
 			} else {
-				d.Flash("That doodad is write-protected and cannot be viewed in the editor.")
+				d.FlashError("That doodad is write-protected and cannot be viewed in the editor.")
 				s.Doodad = nil
 				s.filename = ""
 			}
