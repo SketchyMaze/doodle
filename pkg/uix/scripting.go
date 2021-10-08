@@ -26,6 +26,7 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"SetHitbox":      actor.SetHitbox,
 		"Hitbox":         actor.Hitbox,
 		"SetVelocity":    actor.SetVelocity,
+		"GetVelocity":    actor.Velocity,
 		"SetMobile":      actor.SetMobile,
 		"SetInventory":   actor.SetInventory,
 		"HasInventory":   actor.HasInventory,

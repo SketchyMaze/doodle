@@ -26,7 +26,7 @@ var (
 	PlayerMaxVelocity   float64 = 7
 	PlayerJumpVelocity  float64 = -20
 	PlayerAcceleration  float64 = 0.12
-	Gravity             float64 = 6
+	Gravity             float64 = 7
 	GravityAcceleration float64 = 0.1
 	SlopeMaxHeight              = 8 // max pixel height for player to walk up a slope
 

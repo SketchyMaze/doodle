@@ -31,7 +31,8 @@ func (s *PlayScene) LoopTouchable(ev *event.State) {
 	// Idle means that they are not holding any directional or otherwise input key.
 	// Keyboard inputs and touch events from this function will set these keys.
 	// See if it stays unset long enough to consider idle.
-	if !ev.Up && !ev.Down && !ev.Right && !ev.Left && !ev.Space {
+	var isGrounded = (s.Player.HasGravity() && s.Player.Grounded()) || !s.Player.HasGravity()
+	if !ev.Up && !ev.Down && !ev.Right && !ev.Left && !ev.Space && isGrounded {
 		if s.idleLastStart.IsZero() {
 			s.idleLastStart = time.Now()
 		} else if time.Since(s.idleLastStart) > balance.PlayModeIdleTimeout {
