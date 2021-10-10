@@ -1,6 +1,6 @@
 # Changes
 
-## v0.9.0 (TBD)
+## v0.9.0 (Oct 9, 2021)
 
 New features:
 
@@ -33,6 +33,8 @@ New features:
   scroll quickly!
 * **Zoom in/out** support has come out of "experimental" status. It's
   still a _little_ finicky but workable!
+* **Bounded level limits** are now configurable in the Level Properties
+  window, to set the scroll constraints for Bounded level types.
 
 Some new "technical" doodads are added to the game. These doodads are
 generally invisible during gameplay and have various effects which can
@@ -63,6 +65,9 @@ New methods available to the Doodad JavaScript API:
   to this to know the gameplay is ready and you can safely publish messages
   to your linked doodads or whatever, which could've ended up in deadlocks
   if done too early!
+* New constants are exposed for Go time.Duration values: `time.Hour`,
+  `time.Minute`, `time.Second`, `time.Millisecond` and `time.Microsecond`
+  can be multiplied with a number to get a duration.
 
 Some slight UI polish:
 
