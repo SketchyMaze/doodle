@@ -60,7 +60,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
 		Width:      400,
-		Height:     240,
+		Height:     280,
 		Background: render.Grey,
 	})
 

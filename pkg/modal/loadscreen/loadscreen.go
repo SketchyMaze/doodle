@@ -222,7 +222,7 @@ func PreloadAllChunkBitmaps(chunker *level.Chunker) {
 
 	for {
 		remaining := chunker.PrerenderN(10)
-		log.Info("Remain: %d", remaining)
+		log.Debug("Remain: %d", remaining)
 
 		// Set the load screen progress % based on number of chunks to render.
 		if loadChunksTarget > 0 {

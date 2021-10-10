@@ -49,7 +49,7 @@ function main() {
 	Events.OnLeave(function (e) {
 		delete colliders[e.Actor.ID()];
 
-		if (Object.keys(colliders).length === 0) {
+		if (Object.keys(colliders).length === 0 && !stickyDown) {
 			Sound.Play("button-up.wav")
 			Self.ShowLayer(0);
 			Message.Publish("power", false);
