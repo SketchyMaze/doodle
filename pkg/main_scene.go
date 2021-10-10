@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -221,6 +222,20 @@ func (s *MainScene) Setup(d *Doodle) error {
 	// Check for update in the background.
 	go s.checkUpdate()
 
+	// Eager load the level in background, no time for load screen.
+	go func() {
+		if err := s.setupAsync(d); err != nil {
+			log.Error("MainScene.setupAsync: %s", err)
+		}
+	}()
+
+	return nil
+}
+
+// setupAsync runs background tasks from setup, e.g. eager load
+// chunks of the level for cache.
+func (s *MainScene) setupAsync(d *Doodle) error {
+	loadscreen.PreloadAllChunkBitmaps(s.canvas.Chunker())
 	return nil
 }
 

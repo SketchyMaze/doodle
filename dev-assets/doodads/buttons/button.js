@@ -4,14 +4,21 @@ function main() {
 
 	// Has a linked Sticky Button been pressed permanently down?
 	var stickyDown = false;
-	Message.Subscribe("sticky:down", function(down) {
+	Message.Subscribe("sticky:down", function (down) {
 		stickyDown = down;
 		Self.ShowLayer(stickyDown ? 1 : 0);
 	});
 
-	Events.OnCollide(function(e) {
+	// Track who all is colliding with us.
+	var colliders = {};
+
+	Events.OnCollide(function (e) {
 		if (!e.Settled) {
 			return;
+		}
+
+		if (colliders[e.Actor.ID()] == undefined) {
+			colliders[e.Actor.ID()] = true;
 		}
 
 		// If a linked Sticky Button is pressed, button stays down too and
@@ -37,12 +44,17 @@ function main() {
 		}
 
 		Self.ShowLayer(1);
-		timer = setTimeout(function() {
+	});
+
+	Events.OnLeave(function (e) {
+		delete colliders[e.Actor.ID()];
+
+		if (Object.keys(colliders).length === 0) {
 			Sound.Play("button-up.wav")
 			Self.ShowLayer(0);
 			Message.Publish("power", false);
 			timer = 0;
 			pressed = false;
-		}, 200);
+		}
 	});
 }

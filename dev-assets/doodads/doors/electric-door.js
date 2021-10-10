@@ -6,7 +6,6 @@ var powerState = false;
 function setPoweredState(powered) {
 	powerState = powered;
 
-	console.log("setPoweredState: %+v", powered)
 	if (powered) {
 		if (animating || opened) {
 			return;
@@ -14,14 +13,14 @@ function setPoweredState(powered) {
 
 		animating = true;
 		Sound.Play("electric-door.wav")
-		Self.PlayAnimation("open", function() {
+		Self.PlayAnimation("open", function () {
 			opened = true;
 			animating = false;
 		});
 	} else {
 		animating = true;
 		Sound.Play("electric-door.wav")
-		Self.PlayAnimation("close", function() {
+		Self.PlayAnimation("close", function () {
 			opened = false;
 			animating = false;
 		})
@@ -41,13 +40,12 @@ function main() {
 	// power sources like Buttons will work as normal, as they emit only a power
 	// signal.
 	var ignoreNextPower = false;
-	Message.Subscribe("switch:toggle", function(powered) {
-		console.log("A switch powered %+v, setPoweredState(%+v) to opposite", powered, powerState);
+	Message.Subscribe("switch:toggle", function (powered) {
 		ignoreNextPower = true;
 		setPoweredState(!powerState);
 	})
 
-	Message.Subscribe("power", function(powered) {
+	Message.Subscribe("power", function (powered) {
 		if (ignoreNextPower) {
 			ignoreNextPower = false;
 			return;
@@ -56,7 +54,7 @@ function main() {
 		setPoweredState(powered);
 	});
 
-	Events.OnCollide(function(e) {
+	Events.OnCollide(function (e) {
 		if (e.InHitbox) {
 			if (!opened) {
 				return false;

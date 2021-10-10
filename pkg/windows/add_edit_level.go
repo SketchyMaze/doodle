@@ -1,6 +1,8 @@
 package windows
 
 import (
+	"strconv"
+
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -138,6 +140,79 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 
 		typeBtn.Supervise(config.Supervisor)
 		config.Supervisor.Add(typeBtn)
+
+		/******************
+		 * Frame for selecting Bounded Level Limits.
+		 ******************/
+
+		if config.EditLevel != nil {
+			boundsFrame := ui.NewFrame("Bounds Frame")
+			frame.Pack(boundsFrame, ui.Pack{
+				Side:  ui.N,
+				FillX: true,
+				PadY:  2,
+			})
+
+			label := ui.NewLabel(ui.Label{
+				Text: "Bounded limits:",
+				Font: balance.LabelFont,
+			})
+			boundsFrame.Pack(label, ui.Pack{
+				Side: ui.W,
+				PadY: 2,
+			})
+
+			var forms = []struct {
+				label  string
+				number *int64
+			}{
+				{
+					label:  "Width:",
+					number: &config.EditLevel.MaxWidth,
+				},
+				{
+					label:  "Height:",
+					number: &config.EditLevel.MaxHeight,
+				},
+			}
+			for _, form := range forms {
+				form := form
+				label := ui.NewLabel(ui.Label{
+					Text: form.label,
+					Font: ui.MenuFont,
+				})
+
+				var intvar = int(*form.number)
+				button := ui.NewButton(form.label, ui.NewLabel(ui.Label{
+					IntVariable: &intvar,
+					Font:        ui.MenuFont,
+				}))
+				button.Handle(ui.Click, func(ed ui.EventData) error {
+					shmem.Prompt("Enter new "+form.label+" ", func(answer string) {
+						if answer == "" {
+							return
+						}
+
+						if i, err := strconv.Atoi(answer); err == nil {
+							*form.number = int64(i)
+							intvar = i
+						}
+					})
+					return nil
+				})
+
+				config.Supervisor.Add(button)
+
+				boundsFrame.Pack(label, ui.Pack{
+					Side: ui.W,
+					PadX: 1,
+				})
+				boundsFrame.Pack(button, ui.Pack{
+					Side: ui.W,
+					PadX: 1,
+				})
+			}
+		}
 
 		/******************
 		 * Frame for selecting Level Wallpaper

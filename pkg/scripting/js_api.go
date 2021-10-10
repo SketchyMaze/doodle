@@ -46,6 +46,11 @@ func NewJSProxy(vm *VM) JSProxy {
 			"Add": func(t time.Time, ms int64) time.Time {
 				return t.Add(time.Duration(ms) * time.Millisecond)
 			},
+			"Hour":        time.Hour,
+			"Minute":      time.Minute,
+			"Second":      time.Second,
+			"Millisecond": time.Millisecond,
+			"Microsecond": time.Microsecond,
 		},
 
 		// Bindings into the VM.

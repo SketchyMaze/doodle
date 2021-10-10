@@ -8,8 +8,9 @@ import (
 // Message holds data being published from one script VM with information sent
 // to the linked VMs.
 type Message struct {
-	Name string
-	Args []interface{}
+	Name     string
+	SenderID string
+	Args     []interface{}
 }
 
 /*
@@ -23,14 +24,16 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 	// for any matching messages received.
 	go func() {
 		for msg := range vm.Inbound {
-			vm.muSubscribe.RLock()
-			defer vm.muSubscribe.RUnlock()
+			vm.muSubscribe.Lock()
 
 			if _, ok := vm.subscribe[msg.Name]; ok {
 				for _, callback := range vm.subscribe[msg.Name] {
+					log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
 					callback.Call(otto.Value{}, msg.Args...)
 				}
 			}
+
+			vm.muSubscribe.Unlock()
 		}
 	}()
 
@@ -54,8 +57,9 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		"Publish": func(name string, v ...interface{}) {
 			for _, channel := range vm.Outbound {
 				channel <- Message{
-					Name: name,
-					Args: v,
+					Name:     name,
+					SenderID: vm.Name,
+					Args:     v,
 				}
 			}
 		},
@@ -69,8 +73,9 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 				}
 
 				toVM.Inbound <- Message{
-					Name: name,
-					Args: v,
+					Name:     name,
+					SenderID: vm.Name,
+					Args:     v,
 				}
 			}
 		},

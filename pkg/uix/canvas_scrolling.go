@@ -116,15 +116,19 @@ func (w *Canvas) loopConstrainScroll() error {
 		return errors.New("NoLimitScroll enabled")
 	}
 
-	var capped bool
+	var (
+		capped    bool
+		maxWidth  = w.level.MaxWidth
+		maxHeight = w.level.MaxHeight
+	)
 
 	// Constrain the bottom and right for limited world sizes.
 	if w.wallpaper.pageType >= level.Bounded &&
-		w.wallpaper.maxWidth+w.wallpaper.maxHeight > 0 {
+		maxWidth+maxHeight > 0 {
 		var (
 			// TODO: downcast from int64!
-			mw       = int(w.wallpaper.maxWidth)
-			mh       = int(w.wallpaper.maxHeight)
+			mw       = int(maxWidth)
+			mh       = int(maxHeight)
 			Viewport = w.Viewport()
 			vw       = w.ZoomDivide(Viewport.W)
 			vh       = w.ZoomDivide(Viewport.H)

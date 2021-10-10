@@ -292,7 +292,7 @@ func (s *PlayScene) setupPlayer() {
 	}
 
 	// Set up the player character's script in the VM.
-	if err := s.scripting.AddLevelScript(s.Player.ID()); err != nil {
+	if err := s.scripting.AddLevelScript(s.Player.ID(), s.Player.Actor.Filename); err != nil {
 		log.Error("PlayScene.Setup: scripting.InstallActor(player) failed: %s", err)
 	}
 }

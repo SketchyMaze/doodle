@@ -27,3 +27,21 @@ func (d *Drawing) Size() render.Rect {
 func (d *Drawing) MoveTo(to render.Point) {
 	d.Drawing.MoveTo(to)
 }
+
+// Grounded satisfies the collision.Actor interface.
+func (d *Drawing) Grounded() bool {
+	return false
+}
+
+// SetGrounded satisfies the collision.Actor interface.
+func (d *Drawing) SetGrounded(v bool) {}
+
+// Position satisfies the collision.Actor interface.
+func (d *Drawing) Position() render.Point {
+	return render.Point{}
+}
+
+// Hitbox satisfies the collision.Actor interface.
+func (d *Drawing) Hitbox() render.Rect {
+	return render.Rect{}
+}

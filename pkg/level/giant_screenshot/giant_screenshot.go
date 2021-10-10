@@ -103,11 +103,14 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 
 		// Offset the doodad position if the image is displaying
 		// negative coordinates.
+		drawAt := render.NewPoint(actor.Point.X, actor.Point.Y)
 		if worldSize.X < 0 {
-			actor.Point.X += render.AbsInt(worldSize.X) * chunkSize
+			var offset = render.AbsInt(worldSize.X) * chunkSize
+			drawAt.X += offset
 		}
 		if worldSize.Y < 0 {
-			actor.Point.Y += render.AbsInt(worldSize.Y) * chunkSize
+			var offset = render.AbsInt(worldSize.Y) * chunkSize
+			drawAt.Y += offset
 		}
 
 		// TODO: usually doodad sprites start at 0,0 and the chunkSize
@@ -124,7 +127,7 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 			if !ok {
 				log.Error("GiantScreenshot: couldn't turn chunk to RGBA")
 			}
-			img = blotImage(img, rgba, image.Pt(actor.Point.X, actor.Point.Y))
+			img = blotImage(img, rgba, image.Pt(drawAt.X, drawAt.Y))
 		}
 
 	}
