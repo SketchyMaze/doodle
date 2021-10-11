@@ -69,6 +69,7 @@ func New(debug bool, engine render.Engine) *Doodle {
 	// Make the render engine globally available. TODO: for wasm/ToBitmap
 	shmem.CurrentRenderEngine = engine
 	shmem.Flash = d.Flash
+	shmem.FlashError = d.FlashError
 	shmem.Prompt = d.Prompt
 
 	if debug {
@@ -240,6 +241,8 @@ func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
 		DebugCollision:     &DebugCollision,
 		HorizontalToolbars: &usercfg.Current.HorizontalToolbars,
 		EnableFeatures:     &usercfg.Current.EnableFeatures,
+		CrosshairSize:      &usercfg.Current.CrosshairSize,
+		CrosshairColor:     &usercfg.Current.CrosshairColor,
 	}
 	return windows.MakeSettingsWindow(d.width, d.height, cfg)
 }

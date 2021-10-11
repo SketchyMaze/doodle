@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/go/render"
 )
 
 // Settings are the available game settings.
@@ -30,6 +31,8 @@ type Settings struct {
 	// Configurable settings (pkg/windows/settings.go)
 	HorizontalToolbars bool `json:",omitempty"`
 	EnableFeatures     bool `json:",omitempty"`
+	CrosshairSize      int  `json:",omitempty"`
+	CrosshairColor     render.Color
 
 	// Secret boolprops from balance/boolprops.go
 	ShowHiddenDoodads bool `json:",omitempty"`

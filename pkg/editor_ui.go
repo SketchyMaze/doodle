@@ -351,6 +351,9 @@ func (u *EditorUI) Present(e render.Engine) {
 
 	u.screen.Present(e, render.Origin)
 
+	// Draw the crosshair over the level canvas, but not over UI popups.
+	uix.DrawCrosshair(e, u.Canvas, usercfg.Current.CrosshairColor, usercfg.Current.CrosshairSize)
+
 	// Draw any windows being managed by Supervisor.
 	u.Supervisor.Present(e)
 

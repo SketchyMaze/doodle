@@ -20,6 +20,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sound"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli/v2"
 
@@ -60,6 +61,11 @@ func main() {
 	// Load user settings from disk ASAP.
 	if err := usercfg.Load(); err != nil {
 		log.Error("Error loading user settings (defaults will be used): %s", err)
+	}
+
+	// Set default user settings.
+	if usercfg.Current.CrosshairColor == render.Invisible {
+		usercfg.Current.CrosshairColor = balance.DefaultCrosshairColor
 	}
 
 	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",

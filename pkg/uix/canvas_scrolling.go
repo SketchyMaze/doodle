@@ -116,6 +116,11 @@ func (w *Canvas) loopConstrainScroll() error {
 		return errors.New("NoLimitScroll enabled")
 	}
 
+	// Levels only.
+	if w.level == nil {
+		return nil
+	}
+
 	var (
 		capped    bool
 		maxWidth  = w.level.MaxWidth

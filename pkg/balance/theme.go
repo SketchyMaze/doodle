@@ -187,6 +187,8 @@ var (
 	ButtonBabyBlue = style.DefaultButton
 	ButtonPink     = style.DefaultButton
 	ButtonLightRed = style.DefaultButton
+
+	DefaultCrosshairColor = render.RGBA(0, 153, 255, 255)
 )
 
 // Customize the various button styles.

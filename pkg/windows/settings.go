@@ -1,11 +1,13 @@
 package windows
 
 import (
+	"strconv"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
@@ -24,6 +26,8 @@ type Settings struct {
 	DebugCollision     *bool
 	HorizontalToolbars *bool
 	EnableFeatures     *bool
+	CrosshairSize      *int
+	CrosshairColor     *render.Color
 
 	// Configuration options.
 	SceneName string // name of scene which called this window
@@ -106,11 +110,14 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 		return nil
 	}
 
+	var inputBoxWidth = 120
 	rows := []struct {
 		Header       string
 		Text         string
 		Boolean      *bool
+		Integer      *int
 		TextVariable *string
+		Color        *render.Color
 		PadY         int
 		PadX         int
 		name         string // for special cases
@@ -127,6 +134,16 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			Text:    "Editor: Horizontal instead of vertical toolbars",
 			PadX:    4,
 			name:    "toolbars",
+		},
+		{
+			Integer: c.CrosshairSize,
+			Text:    "Editor: Crosshair size (0 to disable):",
+			PadX:    4,
+		},
+		{
+			Color: c.CrosshairColor,
+			Text:  "Editor: Crosshair color:",
+			PadX:  4,
 		},
 		{
 			Header: "Debug Options (temporary)",
@@ -196,6 +213,14 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 				PadX: row.PadX,
 			})
 			continue
+		} else {
+			// Reserve indented space where the checkbox would have gone.
+			spacer := ui.NewFrame("Spacer")
+			spacer.Resize(render.NewRect(9, 9)) // TODO: ugly UI hack ;)
+			frame.Pack(spacer, ui.Pack{
+				Side: ui.W,
+				PadX: row.PadX,
+			})
 		}
 
 		// Any leftover Text gets packed to the left.
@@ -210,6 +235,94 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			})
 			frame.Pack(tf, ui.Pack{
 				Side: ui.W,
+			})
+		}
+
+		// Int variables draw as a button to prompt for new value.
+		// In future: TextVariable works here too.
+		if row.Integer != nil {
+			varButton := ui.NewButton("VarButton", ui.NewLabel(ui.Label{
+				IntVariable: row.Integer,
+				Font:        ui.MenuFont,
+			}))
+			varButton.Handle(ui.Click, func(ed ui.EventData) error {
+				shmem.Prompt(row.Text+" ", func(answer string) {
+					if answer == "" {
+						return
+					}
+
+					a, err := strconv.Atoi(answer)
+					if err != nil {
+						shmem.FlashError(err.Error())
+						return
+					}
+
+					if a < 0 {
+						a = 0
+					} else if a > 100 {
+						a = 100
+					}
+
+					*row.Integer = a
+					shmem.Flash("Crosshair size set to %d%% (WIP)", a)
+
+					// call onClick to save change to disk now
+					onClick(ed)
+				})
+				return nil
+			})
+
+			varButton.Compute(c.Engine)
+			varButton.Resize(render.Rect{
+				W: inputBoxWidth,
+				H: varButton.Size().H,
+			})
+
+			c.Supervisor.Add(varButton)
+			frame.Pack(varButton, ui.Pack{
+				Side: ui.E,
+				PadX: row.PadX,
+			})
+		}
+
+		// Color picker button.
+		if row.Color != nil {
+			btn := ui.NewButton("ColorBtn", ui.NewFrame(""))
+			style := style.DefaultButton
+			style.Background = *row.Color
+			style.HoverBackground = style.Background.Lighten(20)
+			btn.SetStyle(&style)
+			btn.Handle(ui.Click, func(ed ui.EventData) error {
+				shmem.Prompt("Enter color in hexadecimal notation: ", func(answer string) {
+					if answer == "" {
+						return
+					}
+
+					color, err := render.HexColor(answer)
+					if err != nil {
+						shmem.FlashError("Invalid color value: %s", err)
+					}
+
+					*row.Color = color
+					style.Background = color
+					style.HoverBackground = style.Background.Lighten(20)
+
+					// call onClick to save change to disk now
+					onClick(ed)
+				})
+				return nil
+			})
+
+			btn.Compute(c.Engine)
+			btn.Resize(render.Rect{
+				W: inputBoxWidth,
+				H: 20, // TODO
+			})
+
+			c.Supervisor.Add(btn)
+			frame.Pack(btn, ui.Pack{
+				Side: ui.E,
+				PadX: row.PadX,
 			})
 		}
 	}
