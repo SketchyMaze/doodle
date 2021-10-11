@@ -42,12 +42,17 @@ func (w *Canvas) RemoveStroke(stroke *drawtool.Stroke) bool {
 // added to the level. Returns false and emits a warning to the log if the
 // canvas has no level loaded properly.
 func (w *Canvas) UndoStroke() bool {
-	if w.level == nil {
-		log.Error("Canvas.UndoStroke: no Level currently available to the canvas")
+	var undoer *drawtool.History
+	if w.level != nil {
+		undoer = w.level.UndoHistory
+	} else if w.doodad != nil {
+		undoer = w.doodad.UndoHistory
+	} else {
+		log.Error("Canvas.UndoStroke: no Level or Doodad currently available to the canvas")
 		return false
 	}
 
-	latest := w.level.UndoHistory.Latest()
+	latest := undoer.Latest()
 	if latest != nil {
 		// TODO: only single-thickness lines will restore the original color;
 		// thick lines just delete their pixels from the world due to performance.
@@ -93,23 +98,28 @@ func (w *Canvas) UndoStroke() bool {
 
 		}
 	}
-	return w.level.UndoHistory.Undo()
+	return undoer.Undo()
 }
 
 // RedoStroke rolls the level's UndoHistory forwards again and replays the
 // recently undone changes.
 func (w *Canvas) RedoStroke() bool {
-	if w.level == nil {
-		log.Error("Canvas.UndoStroke: no Level currently available to the canvas")
+	var undoer *drawtool.History
+	if w.level != nil {
+		undoer = w.level.UndoHistory
+	} else if w.doodad != nil {
+		undoer = w.doodad.UndoHistory
+	} else {
+		log.Error("Canvas.UndoStroke: no Level or Doodad currently available to the canvas")
 		return false
 	}
 
-	ok := w.level.UndoHistory.Redo()
+	ok := undoer.Redo()
 	if !ok {
 		return false
 	}
 
-	latest := w.level.UndoHistory.Latest()
+	latest := undoer.Latest()
 
 	// We stored the ActiveSwatch on this stroke as we drew it. Recover it
 	// and place the pixels back down.

@@ -54,6 +54,7 @@ type Canvas struct {
 	// Underlying chunk data for the drawing.
 	level    *level.Level
 	chunks   *level.Chunker
+	doodad   *doodads.Doodad
 	modified bool // set to True when the drawing has been modified, like in Editor Mode.
 
 	// Actors to superimpose on top of the drawing.
@@ -179,6 +180,7 @@ func (w *Canvas) LoadLevel(level *level.Level) {
 // LoadDoodad initializes a Canvas from a Doodad object.
 func (w *Canvas) LoadDoodad(d *doodads.Doodad) {
 	// TODO more safe
+	w.doodad = d
 	w.Load(d.Palette, d.Layers[0].Chunker)
 }
 

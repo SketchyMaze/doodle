@@ -106,6 +106,8 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 	// Add the stroke to level history.
 	if w.level != nil && addHistory {
 		w.level.UndoHistory.AddStroke(w.currentStroke)
+	} else if w.doodad != nil && addHistory {
+		w.doodad.UndoHistory.AddStroke(w.currentStroke)
 	}
 
 	w.RemoveStroke(w.currentStroke)

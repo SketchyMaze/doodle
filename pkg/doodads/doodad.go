@@ -2,6 +2,7 @@ package doodads
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
@@ -17,6 +18,9 @@ type Doodad struct {
 	Hitbox   render.Rect       `json:"hitbox"`
 	Layers   []Layer           `json:"layers"`
 	Tags     map[string]string `json:"data"` // arbitrary key/value data storage
+
+	// Undo history, temporary live data not persisted to the level file.
+	UndoHistory *drawtool.History `json:"-" msgpack:"-"`
 }
 
 // Layer holds a layer of drawing data for a Doodad.
@@ -43,7 +47,8 @@ func New(size int) *Doodad {
 				Chunker: level.NewChunker(size),
 			},
 		},
-		Tags: map[string]string{},
+		Tags:        map[string]string{},
+		UndoHistory: drawtool.NewHistory(balance.UndoHistory),
 	}
 }
 
