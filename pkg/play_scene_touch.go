@@ -5,6 +5,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -111,6 +112,10 @@ func (s *PlayScene) LoopTouchable(ev *event.State) {
 
 // DrawTouchable draws any UI elements if needed for the touch UI.
 func (s *PlayScene) DrawTouchable() {
+	if usercfg.Current.HideTouchHints {
+		return
+	}
+
 	var (
 		middle     = s.touchGetMiddleBox()
 		background = render.RGBA(200, 200, 200, uint8(s.idleHelpAlpha))

@@ -28,6 +28,7 @@ type Settings struct {
 	EnableFeatures     *bool
 	CrosshairSize      *int
 	CrosshairColor     *render.Color
+	HideTouchHints     *bool
 
 	// Configuration options.
 	SceneName string // name of scene which called this window
@@ -132,6 +133,12 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 		{
 			Boolean: c.HorizontalToolbars,
 			Text:    "Editor: Horizontal instead of vertical toolbars",
+			PadX:    4,
+			name:    "toolbars",
+		},
+		{
+			Boolean: c.HideTouchHints,
+			Text:    "Hide touchscreen control hints during Play Mode",
 			PadX:    4,
 			name:    "toolbars",
 		},

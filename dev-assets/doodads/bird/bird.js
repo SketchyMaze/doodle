@@ -47,10 +47,17 @@ function main() {
 		}
 		sampleTick++;
 
+		// If we are not flying at our original altitude, correct for that.
+		var curV = Self.Position();
+		var Vy = 0.0;
+		if (curV.Y != altitude) {
+			Vy = curV.Y < altitude ? 1 : -1;
+		}
+
 		// TODO: Vector() requires floats, pain in the butt for JS,
 		// the JS API should be friendlier and custom...
 		var Vx = parseFloat(speed * (direction === "left" ? -1 : 1));
-		Self.SetVelocity(Vector(Vx, 0.0));
+		Self.SetVelocity(Vector(Vx, Vy));
 
 		// If we changed directions, stop animating now so we can
 		// turn around quickly without moonwalking.

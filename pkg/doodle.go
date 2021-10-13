@@ -243,6 +243,7 @@ func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
 		EnableFeatures:     &usercfg.Current.EnableFeatures,
 		CrosshairSize:      &usercfg.Current.CrosshairSize,
 		CrosshairColor:     &usercfg.Current.CrosshairColor,
+		HideTouchHints:     &usercfg.Current.HideTouchHints,
 	}
 	return windows.MakeSettingsWindow(d.width, d.height, cfg)
 }

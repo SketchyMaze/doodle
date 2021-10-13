@@ -222,9 +222,6 @@ func (w *Canvas) Loop(ev *event.State) error {
 	}
 	_ = w.loopConstrainScroll()
 
-	// Current time of this loop so we can advance animations.
-	// now := time.Now()
-
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor
 	for _, a := range w.actors {

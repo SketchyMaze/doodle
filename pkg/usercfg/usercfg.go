@@ -33,6 +33,7 @@ type Settings struct {
 	EnableFeatures     bool `json:",omitempty"`
 	CrosshairSize      int  `json:",omitempty"`
 	CrosshairColor     render.Color
+	HideTouchHints     bool `json:"omitempty"`
 
 	// Secret boolprops from balance/boolprops.go
 	ShowHiddenDoodads bool `json:",omitempty"`

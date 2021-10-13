@@ -44,10 +44,11 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		packConfig = ui.Pack{
 			Side: packAlign,
 			Fill: true,
-			PadY: 4,
+			PadY: 1,
 		}
 		tooltipEdge = ui.Left
 		buttonSize  = 32
+		twoColumn   = true // To place in two columns, halves buttonSize to /2
 	)
 	if usercfg.Current.HorizontalToolbars {
 		packAlign = ui.W
@@ -58,6 +59,7 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 		}
 		tooltipEdge = ui.Top
 		buttonSize = 24
+		twoColumn = false
 	}
 
 	// Handler function for the radio buttons being clicked.
@@ -74,16 +76,37 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	}
 
 	// Draw the radio buttons for the palette.
+	var row *ui.Frame
 	if u.Canvas != nil && u.Canvas.Palette != nil {
-		for _, swatch := range u.Canvas.Palette.Swatches {
-			swFrame := ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
-			swFrame.Configure(ui.Config{
-				Width:      buttonSize,
-				Height:     buttonSize,
+		for i, swatch := range u.Canvas.Palette.Swatches {
+			swatch := swatch
+			var width = buttonSize
+
+			// Drawing buttons in two-column mode? (default right-side palette layout)
+			if twoColumn {
+				width = buttonSize / 2
+				if row == nil || i%2 == 0 {
+					row = ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
+					frame.Pack(row, packConfig)
+				}
+			} else {
+				row = ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
+				frame.Pack(row, packConfig)
+			}
+
+			colorbox := ui.NewFrame(swatch.Name)
+			colorbox.Configure(ui.Config{
+				Width:      width,
+				Height:     width,
 				Background: swatch.Color,
 			})
 
-			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, swFrame)
+			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, colorbox)
+			btn.Configure(ui.Config{
+				BorderColor: swatch.Color.Darken(20),
+				BorderSize:  2,
+				OutlineSize: 0,
+			})
 			btn.Handle(ui.Click, onClick)
 			u.Supervisor.Add(btn)
 
@@ -95,7 +118,10 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 
 			btn.Compute(u.d.Engine)
 
-			frame.Pack(btn, packConfig)
+			row.Pack(btn, ui.Pack{
+				Side: ui.W,
+				PadX: 1,
+			})
 		}
 	}
 
