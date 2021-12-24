@@ -13,6 +13,7 @@ const (
 
 // File extensions
 const (
-	LevelExt  = ".level"
-	DoodadExt = ".doodad"
+	LevelExt     = ".level"
+	DoodadExt    = ".doodad"
+	LevelPackExt = ".levelpack"
 )

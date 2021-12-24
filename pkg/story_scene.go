@@ -6,6 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -22,8 +23,8 @@ type StoryScene struct {
 
 	// UI widgets.
 	supervisor       *ui.Supervisor
-	campaignFrame    *ui.Frame // Select a Campaign screen
-	levelSelectFrame *ui.Frame // Select a level in the campaign screen
+	campaignFrame    *ui.Frame  // Select a Campaign screen
+	levelSelectFrame *ui.Window // Select a level in the campaign screen
 
 	// Pointer to the currently active frame.
 	activeFrame *ui.Frame
@@ -59,7 +60,13 @@ func (s *StoryScene) Setup(d *Doodle) error {
 
 	// Set up the sub-screens of this scene.
 	s.campaignFrame = s.setupCampaignFrame()
-	s.levelSelectFrame = s.setupLevelSelectFrame()
+	s.levelSelectFrame = windows.NewLevelPackWindow(windows.LevelPack{
+		Supervisor: s.supervisor,
+		Engine:     d.Engine,
+
+		OnPlayLevel: func(levelpack, filename string) {},
+	})
+	s.levelSelectFrame.Show()
 
 	s.activeFrame = s.campaignFrame
 
@@ -100,13 +107,6 @@ func (s *StoryScene) setupCampaignFrame() *ui.Frame {
 	return frame
 }
 
-// setupLevelSelectFrame sets up the Level Select screen.
-func (s *StoryScene) setupLevelSelectFrame() *ui.Frame {
-	var frame = ui.NewFrame("List Frame")
-
-	return frame
-}
-
 // Loop the story scene.
 func (s *StoryScene) Loop(d *Doodle, ev *event.State) error {
 	s.supervisor.Loop(ev)
@@ -134,6 +134,8 @@ func (s *StoryScene) Draw(d *Doodle) error {
 
 	// Draw the active screen.
 	s.activeFrame.Present(d.Engine, render.Origin)
+
+	s.supervisor.Present(d.Engine)
 
 	return nil
 }

@@ -17,6 +17,7 @@ var (
 
 	ProfileDirectory    string
 	LevelDirectory      string
+	LevelPackDirectory  string
 	DoodadDirectory     string
 	CampaignDirectory   string
 	ScreenshotDirectory string
@@ -35,6 +36,7 @@ func init() {
 	// Profile directory contains the user's levels and doodads.
 	ProfileDirectory = configdir.LocalConfig(ConfigDirectoryName)
 	LevelDirectory = configdir.LocalConfig(ConfigDirectoryName, "levels")
+	LevelPackDirectory = configdir.LocalConfig(ConfigDirectoryName, "levelpacks")
 	DoodadDirectory = configdir.LocalConfig(ConfigDirectoryName, "doodads")
 	CampaignDirectory = configdir.LocalConfig(ConfigDirectoryName, "campaigns")
 	ScreenshotDirectory = configdir.LocalConfig(ConfigDirectoryName, "screenshots")
@@ -47,6 +49,7 @@ func init() {
 	// WASM: do not make paths in wasm.
 	if runtime.GOOS != "js" {
 		configdir.MakePath(LevelDirectory)
+		configdir.MakePath(LevelPackDirectory)
 		configdir.MakePath(DoodadDirectory)
 		configdir.MakePath(CampaignDirectory)
 		configdir.MakePath(FontDirectory)

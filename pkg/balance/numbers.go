@@ -12,6 +12,10 @@ var (
 	Width  = 1024
 	Height = 768
 
+	// Title screen height needed for the main menu. Phones in landscape
+	// mode will switch to the horizontal layout if less than this height.
+	TitleScreenResponsiveHeight = 600
+
 	// Speed to scroll a canvas with arrow keys in Edit Mode.
 	CanvasScrollSpeed         = 8
 	FollowActorMaxScrollSpeed = 64

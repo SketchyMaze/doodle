@@ -7,8 +7,14 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 	"time"
+
+	"git.kirsle.net/apps/doodle/assets"
+	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/filesystem"
+	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
 
 // LevelPack describes the contents of a levelpack file.
@@ -61,6 +67,42 @@ func LoadFile(filename string) (LevelPack, error) {
 	lp.GetJSON(&lp, "index.json")
 
 	return lp, nil
+}
+
+// ListFiles lists all the discoverable levelpack files, starting from
+// the game's built-ins all the way to user levelpacks.
+func ListFiles() ([]string, error) {
+	var names []string
+
+	// List levelpacks embedded into the binary.
+	if files, err := assets.AssetDir("assets/levelpacks"); err == nil {
+		names = append(names, files...)
+	}
+
+	// WASM stops here, no filesystem access.
+	if runtime.GOOS == "js" {
+		return names, nil
+	}
+
+	// Read system-level levelpacks.
+	files, _ := ioutil.ReadDir(filesystem.SystemLevelPacksPath)
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(name, enum.LevelPackExt) {
+			names = append(names, name)
+		}
+	}
+
+	// Append user levelpacks.
+	files, _ = ioutil.ReadDir(userdir.LevelPackDirectory)
+	for _, file := range files {
+		name := file.Name()
+		if strings.HasSuffix(name, enum.LevelPackExt) {
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
 }
 
 // WriteFile saves the metadata to a .json file on disk.

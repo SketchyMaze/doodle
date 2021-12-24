@@ -26,9 +26,10 @@ const (
 
 // Paths to system-level assets bundled with the application.
 var (
-	SystemDoodadsPath   = filepath.Join("assets", "doodads")
-	SystemLevelsPath    = filepath.Join("assets", "levels")
-	SystemCampaignsPath = filepath.Join("assets", "campaigns")
+	SystemDoodadsPath    = filepath.Join("assets", "doodads")
+	SystemLevelsPath     = filepath.Join("assets", "levels")
+	SystemCampaignsPath  = filepath.Join("assets", "campaigns")
+	SystemLevelPacksPath = filepath.Join("assets", "levelpacks")
 )
 
 // MakeHeader creates the binary file header.

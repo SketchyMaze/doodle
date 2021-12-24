@@ -38,6 +38,7 @@ type MainScene struct {
 	btnRegister   *ui.Button
 	winRegister   *ui.Window
 	winSettings   *ui.Window
+	winLevelPacks *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -47,6 +48,12 @@ type MainScene struct {
 	lazyScrollBounce     bool
 	lazyScrollTrajectory render.Point
 	lazyScrollLastValue  render.Point
+
+	// Landscape mode: if the screen isn't tall enough to see the main
+	// menu we redo the layout to be landscape friendly. NOTE: this only
+	// happens one time, and does not re-adapt when the window is made
+	// tall enough again.
+	landscapeMode bool
 }
 
 // Name of the scene.
@@ -161,10 +168,22 @@ func (s *MainScene) Setup(d *Doodle) error {
 		Func  func()
 		Style *style.Button
 	}{
-		// {
-		// 	Name: "Story Mode",
-		// 	Func: d.GotoStoryMenu,
-		// },
+		{
+			Name: "Story Mode",
+			Func: func() {
+				if s.winLevelPacks == nil {
+					s.winLevelPacks = windows.NewLevelPackWindow(windows.LevelPack{
+						Supervisor: s.Supervisor,
+						Engine:     d.Engine,
+					})
+				}
+				s.winLevelPacks.MoveTo(render.Point{
+					X: (d.width / 2) - (s.winLevelPacks.Size().W / 2),
+					Y: (d.height / 2) - (s.winLevelPacks.Size().H / 2),
+				})
+				s.winLevelPacks.Show()
+			},
+		},
 		{
 			Name:  "Play a Level",
 			Func:  d.GotoPlayMenu,
@@ -228,6 +247,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 			log.Error("MainScene.setupAsync: %s", err)
 		}
 	}()
+
+	// Trigger our "Window Resized" function so we can check if the
+	// layout needs to be switched to landscape mode for mobile.
+	s.Resized(d.width, d.height)
 
 	return nil
 }
@@ -310,14 +333,119 @@ func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 		w, h := d.Engine.WindowSize()
 		d.width = w
 		d.height = h
-		log.Info("Resized to %dx%d", d.width, d.height)
-		s.canvas.Resize(render.Rect{
-			W: d.width,
-			H: d.height,
-		})
+		s.Resized(w, h)
 	}
 
 	return nil
+}
+
+// Resized the app window.
+func (s *MainScene) Resized(width, height int) {
+	log.Info("Resized to %dx%d", width, height)
+
+	// If the height is not tall enough for the menu, switch to the horizontal layout.
+	if height < balance.TitleScreenResponsiveHeight {
+		log.Error("Switch to landscape mode")
+		s.landscapeMode = true
+	} else {
+		s.landscapeMode = false
+	}
+
+	s.canvas.Resize(render.Rect{
+		W: width,
+		H: height,
+	})
+}
+
+// Move things into position for the main menu. This function arranges
+// the Title, Subtitle, Buttons, etc. into screen relative positions every
+// tick. This function sets their 'default' values, but if the window is
+// not tall enough and needs the landscape orientation, positionMenuLandscape()
+// will override these defaults.
+func (s *MainScene) positionMenuPortrait(d *Doodle) {
+	// App title label.
+	s.labelTitle.MoveTo(render.Point{
+		X: (d.width / 2) - (s.labelTitle.Size().W / 2),
+		Y: 120,
+	})
+
+	// App subtitle label (byline).
+	s.labelSubtitle.MoveTo(render.Point{
+		X: (d.width / 2) - (s.labelSubtitle.Size().W / 2),
+		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
+	})
+
+	// Version label
+	s.labelVersion.MoveTo(render.Point{
+		X: (d.width) - (s.labelVersion.Size().W) - 20,
+		Y: 20,
+	})
+
+	// Hint label.
+	s.labelHint.MoveTo(render.Point{
+		X: (d.width / 2) - (s.labelHint.Size().W / 2),
+		Y: d.height - s.labelHint.Size().H - 32,
+	})
+
+	// Update button.
+	s.updateButton.MoveTo(render.Point{
+		X: 24,
+		Y: d.height - s.updateButton.Size().H - 24,
+	})
+
+	// Button frame.
+	s.frame.MoveTo(render.Point{
+		X: (d.width / 2) - (s.frame.Size().W / 2),
+		Y: 260,
+	})
+
+	// Register button.
+	s.btnRegister.MoveTo(render.Point{
+		X: d.width - s.btnRegister.Size().W - 24,
+		Y: d.height - s.btnRegister.Size().H - 24,
+	})
+}
+
+func (s *MainScene) positionMenuLandscape(d *Doodle) {
+	s.positionMenuPortrait(d)
+
+	var (
+		col1 = render.Rect{
+			X: 0,
+			Y: 0,
+			W: d.width / 2,
+			H: d.height,
+		}
+		col2 = render.Rect{
+			X: d.width,
+			Y: 0,
+			W: d.width - col1.W,
+			H: d.height,
+		}
+	)
+
+	// Title and subtitle move to the left.
+	s.labelTitle.MoveTo(render.Point{
+		X: (col1.W / 2) - (s.labelTitle.Size().W / 2),
+		Y: s.labelTitle.Point().Y,
+	})
+	s.labelSubtitle.MoveTo(render.Point{
+		X: (col1.W / 2) - (s.labelSubtitle.Size().W / 2),
+		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
+	})
+
+	// Button frame to the right.
+	s.frame.MoveTo(render.Point{
+		X: (col2.X+col2.W)/2 - (s.frame.Size().W / 2),
+		Y: (d.height / 2) - (s.frame.Size().H / 2),
+	})
+
+	// Register button to the top left.
+	// TODO: not ideal, move into main button list?
+	s.btnRegister.MoveTo(render.Point{
+		X: 20,
+		Y: 20,
+	})
 }
 
 // LoopLazyScroll gently scrolls the title screen demo level, called each Loop.
@@ -399,53 +527,32 @@ func (s *MainScene) Draw(d *Doodle) error {
 		}
 	}
 
+	// Arrange the main widgets by Portrait or Landscape mode.
+	if s.landscapeMode {
+		s.positionMenuLandscape(d)
+	} else {
+		s.positionMenuPortrait(d)
+	}
+
 	// App title label.
-	s.labelTitle.MoveTo(render.Point{
-		X: (d.width / 2) - (s.labelTitle.Size().W / 2),
-		Y: 120,
-	})
 	s.labelTitle.Present(d.Engine, s.labelTitle.Point())
 
 	// App subtitle label (byline).
-	s.labelSubtitle.MoveTo(render.Point{
-		X: (d.width / 2) - (s.labelSubtitle.Size().W / 2),
-		Y: s.labelTitle.Point().Y + s.labelTitle.Size().H + 8,
-	})
 	s.labelSubtitle.Present(d.Engine, s.labelSubtitle.Point())
 
 	// Version label
-	s.labelVersion.MoveTo(render.Point{
-		X: (d.width) - (s.labelVersion.Size().W) - 20,
-		Y: 20,
-	})
 	s.labelVersion.Present(d.Engine, s.labelVersion.Point())
 
 	// Hint label.
-	s.labelHint.MoveTo(render.Point{
-		X: (d.width / 2) - (s.labelHint.Size().W / 2),
-		Y: d.height - s.labelHint.Size().H - 32,
-	})
 	s.labelHint.Present(d.Engine, s.labelHint.Point())
 
 	// Update button.
-	s.updateButton.MoveTo(render.Point{
-		X: 24,
-		Y: d.height - s.updateButton.Size().H - 24,
-	})
 	s.updateButton.Present(d.Engine, s.updateButton.Point())
 
 	s.frame.Compute(d.Engine)
-	s.frame.MoveTo(render.Point{
-		X: (d.width / 2) - (s.frame.Size().W / 2),
-		Y: 260,
-	})
 	s.frame.Present(d.Engine, s.frame.Point())
 
 	// Register button.
-	s.btnRegister.MoveTo(render.Point{
-		X: d.width - s.btnRegister.Size().W - 24,
-		Y: d.height - s.btnRegister.Size().H - 24,
-	})
 	s.btnRegister.Present(d.Engine, s.btnRegister.Point())
 
 	// Present supervised windows.
