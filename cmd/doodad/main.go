@@ -56,6 +56,7 @@ func main() {
 		commands.EditLevel,
 		commands.EditDoodad,
 		commands.InstallScript,
+		commands.LevelPack,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
