@@ -10,6 +10,7 @@ wasm/assets/
 *.wasm
 *.doodad
 *.level
+*.levelpack
 docker/ubuntu
 docker/debian
 docker/fedora

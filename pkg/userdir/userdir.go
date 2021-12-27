@@ -28,8 +28,9 @@ var (
 
 // File extensions
 const (
-	extLevel  = ".level"
-	extDoodad = ".doodad"
+	extLevel     = ".level"
+	extDoodad    = ".doodad"
+	extLevelPack = ".levelpack"
 )
 
 func init() {
@@ -67,6 +68,11 @@ func LevelPath(filename string) string {
 // DoodadPath is like LevelPath but for Doodad files.
 func DoodadPath(filename string) string {
 	return resolvePath(DoodadDirectory, filename, extDoodad)
+}
+
+// LevelPackPath returns the user's levelpacks directory.
+func LevelPackPath(filename string) string {
+	return resolvePath(LevelPackDirectory, filename, extLevelPack)
 }
 
 // CacheFilename returns a path to a file in the cache folder. Send in path

@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/levelpack"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
@@ -29,6 +30,10 @@ type PlayScene struct {
 	HasNext                bool         // has a next level to load next
 	RememberScrollPosition render.Point // for the Editor quality of life
 	SpawnPoint             render.Point // if not zero, overrides Start Flag
+
+	// If this level was part of a levelpack. The Play Scene will read it
+	// from the levelpack ZIP file in priority over any other location.
+	LevelPack *levelpack.LevelPack
 
 	// Private variables.
 	d            *Doodle
@@ -374,6 +379,24 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 	// Beaten the level?
 	if success {
 		config.OnRetryCheckpoint = nil
+
+		// Are we in a levelpack? Show the "Next Level" button if there is
+		// a sequel to this level.
+		if s.LevelPack != nil {
+			for i, level := range s.LevelPack.Levels {
+				i := i
+				level := level
+
+				if level.Filename == s.Filename && i < len(s.LevelPack.Levels)-1 {
+					// Show "Next" button!
+					config.OnNextLevel = func() {
+						nextLevel := s.LevelPack.Levels[i+1]
+						log.Info("Advance to next level: %s", nextLevel.Filename)
+						s.d.PlayFromLevelpack(*s.LevelPack, nextLevel)
+					}
+				}
+			}
+		}
 	}
 
 	// Show the modal.
@@ -595,15 +618,45 @@ func (s *PlayScene) Drawing() *uix.Canvas {
 }
 
 // LoadLevel loads a level from disk.
+//
+// If the PlayScene was called with a LevelPack, it will check there
+// first before the usual locations.
+//
+// The usual locations are: embedded bindata, ./assets folder on disk,
+// and user content finally.
 func (s *PlayScene) LoadLevel(filename string) error {
 	s.Filename = filename
 
-	level, err := level.LoadFile(filename)
-	if err != nil {
-		return fmt.Errorf("PlayScene.LoadLevel(%s): %s", filename, err)
+	var (
+		lvl *level.Level
+		err error
+	)
+
+	// Are we playing out of a levelpack?
+	if s.LevelPack != nil {
+		levelbin, err := s.LevelPack.GetData("levels/" + filename)
+		if err != nil {
+			log.Error("Error reading levels/%s from zip: %s", filename, err)
+		}
+
+		lvl, err = level.FromJSON(filename, levelbin)
+		if err != nil {
+			log.Error("PlayScene.LoadLevel(%s) from zipfile: %s", filename, err)
+		}
+
+		log.Info("PlayScene.LoadLevel: found %s in LevelPack zip data", filename)
 	}
 
-	s.Level = level
+	// Try the usual suspects.
+	if lvl == nil {
+		log.Info("PlayScene.LoadLevel: trying the usual places")
+		lvl, err = level.LoadFile(filename)
+		if err != nil {
+			return fmt.Errorf("PlayScene.LoadLevel(%s): %s", filename, err)
+		}
+	}
+
+	s.Level = lvl
 	s.drawing.LoadLevel(s.Level)
 	s.drawing.InstallActors(s.Level.Actors)
 

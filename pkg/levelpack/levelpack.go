@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -69,6 +70,34 @@ func LoadFile(filename string) (LevelPack, error) {
 	return lp, nil
 }
 
+// LoadAllAvailable loads every levelpack visible to the game. Returns
+// the sorted list of filenames as from ListFiles, plus a deeply loaded
+// hash map associating the filenames with their data.
+func LoadAllAvailable() ([]string, map[string]LevelPack, error) {
+	filenames, err := ListFiles()
+	if err != nil {
+		return filenames, nil, err
+	}
+
+	var dictionary = map[string]LevelPack{}
+	for _, filename := range filenames {
+		// Resolve the filename to a definite path on disk.
+		path, err := filesystem.FindFile(filename)
+		if err != nil {
+			return filenames, nil, err
+		}
+
+		lp, err := LoadFile(path)
+		if err != nil {
+			return filenames, nil, err
+		}
+
+		dictionary[filename] = lp
+	}
+
+	return filenames, dictionary, nil
+}
+
 // ListFiles lists all the discoverable levelpack files, starting from
 // the game's built-ins all the way to user levelpacks.
 func ListFiles() ([]string, error) {
@@ -102,7 +131,21 @@ func ListFiles() ([]string, error) {
 		}
 	}
 
-	return names, nil
+	// Deduplicate strings. Can happen e.g. because assets/ is baked
+	// in to bindata but files also exist there locally.
+	var (
+		dedupe []string
+		seen   = map[string]interface{}{}
+	)
+	for _, value := range names {
+		if _, ok := seen[value]; !ok {
+			seen[value] = nil
+			dedupe = append(dedupe, value)
+		}
+	}
+
+	sort.Strings(dedupe)
+	return dedupe, nil
 }
 
 // WriteFile saves the metadata to a .json file on disk.

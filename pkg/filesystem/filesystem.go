@@ -98,6 +98,8 @@ func FindFile(filename string) (string, error) {
 		filetype = enum.LevelExt
 	} else if strings.HasSuffix(filename, enum.DoodadExt) {
 		filetype = enum.DoodadExt
+	} else if strings.HasSuffix(filename, enum.LevelPackExt) {
+		filetype = enum.LevelPackExt
 	}
 
 	// Search level directories.
@@ -151,6 +153,34 @@ func FindFile(filename string) (string, error) {
 
 		// user doodads
 		candidate = userdir.DoodadPath(filename)
+		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
+			return candidate, nil
+		}
+	}
+
+	// Search levelpack directories.
+	if filetype == enum.LevelPackExt || filetype == "" {
+		// system levelpacks path
+		candidate := filepath.Join(SystemLevelPacksPath, filename)
+
+		// embedded in binary?
+		if _, err := assets.Asset(candidate); err == nil {
+			return candidate, nil
+		}
+
+		// WASM: can't check the filesystem. Let the caller go ahead and try
+		// loading via ajax request.
+		if runtime.GOOS == "js" {
+			return filename, nil
+		}
+
+		// external system levelpack?
+		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
+			return candidate, nil
+		}
+
+		// user levelpacks
+		candidate = userdir.LevelPackPath(filename)
 		if _, err := os.Stat(candidate); !os.IsNotExist(err) {
 			return candidate, nil
 		}

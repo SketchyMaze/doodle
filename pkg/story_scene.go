@@ -63,8 +63,6 @@ func (s *StoryScene) Setup(d *Doodle) error {
 	s.levelSelectFrame = windows.NewLevelPackWindow(windows.LevelPack{
 		Supervisor: s.supervisor,
 		Engine:     d.Engine,
-
-		OnPlayLevel: func(levelpack, filename string) {},
 	})
 	s.levelSelectFrame.Show()
 

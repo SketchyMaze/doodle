@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
+	"git.kirsle.net/apps/doodle/pkg/levelpack"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
@@ -326,6 +327,18 @@ func (d *Doodle) PlayLevel(filename string) error {
 	log.Info("Loading level from file: %s", filename)
 	scene := &PlayScene{
 		Filename: filename,
+	}
+	d.Goto(scene)
+	return nil
+}
+
+// PlayFromLevelpack initializes the Play Scene from a level as part of
+// a levelpack.
+func (d *Doodle) PlayFromLevelpack(pack levelpack.LevelPack, which levelpack.Level) error {
+	log.Info("Loading level %s from levelpack %s", which.Filename, pack.Title)
+	scene := &PlayScene{
+		Filename:  which.Filename,
+		LevelPack: &pack,
 	}
 	d.Goto(scene)
 	return nil

@@ -6,6 +6,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/levelpack"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
@@ -175,6 +176,12 @@ func (s *MainScene) Setup(d *Doodle) error {
 					s.winLevelPacks = windows.NewLevelPackWindow(windows.LevelPack{
 						Supervisor: s.Supervisor,
 						Engine:     d.Engine,
+
+						OnPlayLevel: func(lp levelpack.LevelPack, which levelpack.Level) {
+							if err := d.PlayFromLevelpack(lp, which); err != nil {
+								shmem.FlashError(err.Error())
+							}
+						},
 					})
 				}
 				s.winLevelPacks.MoveTo(render.Point{
@@ -183,6 +190,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 				})
 				s.winLevelPacks.Show()
 			},
+			Style: &balance.ButtonBabyBlue,
 		},
 		{
 			Name:  "Play a Level",
