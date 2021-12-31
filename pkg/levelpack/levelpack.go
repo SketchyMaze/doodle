@@ -3,8 +3,11 @@ package levelpack
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -45,17 +48,37 @@ type Level struct {
 
 // LoadFile reads a .levelpack zip file.
 func LoadFile(filename string) (LevelPack, error) {
-	stat, err := os.Stat(filename)
-	if err != nil {
-		return LevelPack{}, err
+	var (
+		fh       io.ReaderAt
+		filesize int64
+	)
+
+	// Look in embedded bindata.
+	if data, err := assets.Asset(filename); err == nil {
+		filesize = int64(len(data))
+		fh = bytes.NewReader(data)
 	}
 
-	fh, err := os.Open(filename)
-	if err != nil {
-		return LevelPack{}, err
+	// Try the filesystem.
+	if fh == nil {
+		stat, err := os.Stat(filename)
+		if err != nil {
+			return LevelPack{}, err
+		}
+		filesize = stat.Size()
+
+		fh, err = os.Open(filename)
+		if err != nil {
+			return LevelPack{}, err
+		}
 	}
 
-	reader, err := zip.NewReader(fh, stat.Size())
+	// No luck?
+	if fh == nil {
+		return LevelPack{}, errors.New("no file found")
+	}
+
+	reader, err := zip.NewReader(fh, filesize)
 	if err != nil {
 		return LevelPack{}, err
 	}
@@ -84,12 +107,13 @@ func LoadAllAvailable() ([]string, map[string]LevelPack, error) {
 		// Resolve the filename to a definite path on disk.
 		path, err := filesystem.FindFile(filename)
 		if err != nil {
+			fmt.Errorf("LoadAllAvailable: FindFile(%s): %s", path, err)
 			return filenames, nil, err
 		}
 
 		lp, err := LoadFile(path)
 		if err != nil {
-			return filenames, nil, err
+			return filenames, nil, fmt.Errorf("LoadAllAvailable: LoadFile(%s): %s", path, err)
 		}
 
 		dictionary[filename] = lp

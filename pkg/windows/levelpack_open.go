@@ -42,9 +42,6 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 		log.Error("Couldn't list levelpack files: %s", err)
 	}
 
-	log.Error("lpFiles: %+v", lpFiles)
-	log.Error("packmap: %+v", packmap)
-
 	window := ui.NewWindow(title)
 	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
