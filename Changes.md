@@ -1,6 +1,6 @@
 # Changes
 
-## v0.10.0 (TBD)
+## v0.10.0 (Dec 30 2021)
 
 New features and changes:
 
@@ -16,9 +16,13 @@ New features and changes:
 * Doodad AI updates: the **Bird** records its original altitude and will
   attempt to fly back there when it can, so in case it slid up or down a
   ramp it will correct its height when it comes back the other way.
+* The "New Level" and "New Doodad" functions on the main menu are
+  consolidated into a window together that can create either, bringing
+  a proper UI to creating a doodad.
 * Added a setting to **hide touch control hints** from Play Mode.
 * The title screen is more adaptive to mobile. If the window height isn't
   tall enough to show the menu, it switches to a 'landscape mode' layout.
+* Adds a custom icon to the application window.
 
 A few notes about level packs:
 
@@ -41,6 +45,11 @@ Bugs fixed:
 
 * Undo/Redo now works again for the Doodad Editor.
 * Fix crash when opening the Doodad Editor (v0.9.0 regression).
+* The Play Level/Edit Drawing window is more responsive to small screens
+  and will draw fewer columns of filenames.
+* Alert and Confirm popup modals always re-center themselves, especially
+  to adapt to the user switching from Portrait to Landscape orientation
+  on mobile.
 
 ## v0.9.0 (Oct 9, 2021)
 

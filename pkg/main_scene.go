@@ -214,6 +214,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 		},
 	}
 	for _, button := range buttons {
+		if check := button.If; check != nil && !check() {
+			continue
+		}
+
 		button := button
 		btn := ui.NewButton(button.Name, ui.NewLabel(ui.Label{
 			Text: button.Name,
