@@ -5,6 +5,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -87,10 +88,13 @@ func Draw() {
 
 // Center the window on screen.
 func center(win *ui.Window) {
-	var modSize = win.Size()
+	var (
+		modSize       = win.Size()
+		width, height = shmem.CurrentRenderEngine.WindowSize()
+	)
 	var moveTo = render.Point{
-		X: (window.W / 2) - (modSize.W / 2),
-		Y: (window.H / 4) - (modSize.H / 2),
+		X: (width / 2) - (modSize.W / 2),
+		Y: (height / 4) - (modSize.H / 2),
 	}
 	win.MoveTo(moveTo)
 

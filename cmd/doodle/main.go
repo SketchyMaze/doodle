@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sound"
+	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
@@ -166,6 +167,16 @@ func main() {
 
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
+
+		// Set the app window icon.
+		if engine, ok := game.Engine.(*sdl.Renderer); ok {
+			if icon, err := sprites.LoadImage(game.Engine, balance.WindowIcon); err == nil {
+				engine.SetWindowIcon(icon.Image)
+			} else {
+				log.Error("Couldn't load WindowIcon (%s): %s", balance.WindowIcon, err)
+			}
+		}
+
 		if c.Bool("guitest") {
 			game.Goto(&doodle.GUITestScene{})
 		} else if filename != "" {

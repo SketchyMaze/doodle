@@ -17,3 +17,11 @@ const (
 	DoodadExt    = ".doodad"
 	LevelPackExt = ".levelpack"
 )
+
+// Responsive breakpoints for mobile friendly UIs.
+const (
+	ScreenWidthXSmall = 400
+	ScreenWidthSmall  = 600
+	ScreenWidthMedium = 800
+	ScreenWidthLarge  = 1000
+)

@@ -17,6 +17,9 @@ MenuScene holds the main dialog menu UIs for:
 * New Level
 * Open Level
 * Settings
+
+DEPRECATED: migrate these prompts into popup windows to appear
+on the MainScene or elsewhere as wanted.
 */
 type MenuScene struct {
 	// Configuration.
@@ -158,6 +161,9 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				DrawingType: enum.LevelDrawing,
 				Level:       lvl,
 			})
+		},
+		OnCreateNewDoodad: func(size int) {
+			d.NewDoodad(size)
 		},
 		OnCancel: func() {
 			d.Goto(&MainScene{})

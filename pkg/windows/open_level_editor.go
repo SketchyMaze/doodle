@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
@@ -32,7 +33,17 @@ type OpenLevelEditor struct {
 func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 	var (
 		width, height = config.Engine.WindowSize()
+		columns       = 4
 	)
+
+	// Show fewer columns on smaller devices.
+	if width <= enum.ScreenWidthXSmall {
+		columns = 1
+	} else if width <= enum.ScreenWidthSmall {
+		columns = 2
+	} else if width <= enum.ScreenWidthMedium {
+		columns = 3
+	}
 
 	window := ui.NewWindow("Open Drawing")
 	window.Configure(ui.Config{
@@ -86,7 +97,9 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 			func(i int, lvl string) {
 				btn := ui.NewButton("Level Btn", ui.NewLabel(ui.Label{
 					Text: lvl,
-					Font: balance.MenuFont,
+					Font: balance.MenuFont.Update(render.Text{
+						PadY: 2,
+					}),
 				}))
 				btn.Handle(ui.Click, func(ed ui.EventData) error {
 					if config.LoadForPlay {
@@ -103,7 +116,7 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 					Fill:   true,
 				})
 
-				if i > 0 && (i+1)%4 == 0 {
+				if columns == 1 || i > 0 && (i+1)%columns == 0 {
 					lvlRow = ui.NewFrame(fmt.Sprintf("Level Row %d", i))
 					frame.Pack(lvlRow, ui.Pack{
 						Side:  ui.N,

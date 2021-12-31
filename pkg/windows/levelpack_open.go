@@ -17,7 +17,8 @@ type LevelPack struct {
 	Engine     render.Engine
 
 	// Callback functions.
-	OnPlayLevel func(pack levelpack.LevelPack, level levelpack.Level)
+	OnPlayLevel   func(pack levelpack.LevelPack, level levelpack.Level)
+	OnCloseWindow func()
 
 	// Internal variables
 	window   *ui.Window
@@ -65,6 +66,7 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 	// And each LevelPack's screen is a pager for its Levels.
 	tabFrame := ui.NewTabFrame("Screens Manager")
 	tabFrame.SetTabsHidden(true)
+	tabFrame.Supervise(config.Supervisor)
 	window.Pack(tabFrame, ui.Pack{
 		Side:  ui.N,
 		FillX: true,
@@ -90,12 +92,23 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 		config.makeDetailScreen(tab, width, height, packmap[filename])
 	}
 
-	// indexTab.Resize(render.Rect{
-	// 	W: width-4,
-	// 	H: height-4,
-	// })
+	// Close button.
+	if config.OnCloseWindow != nil {
+		closeBtn := ui.NewButton("Close Window", ui.NewLabel(ui.Label{
+			Text: "Close",
+			Font: balance.MenuFont,
+		}))
+		closeBtn.Handle(ui.Click, func(ed ui.EventData) error {
+			config.OnCloseWindow()
+			return nil
+		})
+		config.Supervisor.Add(closeBtn)
+		window.Place(closeBtn, ui.Place{
+			Bottom: 15,
+			Center: true,
+		})
+	}
 
-	tabFrame.Supervise(config.Supervisor)
 	window.Supervise(config.Supervisor)
 	window.Hide()
 	return window

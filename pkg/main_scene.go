@@ -36,7 +36,6 @@ type MainScene struct {
 	labelVersion  *ui.Label
 	labelHint     *ui.Label
 	frame         *ui.Frame // Main button frame
-	btnRegister   *ui.Button
 	winRegister   *ui.Window
 	winSettings   *ui.Window
 	winLevelPacks *ui.Window
@@ -125,47 +124,13 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.updateButton.Hide()
 	s.Supervisor.Add(s.updateButton)
 
-	// Register button.
-	s.btnRegister = ui.NewButton("Register", ui.NewLabel(ui.Label{
-		Text: "Register Game",
-		Font: balance.LabelFont,
-	}))
-	s.btnRegister.SetStyle(&balance.ButtonPrimary)
-	s.btnRegister.Handle(ui.Click, func(ed ui.EventData) error {
-		if s.winRegister == nil {
-			cfg := windows.License{
-				Supervisor: s.Supervisor,
-				Engine:     d.Engine,
-				OnCancel: func() {
-					s.winRegister.Hide()
-				},
-			}
-			cfg.OnLicensed = func() {
-				// License status has changed, reload the window!
-				if s.winRegister != nil {
-					s.winRegister.Hide()
-				}
-				s.winRegister = windows.MakeLicenseWindow(d.width, d.height, cfg)
-			}
-
-			cfg.OnLicensed()
-		}
-		s.winRegister.Show()
-		return nil
-	})
-	s.btnRegister.Compute(d.Engine)
-	s.Supervisor.Add(s.btnRegister)
-
-	if license.IsRegistered() {
-		s.btnRegister.Hide()
-	}
-
 	// Main UI button frame.
 	frame := ui.NewFrame("frame")
 	s.frame = frame
 
 	var buttons = []struct {
 		Name  string
+		If    func() bool
 		Func  func()
 		Style *style.Button
 	}{
@@ -181,6 +146,9 @@ func (s *MainScene) Setup(d *Doodle) error {
 							if err := d.PlayFromLevelpack(lp, which); err != nil {
 								shmem.FlashError(err.Error())
 							}
+						},
+						OnCloseWindow: func() {
+							s.winLevelPacks.Hide()
 						},
 					})
 				}
@@ -198,21 +166,14 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Style: &balance.ButtonBabyBlue,
 		},
 		{
-			Name:  "Create a Level",
+			Name:  "New Drawing",
 			Func:  d.GotoNewMenu,
 			Style: &balance.ButtonPink,
 		},
 		{
-			Name: "Create a Doodad",
-			Func: func() {
-				d.NewDoodad(0)
-			},
-			Style: &balance.ButtonPink,
-		},
-		{
-			Name:  "Edit a Drawing",
+			Name:  "Edit Drawing",
 			Func:  d.GotoLoadMenu,
-			Style: &balance.ButtonPrimary,
+			Style: &balance.ButtonPink,
 		},
 		{
 			Name: "Settings",
@@ -222,6 +183,34 @@ func (s *MainScene) Setup(d *Doodle) error {
 				}
 				s.winSettings.Show()
 			},
+		},
+		{
+			Name: "Register",
+			If: func() bool {
+				return !license.IsRegistered()
+			},
+			Func: func() {
+				if s.winRegister == nil {
+					cfg := windows.License{
+						Supervisor: s.Supervisor,
+						Engine:     d.Engine,
+						OnCancel: func() {
+							s.winRegister.Hide()
+						},
+					}
+					cfg.OnLicensed = func() {
+						// License status has changed, reload the window!
+						if s.winRegister != nil {
+							s.winRegister.Hide()
+						}
+						s.winRegister = windows.MakeLicenseWindow(d.width, d.height, cfg)
+					}
+
+					cfg.OnLicensed()
+				}
+				s.winRegister.Show()
+			},
+			Style: &balance.ButtonPrimary,
 		},
 	}
 	for _, button := range buttons {
@@ -406,12 +395,6 @@ func (s *MainScene) positionMenuPortrait(d *Doodle) {
 		X: (d.width / 2) - (s.frame.Size().W / 2),
 		Y: 260,
 	})
-
-	// Register button.
-	s.btnRegister.MoveTo(render.Point{
-		X: d.width - s.btnRegister.Size().W - 24,
-		Y: d.height - s.btnRegister.Size().H - 24,
-	})
 }
 
 func (s *MainScene) positionMenuLandscape(d *Doodle) {
@@ -446,13 +429,6 @@ func (s *MainScene) positionMenuLandscape(d *Doodle) {
 	s.frame.MoveTo(render.Point{
 		X: (col2.X+col2.W)/2 - (s.frame.Size().W / 2),
 		Y: (d.height / 2) - (s.frame.Size().H / 2),
-	})
-
-	// Register button to the top left.
-	// TODO: not ideal, move into main button list?
-	s.btnRegister.MoveTo(render.Point{
-		X: 20,
-		Y: 20,
 	})
 }
 
@@ -559,9 +535,6 @@ func (s *MainScene) Draw(d *Doodle) error {
 
 	s.frame.Compute(d.Engine)
 	s.frame.Present(d.Engine, s.frame.Point())
-
-	// Register button.
-	s.btnRegister.Present(d.Engine, s.btnRegister.Point())
 
 	// Present supervised windows.
 	s.Supervisor.Present(d.Engine)

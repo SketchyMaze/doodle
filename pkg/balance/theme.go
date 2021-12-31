@@ -8,6 +8,8 @@ import (
 
 // Theme and appearance variables.
 var (
+	WindowIcon = "assets/icons/96.png"
+
 	// Title Screen Font
 	TitleScreenFont = render.Text{
 		Size:   46,
