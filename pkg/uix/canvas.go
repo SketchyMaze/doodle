@@ -138,6 +138,11 @@ func NewCanvas(size int, editable bool) *Canvas {
 	return w
 }
 
+// Destroy the canvas.
+//
+// TODO: Not implemented, here to satisfy ui.Widget, should free up textures tho.
+func (w *Canvas) Destroy() {}
+
 // Load initializes the Canvas using an existing Palette and Grid.
 func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {
 	w.Palette = p

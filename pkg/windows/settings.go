@@ -300,16 +300,38 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			style.HoverBackground = style.Background.Lighten(20)
 			btn.SetStyle(&style)
 			btn.Handle(ui.Click, func(ed ui.EventData) error {
-				shmem.Prompt("Enter color in hexadecimal notation: ", func(answer string) {
-					if answer == "" {
-						return
-					}
+				// Open a ColorPicker widget.
+				picker, err := ui.NewColorPicker(ui.ColorPicker{
+					Title:      "Select a color",
+					Supervisor: c.Supervisor,
+					Engine:     c.Engine,
+					Color:      *row.Color,
+					OnManualInput: func(callback func(render.Color)) {
+						// Prompt the user to enter a hex color using the developer shell.
+						shmem.Prompt("New color in hex notation: ", func(answer string) {
+							if answer != "" {
+								// XXX: pure white renders as invisible, fudge it a bit.
+								if answer == "FFFFFF" {
+									answer = "FFFFFE"
+								}
 
-					color, err := render.HexColor(answer)
-					if err != nil {
-						shmem.FlashError("Invalid color value: %s", err)
-					}
+								color, err := render.HexColor(answer)
+								if err != nil {
+									shmem.Flash("Error with that color code: %s", err)
+									return
+								}
 
+								callback(color)
+							}
+						})
+					},
+				})
+				if err != nil {
+					log.Error("Couldn't open ColorPicker: %s", err)
+					return err
+				}
+
+				picker.Then(func(color render.Color) {
 					*row.Color = color
 					style.Background = color
 					style.HoverBackground = style.Background.Lighten(20)
@@ -317,6 +339,10 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 					// call onClick to save change to disk now
 					onClick(ed)
 				})
+
+				picker.Center(shmem.CurrentRenderEngine.WindowSize())
+				picker.Show()
+
 				return nil
 			})
 

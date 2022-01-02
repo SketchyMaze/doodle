@@ -180,38 +180,60 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				Height:     24,
 			})
 			btnColor.Handle(ui.Click, func(ed ui.EventData) error {
-				shmem.Prompt(fmt.Sprintf(
-					"New color in hex notation [%s]: ", swatch.Color.ToHex()), func(answer string) {
-					if answer != "" {
-						// XXX: pure white renders as invisible, fudge it a bit.
-						if answer == "FFFFFF" {
-							answer = "FFFFFE"
-						}
+				// Open a ColorPicker widget.
+				picker, err := ui.NewColorPicker(ui.ColorPicker{
+					Title:      "Select a color",
+					Supervisor: config.Supervisor,
+					Engine:     config.Engine,
+					Color:      swatch.Color,
+					OnManualInput: func(callback func(render.Color)) {
+						// Prompt the user to enter a hex color using the developer shell.
+						shmem.Prompt(fmt.Sprintf(
+							"New color in hex notation [%s]: ", swatch.Color.ToHex()), func(answer string) {
+							if answer != "" {
+								// XXX: pure white renders as invisible, fudge it a bit.
+								if answer == "FFFFFF" {
+									answer = "FFFFFE"
+								}
 
-						color, err := render.HexColor(answer)
-						if err != nil {
-							shmem.Flash("Error with that color code: %s", err)
-							return
-						}
+								color, err := render.HexColor(answer)
+								if err != nil {
+									shmem.Flash("Error with that color code: %s", err)
+									return
+								}
 
-						swatch.Color = color
-
-						// TODO: redundant from above, consolidate these
-						fmt.Printf("Set button style to: %s\n", swatch.Color)
-						btnColor.SetStyle(&style.Button{
-							Background:      swatch.Color,
-							HoverBackground: swatch.Color.Lighten(40),
-							OutlineColor:    render.Black,
-							OutlineSize:     1,
-							BorderStyle:     style.BorderRaised,
-							BorderSize:      2,
+								callback(color)
+							}
 						})
+					},
+				})
+				if err != nil {
+					log.Error("Couldn't open ColorPicker: %s", err)
+					return err
+				}
 
-						if config.OnChange != nil {
-							config.OnChange()
-						}
+				picker.Then(func(color render.Color) {
+					swatch.Color = color
+
+					// TODO: redundant from above, consolidate these
+					fmt.Printf("Set button style to: %s\n", swatch.Color)
+					btnColor.SetStyle(&style.Button{
+						Background:      swatch.Color,
+						HoverBackground: swatch.Color.Lighten(40),
+						OutlineColor:    render.Black,
+						OutlineSize:     1,
+						BorderStyle:     style.BorderRaised,
+						BorderSize:      2,
+					})
+
+					if config.OnChange != nil {
+						config.OnChange()
 					}
 				})
+
+				picker.Center(shmem.CurrentRenderEngine.WindowSize())
+				picker.Show()
+
 				return nil
 			})
 			config.Supervisor.Add(btnColor)
