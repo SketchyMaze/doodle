@@ -26,6 +26,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 	case "don't edit and drive":
 		if isPlay {
 			playScene.drawing.Editable = true
+			playScene.SetCheated()
 			d.Flash("Level canvas is now editable. Don't edit and drive!")
 		} else {
 			d.FlashError("Use this cheat in Play Mode to make the level canvas editable.")
@@ -34,6 +35,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 	case "scroll scroll scroll your boat":
 		if isPlay {
 			playScene.drawing.Scrollable = true
+			playScene.SetCheated()
 			d.Flash("Level canvas is now scrollable with the arrow keys.")
 		} else {
 			d.FlashError("Use this cheat in Play Mode to make the level scrollable.")
@@ -41,6 +43,8 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case "import antigravity":
 		if isPlay {
+			playScene.SetCheated()
+
 			playScene.antigravity = !playScene.antigravity
 			playScene.Player.SetGravity(!playScene.antigravity)
 
@@ -55,6 +59,8 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case "ghost mode":
 		if isPlay {
+			playScene.SetCheated()
+
 			playScene.noclip = !playScene.noclip
 			playScene.Player.SetNoclip(playScene.noclip)
 
@@ -72,6 +78,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case "show all actors":
 		if isPlay {
+			playScene.SetCheated()
 			for _, actor := range playScene.drawing.Actors() {
 				actor.Show()
 			}
@@ -82,6 +89,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case "give all keys":
 		if isPlay {
+			playScene.SetCheated()
 			playScene.Player.AddItem("key-red.doodad", 0)
 			playScene.Player.AddItem("key-blue.doodad", 0)
 			playScene.Player.AddItem("key-green.doodad", 0)
@@ -94,6 +102,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case "drop all items":
 		if isPlay {
+			playScene.SetCheated()
 			playScene.Player.ClearInventory()
 			d.Flash("Cleared inventory of player character.")
 		} else {

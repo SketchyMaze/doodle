@@ -14,7 +14,9 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/physics"
+	"git.kirsle.net/apps/doodle/pkg/savegame"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -42,6 +44,11 @@ type PlayScene struct {
 	running      bool
 	deathBarrier int // Y position of death barrier in case of falling OOB.
 
+	// Score variables.
+	startTime  time.Time // wallclock time when level begins
+	perfectRun bool      // set false on first respawn
+	cheated    bool      // user has entered a cheat code while playing
+
 	// UI widgets.
 	supervisor *ui.Supervisor
 	screen     *ui.Frame // A window sized invisible frame to position UI elements.
@@ -66,6 +73,12 @@ type PlayScene struct {
 	invenFrame   *ui.Frame
 	invenItems   []string // item list
 	invenDoodads map[string]*uix.Canvas
+
+	// Elapsed Time frame.
+	timerFrame          *ui.Frame
+	timerPerfectImage   *ui.Image
+	timerImperfectImage *ui.Image
+	timerLabel          *ui.Label
 
 	// Touchscreen controls state.
 	isTouching    bool
@@ -136,6 +149,45 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 
 	// Set up the inventory HUD.
 	s.setupInventoryHud()
+
+	// Set up the elapsed time frame.
+	{
+		s.timerFrame = ui.NewFrame("Elapsed Timer")
+
+		// Set the gold and silver images.
+		gold, _ := sprites.LoadImage(s.d.Engine, balance.GoldCoin)
+		silver, _ := sprites.LoadImage(s.d.Engine, balance.SilverCoin)
+		s.timerPerfectImage = gold
+		s.timerImperfectImage = silver
+		s.timerLabel = ui.NewLabel(ui.Label{
+			Text: "00:00",
+			Font: balance.TimerFont,
+		})
+
+		if s.timerPerfectImage != nil {
+			s.timerFrame.Pack(s.timerPerfectImage, ui.Pack{
+				Side: ui.W,
+				PadX: 2,
+			})
+		}
+		if s.timerImperfectImage != nil {
+			s.timerFrame.Pack(s.timerImperfectImage, ui.Pack{
+				Side: ui.W,
+				PadX: 2,
+			})
+			s.timerImperfectImage.Hide()
+		}
+
+		s.timerFrame.Pack(s.timerLabel, ui.Pack{
+			Side: ui.W,
+			PadX: 2,
+		})
+
+		s.screen.Place(s.timerFrame, ui.Place{
+			Top:  40,
+			Left: 40,
+		})
+	}
 
 	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
@@ -216,6 +268,8 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// runtime, + the bitmap generation is pretty wicked fast anyway.
 	loadscreen.PreloadAllChunkBitmaps(s.Level.Chunker)
 
+	s.startTime = time.Now()
+	s.perfectRun = true
 	s.running = true
 
 	return nil
@@ -241,8 +295,8 @@ func (s *PlayScene) setupPlayer() {
 				if linkedActor, ok := s.Level.Actors[linkID]; ok {
 					playerCharacterFilename = linkedActor.Filename
 					log.Info("Playing as: %s", playerCharacterFilename)
+					break
 				}
-				break
 			}
 
 			// TODO: start-flag.doodad is 86x86 pixels but we can't tell that
@@ -346,6 +400,7 @@ func (s *PlayScene) BeatLevel() {
 
 // FailLevel handles a level failure triggered by a doodad.
 func (s *PlayScene) FailLevel(message string) {
+	s.SetImperfect()
 	s.d.FlashError(message)
 	s.ShowEndLevelModal(
 		false,
@@ -359,11 +414,42 @@ func (s *PlayScene) DieByFire(name string) {
 	s.FailLevel(fmt.Sprintf("Watch out for %s!", name))
 }
 
+// SetImperfect sets the perfectRun flag to false and changes the icon for the timer.
+func (s *PlayScene) SetImperfect() {
+	if s.cheated {
+		return
+	}
+
+	s.perfectRun = false
+	if s.timerPerfectImage != nil {
+		s.timerPerfectImage.Hide()
+	}
+	if s.timerImperfectImage != nil {
+		s.timerImperfectImage.Show()
+	}
+}
+
+// SetCheated marks the level as having been cheated. The developer shell will call
+// this if the user enters a cheat code during gameplay.
+func (s *PlayScene) SetCheated() {
+	s.cheated = true
+	s.perfectRun = false
+
+	// Hide both timer icons.
+	if s.timerPerfectImage != nil {
+		s.timerPerfectImage.Hide()
+	}
+	if s.timerImperfectImage != nil {
+		s.timerImperfectImage.Hide()
+	}
+}
+
 // ShowEndLevelModal centralizes the EndLevel modal config.
 // This is the common handler function between easy methods such as
 // BeatLevel, FailLevel, and DieByFire.
 func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 	config := modal.ConfigEndLevel{
+		Engine:            s.d.Engine,
 		Success:           success,
 		OnRestartLevel:    s.RestartLevel,
 		OnRetryCheckpoint: s.RetryCheckpoint,
@@ -380,9 +466,35 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 	if success {
 		config.OnRetryCheckpoint = nil
 
-		// Are we in a levelpack? Show the "Next Level" button if there is
-		// a sequel to this level.
+		// Are we in a levelpack?
 		if s.LevelPack != nil {
+			// Update the savegame to mark the level completed.
+			save, err := savegame.GetOrCreate()
+			if err != nil {
+				log.Warn("Load savegame file: %s", err)
+			}
+
+			log.Info("Mark level '%s' from pack '%s' as completed", s.Filename, s.LevelPack.Filename)
+			if !s.cheated {
+				elapsed := time.Since(s.startTime)
+				highscore := save.NewHighScore(s.LevelPack.Filename, s.Filename, s.perfectRun, elapsed)
+				if highscore {
+					s.d.Flash("New record!")
+					config.NewRecord = true
+					config.IsPerfect = s.perfectRun
+					config.TimeElapsed = elapsed
+				}
+			} else {
+				// Player has cheated! Mark the level completed but grant no high score.
+				save.MarkCompleted(s.LevelPack.Filename, s.Filename)
+			}
+
+			// Save the player's scores file.
+			if err = save.Save(); err != nil {
+				log.Error("Couldn't save game: %s", err)
+			}
+
+			// Show the "Next Level" button if there is a sequel to this level.
 			for i, level := range s.LevelPack.Levels {
 				i := i
 				level := level
@@ -419,6 +531,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
 
+	// Update the timer.
+	s.timerLabel.Text = savegame.FormatDuration(time.Since(s.startTime))
+
 	s.supervisor.Loop(ev)
 
 	// Has the window been resized?
@@ -428,6 +543,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 			d.width = w
 			d.height = h
 			s.drawing.Resize(render.NewRect(d.width, d.height))
+			s.screen.Resize(render.NewRect(d.width, d.height))
 			return nil
 		}
 	}

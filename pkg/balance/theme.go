@@ -8,7 +8,11 @@ import (
 
 // Theme and appearance variables.
 var (
+	// Sprite filenames.
 	WindowIcon = "assets/icons/96.png"
+	GoldCoin   = "assets/sprites/gold.png"
+	SilverCoin = "assets/sprites/silver.png"
+	LockIcon   = "assets/sprites/padlock.png"
 
 	// Title Screen Font
 	TitleScreenFont = render.Text{
@@ -131,6 +135,16 @@ var (
 		Color:        render.Black,
 	}
 
+	// A New Record! Label (Gold/Perfect and Silver/Normal)
+	NewRecordPerfectFont = LabelFont.Update(render.Text{
+		Color:  render.Yellow,
+		Stroke: render.Orange,
+	})
+	NewRecordFont = LabelFont.Update(render.Text{
+		Color:  render.White,
+		Stroke: render.Grey,
+	})
+
 	LargeLabelFont = render.Text{
 		Size:         18,
 		FontFilename: "DejaVuSans-Bold.ttf",
@@ -175,6 +189,14 @@ var (
 		Padding:      4,
 		Color:        render.RGBA(255, 255, 0, 255),
 		Stroke:       render.RGBA(100, 100, 0, 255),
+	}
+
+	// In-game level timer font.
+	TimerFont = render.Text{
+		FontFilename: "DejaVuSansMono.ttf",
+		Size:         16,
+		Color:        render.Cyan,
+		Stroke:       render.DarkCyan,
 	}
 
 	// Doodad Dropper Window settings.

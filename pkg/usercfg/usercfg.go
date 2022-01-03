@@ -11,6 +11,7 @@ package usercfg
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -27,13 +28,14 @@ type Settings struct {
 	// disk, so the game may decide some default settings for first-time
 	// user experience, e.g. set horizontal toolbars for mobile.
 	Initialized bool
+	Entropy     []byte `json:"entropy"`
 
 	// Configurable settings (pkg/windows/settings.go)
 	HorizontalToolbars bool `json:",omitempty"`
 	EnableFeatures     bool `json:",omitempty"`
 	CrosshairSize      int  `json:",omitempty"`
 	CrosshairColor     render.Color
-	HideTouchHints     bool `json:"omitempty"`
+	HideTouchHints     bool `json:",omitempty"`
 
 	// Secret boolprops from balance/boolprops.go
 	ShowHiddenDoodads bool `json:",omitempty"`
@@ -67,6 +69,11 @@ func Save() error {
 	enc.SetIndent("", "\t")
 	Current.Initialized = true
 	Current.UpdatedAt = time.Now()
+	if Current.Entropy == nil || len(Current.Entropy) == 0 {
+		if key, err := MakeEntropy(); err == nil {
+			Current.Entropy = key
+		}
+	}
 	if err := enc.Encode(Current); err != nil {
 		return err
 	}
@@ -98,5 +105,22 @@ func Load() error {
 	}
 
 	Current = settings
+
+	// If we don't have an entropy key saved, make one and save it.
+	if Current.Entropy == nil || len(Current.Entropy) == 0 {
+		Save()
+	}
+
 	return nil
+}
+
+// MakeEntropy creates a random string one time that saves into the settings.json,
+// used for checksum calculations for the user's savegame.
+func MakeEntropy() ([]byte, error) {
+	key := make([]byte, 16)
+	_, err := rand.Read(key)
+	if err != nil {
+		return nil, err
+	}
+	return key, nil
 }

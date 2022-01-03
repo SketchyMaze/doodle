@@ -1,3 +1,9 @@
+/*
+Package sprites manages miscellaneous in-game sprites.
+
+The sprites are relatively few for UI purposes. Their textures are
+loaded ONE time and cached in this package for performance.
+*/
 package sprites
 
 import (
@@ -15,11 +21,23 @@ import (
 	"git.kirsle.net/go/ui"
 )
 
+// Cache of loaded sprites.
+var cache = map[string]*ui.Image{}
+
+// FlushCache clears the sprites cache.
+func FlushCache() {
+	panic("TODO: free textures")
+}
+
 // LoadImage loads a sprite as a ui.Image object. It checks Doodle's embedded
 // bindata, then the filesystem before erroring out.
 //
 // NOTE: only .png images supported as of now. TODO
 func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
+	if cached, ok := cache[filename]; ok {
+		return cached, nil
+	}
+
 	// Try the bindata first.
 	if data, err := assets.Asset(filename); err == nil {
 		log.Debug("sprites.LoadImage: %s from bindata", filename)

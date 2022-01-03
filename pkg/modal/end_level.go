@@ -2,13 +2,19 @@ package modal
 
 import (
 	"fmt"
+	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/savegame"
+	"git.kirsle.net/apps/doodle/pkg/sprites"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
 
 // ConfigEndLevel sets options for the EndLevel modal.
 type ConfigEndLevel struct {
+	Engine  render.Engine
 	Success bool // false = failure condition
 
 	// Handler functions - what you don't define will not
@@ -18,6 +24,11 @@ type ConfigEndLevel struct {
 	OnEditLevel       func()
 	OnNextLevel       func() // Next Level
 	OnExitToMenu      func() // Exit to Menu
+
+	// Set these values to show the "New Record!" part of the modal.
+	NewRecord   bool
+	IsPerfect   bool
+	TimeElapsed time.Duration
 }
 
 // EndLevel shows the End Level modal.
@@ -61,6 +72,60 @@ func makeEndLevel(m *Modal, cfg ConfigEndLevel) *ui.Window {
 	msgFrame.Pack(msg, ui.Pack{
 		Side: ui.N,
 	})
+
+	// New Record frame.
+	if cfg.NewRecord {
+		// Get the gold or silver sprite.
+		var (
+			coin       = balance.SilverCoin
+			recordFont = balance.NewRecordFont
+		)
+		if cfg.IsPerfect {
+			coin = balance.GoldCoin
+			recordFont = balance.NewRecordPerfectFont
+		}
+
+		recordFrame := ui.NewFrame("New Record")
+		msgFrame.Pack(recordFrame, ui.Pack{
+			Side: ui.N,
+		})
+
+		header := ui.NewLabel(ui.Label{
+			Text: "A New Record!",
+			Font: recordFont,
+		})
+		recordFrame.Pack(header, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+		})
+
+		// A frame to hold the icon and duration elapsed.
+		timeFrame := ui.NewFrame("Time Frame")
+		recordFrame.Pack(timeFrame, ui.Pack{
+			Side: ui.N,
+		})
+
+		// Show the coin image.
+		if cfg.Engine != nil {
+			img, err := sprites.LoadImage(cfg.Engine, coin)
+			if err != nil {
+				log.Error("Couldn't load %s: %s", coin, err)
+			} else {
+				timeFrame.Pack(img, ui.Pack{
+					Side: ui.W,
+				})
+			}
+		}
+
+		// Show the time duration label.
+		dur := ui.NewLabel(ui.Label{
+			Text: savegame.FormatDuration(cfg.TimeElapsed),
+			Font: balance.MenuFont,
+		})
+		timeFrame.Pack(dur, ui.Pack{
+			Side: ui.W,
+		})
+	}
 
 	// Ok/Cancel button bar.
 	btnBar := ui.NewFrame("Button Bar")

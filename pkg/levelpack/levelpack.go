@@ -37,6 +37,9 @@ type LevelPack struct {
 
 	// The loaded zip file for reading an existing levelpack.
 	Zipfile *zip.Reader `json:"-"`
+
+	// A reference to the original filename, not stored in json.
+	Filename string `json:"-"`
 }
 
 // Level holds metadata about the levels in the levelpack.
@@ -84,7 +87,8 @@ func LoadFile(filename string) (LevelPack, error) {
 	}
 
 	lp := LevelPack{
-		Zipfile: reader,
+		Filename: filename,
+		Zipfile:  reader,
 	}
 
 	// Read the index.json.

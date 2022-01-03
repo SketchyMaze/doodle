@@ -21,6 +21,7 @@ var (
 	DoodadDirectory     string
 	CampaignDirectory   string
 	ScreenshotDirectory string
+	SaveFile            string
 
 	CacheDirectory string
 	FontDirectory  string
@@ -41,6 +42,7 @@ func init() {
 	DoodadDirectory = configdir.LocalConfig(ConfigDirectoryName, "doodads")
 	CampaignDirectory = configdir.LocalConfig(ConfigDirectoryName, "campaigns")
 	ScreenshotDirectory = configdir.LocalConfig(ConfigDirectoryName, "screenshots")
+	SaveFile = configdir.LocalConfig(ConfigDirectoryName, "savegame.json")
 
 	// Cache directory to extract font files to.
 	CacheDirectory = configdir.LocalCache(ConfigDirectoryName)

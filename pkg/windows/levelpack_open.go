@@ -7,6 +7,9 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/levelpack"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/apps/doodle/pkg/savegame"
+	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -21,8 +24,11 @@ type LevelPack struct {
 	OnCloseWindow func()
 
 	// Internal variables
-	window   *ui.Window
-	tabFrame *ui.TabFrame
+	window       *ui.Window
+	tabFrame     *ui.TabFrame
+	savegame     *savegame.SaveGame
+	goldSprite   *ui.Image
+	silverSprite *ui.Image
 }
 
 // NewLevelPackWindow initializes the window.
@@ -33,13 +39,28 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 
 		// size of the popup window
 		width  = 320
-		height = 300
+		height = 340
 	)
 
 	// Get the available .levelpack files.
 	lpFiles, packmap, err := levelpack.LoadAllAvailable()
 	if err != nil {
 		log.Error("Couldn't list levelpack files: %s", err)
+	}
+
+	// Load the user's savegame.json
+	sg, err := savegame.GetOrCreate()
+	config.savegame = sg
+	if err != nil {
+		log.Warn("NewLevelPackWindow: didn't load savegame json (fresh struct created): %s", err)
+	}
+
+	// Cache the gold/silver sprite icons.
+	if goldSprite, err := sprites.LoadImage(config.Engine, "sprites/gold.png"); err == nil {
+		config.goldSprite = goldSprite
+	}
+	if silverSprite, err := sprites.LoadImage(config.Engine, "sprites/silver.png"); err == nil {
+		config.silverSprite = silverSprite
 	}
 
 	window := ui.NewWindow(title)
@@ -183,7 +204,7 @@ func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
 		})
 
 		numLevels := ui.NewLabel(ui.Label{
-			Text: fmt.Sprintf("[%d levels]", len(lp.Levels)),
+			Text: fmt.Sprintf("[completed %d of %d levels]", config.savegame.CountCompleted(lp.Filename), len(lp.Levels)),
 			Font: balance.MenuFont,
 		})
 		btnFrame.Pack(numLevels, ui.Pack{
@@ -263,6 +284,16 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		maxPageButtons = 10
 	)
 
+	// Load the padlock icon for locked levels.
+	// If not loadable, won't be used in UI.
+	padlock, _ := sprites.LoadImage(config.Engine, balance.LockIcon)
+
+	// How many levels completed?
+	var (
+		numCompleted = config.savegame.CountCompleted(lp.Filename)
+		numUnlocked  = lp.FreeLevels + numCompleted
+	)
+
 	/** Back Button */
 	backButton := ui.NewButton("Back", ui.NewLabel(ui.Label{
 		Text: "< Back",
@@ -332,6 +363,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 	var buttons []*ui.Button
 	for i, level := range lp.Levels {
 		level := level
+		score := config.savegame.GetLevelScore(lp.Filename, level.Filename)
 
 		// Make a frame to hold a complex button layout.
 		btnFrame := ui.NewFrame("Frame")
@@ -340,6 +372,16 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 			H: buttonHeight,
 		})
 
+		// Padlock icon in the corner.
+		var locked = lp.FreeLevels > 0 && i+1 > numUnlocked
+		if locked && padlock != nil {
+			btnFrame.Pack(padlock, ui.Pack{
+				Side:    ui.NE,
+				Padding: 4,
+			})
+		}
+
+		// Title Line
 		title := ui.NewLabel(ui.Label{
 			Text: level.Title,
 			Font: balance.LabelFont,
@@ -348,8 +390,91 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 			Side: ui.NW,
 		})
 
+		// Score Frame
+		detail := ui.NewFrame("Score")
+		btnFrame.Pack(detail, ui.Pack{
+			Side: ui.NW,
+		})
+		if score.Completed {
+			check := ui.NewLabel(ui.Label{
+				Text: "✓ Completed",
+				Font: balance.MenuFont,
+			})
+			detail.Pack(check, ui.Pack{
+				Side: ui.W,
+			})
+
+			// Perfect Time
+			if score.PerfectTime != nil {
+				perfFrame := ui.NewFrame("Perfect Score")
+				detail.Pack(perfFrame, ui.Pack{
+					Side: ui.W,
+					PadX: 8,
+				})
+
+				if config.goldSprite != nil {
+					perfFrame.Pack(config.goldSprite, ui.Pack{
+						Side: ui.W,
+						PadX: 1,
+					})
+				}
+
+				timeLabel := ui.NewLabel(ui.Label{
+					Text: savegame.FormatDuration(*score.PerfectTime),
+					Font: balance.MenuFont.Update(render.Text{
+						Color: render.DarkYellow,
+					}),
+				})
+				perfFrame.Pack(timeLabel, ui.Pack{
+					Side: ui.W,
+				})
+			}
+
+			// Best Time (non-perfect)
+			if score.BestTime != nil {
+				bestFrame := ui.NewFrame("Best Score")
+				detail.Pack(bestFrame, ui.Pack{
+					Side: ui.W,
+					PadX: 4,
+				})
+
+				if config.silverSprite != nil {
+					bestFrame.Pack(config.silverSprite, ui.Pack{
+						Side: ui.W,
+						PadX: 1,
+					})
+				}
+
+				timeLabel := ui.NewLabel(ui.Label{
+					Text: savegame.FormatDuration(*score.BestTime),
+					Font: balance.MenuFont.Update(render.Text{
+						Color: render.DarkGreen,
+					}),
+				})
+				bestFrame.Pack(timeLabel, ui.Pack{
+					Side: ui.W,
+				})
+			}
+		} else {
+			detail.Pack(ui.NewLabel(ui.Label{
+				Text: "Not completed",
+				Font: balance.MenuFont,
+			}), ui.Pack{
+				Side: ui.W,
+			})
+		}
+
 		btn := ui.NewButton(level.Filename, btnFrame)
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
+			// Is this level locked?
+			if locked {
+				modal.Alert(
+					"This level hasn't been unlocked! Complete the earlier\n" +
+						"levels in this pack to unlock later levels.",
+				).WithTitle("Locked Level")
+				return nil
+			}
+
 			// Play Level
 			if config.OnPlayLevel != nil {
 				config.OnPlayLevel(lp, level)
