@@ -59,11 +59,18 @@ var (
 	DefaultEraserBrushSize = 8
 	MaxEraserBrushSize     = 32 // the bigger, the slower
 
+	// Interval for auto-save in the editor
+	AutoSaveInterval = 5 * time.Minute
+
 	// Default player character doodad in Play Mode.
 	PlayerCharacterDoodad = "boy.doodad"
 
-	// Level name for the title screen.
-	DemoLevelName = "Tutorial 3.level"
+	// Level names for the title screen.
+	DemoLevelName = []string{
+		"Tutorial 1.level",
+		"Tutorial 2.level",
+		"Tutorial 3.level",
+	}
 
 	// Level attachment filename for the custom wallpaper.
 	// NOTE: due to hard-coded "assets/wallpapers/" prefix in uix/canvas.go#LoadLevel.

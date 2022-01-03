@@ -1,5 +1,64 @@
 # Changes
 
+## v0.11.0 (TBD)
+
+New features:
+
+* **High scores and level progression:** when playing levels out of
+  a Level Pack, the game will save your progress and high scores on
+  each level you play. See details on how scoring works so far, below.
+* **Auto-save** for the Editor. Automatically saves your drawing every
+  5 minutes. Look for e.g. the _autosave.level to recover your drawing
+  if the game crashed or exited wrongly!
+* **Color picker UI:** when asked to choose a color (e.g. for your level
+  palette) a UI window makes picking a color easy! You can still manually
+  enter a hexadecimal color value but this is no longer required!
+
+Scoring system:
+
+* The high score on a level is based on how quickly you complete it.
+  A timer is shown in-game and there are two possible high scores
+  for each level in a pack:
+    * Perfect Time (gold): if you complete the level without dying and
+      restarting at a checkpoint.
+    * Best Time (silver): if you had used a checkpoint.
+* The gold/silver icon is displayed next to the timer in-game; it
+  starts gold and drops to silver if you die and restart from checkpoint.
+  It gives you a preview of which high score you'll be competing with.
+* If cheat codes are used, the user is not eligible for a high score
+  but may still mark the level "completed."
+* Level Packs may have some of their later levels locked by default,
+  with only one or a few available immediately. Completing a level will
+  unlock the next level until they have all been unlocked.
+
+New and changed doodads:
+
+* **Invisible Warp Door:** a technical doodad to create an invisible
+  Warp Door (press Space/'Use' key to activate).
+* All **Warp Doors** now require the player to be grounded before they
+  can be opened, or else under the effects of antigravity. You shouldn't
+  be able to open Warp Doors while falling or jumping off the ground
+  at them.
+
+Revised levels:
+
+* Desert-2of2.level uses a new work-around for the unfortunate glitch
+  of sometimes getting stuck on two boxes, instead of a cheat code
+  being necessary to resolve.
+* Revised difficulty on Tutorial 2 and Tutorial 3.
+
+Miscellaneous changes:
+
+* Title Screen: picks a random level from a few options, in the future
+  it will pick random user levels too.
+* Play Mode gets a menu bar like the Editor for easier navigation to
+  other game features.
+* New dev shell command: `titlescreen <level name>` to load the Title
+  Screen with the named level as its background, can be used to load
+  user levels _now_.
+* For the doodads JavaScript API: `time.Since()` is now available (from
+  the Go standard library)
+
 ## v0.10.0 (Dec 30 2021)
 
 New features and changes:

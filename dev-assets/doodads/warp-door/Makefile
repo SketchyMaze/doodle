@@ -17,7 +17,7 @@ build:
 	doodad install-script warp-door.js warp-door-orange.doodad
 
 	for i in *.doodad; do\
-		doodad edit-doodad --tag "category=doors" $${i};\
+		doodad edit-doodad --tag "category=doors" --hitbox=34,76 $${i};\
 	done
 	for i in warp-door-*.doodad; do\
 		doodad edit-doodad --tag "category=doors,gizmos" $${i};\

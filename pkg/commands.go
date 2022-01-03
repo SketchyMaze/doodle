@@ -60,6 +60,8 @@ func (c Command) Run(d *Doodle) error {
 		return c.Play(d)
 	case "close":
 		return c.Close(d)
+	case "titlescreen":
+		return c.TitleScreen(d)
 	case "exit":
 	case "quit":
 		return c.Quit()
@@ -192,6 +194,9 @@ func (c Command) Help(d *Doodle) error {
 		d.Flash("Enter a JavaScript shell on the in-game interpreter")
 	case "boolprop":
 		d.Flash("Toggle boolean values. `boolProp list` lists available")
+	case "titlescreen":
+		d.Flash("Usage: titlescreen <filename.level>")
+		d.Flash("Open the title screen with a level")
 	case "help":
 		d.Flash("Usage: help <command>")
 		d.Flash("Gets further help on a command")
@@ -249,6 +254,20 @@ func (c Command) Play(d *Doodle) error {
 	filename := c.Args[0]
 	d.shell.Write("Playing level: " + filename)
 	d.PlayLevel(filename)
+	return nil
+}
+
+// TitleScreen loads the title with a custom user level.
+func (c Command) TitleScreen(d *Doodle) error {
+	if len(c.Args) == 0 {
+		return errors.New("Usage: titlescreen <level name.level>")
+	}
+
+	filename := c.Args[0]
+	d.shell.Write("Playing level: " + filename)
+	d.Goto(&MainScene{
+		LevelFilename: filename,
+	})
 	return nil
 }
 

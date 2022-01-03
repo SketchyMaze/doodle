@@ -28,6 +28,13 @@ func (s *PlayScene) LoopTouchable(ev *event.State) {
 		cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 	)
 
+	// Don't do any of this if the mouse is over the menu bar, so
+	// clicking on the menus doesn't make the character move or jump.
+	if cursor.Inside(s.menubar.Rect()) || s.supervisor.GetModal() != nil ||
+		s.supervisor.IsPointInWindow(cursor) {
+		return
+	}
+
 	// Detect if the player is idle.
 	// Idle means that they are not holding any directional or otherwise input key.
 	// Keyboard inputs and touch events from this function will set these keys.

@@ -6,12 +6,13 @@ package doodle
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level/giant_screenshot"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
+	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
@@ -143,20 +144,22 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			native.OpenLocalURL(userdir.ScreenshotDirectory)
 		})
 
-		levelMenu.AddSeparator()
-		levelMenu.AddItemAccel("New viewport", "v", func() {
-			pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{
-				Supervisor: u.Supervisor,
-				Engine:     u.d.Engine,
-				Level:      u.Scene.Level,
-				Event:      u.d.event,
+		if usercfg.Current.EnableFeatures {
+			levelMenu.AddSeparator()
+			levelMenu.AddItemAccel("New viewport", "v", func() {
+				pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{
+					Supervisor: u.Supervisor,
+					Engine:     u.d.Engine,
+					Level:      u.Scene.Level,
+					Event:      u.d.event,
 
-				Tool:      &u.Scene.UI.Canvas.Tool,
-				BrushSize: &u.Scene.UI.Canvas.BrushSize,
+					Tool:      &u.Scene.UI.Canvas.Tool,
+					BrushSize: &u.Scene.UI.Canvas.BrushSize,
+				})
+
+				pip.Show()
 			})
-
-			pip.Show()
-		})
+		}
 	}
 
 	////////
@@ -261,36 +264,16 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	////////
 	// Help menu
-	helpMenu := menu.AddMenu("Help")
-	helpMenu.AddItemAccel("User Manual", "F1", func() {
-		native.OpenLocalURL(balance.GuidebookPath)
-	})
-	helpMenu.AddItem("Register", func() {
-		u.licenseWindow.Show()
-	})
-	helpMenu.AddItem("About", func() {
-		if u.aboutWindow == nil {
-			u.aboutWindow = windows.NewAboutWindow(windows.About{
-				Supervisor: u.Supervisor,
-				Engine:     d.Engine,
-			})
-			u.aboutWindow.Compute(d.Engine)
-			u.aboutWindow.Supervise(u.Supervisor)
-
-			// Center the window.
-			u.aboutWindow.MoveTo(render.Point{
-				X: (d.width / 2) - (u.aboutWindow.Size().W / 2),
-				Y: 60,
-			})
-		}
-		u.aboutWindow.Show()
-	})
+	var (
+		helpMenu     = u.d.MakeHelpMenu(menu, u.Supervisor)
+		registerText = "Register"
+	)
 	helpMenu.AddSeparator()
-	helpMenu.AddItem("Go to Website", func() {
-		native.OpenURL(branding.Website)
-	})
-	helpMenu.AddItem("Guidebook Online", func() {
-		native.OpenURL(branding.GuidebookURL)
+	if license.IsRegistered() {
+		registerText = "Registration"
+	}
+	helpMenu.AddItem(registerText, func() {
+		u.licenseWindow.Show()
 	})
 
 	menu.Supervise(u.Supervisor)

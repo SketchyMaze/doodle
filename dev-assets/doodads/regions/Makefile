@@ -23,6 +23,11 @@ build:
 	doodad convert -t "Power Source" power-64.png power-source.doodad
 	doodad install-script power.js power-source.doodad
 
+	# Warp Door
+	doodad convert -t "Invisible Warp Door" warp-door-64.png reg-warp-door.doodad
+	doodad edit-doodad --tag "color=invisible" reg-warp-door.doodad
+	doodad install-script ../warp-door/warp-door.js reg-warp-door.doodad
+
 	for i in *.doodad; do\
 		doodad edit-doodad --tag "category=technical" $${i};\
 	done

@@ -39,7 +39,7 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 
 		// size of the popup window
 		width  = 320
-		height = 340
+		height = 360
 	)
 
 	// Get the available .levelpack files.
@@ -275,7 +275,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		buttonWidth  = width - 40
 
 		page    = 1
-		perPage = 3
+		perPage = 4
 		pages   = int(
 			math.Ceil(
 				float64(len(lp.Levels)) / float64(perPage),

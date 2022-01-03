@@ -1,7 +1,5 @@
 // Warp Doors
 function main() {
-	Self.SetHitbox(0, 0, 34, 76);
-
 	// Are we a blue or orange door? Regular warp door will be 'none'
 	var color = Self.GetTag("color");
 	var isStateDoor = color === 'blue' || color === 'orange';
@@ -23,6 +21,11 @@ function main() {
 		Self.AddAnimation("close", animSpeed, ["orange-4", "orange-3", "orange-2", "orange-1"]);
 		spriteDefault = "orange-1";
 		spriteDisabled = "orange-off";
+	} else if (color === 'invisible') {
+		// Invisible Warp Door region.
+		Self.Hide();
+		Self.AddAnimation("open", animSpeed, [0, 0]);
+		Self.AddAnimation("close", animSpeed, [0, 0]);
 	} else {
 		Self.AddAnimation("open", animSpeed, ["door-2", "door-3", "door-4"]);
 		Self.AddAnimation("close", animSpeed, ["door-4", "door-3", "door-2", "door-1"]);
@@ -48,6 +51,10 @@ function main() {
 		});
 	}
 
+	// For player groundedness work-around
+	var playerLastY = []; // last sampling of Y values
+	var lastUsed = time.Now();
+
 	// The player Uses the door.
 	var flashedCooldown = false; // "Locked Door" flashed message.
 	Events.OnUse(function(e) {
@@ -72,6 +79,40 @@ function main() {
 			if (isStateDoor && !state) {
 				// The state door is inactive (dotted outline).
 				return;
+			}
+
+			// The player must be grounded or have no gravity to open the door.
+			if (!e.Actor.Grounded() && e.Actor.HasGravity()) {
+				// Work-around: if two Boxes are stacked atop each other the player can
+				// get stuck if he jumps on top. He may not be Grounded but isn't changing
+				// effective Y position and a warp door may work as a good way out.
+				var yValue = e.Actor.Position().Y;
+
+				// Collect a sampling of last few Y values. If the player Y position
+				// is constant the last handful of frames, treat them as if they're
+				// grounded (or else they can't activate the warp door).
+				playerLastY.unshift(yValue);
+				if (playerLastY.length < 6) {
+					return;
+				}
+
+				// We have enough history.
+				playerLastY.pop();
+
+				// Hasn't moved?
+				var isGrounded = true;
+				for (var i = 0; i < playerLastY.length; i++) {
+					if (yValue !== playerLastY[i]) {
+						isGrounded = false;
+						break;
+					}
+				}
+
+				if (!isGrounded) {
+					return;
+				}
+
+				// Player was effectively grounded! No change in Y position.
 			}
 
 			// Freeze the player.

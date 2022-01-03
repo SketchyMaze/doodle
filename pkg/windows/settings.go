@@ -29,6 +29,7 @@ type Settings struct {
 	CrosshairSize      *int
 	CrosshairColor     *render.Color
 	HideTouchHints     *bool
+	DisableAutosave    *bool
 
 	// Configuration options.
 	SceneName string // name of scene which called this window
@@ -143,6 +144,12 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			name:    "toolbars",
 		},
 		{
+			Boolean: c.DisableAutosave,
+			Text:    "Disable auto-save in the Editor",
+			PadX:    4,
+			name:    "autosave",
+		},
+		{
 			Integer: c.CrosshairSize,
 			Text:    "Editor: Crosshair size (0 to disable):",
 			PadX:    4,
@@ -170,9 +177,7 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 		},
 		{
 			Text: "Levels and doodads you create in-game are placed in your\n" +
-				"Profile Directory. This is also where you can place content made\n" +
-				"by others to use them in your game. Click on the button below\n" +
-				"to (hopefully) be taken to your Profile Directory:",
+				"Profile Directory, which you can access below:",
 		},
 	}
 	for _, row := range rows {
@@ -634,20 +639,11 @@ func (c Settings) makeExperimentalTab(tabFrame *ui.TabFrame, Width, Height int) 
 			PadY: 2,
 		},
 		{
-			Header: "Zoom In/Out",
+			Header: "Viewport window",
 		},
 		{
-			Text: "This adds Zoom options to the level editor. It has a few\n" +
-				"bugs around scrolling but may be useful already.",
-			PadY: 2,
-		},
-		{
-			Header: "Replace Level Palette",
-		},
-		{
-			Text: "This adds an option to the Level Properties dialog to\n" +
-				"replace your level palette with one of the defaults,\n" +
-				"like on the New Level screen. It might not actually work.",
+			Text: "This option in the Level menu opens another view into\n" +
+				"the level. Has glitchy wallpaper problems.",
 			PadY: 2,
 		},
 		{

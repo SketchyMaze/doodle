@@ -42,7 +42,8 @@ func NewJSProxy(vm *VM) JSProxy {
 			return shmem.Tick
 		},
 		"time": map[string]interface{}{
-			"Now": time.Now,
+			"Now":   time.Now,
+			"Since": time.Since,
 			"Add": func(t time.Time, ms int64) time.Time {
 				return t.Add(time.Duration(ms) * time.Millisecond)
 			},

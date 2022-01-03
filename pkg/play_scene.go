@@ -50,9 +50,11 @@ type PlayScene struct {
 	cheated    bool      // user has entered a cheat code while playing
 
 	// UI widgets.
-	supervisor *ui.Supervisor
-	screen     *ui.Frame // A window sized invisible frame to position UI elements.
-	editButton *ui.Button
+	supervisor    *ui.Supervisor
+	screen        *ui.Frame // A window sized invisible frame to position UI elements.
+	menubar       *ui.MenuBar
+	editButton    *ui.Button
+	winLevelPacks *ui.Window
 
 	// Custom debug labels.
 	debPosition   *string
@@ -118,6 +120,13 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// Create an invisible 'screen' frame for UI elements to use for positioning.
 	s.screen = ui.NewFrame("Screen")
 	s.screen.Resize(render.NewRect(d.width, d.height))
+
+	// Menu Bar
+	s.menubar = s.setupMenuBar(d)
+	s.screen.Pack(s.menubar, ui.Pack{
+		Side:  ui.N,
+		FillX: true,
+	})
 
 	// Level Exit handler.
 	s.scripting.OnLevelExit(s.BeatLevel)
@@ -619,6 +628,9 @@ func (s *PlayScene) Draw(d *Doodle) error {
 
 	// Visualize the touch regions?
 	s.DrawTouchable()
+
+	// Let Supervisor draw menus
+	s.supervisor.Present(d.Engine)
 
 	return nil
 }

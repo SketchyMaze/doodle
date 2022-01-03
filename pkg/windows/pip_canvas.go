@@ -77,25 +77,37 @@ func NewPiPWindow(cfg PiP) *ui.Window {
 	canvas.Editable = true
 	canvas.Resize(render.NewRect(canvasWidth, canvasHeight))
 
+	// If we have tool bindings to edit in PiP window
+	var (
+		editable bool
+		curTool  drawtool.Tool
+		curThicc int
+	)
+	if cfg.Tool != nil && cfg.BrushSize != nil {
+		editable = true
+		curTool = *cfg.Tool
+		curThicc = *cfg.BrushSize
+		canvas.Tool = curTool
+	}
+
 	// NOTE: my UI toolkit calls this every tick, if this is "fixed"
 	// in the future make one that does.
-	var (
-		curTool  = *cfg.Tool
-		curThicc = *cfg.BrushSize
-	)
-	canvas.Tool = curTool
 	window.Handle(ui.MouseMove, func(ed ui.EventData) error {
 		canvas.Loop(cfg.Event)
 
-		// Check if bound values have modified.
-		if *cfg.Tool != curTool {
-			curTool = *cfg.Tool
-			canvas.Tool = curTool
+		// Did we have tool bindings for an editable PiP?
+		if editable {
+			// Check if bound values have modified.
+			if *cfg.Tool != curTool {
+				curTool = *cfg.Tool
+				canvas.Tool = curTool
+			}
+			if *cfg.BrushSize != curThicc {
+				curThicc = *cfg.BrushSize
+				canvas.BrushSize = curThicc
+			}
 		}
-		if *cfg.BrushSize != curThicc {
-			curThicc = *cfg.BrushSize
-			canvas.BrushSize = curThicc
-		}
+
 		return nil
 	})
 

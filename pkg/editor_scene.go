@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -47,6 +49,8 @@ type EditorScene struct {
 
 	// Last saved filename by the user.
 	filename string
+
+	lastAutosaveAt time.Time
 }
 
 // Name of the scene.
@@ -65,6 +69,9 @@ func (s *EditorScene) Setup(d *Doodle) error {
 		{"Tool:", s.debTool},
 		{"Swatch:", s.debSwatch},
 	}
+
+	// Initialize autosave time.
+	s.lastAutosaveAt = time.Now()
 
 	// Show the loading screen.
 	loadscreen.ShowWithProgress()
@@ -424,6 +431,16 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 
 	s.UI.Loop(ev)
 
+	// Trigger auto-save of the level in case of crash or accidental closure.
+	if time.Since(s.lastAutosaveAt) > balance.AutoSaveInterval {
+		s.lastAutosaveAt = time.Now()
+		if !usercfg.Current.DisableAutosave {
+			if err := s.AutoSave(); err != nil {
+				d.FlashError("Autosave error: %s", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -471,7 +488,6 @@ func (s *EditorScene) LoadLevel(filename string) error {
 }
 
 // SaveLevel saves the level to disk.
-// TODO: move this into the Canvas?
 func (s *EditorScene) SaveLevel(filename string) error {
 	if s.DrawingType != enum.LevelDrawing {
 		return errors.New("SaveLevel: current drawing is not a Level type")
@@ -498,6 +514,24 @@ func (s *EditorScene) SaveLevel(filename string) error {
 	s.UI.Canvas.SetModified(false)
 
 	return m.WriteFile(filename)
+}
+
+// AutoSave takes an autosave snapshot of the level or drawing.
+func (s *EditorScene) AutoSave() error {
+	var filename = "_autosave.level"
+
+	switch s.DrawingType {
+	case enum.LevelDrawing:
+		s.d.Flash("Automatically saved level to %s", filename)
+		return s.Level.WriteFile(filename)
+	case enum.DoodadDrawing:
+		filename = "_autosave.doodad"
+
+		s.d.Flash("Automatically saved doodad to %s", filename)
+		return s.Doodad.WriteFile(filename)
+	}
+
+	return nil
 }
 
 // LoadDoodad loads a doodad from disk.

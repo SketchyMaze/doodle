@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"math/rand"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
@@ -24,7 +25,8 @@ import (
 
 // MainScene implements the main menu of Doodle.
 type MainScene struct {
-	Supervisor *ui.Supervisor
+	Supervisor    *ui.Supervisor
+	LevelFilename string // custom level filename to load in background
 
 	// Background wallpaper canvas.
 	scripting *scripting.Supervisor
@@ -296,8 +298,16 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 	s.scripting = scripting.NewSupervisor()
 	s.canvas.SetScriptSupervisor(s.scripting)
 
-	// Title screen level to load.
-	if lvl, err := level.LoadFile(balance.DemoLevelName); err == nil {
+	// Title screen level to load. Pick a random level.
+	levelName := balance.DemoLevelName[0]
+	if s.LevelFilename != "" {
+		levelName = s.LevelFilename
+	} else if len(balance.DemoLevelName) > 1 {
+		randIndex := rand.Intn(len(balance.DemoLevelName))
+		levelName = balance.DemoLevelName[randIndex]
+	}
+
+	if lvl, err := level.LoadFile(levelName); err == nil {
 		s.canvas.LoadLevel(lvl)
 		s.canvas.InstallActors(lvl.Actors)
 
@@ -312,6 +322,16 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 		}
 	} else {
 		log.Error("Error loading demo level %s: %s", balance.DemoLevelName, err)
+
+		// Create a basic notebook level.
+		s.canvas.LoadLevel(&level.Level{
+			Chunker:   level.NewChunker(100),
+			Palette:   level.NewPalette(),
+			PageType:  level.Bounded,
+			MaxWidth:  42,
+			MaxHeight: 42,
+			Wallpaper: "notebook.png",
+		})
 	}
 
 	return nil
