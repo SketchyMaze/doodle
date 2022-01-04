@@ -24,12 +24,3 @@ require (
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
 
-replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
-
-replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
-
-replace git.kirsle.net/go/audio => /home/kirsle/SketchyMaze/deps/audio
-
-//replace git.kirsle.net/go/render => /run/build/sketchymaze/deps/render
-//replace git.kirsle.net/go/ui => /run/build/sketchymaze/deps/ui
-//replace git.kirsle.net/go/audio => /run/build/sketchymaze/deps/audio
