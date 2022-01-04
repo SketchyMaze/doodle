@@ -18,6 +18,14 @@ DIST_PATH="$(pwd)/dist/sketchymaze-${VERSION}"
 RELEASE_PATH="$(pwd)/dist/release/${VERSION}"
 STAGE_PATH="$(pwd)/dist/stage/${VERSION}"
 
+# Handle all architectures! Default x86_64
+# Used in zipfiles for Linux and Windows (fpm-bundle.sh has its own logic)
+ARCH_LABEL="64bit"
+case "$archs" in
+  i?86) ARCH_LABEL="32bit" ;;
+  aarch64) ARCH_LABEL="aarch64" ;;
+esac
+
 if [[ ! -d $DIST_PATH ]]; then
 	echo Run this script from the root of the game repository, such that
     echo ./dist/sketchymaze-${VERSION} exists. Run 'make mingw' and/or
@@ -31,6 +39,16 @@ if [[ -d $RELEASE_PATH ]]; then
 fi
 if [[ -d $STAGE_PATH ]]; then
     rm -rf $STAGE_PATH
+fi
+
+# Check that we will bundle the Guidebook with the release.
+if [[ ! -d "./guidebook" ]]; then
+    echo Guidebook not found locally! Should I download the latest or proceed without it?
+    echo Type 'y' to download the guidebook or press enter to skip.
+    read ANSWER
+    if [[ "$ANSWER" == "y" ]]; then
+        wget https://download.sketchymaze.com/guidebook.tar.gz && tar -xzvf guidebook.tar.gz
+    fi
 fi
 
 # Release scripts by operating system.
@@ -50,7 +68,7 @@ linux() {
     rm *.exe *.dll
 
     # Tar it.
-    tar -czvf "${RELEASE_PATH}/linux/sketchymaze-${VERSION}-linux-64bit.tar.gz" .
+    tar -czvf "${RELEASE_PATH}/linux/sketchymaze-${VERSION}-linux-${ARCH_LABEL}.tar.gz" .
 
     # fpm it.
     ../../../../scripts/fpm-bundle.sh
@@ -75,7 +93,7 @@ windows() {
     rm sketchymaze doodad
 
     # Zip it.
-    zip -r "${RELEASE_PATH}/windows/sketchymaze-${VERSION}-windows-64bit.zip" .
+    zip -r "${RELEASE_PATH}/windows/sketchymaze-${VERSION}-windows-${ARCH_LABEL}.zip" .
     cd -
 }
 macos() {

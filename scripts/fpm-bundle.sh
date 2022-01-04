@@ -69,9 +69,23 @@ echo =====================
 echo Starting fpm package build.
 echo =====================
 
+# Handle all architectures! Default x86_64
+RPM_ARCH="x86_64"
+DEB_ARCH="x86_64"
+case "$archs" in
+  i?86)
+    RPM_ARCH="i386"
+    DEB_ARCH="i386"
+    ;;
+  aarch64)
+    RPM_ARCH="aarch64"
+    DEB_ARCH="arm64"
+    ;;
+esac
+
 # RPM Package
 fpm -C ./root -s dir -t rpm \
-  -d SDL2 -d SDL2_ttf -a x86_64 \
+  -d SDL2 -d SDL2_ttf -a $RPM_ARCH \
   -n sketchy-maze -v ${VERSION} \
   --license="Copyright" \
   --maintainer=noah@kirsle.net \
@@ -80,7 +94,8 @@ fpm -C ./root -s dir -t rpm \
 
 # Debian Package
 fpm -C ./root -s dir -t deb \
-  -d libsdl2 -d libsdl2-ttf -a x86_64 \
+  -d libsdl2-2.0 -d libsdl2-ttf-2.0 -d libsdl2-mixer-2.0 \
+  -a $DEB_ARCH \
   -n sketchy-maze -v ${VERSION} \
   --license="Copyright" \
   --maintainer=noah@kirsle.net \
