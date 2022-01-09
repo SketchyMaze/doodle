@@ -99,7 +99,6 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 	config.makeIndexScreen(indexTab, width, height, lpFiles, packmap, func(screen string) {
 		// Callback for user choosing a level pack.
 		// Hide the index screen and show the screen for this pack.
-		log.Info("Called for tab: %s", screen)
 		tabFrame.SetTab(screen)
 	})
 	for _, filename := range lpFiles {

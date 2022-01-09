@@ -150,7 +150,8 @@ func (s *MainScene) Setup(d *Doodle) error {
 							}
 						},
 						OnCloseWindow: func() {
-							s.winLevelPacks.Hide()
+							s.winLevelPacks.Destroy()
+							s.winLevelPacks = nil
 						},
 					})
 				}

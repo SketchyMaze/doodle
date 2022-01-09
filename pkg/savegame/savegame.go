@@ -196,12 +196,12 @@ func (sg *SaveGame) CountCompleted(levelpack string) int {
 
 // FormatDuration pretty prints a time.Duration in MM:SS format.
 func FormatDuration(d time.Duration) string {
-	d = d.Round(time.Millisecond)
 	var (
-		hour   = d / time.Hour
-		minute = d / time.Minute
-		second = d / time.Second
-		ms     = fmt.Sprintf("%d", d/time.Millisecond%1000)
+		millisecond = d.Milliseconds()
+		second      = (millisecond / 1000) % 60
+		minute      = (millisecond / (1000 * 60)) % 60
+		hour        = (millisecond / (1000 * 60 * 60)) % 24
+		ms          = fmt.Sprintf("%d", millisecond%1000)
 	)
 
 	// Limit milliseconds to 2 digits.

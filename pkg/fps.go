@@ -142,8 +142,8 @@ func (d *Doodle) DrawCollisionBox(canvas *uix.Canvas, actor *uix.Actor) {
 	}
 
 	var (
-		rect = collision.GetBoundingRect(actor)
-		box  = collision.GetCollisionBox(rect)
+		rect   = collision.GetBoundingRect(actor)
+		box    = collision.GetCollisionBox(rect)
 		hitbox = actor.Hitbox()
 	)
 
@@ -154,8 +154,8 @@ func (d *Doodle) DrawCollisionBox(canvas *uix.Canvas, actor *uix.Actor) {
 
 	// The stroke data for drawing the collision box "inside" the level Canvas,
 	// so it scrolls and works in world units not screen units.
-	var strokes = []struct{
-		Color render.Color
+	var strokes = []struct {
+		Color  render.Color
 		PointA render.Point
 		PointB render.Point
 	}{
@@ -191,7 +191,6 @@ func (d *Doodle) TrackFPS(skipped uint32) {
 		fpsSkipped = skipped
 	}
 
-	if d.Debug {
-		d.Engine.SetTitle(fmt.Sprintf("%s (%d FPS)", d.Title(), fpsCurrent))
-	}
+	// FPS in the title bar.
+	d.Engine.SetTitle(fmt.Sprintf("%s (%d FPS)", d.Title(), fpsCurrent))
 }

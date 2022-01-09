@@ -4,6 +4,9 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 )
 
+// IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has
+// been modified
+
 // cheatCommand is a subroutine of the Command.Run() method of the Doodle
 // developer shell (commands.go). It looks for special cheat codes entered
 // into the command shell and executes them.
@@ -15,7 +18,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	// Cheat codes
 	switch c.Raw {
-	case "unleash the beast":
+	case balance.CheatUncapFPS:
 		if fpsDoNotCap {
 			d.Flash("Reset frame rate throttle to factory default FPS")
 		} else {
@@ -23,7 +26,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		}
 		fpsDoNotCap = !fpsDoNotCap
 
-	case "don't edit and drive":
+	case balance.CheatEditDuringPlay:
 		if isPlay {
 			playScene.drawing.Editable = true
 			playScene.SetCheated()
@@ -32,7 +35,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to make the level canvas editable.")
 		}
 
-	case "scroll scroll scroll your boat":
+	case balance.CheatScrollDuringPlay:
 		if isPlay {
 			playScene.drawing.Scrollable = true
 			playScene.SetCheated()
@@ -41,7 +44,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to make the level scrollable.")
 		}
 
-	case "import antigravity":
+	case balance.CheatAntigravity:
 		if isPlay {
 			playScene.SetCheated()
 
@@ -57,7 +60,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to disable gravity for the player character.")
 		}
 
-	case "ghost mode":
+	case balance.CheatNoclip:
 		if isPlay {
 			playScene.SetCheated()
 
@@ -76,7 +79,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to disable clipping for the player character.")
 		}
 
-	case "show all actors":
+	case balance.CheatShowAllActors:
 		if isPlay {
 			playScene.SetCheated()
 			for _, actor := range playScene.drawing.Actors() {
@@ -87,7 +90,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to show hidden actors, such as technical doodads.")
 		}
 
-	case "give all keys":
+	case balance.CheatGiveKeys:
 		if isPlay {
 			playScene.SetCheated()
 			playScene.Player.AddItem("key-red.doodad", 0)
@@ -100,7 +103,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to get all colored keys.")
 		}
 
-	case "drop all items":
+	case balance.CheatDropItems:
 		if isPlay {
 			playScene.SetCheated()
 			playScene.Player.ClearInventory()
@@ -109,19 +112,19 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to clear your inventory.")
 		}
 
-	case "fly like a bird":
+	case balance.CheatPlayAsBird:
 		balance.PlayerCharacterDoodad = "bird-red.doodad"
 		d.Flash("Set default player character to Bird (red)")
 
-	case "pinocchio":
+	case balance.CheatPlayAsBoy:
 		balance.PlayerCharacterDoodad = "boy.doodad"
 		d.Flash("Set default player character to Boy")
 
-	case "the cell":
+	case balance.CheatPlayAsAzuBlue:
 		balance.PlayerCharacterDoodad = "azu-blu.doodad"
 		d.Flash("Set default player character to Blue Azulian")
 
-	case "play as thief":
+	case balance.CheatPlayAsThief:
 		balance.PlayerCharacterDoodad = "thief.doodad"
 		d.Flash("Set default player character to Thief")
 

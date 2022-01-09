@@ -126,9 +126,14 @@ mingw32-release: doodads build mingw32 __dist-common release32
 # 	CGO_ENABLED=1 CC=[path-to-osxcross]/target/bin/[arch]-apple-darwin[version]-clang GOOS=darwin GOARCH=[arch] go build -tags static -ldflags "-s -w" -a
 
 
-# `make run` to run it in debug mode.
+# `make run` to run it from source.
 .PHONY: run
 run:
+	go run cmd/doodle/main.go
+
+# `make debug` to run it in -debug mode.
+.PHONY: debug
+debug:
 	go run cmd/doodle/main.go -debug
 
 # `make guitest` to run it in guitest mode.

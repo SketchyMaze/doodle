@@ -290,6 +290,7 @@ func (s *PlayScene) setupPlayer() {
 	// "start-flag.doodad"
 	var (
 		playerCharacterFilename = balance.PlayerCharacterDoodad
+		isStartFlagCharacter    bool
 
 		spawn     render.Point
 		flag      = &level.Actor{}
@@ -303,6 +304,7 @@ func (s *PlayScene) setupPlayer() {
 			for _, linkID := range actor.Links {
 				if linkedActor, ok := s.Level.Actors[linkID]; ok {
 					playerCharacterFilename = linkedActor.Filename
+					isStartFlagCharacter = true
 					log.Info("Playing as: %s", playerCharacterFilename)
 					break
 				}
@@ -315,6 +317,15 @@ func (s *PlayScene) setupPlayer() {
 			flagCount++
 			break
 		}
+	}
+
+	// If the user is cheating for the player character, mark the
+	// session cheated already. e.g. "Play as Bird" cheat would let
+	// them just fly to the goal in levels that don't link their
+	// Start Flag to a specific character.
+	if !isStartFlagCharacter && !balance.IsPlayerCharacterDefault() {
+		log.Warn("Mark session as cheated: the player spawned as %s instead of default", playerCharacterFilename)
+		s.SetCheated()
 	}
 
 	// The Start Flag becomes the player's initial checkpoint.
