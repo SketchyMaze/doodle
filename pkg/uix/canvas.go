@@ -24,6 +24,11 @@ type Canvas struct {
 	ui.Frame
 	Palette *level.Palette
 
+	// Parent Canvas widget, e.g. for Actors inside of a Level so they can
+	// find the parent canvas and see where they are drawing in relation to
+	// it (to handle top/left edge cropping on scroll)
+	parent *Canvas
+
 	// Editable and Scrollable go hand in hand and, if you initialize a
 	// NewCanvas() with editable=true, they are both enabled.
 	Editable   bool // Clicking will edit pixels of this canvas.

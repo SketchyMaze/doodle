@@ -6,7 +6,7 @@
 < begin
 
 // Bot Variables
-! var name     = Boy
+! var name     = Aiden
 ! var age      = 15
 ! var sex      = male
 ! var location = Michigan

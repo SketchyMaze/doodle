@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"git.kirsle.net/go/render"
-	"github.com/vmihailenco/msgpack"
 )
 
 // MapAccessor implements a chunk accessor by using a map of points to their
@@ -126,67 +125,5 @@ func (a MapAccessor) UnmarshalJSON(b []byte) error {
 		a[point] = NewSparseSwatch(index)
 	}
 
-	return nil
-}
-
-// // MarshalMsgpack serializes for msgpack.
-// func (a MapAccessor) MarshalMsgpack() ([]byte, error) {
-// 	dict := map[string]int{}
-// 	for point, sw := range a {
-// 		dict[point.String()] = sw.Index()
-// 	}
-// 	return msgpack.Marshal(dict)
-// }
-//
-// // Serialize converts the chunk accessor to a map for serialization.
-// func (a MapAccessor) Serialize() interface{} {
-// 	dict := map[string]int{}
-// 	for point, sw := range a {
-// 		dict[point.String()] = sw.Index()
-// 	}
-// 	return dict
-// }
-//
-// // UnmarshalMsgpack decodes from msgpack format.
-// func (a MapAccessor) UnmarshalMsgpack(b []byte) error {
-// 	var dict map[string]int
-// 	err := msgpack.Unmarshal(b, &dict)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	for coord, index := range dict {
-// 		point, err := render.ParsePoint(coord)
-// 		if err != nil {
-// 			return fmt.Errorf("MapAccessor.UnmarshalJSON: %s", err)
-// 		}
-// 		a[point] = NewSparseSwatch(index)
-// 	}
-//
-// 	return nil
-// }
-
-func (a MapAccessor) EncodeMsgpack(enc *msgpack.Encoder) error {
-	dict := map[string]int{}
-	for point, sw := range a {
-		dict[point.String()] = sw.Index()
-	}
-	return enc.Encode(dict)
-}
-
-func (a MapAccessor) DecodeMsgpack(dec *msgpack.Decoder) error {
-	v, err := dec.DecodeMap()
-	if err != nil {
-		return fmt.Errorf("MapAccessor.DecodeMsgpack: %s", err)
-	}
-	dict := v.(map[string]int)
-
-	for coord, index := range dict {
-		point, err := render.ParsePoint(coord)
-		if err != nil {
-			return fmt.Errorf("MapAccessor.UnmarshalJSON: %s", err)
-		}
-		a[point] = NewSparseSwatch(index)
-	}
 	return nil
 }

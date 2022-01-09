@@ -58,6 +58,12 @@ Miscellaneous changes:
   user levels _now_.
 * For the doodads JavaScript API: `time.Since()` is now available (from
   the Go standard library)
+* Fix a cosmetic bug where doodads scrolling off the top or left edges
+  of the level were being drawn incorrectly.
+* Fix the Editor's status bar where it shows your cursor position
+  relative to the level and absolute to the app window to show the
+  correct values of each (they were reversed before).
+* The developer shell now has a chatbot in it powered by RiveScript.
 
 ## v0.10.0 (Dec 30 2021)
 

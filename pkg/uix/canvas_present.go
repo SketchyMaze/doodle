@@ -30,6 +30,15 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 		H: S.H - w.BoxThickness(2),
 	})
 
+	// If we are an Actor canvas as part of a Level, get the absolute position of
+	// the parent (Level) canvas so we can compare where the Actor is drawn on-screen
+	// and detect if we are at the Top or Left edges of the parent, to crop and adjust
+	// the texture accordingly.
+	var ParentPosition render.Point
+	if w.parent != nil {
+		ParentPosition = ui.AbsolutePosition(w.parent)
+	}
+
 	// Draw the wallpaper.
 	if w.wallpaper.Valid() {
 		err := w.PresentWallpaper(e, p)
@@ -88,7 +97,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// Zoom in the texture.
 			var (
 				texSize     = tex.Size()
-				texSizeOrig = tex.Size()
+				texSizeOrig = texSize
 			)
 
 			if w.Zoom != 0 {
@@ -136,14 +145,14 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// - Find the delta how much it exceeds as negative (800 - 890 == -90)
 			// - Lower the Source and Dest rects by that delta size so they
 			//   stay proportional and don't scale or anything dumb.
-			if dst.X+src.W > p.X+S.W {
+			if dst.X+src.W > p.X+S.W+w.BoxThickness(1) {
 				// NOTE: delta is a negative number,
 				// so it will subtract from the width.
 				delta := (p.X + S.W - w.BoxThickness(1)) - (dst.W + dst.X)
 				src.W += delta
 				dst.W += delta
 			}
-			if dst.Y+src.H > p.Y+S.H {
+			if dst.Y+src.H > p.Y+S.H+w.BoxThickness(1) {
 				// NOTE: delta is a negative number
 				delta := (p.Y + S.H - w.BoxThickness(1)) - (dst.H + dst.Y)
 				src.H += delta
@@ -160,18 +169,19 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			// - Set destination X to p.X to constrain it there: 20
 			// - Subtract the delta from destination W so we don't scale it.
 			// - Add 20 to X of the source: the left edge of source is not visible
-			if dst.X < p.X {
+			//
+			// Note: the +w.BoxThickness works around a bug if the Actor Canvas has
+			// a border on it (e.g. in the Actor/Link Tool mouse-over or debug setting)
+			if dst.X == ParentPosition.X+w.BoxThickness(1) {
 				// NOTE: delta is a positive number,
 				// so it will add to the destination coordinates.
-				delta := p.X - dst.X
+				delta := texSizeOrig.W - src.W
 				dst.X = p.X + w.BoxThickness(1)
-				dst.W -= delta
 				src.X += delta
 			}
-			if dst.Y < p.Y {
-				delta := p.Y - dst.Y
+			if dst.Y == ParentPosition.Y+w.BoxThickness(1) {
+				delta := texSizeOrig.H - src.H
 				dst.Y = p.Y + w.BoxThickness(1)
-				dst.H -= delta
 				src.Y += delta
 			}
 

@@ -282,10 +282,10 @@ func (u *EditorUI) Loop(ev *event.State) error {
 
 	// Update status bar labels.
 	{
-		u.StatusMouseText = fmt.Sprintf("Rel:(%d,%d)  Abs:(%s)",
+		u.StatusMouseText = fmt.Sprintf("Rel:(%s)  Abs:(%d,%d)",
+			*u.Scene.debWorldIndex,
 			ev.CursorX,
 			ev.CursorY,
-			*u.Scene.debWorldIndex,
 		)
 		u.StatusPaletteText = fmt.Sprintf("%s Tool",
 			u.Canvas.Tool,

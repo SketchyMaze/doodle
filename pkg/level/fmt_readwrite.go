@@ -77,14 +77,7 @@ func LoadFile(filename string) (*Level, error) {
 		return FromJSON(filename, jsonData)
 	}
 
-	// Try the binary format.
-	if level, err := LoadBinary(filename); err == nil {
-		return level, nil
-	} else {
-		log.Warn(err.Error())
-	}
-
-	// Then the JSON format.
+	// Load as JSON.
 	if level, err := LoadJSON(filename); err == nil {
 		return level, nil
 	} else {

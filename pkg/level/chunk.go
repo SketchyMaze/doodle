@@ -12,7 +12,6 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
-	"github.com/vmihailenco/msgpack"
 )
 
 // Types of chunks.
@@ -42,9 +41,9 @@ type Chunk struct {
 // JSONChunk holds a lightweight (interface-free) copy of the Chunk for
 // unmarshalling JSON files from disk.
 type JSONChunk struct {
-	Type    int             `json:"type" msgpack:"0"`
-	Data    json.RawMessage `json:"data" msgpack:"-"`
-	BinData interface{}     `json:"-" msgpack:"1"`
+	Type    int             `json:"type"`
+	Data    json.RawMessage `json:"data"`
+	BinData interface{}     `json:"-"`
 }
 
 // Accessor provides a high-level API to interact with absolute pixel coordinates
@@ -59,9 +58,6 @@ type Accessor interface {
 	Len() int
 	MarshalJSON() ([]byte, error)
 	UnmarshalJSON([]byte) error
-	// MarshalMsgpack() ([]byte, error)
-	// UnmarshalMsgpack([]byte) error
-	// Serialize() interface{}
 }
 
 // NewChunk creates a new chunk.
@@ -312,66 +308,3 @@ func (c *Chunk) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)
 	}
 }
-
-func (c *Chunk) EncodeMsgpack(enc *msgpack.Encoder) error {
-	data := c.Accessor
-
-	generic := &JSONChunk{
-		Type:    c.Type,
-		BinData: data,
-	}
-
-	return enc.Encode(generic)
-}
-
-func (c *Chunk) DecodeMsgpack(dec *msgpack.Decoder) error {
-	generic := &JSONChunk{}
-	err := dec.Decode(generic)
-	if err != nil {
-		return fmt.Errorf("Chunk.DecodeMsgpack: %s", err)
-	}
-
-	switch c.Type {
-	case MapType:
-		c.Accessor = generic.BinData.(MapAccessor)
-	default:
-		return fmt.Errorf("Chunk.DecodeMsgpack: unsupported chunk type '%d'", c.Type)
-	}
-
-	return nil
-}
-
-// // MarshalMsgpack writes the chunk to msgpack format.
-// func (c *Chunk) MarshalMsgpack() ([]byte, error) {
-// 	// data, err := c.Accessor.MarshalMsgpack()
-// 	// if err != nil {
-// 	// 	return []byte{}, err
-// 	// }
-// 	data := c.Accessor
-//
-// 	generic := &JSONChunk{
-// 		Type:    c.Type,
-// 		BinData: data,
-// 	}
-// 	b, err := msgpack.Marshal(generic)
-// 	return b, err
-// }
-//
-// // UnmarshalMsgpack loads the chunk from msgpack format.
-// func (c *Chunk) UnmarshalMsgpack(b []byte) error {
-// 	// Parse it generically so we can hand off the inner "data" object to the
-// 	// right accessor for unmarshalling.
-// 	generic := &JSONChunk{}
-// 	err := msgpack.Unmarshal(b, generic)
-// 	if err != nil {
-// 		return fmt.Errorf("Chunk.UnmarshalMsgpack: failed to unmarshal into generic JSONChunk type: %s", err)
-// 	}
-//
-// 	switch c.Type {
-// 	case MapType:
-// 		c.Accessor = NewMapAccessor()
-// 		return c.Accessor.UnmarshalMsgpack(generic.Data)
-// 	default:
-// 		return fmt.Errorf("Chunk.UnmarshalMsgpack: unsupported chunk type '%d'", c.Type)
-// 	}
-// }

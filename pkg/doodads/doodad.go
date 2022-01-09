@@ -20,7 +20,7 @@ type Doodad struct {
 	Tags     map[string]string `json:"data"` // arbitrary key/value data storage
 
 	// Undo history, temporary live data not persisted to the level file.
-	UndoHistory *drawtool.History `json:"-" msgpack:"-"`
+	UndoHistory *drawtool.History `json:"-"`
 }
 
 // Layer holds a layer of drawing data for a Doodad.

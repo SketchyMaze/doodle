@@ -17,39 +17,39 @@ var (
 // Base provides the common struct keys that are shared between Levels and
 // Doodads.
 type Base struct {
-	Version     int    `json:"version" msgpack:"0"`     // File format version spec.
-	GameVersion string `json:"gameVersion" msgpack:"1"` // Game version that created the level.
-	Title       string `json:"title" msgpack:"2"`
-	Author      string `json:"author" msgpack:"3"`
-	Locked      bool   `json:"locked" msgpack:"4"`
+	Version     int    `json:"version"`     // File format version spec.
+	GameVersion string `json:"gameVersion"` // Game version that created the level.
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+	Locked      bool   `json:"locked"`
 
 	// Every drawing type is able to embed other files inside of itself.
-	Files FileSystem `json:"files" msgpack:"5"`
+	Files FileSystem `json:"files"`
 }
 
 // Level is the container format for Doodle map drawings.
 type Level struct {
 	Base
-	Password string `json:"passwd" msgpack:"10"`
+	Password string `json:"passwd"`
 
 	// Chunked pixel data.
-	Chunker *Chunker `json:"chunks" msgpack:"12"`
+	Chunker *Chunker `json:"chunks"`
 
 	// The Palette holds the unique "colors" used in this map file, and their
 	// properties (solid, fire, slippery, etc.)
-	Palette *Palette `json:"palette" msgpack:"13"`
+	Palette *Palette `json:"palette"`
 
 	// Page boundaries and wallpaper settings.
-	PageType  PageType `json:"pageType" msgpack:"14"`
-	MaxWidth  int64    `json:"boundedWidth" msgpack:"15"` // only if bounded or bordered
-	MaxHeight int64    `json:"boundedHeight" msgpack:"16"`
-	Wallpaper string   `json:"wallpaper" msgpack:"17"`
+	PageType  PageType `json:"pageType"`
+	MaxWidth  int64    `json:"boundedWidth"` // only if bounded or bordered
+	MaxHeight int64    `json:"boundedHeight"`
+	Wallpaper string   `json:"wallpaper"`
 
 	// Actors keep a list of the doodad instances in this map.
-	Actors ActorMap `json:"actors" msgpack:"18"`
+	Actors ActorMap `json:"actors"`
 
 	// Undo history, temporary live data not persisted to the level file.
-	UndoHistory *drawtool.History `json:"-" msgpack:"-"`
+	UndoHistory *drawtool.History `json:"-"`
 }
 
 // New creates a blank level object with all its members initialized.
