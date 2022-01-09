@@ -1,6 +1,6 @@
 # Changes
 
-## v0.10.1 (TBD)
+## v0.10.1 (Jan 9 2022)
 
 New features:
 
