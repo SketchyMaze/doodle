@@ -20,11 +20,17 @@ STAGE_PATH="$(pwd)/dist/stage/${VERSION}"
 
 # Handle all architectures! Default x86_64
 # Used in zipfiles for Linux and Windows (fpm-bundle.sh has its own logic)
-ARCH_LABEL="64bit"
-case "$archs" in
-  i?86) ARCH_LABEL="32bit" ;;
-  aarch64) ARCH_LABEL="aarch64" ;;
-esac
+# User can provide ARCH_LABEL environ variable too.
+# One of: 32bit, 64bit, aarch64
+if [[ "$ARCH_LABEL" == "" ]]; then
+    # Reasonable default
+    ARCH_LABEL="64bit"
+    case "$archs" in
+        i?86) ARCH_LABEL="32bit" ;;
+        aarch64) ARCH_LABEL="aarch64" ;;
+    esac
+fi
+echo "Building packages for architecture $ARCH_LABEL"
 
 if [[ ! -d $DIST_PATH ]]; then
 	echo Run this script from the root of the game repository, such that

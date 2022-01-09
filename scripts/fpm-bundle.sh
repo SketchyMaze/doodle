@@ -69,11 +69,29 @@ echo =====================
 echo Starting fpm package build.
 echo =====================
 
+# Get the architecture we're building for, can be provided by
+# the user with ARCH_LABEL env variable, it'd be one of:
+#   x86_64
+#   i386
+#   aarch64
+if [[ "$ARCH_LABEL" == "" ]]; then
+    ARCH_LABEL="64bit"
+    case "$archs" in
+        i?86) ARCH_LABEL="32bit" ;;
+        aarch64) ARCH_LABEL="aarch64" ;;
+    esac
+fi
+echo "Building packages for architecture $ARCH_LABEL"
+
 # Handle all architectures! Default x86_64
 RPM_ARCH="x86_64"
 DEB_ARCH="x86_64"
-case "$archs" in
-  i?86)
+case "$ARCH_LABEL" in
+  64bit)
+    RPM_ARCH="x86_64"
+    DEB_ARCH="x86_64"
+    ;;
+  32bit)
     RPM_ARCH="i386"
     DEB_ARCH="i386"
     ;;
