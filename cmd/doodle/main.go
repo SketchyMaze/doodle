@@ -15,6 +15,7 @@ import (
 	doodle "git.kirsle.net/apps/doodle/pkg"
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/chatbot"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -196,6 +197,9 @@ func main() {
 		// Log what Doodle thinks its working directory is, for debugging.
 		pwd, _ := os.Getwd()
 		log.Debug("PWD: %s", pwd)
+
+		// Initialize the developer shell chatbot easter egg.
+		chatbot.Setup()
 
 		game.Run()
 		return nil

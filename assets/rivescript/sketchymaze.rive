@@ -1,0 +1,19 @@
+// Triggers about Sketchy Maze in particular
+
++ what are you
+- I'm <bot name>, a chatbot built into your game!
+
++ what can you do
+- Type `help` for a list of commands.\n
+^ I can also answer random questions that I understand.
+
+// Misc open-ended triggers not caught in RiveScript standard brain
+
++ i *
+- Do you always talk about yourself?
+- That's interesting.
+- That's cool.
+
++ why *
+- To make you ask questions.
+- Because I said so.

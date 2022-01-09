@@ -10,6 +10,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/assets"
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/chatbot"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -88,7 +89,7 @@ func (c Command) Run(d *Doodle) error {
 		// Undocumented command to extract the binary of its assets.
 		return c.ExtractBindata(d, c.ArgsLiteral)
 	default:
-		return c.Default()
+		return c.Default(d)
 	}
 	return nil
 }
@@ -340,7 +341,17 @@ func (c Command) RunScript(d *Doodle, code interface{}) (otto.Value, error) {
 }
 
 // Default command.
-func (c Command) Default() error {
+func (c Command) Default(d *Doodle) error {
+	// Give the easter egg RiveScript bot a chance.
+	if reply, err := chatbot.Handle(c.Raw); err == nil {
+		for _, reply := range strings.Split(reply, "\n") {
+			d.Flash(reply)
+		}
+		return nil
+	} else {
+		log.Error("RiveScript error: %s", err)
+	}
+
 	return fmt.Errorf("%s: command not found. Try `help` for help",
 		c.Command,
 	)
