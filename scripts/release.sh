@@ -25,7 +25,7 @@ STAGE_PATH="$(pwd)/dist/stage/${VERSION}"
 if [[ "$ARCH_LABEL" == "" ]]; then
     # Reasonable default
     ARCH_LABEL="64bit"
-    case "$archs" in
+    case "$(uname -m)" in
         i?86) ARCH_LABEL="32bit" ;;
         aarch64) ARCH_LABEL="aarch64" ;;
     esac

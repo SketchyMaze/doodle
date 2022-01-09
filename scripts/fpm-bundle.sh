@@ -76,7 +76,7 @@ echo =====================
 #   aarch64
 if [[ "$ARCH_LABEL" == "" ]]; then
     ARCH_LABEL="64bit"
-    case "$archs" in
+    case "$(uname -m)" in
         i?86) ARCH_LABEL="32bit" ;;
         aarch64) ARCH_LABEL="aarch64" ;;
     esac
@@ -111,8 +111,11 @@ fpm -C ./root -s dir -t rpm \
   --url="https://www.sketchymaze.com"
 
 # Debian Package
+# NOTE: ideally wanted to depend on libsdl2 etc. but it doesn't work
+# on Debian Buster to depend on either `libsdl2` or `libsdl2-2.0` nor
+# on either `libsdl2-ttf` or `libsdl2-ttf-2.0` so just remove deps
+# and let the user figure it out.
 fpm -C ./root -s dir -t deb \
-  -d libsdl2-2.0 -d libsdl2-ttf-2.0 -d libsdl2-mixer-2.0 \
   -a $DEB_ARCH \
   -n sketchy-maze -v ${VERSION} \
   --license="Copyright" \
