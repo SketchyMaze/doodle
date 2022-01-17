@@ -3,6 +3,7 @@ package uix
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/doodads"
@@ -17,8 +18,18 @@ import (
 func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	var errs []string
 
+	// Order the actors deterministically, by their ID string. Actors get
+	// a time-ordered UUID ID by default so the most recently added actor
+	// should render on top of the others.
+	var actorIDs []string
+	for id := range actors {
+		actorIDs = append(actorIDs, id)
+	}
+	sort.Strings(actorIDs)
+
 	w.actors = make([]*Actor, 0)
-	for id, actor := range actors {
+	for _, id := range actorIDs {
+		var actor = actors[id]
 		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("%s: %s", actor.Filename, err.Error()))
