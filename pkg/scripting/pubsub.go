@@ -2,7 +2,7 @@ package scripting
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // Message holds data being published from one script VM with information sent
@@ -10,7 +10,7 @@ import (
 type Message struct {
 	Name     string
 	SenderID string
-	Args     []interface{}
+	Args     []goja.Value
 }
 
 /*
@@ -29,7 +29,10 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 			if _, ok := vm.subscribe[msg.Name]; ok {
 				for _, callback := range vm.subscribe[msg.Name] {
 					log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
-					callback.Call(otto.Value{}, msg.Args...)
+					if function, ok := goja.AssertFunction(callback); ok {
+						result, err := function(goja.Undefined(), msg.Args...)
+						log.Debug("Result: %s, %s", result, err)
+					}
 				}
 			}
 
@@ -39,22 +42,22 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 
 	// Register the Message.Subscribe and Message.Publish functions.
 	vm.vm.Set("Message", map[string]interface{}{
-		"Subscribe": func(name string, callback otto.Value) {
+		"Subscribe": func(name string, callback goja.Value) {
 			vm.muSubscribe.Lock()
 			defer vm.muSubscribe.Unlock()
 
-			if !callback.IsFunction() {
+			if _, ok := goja.AssertFunction(callback); !ok {
 				log.Error("SUBSCRIBE(%s): callback is not a function", name)
 				return
 			}
 			if _, ok := vm.subscribe[name]; !ok {
-				vm.subscribe[name] = []otto.Value{}
+				vm.subscribe[name] = []goja.Value{}
 			}
 
 			vm.subscribe[name] = append(vm.subscribe[name], callback)
 		},
 
-		"Publish": func(name string, v ...interface{}) {
+		"Publish": func(name string, v ...goja.Value) {
 			for _, channel := range vm.Outbound {
 				channel <- Message{
 					Name:     name,
@@ -64,7 +67,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 			}
 		},
 
-		"Broadcast": func(name string, v ...interface{}) {
+		"Broadcast": func(name string, v ...goja.Value) {
 			// Send the message to all actor VMs.
 			for _, toVM := range s.scripts {
 				if vm.Name == toVM.Name {

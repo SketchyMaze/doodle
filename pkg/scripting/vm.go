@@ -1,11 +1,12 @@
 package scripting
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // VM manages a single isolated JavaScript VM.
@@ -24,10 +25,10 @@ type VM struct {
 	//     messages.
 	Inbound     chan Message
 	Outbound    []chan Message
-	subscribe   map[string][]otto.Value // Subscribed message handlers by name.
+	subscribe   map[string][]goja.Value // Subscribed message handlers by name.
 	muSubscribe sync.RWMutex
 
-	vm *otto.Otto
+	vm *goja.Runtime
 
 	// setTimeout and setInterval variables.
 	timerLastID int // becomes 1 when first timer is set
@@ -38,21 +39,21 @@ type VM struct {
 func NewVM(name string) *VM {
 	vm := &VM{
 		Name:   name,
-		Events: NewEvents(),
-		vm:     otto.New(),
+		vm:     goja.New(),
 		timers: map[int]*Timer{},
 
 		// Pub/sub structs.
 		Inbound:   make(chan Message),
 		Outbound:  []chan Message{},
-		subscribe: map[string][]otto.Value{},
+		subscribe: map[string][]goja.Value{},
 	}
+	vm.Events = NewEvents(vm.vm)
 	return vm
 }
 
 // Run code in the VM.
-func (vm *VM) Run(src interface{}) (otto.Value, error) {
-	v, err := vm.vm.Run(src)
+func (vm *VM) Run(src string) (goja.Value, error) {
+	v, err := vm.vm.RunString(src)
 	return v, err
 }
 
@@ -78,13 +79,9 @@ func (vm *VM) RegisterLevelHooks() error {
 
 // Main calls the main function of the script.
 func (vm *VM) Main() error {
-	function, err := vm.vm.Get("main")
-	if err != nil {
-		return err
-	}
-
-	if !function.IsFunction() {
-		return nil
+	function, ok := goja.AssertFunction(vm.vm.Get("main"))
+	if !ok {
+		return errors.New("didn't find function main()")
 	}
 
 	// Catch panics.
@@ -94,6 +91,6 @@ func (vm *VM) Main() error {
 		}
 	}()
 
-	_, err = function.Call(otto.Value{})
+	_, err := function(goja.Undefined())
 	return err
 }

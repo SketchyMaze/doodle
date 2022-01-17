@@ -15,7 +15,7 @@ function main() {
         );
     }
 
-    Message.Subscribe("broadcast:ready", function () {
+    Message.Subscribe("broadcast:ready", () => {
         Message.Publish("switch:toggle", true);
         Message.Publish("power", true);
     });

@@ -8,11 +8,11 @@ function main() {
 
     // Checkpoints broadcast to all of their peers so they all
     // know which one is the most recently activated.
-    Message.Subscribe("broadcast:checkpoint", function (currentID) {
+    Message.Subscribe("broadcast:checkpoint", (currentID) => {
         setActive(false);
     });
 
-    Events.OnCollide(function (e) {
+    Events.OnCollide((e) => {
         if (isCurrentCheckpoint || !e.Settled) {
             return;
         }

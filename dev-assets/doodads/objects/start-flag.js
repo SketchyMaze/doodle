@@ -4,8 +4,7 @@ function main() {
 
     // Linking a doodad to the Start Flag sets the
     // player character. Destroy the original doodads.
-    var links = Self.GetLinks();
-    for (var i = 0; i < links.length; i++) {
-        links[i].Destroy();
+    for (var link of Self.GetLinks()) {
+        link.Destroy();
     }
 }

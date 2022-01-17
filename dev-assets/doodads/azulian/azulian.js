@@ -5,7 +5,7 @@ var playerSpeed = 12,
 	lastDirection = "right";
 
 function setupAnimations(color) {
-	var left = color === 'blue' ? 'blu-wl' : 'red-wl',
+	let left = color === 'blue' ? 'blu-wl' : 'red-wl',
 		right = color === 'blue' ? 'blu-wr' : 'red-wr',
 		leftFrames = [left + '1', left + '2', left + '3', left + '4'],
 		rightFrames = [right + '1', right + '2', right + '3', right + '4'];
@@ -15,7 +15,7 @@ function setupAnimations(color) {
 }
 
 function main() {
-	var color = Self.GetTag("color");
+	const color = Self.GetTag("color");
 	playerSpeed = color === 'blue' ? 2 : 4;
 
 	Self.SetMobile(true);
@@ -32,14 +32,14 @@ function main() {
 	// when it meets resistance.
 
 	// Sample our X position every few frames and detect if we've hit a solid wall.
-	var sampleTick = 0;
-	var sampleRate = 5;
-	var lastSampledX = 0;
+	let sampleTick = 0;
+	let sampleRate = 5;
+	let lastSampledX = 0;
 
-	setInterval(function () {
+	setInterval(() => {
 		if (sampleTick % sampleRate === 0) {
-			var curX = Self.Position().X;
-			var delta = Math.abs(curX - lastSampledX);
+			let curX = Self.Position().X;
+			let delta = Math.abs(curX - lastSampledX);
 			if (delta < 5) {
 				direction = direction === "right" ? "left" : "right";
 			}
@@ -47,7 +47,7 @@ function main() {
 		}
 		sampleTick++;
 
-		var Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1));
+		let Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1));
 		Self.SetVelocity(Vector(Vx, 0.0));
 
 		// If we changed directions, stop animating now so we can
@@ -66,7 +66,7 @@ function main() {
 
 function playerControls() {
 	// Note: player speed is controlled by the engine.
-	Events.OnKeypress(function (ev) {
+	Events.OnKeypress((ev) => {
 		if (ev.Right) {
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("walk-right", null);

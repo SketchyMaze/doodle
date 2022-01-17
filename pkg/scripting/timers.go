@@ -3,13 +3,13 @@ package scripting
 import (
 	"time"
 
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // Timer keeps track of delayed function calls for the scripting engine.
 type Timer struct {
 	id       int
-	callback otto.Value
+	callback goja.Value
 	interval time.Duration // milliseconds delay for timeout
 	next     time.Time     // scheduled time for next invocation
 	repeat   bool          // for setInterval
@@ -27,7 +27,7 @@ with 1000 being 'one second.'
 Returns the ID number of the timer in case you want to clear it. The underlying
 Timer type is NOT exposed to JavaScript.
 */
-func (vm *VM) SetTimeout(callback otto.Value, interval int) int {
+func (vm *VM) SetTimeout(callback goja.Value, interval int) int {
 	return vm.AddTimer(callback, interval, false)
 }
 
@@ -37,14 +37,14 @@ SetInterval registers a callback function to be run repeatedly.
 Returns the ID number of the timer in case you want to clear it. The underlying
 Timer type is NOT exposed to JavaScript.
 */
-func (vm *VM) SetInterval(callback otto.Value, interval int) int {
+func (vm *VM) SetInterval(callback goja.Value, interval int) int {
 	return vm.AddTimer(callback, interval, true)
 }
 
 /*
 AddTimer loads timeouts and intervals into the VM's memory and returns the ID.
 */
-func (vm *VM) AddTimer(callback otto.Value, interval int, repeat bool) int {
+func (vm *VM) AddTimer(callback goja.Value, interval int, repeat bool) int {
 	// Get the next timer ID. The first timer has ID 1.
 	vm.timerLastID++
 	id := vm.timerLastID
@@ -72,7 +72,10 @@ func (vm *VM) TickTimer(now time.Time) {
 
 	for id, timer := range vm.timers {
 		if now.After(timer.next) {
-			timer.callback.Call(otto.Value{})
+			if function, ok := goja.AssertFunction(timer.callback); ok {
+				function(goja.Undefined())
+			}
+
 			if timer.repeat {
 				timer.Schedule()
 			} else {

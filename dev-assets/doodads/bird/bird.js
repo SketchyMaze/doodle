@@ -1,17 +1,17 @@
 // Bird
 
 function main() {
-	var speed = 4;
-	var Vx = Vy = 0;
-	var altitude = Self.Position().Y; // original height in the level
+	let speed = 4,
+		Vx = Vy = 0,
+		altitude = Self.Position().Y; // original height in the level
 
-	var direction = "left",
+	let direction = "left",
 		lastDirection = "left";
-	var states = {
+	let states = {
 		flying: 0,
 		diving: 1,
 	};
-	var state = states.flying;
+	let state = states.flying;
 
 	Self.SetMobile(true);
 	Self.SetGravity(false);
@@ -24,22 +24,22 @@ function main() {
 		return player();
 	}
 
-	Events.OnCollide(function (e) {
+	Events.OnCollide((e) => {
 		if (e.Actor.IsMobile() && e.InHitbox) {
 			return false;
 		}
 	});
 
 	// Sample our X position every few frames and detect if we've hit a solid wall.
-	var sampleTick = 0;
-	var sampleRate = 2;
-	var lastSampledX = 0;
-	var lastSampledY = 0;
+	let sampleTick = 0,
+		sampleRate = 2,
+		lastSampledX = 0,
+		lastSampledY = 0;
 
-	setInterval(function () {
+	setInterval(() => {
 		if (sampleTick % sampleRate === 0) {
-			var curX = Self.Position().X;
-			var delta = Math.abs(curX - lastSampledX);
+			let curX = Self.Position().X;
+			let delta = Math.abs(curX - lastSampledX);
 			if (delta < 5) {
 				direction = direction === "right" ? "left" : "right";
 			}
@@ -48,15 +48,15 @@ function main() {
 		sampleTick++;
 
 		// If we are not flying at our original altitude, correct for that.
-		var curV = Self.Position();
-		var Vy = 0.0;
+		let curV = Self.Position();
+		let Vy = 0.0;
 		if (curV.Y != altitude) {
 			Vy = curV.Y < altitude ? 1 : -1;
 		}
 
 		// TODO: Vector() requires floats, pain in the butt for JS,
 		// the JS API should be friendlier and custom...
-		var Vx = parseFloat(speed * (direction === "left" ? -1 : 1));
+		let Vx = parseFloat(speed * (direction === "left" ? -1 : 1));
 		Self.SetVelocity(Vector(Vx, Vy));
 
 		// If we changed directions, stop animating now so we can
@@ -76,7 +76,7 @@ function main() {
 // If under control of the player character.
 function player() {
 	Self.SetInventory(true);
-	Events.OnKeypress(function (ev) {
+	Events.OnKeypress((ev) => {
 		Vx = 0;
 		Vy = 0;
 

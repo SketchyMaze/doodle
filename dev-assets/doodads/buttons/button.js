@@ -1,18 +1,18 @@
 function main() {
-	var timer = 0;
-	var pressed = false;
+	let timer = 0;
+	let pressed = false;
 
 	// Has a linked Sticky Button been pressed permanently down?
-	var stickyDown = false;
-	Message.Subscribe("sticky:down", function (down) {
+	let stickyDown = false;
+	Message.Subscribe("sticky:down", (down) => {
 		stickyDown = down;
 		Self.ShowLayer(stickyDown ? 1 : 0);
 	});
 
 	// Track who all is colliding with us.
-	var colliders = {};
+	let colliders = {};
 
-	Events.OnCollide(function (e) {
+	Events.OnCollide((e) => {
 		if (!e.Settled) {
 			return;
 		}
@@ -46,7 +46,7 @@ function main() {
 		Self.ShowLayer(1);
 	});
 
-	Events.OnLeave(function (e) {
+	Events.OnLeave((e) => {
 		delete colliders[e.Actor.ID()];
 
 		if (Object.keys(colliders).length === 0 && !stickyDown) {

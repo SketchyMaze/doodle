@@ -4,7 +4,7 @@
 function main() {
     Self.Hide();
 
-    var active = true,
+    let active = true,
         timeout = 250,
         ms = Self.GetTag("ms");
 
@@ -12,7 +12,7 @@ function main() {
         timeout = parseInt(ms);
     }
 
-    Events.OnCollide(function (e) {
+    Events.OnCollide((e) => {
         if (!active || !e.Settled) {
             return;
         }
@@ -25,7 +25,7 @@ function main() {
         if (e.InHitbox) {
             // Grab hold of the player.
             e.Actor.Freeze();
-            setTimeout(function () {
+            setTimeout(() => {
                 e.Actor.Unfreeze();
             }, timeout);
 
@@ -34,7 +34,7 @@ function main() {
     });
 
     // Reset the trap if powered by a button.
-    Message.Subscribe("power", function (powered) {
+    Message.Subscribe("power", (powered) => {
         active = true;
     });
 }

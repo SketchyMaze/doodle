@@ -12,8 +12,8 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/go/render"
+	"github.com/dop251/goja"
 	"github.com/google/uuid"
-	"github.com/robertkrimen/otto"
 )
 
 // Actor is an object that marries together the three things that make a
@@ -52,7 +52,7 @@ type Actor struct {
 	// Animation variables.
 	animations        map[string]*Animation
 	activeAnimation   *Animation
-	animationCallback otto.Value
+	animationCallback goja.Value
 
 	// Mutex.
 	muInventory sync.RWMutex

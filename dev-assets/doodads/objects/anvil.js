@@ -8,9 +8,9 @@ function main() {
     Self.SetGravity(true);
 
     // Monitor our Y position to tell if we've been falling.
-    var lastPoint = Self.Position();
-    setInterval(function () {
-        var nowAt = Self.Position();
+    let lastPoint = Self.Position();
+    setInterval(() => {
+        let nowAt = Self.Position();
         if (nowAt.Y > lastPoint.Y) {
             falling = true;
         } else {
@@ -19,7 +19,7 @@ function main() {
         lastPoint = nowAt;
     }, 100);
 
-    Events.OnCollide(function (e) {
+    Events.OnCollide((e) => {
         if (!e.Settled) {
             return;
         }
@@ -43,8 +43,8 @@ function main() {
     });
 
     // When we receive power, we reset to our original position.
-    var origPoint = Self.Position();
-    Message.Subscribe("power", function (powered) {
+    let origPoint = Self.Position();
+    Message.Subscribe("power", (powered) => {
         Self.MoveTo(origPoint);
         Self.SetVelocity(Vector(0, 0));
     });

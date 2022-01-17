@@ -79,7 +79,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	fileMenu.AddItemAccel("Open...", "Ctrl-O", u.Scene.MenuOpen)
 	fileMenu.AddSeparator()
-	fileMenu.AddItem("Quit to menu", func() {
+	fileMenu.AddItem("Exit to menu", func() {
 		u.Scene.ConfirmUnload(func() {
 			d.Goto(&MainScene{})
 		})

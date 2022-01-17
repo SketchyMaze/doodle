@@ -1,12 +1,12 @@
+// Trapdoors.
+
+// What direction is the trapdoor facing?
+const direction = Self.GetTag("direction");
+
 function main() {
-	// What direction is the trapdoor facing?
-	var direction = Self.GetTag("direction");
-
-	var timer = 0;
-
 	// Set our hitbox based on our orientation.
-	var thickness = 10;
-	var doodadSize = 86;
+	let thickness = 10;
+	let doodadSize = 86;
 	if (direction === "left") {
 		Self.SetHitbox(48, 0, doodadSize, doodadSize);
 	} else if (direction === "right") {
@@ -17,12 +17,12 @@ function main() {
 		Self.SetHitbox(0, 0, doodadSize, thickness);
 	}
 
-	var animationSpeed = 100;
-	var opened = false;
+	let animationSpeed = 100;
+	let opened = false;
 
 	// Register our animations.
-	var frames = [];
-	for (var i = 1; i <= 4; i++) {
+	let frames = [];
+	for (let i = 1; i <= 4; i++) {
 		frames.push(direction + i);
 	}
 
@@ -30,7 +30,7 @@ function main() {
 	frames.reverse();
 	Self.AddAnimation("close", animationSpeed, frames);
 
-	Events.OnCollide( function(e) {
+	Events.OnCollide((e) => {
 		if (opened) {
 			return;
 		}
@@ -78,9 +78,9 @@ function main() {
 		}
 	});
 
-	Events.OnLeave(function() {
+	Events.OnLeave(() => {
 		if (opened) {
-			Self.PlayAnimation("close", function() {
+			Self.PlayAnimation("close", () => {
 				opened = false;
 			});
 		}

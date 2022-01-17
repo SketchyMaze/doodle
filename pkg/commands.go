@@ -14,7 +14,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // Command is a parsed shell command.
@@ -330,13 +330,13 @@ func (c Command) BoolProp(d *Doodle) error {
 }
 
 // RunScript evaluates some JavaScript code safely.
-func (c Command) RunScript(d *Doodle, code interface{}) (otto.Value, error) {
+func (c Command) RunScript(d *Doodle, code string) (goja.Value, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			d.FlashError("Command.RunScript: Panic: %s", err)
 		}
 	}()
-	out, err := d.shell.js.Run(code)
+	out, err := d.shell.js.RunString(code)
 	return out, err
 }
 

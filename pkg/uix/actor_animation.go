@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // Animation holds a named animation for a doodad script.
@@ -103,7 +103,7 @@ func (a *Actor) AddAnimation(name string, interval int64, layers []interface{}) 
 
 // PlayAnimation starts an animation and then calls a JavaScript function when
 // the last frame has played out. Set a null function to ignore the callback.
-func (a *Actor) PlayAnimation(name string, callback otto.Value) error {
+func (a *Actor) PlayAnimation(name string, callback goja.Value) error {
 	anim, ok := a.animations[name]
 	if !ok {
 		return fmt.Errorf("animation named '%s' not found", name)
@@ -132,5 +132,5 @@ func (a *Actor) StopAnimation() {
 	}
 
 	a.activeAnimation = nil
-	a.animationCallback = otto.NullValue()
+	a.animationCallback = goja.Null()
 }

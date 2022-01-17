@@ -21,8 +21,8 @@ function main() {
 // Common "steal" power between playable and A.I. thieves.
 function stealable() {
     // Steals your items.
-    Events.OnCollide(function (e) {
-        var victim = e.Actor;
+    Events.OnCollide((e) => {
+        let victim = e.Actor;
         if (!e.Settled) {
             return;
         }
@@ -33,17 +33,17 @@ function stealable() {
         }
 
         // Steal inventory
-        var stolen = 0;
+        let stolen = 0;
         if (victim.HasInventory()) {
-            var myInventory = Self.Inventory(),
+            let myInventory = Self.Inventory(),
                 theirInventory = victim.Inventory();
 
-            for (var key in theirInventory) {
+            for (let key in theirInventory) {
                 if (!theirInventory.hasOwnProperty(key)) {
                     continue;
                 }
 
-                var value = theirInventory[key];
+                let value = theirInventory[key];
                 if (value > 0 || myInventory[key] === undefined) {
                     victim.RemoveItem(key, value);
                     Self.AddItem(key, value);
@@ -68,7 +68,7 @@ function stealable() {
 // when it encounters and obstacle.
 function ai() {
     // Walks back and forth.
-    var Vx = Vy = 0.0,
+    let Vx = Vy = 0.0,
         playerSpeed = 4,
         direction = "right",
         lastDirection = "right",
@@ -76,9 +76,9 @@ function ai() {
         sampleTick = 0,
         sampleRate = 2;
 
-    setInterval(function () {
+    setInterval(() => {
         if (sampleTick % sampleRate === 0) {
-            var curX = Self.Position().X,
+            let curX = Self.Position().X,
                 delta = Math.abs(curX - lastSampledX);
             if (delta < 5) {
                 direction = direction === "right" ? "left" : "right";
@@ -106,7 +106,7 @@ function ai() {
 
 // If under control of the player character.
 function playable() {
-    Events.OnKeypress(function (ev) {
+    Events.OnKeypress((ev) => {
         Vx = 0;
         Vy = 0;
 

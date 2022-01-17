@@ -2,7 +2,7 @@
 function main() {
     Self.Hide();
 
-    Events.OnCollide(function (e) {
+    Events.OnCollide((e) => {
         if (!e.Settled) {
             return;
         }

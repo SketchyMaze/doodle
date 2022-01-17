@@ -14,7 +14,7 @@ import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // Flash a message to the user.
@@ -59,7 +59,7 @@ type Shell struct {
 	historyIndex  int
 
 	// JavaScript shell interpreter.
-	js *otto.Otto
+	js *goja.Runtime
 }
 
 // Flash holds a message to flash on screen.
@@ -79,7 +79,7 @@ func NewShell(d *Doodle) Shell {
 		Prompt:     ">",
 		cursor:     '_',
 		cursorRate: balance.ShellCursorBlinkRate,
-		js:         otto.New(),
+		js:         goja.New(),
 	}
 
 	// Make the Doodle instance available to the shell.

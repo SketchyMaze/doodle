@@ -1,16 +1,17 @@
 // Warp Doors
+
+const color = Self.GetTag("color"),
+	isStateDoor = color === 'blue' || color === 'orange';
+
+// State in case we're a blue warp door.
+let state = color === 'blue',
+	animating = false,
+	collide = false;
+
 function main() {
-	// Are we a blue or orange door? Regular warp door will be 'none'
-	var color = Self.GetTag("color");
-	var isStateDoor = color === 'blue' || color === 'orange';
-	var state = color === 'blue';  // Blue door is ON by default.
-
-	var animating = false;
-	var collide = false;
-
 	// Declare animations and sprite names.
-	var animSpeed = 100;
-	var spriteDefault, spriteDisabled;  // the latter for state doors.
+	let animSpeed = 100;
+	let spriteDefault, spriteDisabled;  // the latter for state doors.
 	if (color === 'blue') {
 		Self.AddAnimation("open", animSpeed, ["blue-2", "blue-3", "blue-4"]);
 		Self.AddAnimation("close", animSpeed, ["blue-4", "blue-3", "blue-2", "blue-1"]);
@@ -33,17 +34,17 @@ function main() {
 	}
 
 	// Find our linked Warp Door.
-	var links = Self.GetLinks()
-	var linkedDoor = null;
-	for (var i = 0; i < links.length; i++) {
-		if (links[i].Title.indexOf("Warp Door") > -1) {
-			linkedDoor = links[i];
+	let linkedDoor = null;
+	for (let link of Self.GetLinks()) {
+		if (link.Title.indexOf("Warp Door") > -1) {
+			linkedDoor = link;
+			break;
 		}
 	}
 
 	// Subscribe to the global state-change if we are a state door.
 	if (isStateDoor) {
-		Message.Subscribe("broadcast:state-change", function(newState) {
+		Message.Subscribe("broadcast:state-change", (newState) => {
 			state = color === 'blue' ? !newState : newState;
 
 			// Activate or deactivate the door.
@@ -52,12 +53,11 @@ function main() {
 	}
 
 	// For player groundedness work-around
-	var playerLastY = []; // last sampling of Y values
-	var lastUsed = time.Now();
+	let playerLastY = []; // last sampling of Y values
 
 	// The player Uses the door.
-	var flashedCooldown = false; // "Locked Door" flashed message.
-	Events.OnUse(function(e) {
+	let flashedCooldown = false; // "Locked Door" flashed message.
+	Events.OnUse((e) => {
 		if (animating) {
 			return;
 		}
@@ -86,7 +86,7 @@ function main() {
 				// Work-around: if two Boxes are stacked atop each other the player can
 				// get stuck if he jumps on top. He may not be Grounded but isn't changing
 				// effective Y position and a warp door may work as a good way out.
-				var yValue = e.Actor.Position().Y;
+				let yValue = e.Actor.Position().Y;
 
 				// Collect a sampling of last few Y values. If the player Y position
 				// is constant the last handful of frames, treat them as if they're
@@ -100,8 +100,8 @@ function main() {
 				playerLastY.pop();
 
 				// Hasn't moved?
-				var isGrounded = true;
-				for (var i = 0; i < playerLastY.length; i++) {
+				let isGrounded = true;
+				for (let i = 0; i < playerLastY.length; i++) {
 					if (yValue !== playerLastY[i]) {
 						isGrounded = false;
 						break;
@@ -120,9 +120,9 @@ function main() {
 
 			// Play the open and close animation.
 			animating = true;
-			Self.PlayAnimation("open", function() {
+			Self.PlayAnimation("open", () => {
 				e.Actor.Hide()
-				Self.PlayAnimation("close", function() {
+				Self.PlayAnimation("close", () => {
 					Self.ShowLayerNamed(isStateDoor && !state ? spriteDisabled : spriteDefault);
 					animating = false;
 
@@ -139,12 +139,12 @@ function main() {
 	});
 
 	// Respond to incoming warp events.
-	Message.Subscribe("warp-door:incoming", function(player) {
+	Message.Subscribe("warp-door:incoming", (player) => {
 		animating = true;
 		player.Unfreeze();
-		Self.PlayAnimation("open", function() {
+		Self.PlayAnimation("open", () => {
 			player.Show();
-			Self.PlayAnimation("close", function() {
+			Self.PlayAnimation("close", () => {
 				animating = false;
 
 				// If the receiving door was a State Door, fix its state.

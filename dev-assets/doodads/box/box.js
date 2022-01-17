@@ -1,20 +1,21 @@
 // Pushable Box.
-var speed = 4;
-var size = 75;
+
+const speed = 4,
+    size = 75;
 
 function main() {
     Self.SetMobile(true);
     Self.SetGravity(true);
     Self.SetHitbox(0, 0, size, size);
 
-    Events.OnCollide(function (e) {
+    Events.OnCollide((e) => {
         // Ignore events from neighboring Boxes.
         if (e.Actor.Actor.Filename === "box.doodad") {
             return false;
         }
 
         if (e.Actor.IsMobile() && e.InHitbox) {
-            var overlap = e.Overlap;
+            let overlap = e.Overlap;
 
             if (overlap.Y === 0 && !(overlap.X === 0 && overlap.W < 5) && !(overlap.X === size)) {
                 // Standing on top, ignore.
@@ -39,8 +40,8 @@ function main() {
     });
 
     // When we receive power, we reset to our original position.
-    var origPoint = Self.Position();
-    Message.Subscribe("power", function (powered) {
+    let origPoint = Self.Position();
+    Message.Subscribe("power", (powered) => {
         Self.MoveTo(origPoint);
         Self.SetVelocity(Vector(0, 0));
     });
@@ -52,8 +53,8 @@ function main() {
 function animate() {
     Self.AddAnimation("animate", 100, [0, 1, 2, 3, 2, 1]);
 
-    var running = false;
-    setInterval(function () {
+    let running = false;
+    setInterval(() => {
         if (!running) {
             running = true;
             Self.PlayAnimation("animate", function () {

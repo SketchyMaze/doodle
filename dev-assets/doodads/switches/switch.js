@@ -4,15 +4,15 @@ function main() {
 	// 0: Off
 	// 1: On
 
-	var state = false;
-	var collide = false;
+	let state = false;
+	let collide = false;
 
-	Message.Subscribe("power", function (powered) {
+	Message.Subscribe("power", (powered) => {
 		state = powered;
 		showState(state);
 	});
 
-	Events.OnCollide(function (e) {
+	Events.OnCollide((e) => {
 		if (!e.Settled || !e.Actor.IsMobile()) {
 			return;
 		}
@@ -21,7 +21,6 @@ function main() {
 			Sound.Play("button-down.wav")
 			state = !state;
 
-			var nonce = Math.random() * 2147483647;
 			Message.Publish("switch:toggle", state);
 			Message.Publish("power", state);
 			showState(state);
@@ -30,7 +29,7 @@ function main() {
 		}
 	});
 
-	Events.OnLeave(function (e) {
+	Events.OnLeave((e) => {
 		collide = false;
 	});
 }

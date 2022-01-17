@@ -6,19 +6,16 @@ function main() {
 	Self.AddAnimation("fall", 100, ["fall1", "fall2", "fall3", "fall4"]);
 
 	// Recover time for the floor to respawn.
-	var recover = 5000;
+	let recover = 5000;
 
 	// States of the floor.
-	var stateSolid = 0;
-	var stateShaking = 1;
-	var stateFalling = 2;
-	var stateFallen = 3;
-	var state = stateSolid;
+	let stateSolid = 0;
+	let stateShaking = 1;
+	let stateFalling = 2;
+	let stateFallen = 3;
+	let state = stateSolid;
 
-	// Started the animation?
-	var startedAnimation = false;
-
-	Events.OnCollide(function(e) {
+	Events.OnCollide((e) => {
 
 		// If the floor is falling, the player passes right thru.
 		if (state === stateFalling || state === stateFallen) {
@@ -40,15 +37,15 @@ function main() {
 			// Begin the animation sequence if we're in the solid state.
 			if (state === stateSolid) {
 				state = stateShaking;
-				Self.PlayAnimation("shake", function() {
+				Self.PlayAnimation("shake", () => {
 					state = stateFalling;
-					Self.PlayAnimation("fall", function() {
+					Self.PlayAnimation("fall", () => {
 						Sound.Play("crumbly-break.wav")
 						state = stateFallen;
 						Self.ShowLayerNamed("fallen");
 
 						// Recover after a while.
-						setTimeout(function() {
+						setTimeout(() => {
 							Self.ShowLayer(0);
 							state = stateSolid;
 						}, recover);

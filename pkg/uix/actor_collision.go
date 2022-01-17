@@ -10,7 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
 	"git.kirsle.net/go/render"
-	"github.com/robertkrimen/otto"
+	"github.com/dop251/goja"
 )
 
 // loopActorCollision is the Loop function that checks if pairs of
@@ -56,8 +56,8 @@ func (w *Canvas) loopActorCollision() error {
 					a.StopAnimation()
 
 					// Call the callback function.
-					if callback.IsFunction() {
-						callback.Call(otto.NullValue())
+					if function, ok := goja.AssertFunction(callback); ok {
+						function(goja.Undefined())
 					}
 
 				}

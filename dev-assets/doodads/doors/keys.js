@@ -1,8 +1,10 @@
-function main() {
-	var color = Self.GetTag("color");
-	var quantity = color === "small" ? 1 : 0;
+// Colored Keys and Small Key
 
-	Events.OnCollide(function (e) {
+const color = Self.GetTag("color"),
+	quantity = color === "small" ? 1 : 0;
+
+function main() {
+	Events.OnCollide((e) => {
 		if (e.Settled) {
 			if (e.Actor.HasInventory()) {
 				// If we don't have a quantity, and the actor already has

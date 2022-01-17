@@ -10,12 +10,13 @@ require (
 	github.com/aichaos/rivescript-go v0.3.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dop251/goja v0.0.0-20220110113543-261677941f3c
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gen2brain/dlgs v0.0.0-20211108104213-bade24837f0b
 	github.com/google/uuid v1.3.0
 	github.com/gopherjs/gopherjs v0.0.0-20220104163920-15ed2e8cf2bd // indirect
 	github.com/kirsle/configdir v0.0.0-20170128060238-e45d2f54772f
-	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
+	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f // indirect
 	github.com/tomnomnom/xtermcolor v0.0.0-20160428124646-b78803f00a7e // indirect
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/veandco/go-sdl2 v0.4.10

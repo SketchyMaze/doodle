@@ -3,9 +3,9 @@ function main() {
 	Self.SetHitbox(0, 0, 42, 42);
 
 	// Blue block is ON by default.
-	var state = true;
+	let state = true;
 
-	Message.Subscribe("broadcast:state-change", function(newState) {
+	Message.Subscribe("broadcast:state-change", (newState) => {
 		state = !newState;
 
 		// Layer 0: ON
@@ -13,7 +13,7 @@ function main() {
 		Self.ShowLayer(state ? 0 : 1);
 	});
 
-	Events.OnCollide(function(e) {
+	Events.OnCollide((e) => {
 		if (e.Actor.IsMobile() && e.InHitbox) {
 			if (state) {
 				return false;
