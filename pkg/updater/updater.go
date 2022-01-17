@@ -72,9 +72,14 @@ func Check() (VersionInfo, error) {
 		Timeout: 10 * time.Second,
 	}
 
-	log.Debug("Checking for app updates")
+	req, err := http.NewRequest("GET", branding.UpdateCheckJSON, nil)
+	if err != nil {
+		return result, fmt.Errorf("updater.Check: HTTP error getting %s: %s", branding.UpdateCheckJSON, err)
+	}
+	req.Header.Add("User-Agent", branding.UserAgent())
 
-	resp, err := client.Get(branding.UpdateCheckJSON)
+	log.Debug("Checking for app updates")
+	resp, err := client.Do(req)
 	if err != nil {
 		return result, fmt.Errorf("updater.Check: HTTP error: %s", err)
 	}

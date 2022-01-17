@@ -7,7 +7,6 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
@@ -222,7 +221,6 @@ func PreloadAllChunkBitmaps(chunker *level.Chunker) {
 
 	for {
 		remaining := chunker.PrerenderN(10)
-		log.Debug("Remain: %d", remaining)
 
 		// Set the load screen progress % based on number of chunks to render.
 		if loadChunksTarget > 0 {

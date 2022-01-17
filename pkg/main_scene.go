@@ -47,6 +47,7 @@ type MainScene struct {
 	updateInfo   updater.VersionInfo
 
 	// Lazy scroll variables. See LoopLazyScroll().
+	PauseLazyScroll      bool // exported for dev console
 	lazyScrollBounce     bool
 	lazyScrollTrajectory render.Point
 	lazyScrollLastValue  render.Point
@@ -379,6 +380,21 @@ func (s *MainScene) Resized(width, height int) {
 	})
 }
 
+// ButtonFrame returns the main button frame.
+func (s *MainScene) ButtonFrame() *ui.Frame {
+	return s.frame
+}
+
+// LabelVersion returns the version widget.
+func (s *MainScene) LabelVersion() *ui.Label {
+	return s.labelVersion
+}
+
+// LabelHint returns the hint widget.
+func (s *MainScene) LabelHint() *ui.Label {
+	return s.labelHint
+}
+
 // Move things into position for the main menu. This function arranges
 // the Title, Subtitle, Buttons, etc. into screen relative positions every
 // tick. This function sets their 'default' values, but if the window is
@@ -459,6 +475,10 @@ func (s *MainScene) positionMenuLandscape(d *Doodle) {
 
 // LoopLazyScroll gently scrolls the title screen demo level, called each Loop.
 func (s *MainScene) LoopLazyScroll() {
+	if s.PauseLazyScroll {
+		return
+	}
+
 	// The v1 basic sauce algorithm:
 	// 1. We scroll diagonally downwards and rightwards.
 	// 2. When we scroll downwards far enough, we change direction.
