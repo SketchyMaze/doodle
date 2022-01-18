@@ -1,7 +1,6 @@
 // Bird
 
-function main() {
-	let speed = 4,
+let speed = 4,
 		Vx = Vy = 0,
 		altitude = Self.Position().Y; // original height in the level
 
@@ -13,6 +12,7 @@ function main() {
 	};
 	let state = states.flying;
 
+function main() {
 	Self.SetMobile(true);
 	Self.SetGravity(false);
 	Self.SetHitbox(0, 0, 46, 32);
@@ -25,6 +25,12 @@ function main() {
 	}
 
 	Events.OnCollide((e) => {
+		// If we're diving and we hit the player, game over!
+		if (e.Settled && state === states.diving && e.Actor.IsPlayer()) {
+			FailLevel("Watch out for birds!");
+			return;
+		}
+
 		if (e.Actor.IsMobile() && e.InHitbox) {
 			return false;
 		}
@@ -33,31 +39,55 @@ function main() {
 	// Sample our X position every few frames and detect if we've hit a solid wall.
 	let sampleTick = 0,
 		sampleRate = 2,
-		lastSampledX = 0,
-		lastSampledY = 0;
+		lastSampled = Point(0, 0);
 
 	setInterval(() => {
+		// Sample how far we've moved to detect hitting a wall.
 		if (sampleTick % sampleRate === 0) {
-			let curX = Self.Position().X;
-			let delta = Math.abs(curX - lastSampledX);
+			let curP = Self.Position()
+			let delta = Math.abs(curP.X - lastSampled.X);
 			if (delta < 5) {
 				direction = direction === "right" ? "left" : "right";
 			}
-			lastSampledX = curX;
+
+			// If we were diving, check Y delta too for if we hit floor
+			if (state === states.diving && Math.abs(curP.Y - lastSampled.Y) < 5) {
+				state = states.flying;
+			}
+			lastSampled = curP
 		}
 		sampleTick++;
 
-		// If we are not flying at our original altitude, correct for that.
-		let curV = Self.Position();
-		let Vy = 0.0;
-		if (curV.Y != altitude) {
-			Vy = curV.Y < altitude ? 1 : -1;
+		// Are we diving?
+		if (state === states.diving) {
+			Vy = speed
+		} else {
+			// If we are not flying at our original altitude, correct for that.
+			let curV = Self.Position();
+			Vy = 0.0;
+			if (curV.Y != altitude) {
+				Vy = curV.Y < altitude ? 1 : -1;
+			}
+
+			// Scan for the player character and dive.
+			try {
+				AI_ScanForPlayer()
+			} catch(e) {
+				console.error("Error in AI_ScanForPlayer: %s", e);
+			}
 		}
 
 		// TODO: Vector() requires floats, pain in the butt for JS,
 		// the JS API should be friendlier and custom...
 		let Vx = parseFloat(speed * (direction === "left" ? -1 : 1));
 		Self.SetVelocity(Vector(Vx, Vy));
+
+		// If diving, exit - don't edit animation.
+		if (state === states.diving) {
+			Self.ShowLayerNamed("dive-"+direction);
+			lastDirection = direction;
+			return;
+		}
 
 		// If we changed directions, stop animating now so we can
 		// turn around quickly without moonwalking.
@@ -71,6 +101,43 @@ function main() {
 
 		lastDirection = direction;
 	}, 100);
+}
+
+// A.I. subroutine: scan for the player character.
+// The bird scans in a 45 degree angle downwards, if the
+// player is seen nearby in that scan it will begin a dive.
+function AI_ScanForPlayer() {
+	let stepY = 12, // number of pixels to skip
+		stepX = stepY,
+		limit = stepX * 20, // furthest we'll scan
+		scanX = scanY = 0,
+		size = Self.Size(),
+		fromPoint = Self.Position();
+
+	// From what point do we begin the scan?
+	if (direction === 'left') {
+		stepX = -stepX;
+		fromPoint.Y += size.H;
+	} else {
+		fromPoint.Y += size.H;
+		fromPoint.X += size.W;
+	}
+
+	scanX = fromPoint.X;
+	scanY = fromPoint.Y;
+
+	for (let i = 0; i < limit; i += stepY) {
+		scanX += stepX;
+		scanY += stepY;
+		for (let actor of Actors.At(Point(scanX, scanY))) {
+			if (actor.IsPlayer()) {
+				state = states.diving;
+				return;
+			}
+		}
+	}
+
+	return;
 }
 
 // If under control of the player character.

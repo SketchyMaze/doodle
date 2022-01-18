@@ -10,6 +10,8 @@ import (
 	"git.kirsle.net/go/render"
 )
 
+// SEE ALSO: uix/scripting.go for more global functions
+
 // JSProxy offers a function API interface to expose to Doodad javascripts.
 // These methods safely give the JS access to important attributes and functions
 // without exposing unintended API surface area in the process.

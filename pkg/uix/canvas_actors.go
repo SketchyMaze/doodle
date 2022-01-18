@@ -83,6 +83,7 @@ func (w *Canvas) InstallScripts() error {
 
 		// Security: expose a selective API to the actor to the JS engine.
 		vm.Self = w.MakeSelfAPI(actor)
+		w.MakeScriptAPI(vm)
 		vm.Set("Self", vm.Self)
 
 		if _, err := vm.Run(actor.Doodad().Script); err != nil {
