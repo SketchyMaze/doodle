@@ -1,5 +1,56 @@
 # Changes
 
+## v0.11.0 (TBD)
+
+New features:
+
+* The **JavaScript Engine** for the game has been switched from
+  github.com/robertkrimen/otto to github.com/dop251/goja which helps
+  "modernize" the experience of writing doodads. Goja supports many
+  common ES6 functions already, such as:
+  * Arrow functions
+  * `let` and `const` keywords
+  * Promises
+  * for-of loops
+* The **JavaScript API** has been expanded with new functions and
+  many of the built-in Creatures have gotten an A.I. update.
+* For full versions of the game, the **Publish Level** function is now
+  more streamlined to just a checkbox for automatically bundling your
+  doodads next time you save the level.
+
+Some of the built-in doodads have updates to their A.I. and creatures
+are becoming more dangerous:
+
+* The **Bird** now searches for the player diagonally in front of
+  it for about 240px or so. If spotted it will dive toward you and
+  it is dangerous when diving!
+* The **Azulians** will start to follow the player when you get
+  close and they are dangerous when they touch you -- but not if
+  you're the **Thief.** The red Azulian has a wider search radius,
+  higher jump and faster speed than the blue Azulian.
+
+New functions are available on the JavaScript API for doodads:
+
+* `Actors.At(Point) []*Actor`: returns actors intersecting a point
+* `Actors.FindPlayer() *Actor`: returns the nearest player character
+* `Actors.New(filename string)`: create a new actor (NOT TESTED YET!)
+* `Self.Grounded() bool`: query the grounded status of current actor
+
+New cheat code:
+
+* `god mode`: toggle invincibility. When on, fire pixels and hostile
+  mobs can't make you fail the level.
+
+Other changes:
+
+* The draw order of actors on a level is now deterministic: the most
+  recently added actor will always draw on top when overlapping another,
+  and the player actor is always on top.
+* When the game checks if there's an update available via
+  <https://download.sketchymaze.com/version.json> it will send a user
+  agent header like: "Sketchy Maze v0.10.2 on linux/amd64" sending only
+  static data about the version and OS.
+
 ## v0.10.1 (Jan 9 2022)
 
 New features:

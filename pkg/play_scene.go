@@ -69,6 +69,7 @@ type PlayScene struct {
 	playerLastDirection float64 // player's heading last tick
 	antigravity         bool    // Cheat: disable player gravity
 	noclip              bool    // Cheat: disable player clipping
+	godMode             bool    // Cheat: player can't die
 	playerJumpCounter   int     // limit jump length
 
 	// Inventory HUD. Impl. in play_inventory.go
@@ -420,6 +421,9 @@ func (s *PlayScene) BeatLevel() {
 
 // FailLevel handles a level failure triggered by a doodad.
 func (s *PlayScene) FailLevel(message string) {
+	if s.godMode {
+		return
+	}
 	s.SetImperfect()
 	s.d.FlashError(message)
 	s.ShowEndLevelModal(

@@ -128,6 +128,20 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		balance.PlayerCharacterDoodad = "thief.doodad"
 		d.Flash("Set default player character to Thief")
 
+	case balance.CheatGodMode:
+		if isPlay {
+			d.Flash("God mode toggled")
+			playScene.SetCheated()
+			playScene.godMode = !playScene.godMode
+			if playScene.godMode {
+				d.FlashError("God mode enabled.")
+			} else {
+				d.Flash("God mode disabled.")
+			}
+		} else {
+			d.FlashError("Use this cheat in Play Mode to toggle invincibility.")
+		}
+
 	default:
 		return false
 	}

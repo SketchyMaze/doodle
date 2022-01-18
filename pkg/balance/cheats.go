@@ -29,4 +29,5 @@ var (
 	CheatPlayAsBoy        = "pinocchio"
 	CheatPlayAsAzuBlue    = "the cell"
 	CheatPlayAsThief      = "play as thief"
+	CheatGodMode          = "god mode"
 )
