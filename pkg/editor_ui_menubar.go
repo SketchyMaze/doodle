@@ -5,7 +5,6 @@ package doodle
 // The rest of it is controlled in editor_ui.go
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level/giant_screenshot"
@@ -25,13 +24,11 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 
 	// Save and Save As common menu handler
 	var (
-		drawingType string
-		saveFunc    func(filename string)
+		saveFunc func(filename string)
 	)
 
 	switch u.Scene.DrawingType {
 	case enum.LevelDrawing:
-		drawingType = "level"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveLevel(filename); err != nil {
 				d.FlashError("Error: %s", err)
@@ -40,7 +37,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			}
 		}
 	case enum.DoodadDrawing:
-		drawingType = "doodad"
 		saveFunc = func(filename string) {
 			if err := u.Scene.SaveDoodad(filename); err != nil {
 				d.FlashError("Error: %s", err)
@@ -70,12 +66,6 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			}
 		})
 	})
-
-	if balance.Feature.EmbeddableDoodads && drawingType == "level" {
-		fileMenu.AddItem("Publish level", func() {
-			u.OpenPublishWindow()
-		})
-	}
 
 	fileMenu.AddItemAccel("Open...", "Ctrl-O", u.Scene.MenuOpen)
 	fileMenu.AddSeparator()
@@ -124,6 +114,9 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
+		})
+		levelMenu.AddItem("Publish", func() {
+			u.OpenPublishWindow()
 		})
 
 		levelMenu.AddSeparator()

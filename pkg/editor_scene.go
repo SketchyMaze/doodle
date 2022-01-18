@@ -13,6 +13,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -512,6 +513,11 @@ func (s *EditorScene) SaveLevel(filename string) error {
 
 	// Clear the modified flag on the level.
 	s.UI.Canvas.SetModified(false)
+
+	// Attach doodads to the level on save.
+	if err := publishing.Publish(m); err != nil {
+		log.Error("Error publishing level: %s", err.Error())
+	}
 
 	return m.WriteFile(filename)
 }

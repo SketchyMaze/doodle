@@ -48,6 +48,10 @@ type Level struct {
 	// Actors keep a list of the doodad instances in this map.
 	Actors ActorMap `json:"actors"`
 
+	// Publishing: attach any custom doodads the map uses on save.
+	SaveDoodads  bool `json:"saveDoodads"`
+	SaveBuiltins bool `json:"saveBuiltins"`
+
 	// Undo history, temporary live data not persisted to the level file.
 	UndoHistory *drawtool.History `json:"-"`
 }

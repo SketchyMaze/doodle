@@ -2,14 +2,12 @@ package doodle
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/modal"
@@ -52,8 +50,38 @@ func (u *EditorUI) OpenDoodadDropper() {
 
 // OpenPublishWindow opens the Publisher window.
 func (u *EditorUI) OpenPublishWindow() {
+	scene, _ := u.d.Scene.(*EditorScene)
+
+	u.publishWindow = windows.NewPublishWindow(windows.Publish{
+		Supervisor: u.Supervisor,
+		Engine:     u.d.Engine,
+		Level:      scene.Level,
+
+		OnPublish: func(includeBuiltins bool) {
+			u.d.FlashError("OnPublish Called")
+			// XXX: Paid Version Only.
+			if !license.IsRegistered() {
+				if u.licenseWindow != nil {
+					u.licenseWindow.Show()
+					u.Supervisor.FocusWindow(u.licenseWindow)
+				}
+				u.d.FlashError("Level Publishing is only available in the full version of the game.")
+				return
+			}
+
+			// NOTE: this function just saves the level. SaveDoodads and SaveBuiltins
+			// are toggled in the publish window and the save handler does publishing.
+			u.Scene.SaveLevel(u.Scene.filename)
+			u.d.Flash("Saved level: %s", u.Scene.filename)
+		},
+		OnCancel: func() {
+			u.publishWindow.Hide()
+		},
+	})
+	u.ConfigureWindow(u.d, u.publishWindow)
+
 	u.publishWindow.Hide()
-	u.publishWindow = nil
+	// u.publishWindow = nil
 	u.SetupPopups(u.d)
 	u.publishWindow.Show()
 }
@@ -66,23 +94,24 @@ func (u *EditorUI) OpenFileSystemWindow() {
 	u.filesystemWindow.Show()
 }
 
+// ConfigureWindow sets default window config functions, like
+// centering them on screen.
+func (u *EditorUI) ConfigureWindow(d *Doodle, window *ui.Window) {
+	var size = window.Size()
+	window.Compute(d.Engine)
+	window.Supervise(u.Supervisor)
+
+	// Center the window.
+	window.MoveTo(render.Point{
+		X: (d.width / 2) - (size.W / 2),
+		Y: (d.height / 2) - (size.H / 2),
+	})
+
+	window.Hide()
+}
+
 // SetupPopups preloads popup windows like the DoodadDropper.
 func (u *EditorUI) SetupPopups(d *Doodle) {
-	// Common window configure function.
-	var configure = func(window *ui.Window) {
-		var size = window.Size()
-		window.Compute(d.Engine)
-		window.Supervise(u.Supervisor)
-
-		// Center the window.
-		window.MoveTo(render.Point{
-			X: (d.width / 2) - (size.W / 2),
-			Y: (d.height / 2) - (size.H / 2),
-		})
-
-		window.Hide()
-	}
-
 	// License Registration Window.
 	if u.licenseWindow == nil {
 		cfg := windows.License{
@@ -115,7 +144,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.doodadWindow.Hide()
 			},
 		})
-		configure(u.doodadWindow)
+		u.ConfigureWindow(d, u.doodadWindow)
 	}
 
 	// Page Settings
@@ -141,7 +170,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.levelSettingsWindow.Hide()
 			},
 		})
-		configure(u.levelSettingsWindow)
+		u.ConfigureWindow(d, u.levelSettingsWindow)
 	}
 
 	// Doodad Properties
@@ -163,58 +192,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 		}
 
 		u.doodadPropertiesWindow = windows.NewDoodadPropertiesWindow(cfg)
-		configure(u.doodadPropertiesWindow)
-	}
-
-	// Publish Level (embed doodads)
-	if u.publishWindow == nil {
-		scene, _ := d.Scene.(*EditorScene)
-
-		u.publishWindow = windows.NewPublishWindow(windows.Publish{
-			Supervisor: u.Supervisor,
-			Engine:     d.Engine,
-			Level:      scene.Level,
-
-			OnPublish: func(includeBuiltins bool) {
-				// XXX: Paid Version Only.
-				if !license.IsRegistered() {
-					if u.licenseWindow != nil {
-						u.licenseWindow.Show()
-						u.Supervisor.FocusWindow(u.licenseWindow)
-					}
-					d.FlashError("Level Publishing is only available in the full version of the game.")
-					// modal.Alert(
-					// 	"This feature is only available in the full version of the game.",
-					// ).WithTitle("Please register")
-					return
-				}
-
-				log.Debug("OnPublish: include builtins=%+v", includeBuiltins)
-				cwd, _ := os.Getwd()
-				d.Prompt(fmt.Sprintf("File name (relative to %s)> ", cwd), func(answer string) {
-					if answer == "" {
-						d.FlashError("A file name is required to publish this level.")
-						return
-					}
-
-					if !strings.HasSuffix(answer, ".level") {
-						answer += ".level"
-					}
-
-					answer = filepath.Join(cwd, answer)
-					log.Debug("call with includeBuiltins=%+v", includeBuiltins)
-					if _, err := publishing.Publish(scene.Level, answer, includeBuiltins); err != nil {
-						modal.Alert("Error when publishing the level: %s", err)
-						return
-					}
-					d.Flash("Exported published level to: %s", answer)
-				})
-			},
-			OnCancel: func() {
-				u.publishWindow.Hide()
-			},
-		})
-		configure(u.publishWindow)
+		u.ConfigureWindow(d, u.doodadPropertiesWindow)
 	}
 
 	// Level FileSystem Viewer.
@@ -262,7 +240,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.filesystemWindow.Hide()
 			},
 		})
-		configure(u.filesystemWindow)
+		u.ConfigureWindow(d, u.filesystemWindow)
 	}
 
 	// Palette Editor.
@@ -315,7 +293,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.paletteEditor.Hide()
 			},
 		})
-		configure(u.paletteEditor)
+		u.ConfigureWindow(d, u.paletteEditor)
 	}
 
 	// Layers window (doodad editor)
@@ -376,6 +354,6 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.layersWindow.Hide()
 			},
 		})
-		configure(u.layersWindow)
+		u.ConfigureWindow(d, u.layersWindow)
 	}
 }

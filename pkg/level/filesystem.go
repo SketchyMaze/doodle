@@ -50,6 +50,18 @@ func (l *Level) DeleteFile(filename string) bool {
 	return false
 }
 
+// DeleteFiles removes all files beginning with the prefix.
+func (l *Level) DeleteFiles(prefix string) int {
+	var count int
+	for filename := range l.Files {
+		if strings.HasPrefix(filename, prefix) {
+			delete(l.Files, filename)
+			count++
+		}
+	}
+	return count
+}
+
 // ListFiles returns the list of all embedded file names, alphabetically.
 func (l *Level) ListFiles() []string {
 	var files []string

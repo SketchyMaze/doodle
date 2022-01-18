@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/level/publishing"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -30,8 +31,8 @@ type Publish struct {
 // NewPublishWindow initializes the window.
 func NewPublishWindow(cfg Publish) *ui.Window {
 	var (
-		windowWidth    = 400
-		windowHeight   = 300
+		windowWidth    = 380
+		windowHeight   = 220
 		page           = 1
 		perPage        = 4
 		pages          = 1
@@ -52,75 +53,11 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 	})
 
 	/////////////
-	// Intro text
-
-	introFrame := ui.NewFrame("Intro Frame")
-	window.Pack(introFrame, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
-
-	lines := []struct {
-		Text string
-		Font render.Text
-	}{
-		{
-			Text: "About",
-			Font: balance.LabelFont,
-		},
-		{
-			Text: "Share your level easily! If you are using custom doodads in\n" +
-				"your level, you may attach them directly to your\n" +
-				"level file -- so it can easily run on another computer!",
-			Font: balance.UIFont,
-		},
-		{
-			Text: "List of Doodads in Your Level",
-			Font: balance.LabelFont,
-		},
-	}
-	for n, row := range lines {
-		frame := ui.NewFrame(fmt.Sprintf("Intro Line %d", n))
-		introFrame.Pack(frame, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-		})
-
-		label := ui.NewLabel(ui.Label{
-			Text: row.Text,
-			Font: row.Font,
-		})
-		frame.Pack(label, ui.Pack{
-			Side: ui.W,
-		})
-	}
-
-	/////////////
 	// Custom Doodads checkbox-list.
 	doodadFrame := ui.NewFrame("Doodads Frame")
 	doodadFrame.Resize(render.Rect{
 		W: windowWidth,
-		H: btnHeight*perPage + 100,
-	})
-	window.Pack(doodadFrame, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
-
-	// First, the checkbox to show built-in doodads or not.
-	builtinRow := ui.NewFrame("Show Builtins Frame")
-	doodadFrame.Pack(builtinRow, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
-	builtinCB := ui.NewCheckbox("Show Builtins", &cfg.includeBuiltins, ui.NewLabel(ui.Label{
-		Text: "Attach built-in* doodads too",
-		Font: balance.UIFont,
-	}))
-	builtinCB.Supervise(cfg.Supervisor)
-	builtinRow.Pack(builtinCB, ui.Pack{
-		Side: ui.W,
-		PadX: 2,
+		H: btnHeight*perPage + 40,
 	})
 
 	// Collect the doodads named in this level.
@@ -190,15 +127,6 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		}
 	}
 
-	/////////////
-	// Buttons at bottom of window
-
-	bottomFrame := ui.NewFrame("Button Frame")
-	window.Pack(bottomFrame, ui.Pack{
-		Side:  ui.S,
-		FillX: true,
-	})
-
 	// Pager for the doodads.
 	pages = int(
 		math.Ceil(
@@ -237,59 +165,95 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		Font:           balance.MenuFont,
 		OnChange:       pagerOnChange,
 	})
-	pager.Compute(cfg.Engine)
-	pager.Supervise(cfg.Supervisor)
-	bottomFrame.Place(pager, ui.Place{
-		Top:  20,
-		Left: 20,
+	_ = pager
+
+	/////////////
+	// Intro text
+
+	introFrame := ui.NewFrame("Intro Frame")
+	window.Pack(introFrame, ui.Pack{
+		Side:  ui.N,
+		FillX: true,
 	})
 
-	frame := ui.NewFrame("Button frame")
-	buttons := []struct {
-		label   string
-		primary bool
-		f       func()
-	}{
-		{"Export Level", true, func() {
-			if cfg.OnPublish != nil {
-				cfg.OnPublish(cfg.includeBuiltins)
-			}
-		}},
-		{"Close", false, func() {
-			if cfg.OnCancel != nil {
-				cfg.OnCancel()
-			}
-		}},
+	// Render the form, putting it all together.
+	form := magicform.Form{
+		Supervisor: cfg.Supervisor,
+		Engine:     cfg.Engine,
+		Vertical:   true,
+		LabelWidth: 100,
 	}
-	for _, button := range buttons {
-		button := button
-
-		btn := ui.NewButton(button.label, ui.NewLabel(ui.Label{
-			Text: button.label,
-			Font: balance.MenuFont,
-		}))
-		if button.primary {
-			btn.SetStyle(&balance.ButtonPrimary)
-		}
-
-		btn.Handle(ui.Click, func(ed ui.EventData) error {
-			button.f()
-			return nil
-		})
-
-		btn.Compute(cfg.Engine)
-		cfg.Supervisor.Add(btn)
-
-		frame.Pack(btn, ui.Pack{
-			Side:   ui.W,
-			PadX:   4,
-			Expand: true,
-			Fill:   true,
-		})
-	}
-	bottomFrame.Pack(frame, ui.Pack{
-		Side:    ui.E,
-		Padding: 8,
+	form.Create(introFrame, []magicform.Field{
+		{
+			Label: "About",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "Share your level easily! If you are using custom doodads in\n" +
+				"your level, you may attach them directly to your level file\n" +
+				"so it can easily run on another computer!",
+			Font: balance.UIFont,
+		},
+		{
+			Label:        "Attach custom doodads when I save the level",
+			Font:         balance.UIFont,
+			BoolVariable: &cfg.Level.SaveDoodads,
+		},
+		{
+			Label: "Attach built-in doodads too",
+			Font: balance.UIFont.Update(render.Text{
+				Color: render.Red,
+			}),
+			BoolVariable: &cfg.Level.SaveBuiltins,
+			Tooltip: ui.Tooltip{
+				Edge: ui.Top,
+				Text: "If enabled, the attached doodads will override the built-ins\n" +
+					"for this level. Bugfixes or updates to the built-ins will not\n" +
+					"affect your level, either.",
+			},
+		},
+		{
+			Label: "The above settings are saved with your level file, and each\n" +
+				"time you save, custom doodads will be re-attached.",
+			Font: balance.UIFont,
+		},
+		// Pager is broken, Supervisor doesn't pick it up, TODO
+		/*{
+			Label: "Doodads currently used on this level:",
+			Font:  balance.LabelFont,
+		},
+		{
+			Frame: doodadFrame,
+		},
+		{
+			Label: "* Built-in doodad",
+			Font:  balance.UIFont,
+		},
+		{
+			Pager: pager,
+		},*/
+		{
+			Buttons: []magicform.Field{
+				{
+					ButtonStyle: &balance.ButtonPrimary,
+					Label:       "Save Level Now",
+					OnClick: func() {
+						if cfg.OnPublish != nil {
+							cfg.OnPublish(cfg.includeBuiltins)
+						}
+					},
+				},
+				{
+					Type:  magicform.Button,
+					Label: "Close",
+					OnClick: func() {
+						if cfg.OnCancel != nil {
+							cfg.OnCancel()
+						}
+					},
+				},
+			},
+		},
 	})
 
 	return window

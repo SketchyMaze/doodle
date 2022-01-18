@@ -9,12 +9,15 @@ levels.
 package publishing
 
 import (
+	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 )
 
@@ -24,32 +27,55 @@ doodads within level files.
 */
 
 // Publish writes a published level file, with embedded doodads included.
-func Publish(lvl *level.Level, filename string, includeBuiltins bool) (*level.Level, error) {
+func Publish(lvl *level.Level) error {
+	// Not embedding doodads?
+	if !lvl.SaveDoodads {
+		if removed := lvl.DeleteFiles(balance.EmbeddedDoodadsBasePath); removed > 0 {
+			log.Info("Note: removed %d attached doodads because SaveDoodads is false", removed)
+		}
+		return nil
+	}
+
+	// Registered games only.
+	if !license.IsRegistered() {
+		return errors.New("only registered versions of the game can attach doodads to levels")
+	}
+
 	// Get and embed the doodads.
 	builtins, customs := GetUsedDoodadNames(lvl)
-	if includeBuiltins {
+	var names = map[string]interface{}{}
+	if lvl.SaveBuiltins {
 		log.Debug("including builtins: %+v", builtins)
 		customs = append(customs, builtins...)
 	}
 	for _, filename := range customs {
 		log.Debug("Embed filename: %s", filename)
+		names[filename] = nil
+
 		doodad, err := doodads.LoadFromEmbeddable(filename, lvl)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't load doodad %s: %s", filename, err)
+			return fmt.Errorf("couldn't load doodad %s: %s", filename, err)
 		}
 
 		bin, err := doodad.Serialize()
 		if err != nil {
-			return nil, fmt.Errorf("couldn't serialize doodad %s: %s", filename, err)
+			return fmt.Errorf("couldn't serialize doodad %s: %s", filename, err)
 		}
 
 		// Embed it.
 		lvl.SetFile(balance.EmbeddedDoodadsBasePath+filename, bin)
 	}
 
-	log.Info("Publish: write file to %s", filename)
-	err := lvl.WriteFile(filename)
-	return lvl, err
+	// Trim any doodads not currently in the level.
+	for _, filename := range lvl.ListFilesAt(balance.EmbeddedDoodadsBasePath) {
+		basename := strings.TrimPrefix(filename, balance.EmbeddedDoodadsBasePath)
+		if _, ok := names[basename]; !ok {
+			log.Debug("Remove embedded doodad %s (cleanup)", basename)
+			lvl.DeleteFile(filename)
+		}
+	}
+
+	return nil
 }
 
 // GetUsedDoodadNames returns the lists of doodad filenames in use in a level,
