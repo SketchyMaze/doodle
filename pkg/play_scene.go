@@ -221,6 +221,9 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		}
 	}
 
+	// Handle a doodad changing the player character.
+	s.drawing.OnSetPlayerCharacter = s.SetPlayerCharacter
+
 	// Given a filename or map data to play?
 	if s.Level != nil {
 		log.Debug("PlayScene.Setup: received level from scene caller")
@@ -259,7 +262,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	}
 
 	// Load in the player character.
-	s.setupPlayer()
+	s.setupPlayer(balance.PlayerCharacterDoodad)
 
 	// Run all the actor scripts' main() functions.
 	if err := s.drawing.InstallScripts(); err != nil {
@@ -286,15 +289,29 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	return nil
 }
 
+// SetPlayerCharacter changes the doodad used for the player, by destroying the
+// current player character and making it from scratch.
+func (s *PlayScene) SetPlayerCharacter(filename string) {
+	spawn := s.Player.Position()
+	s.Player.Destroy()
+	s.drawing.RemoveActor(s.Player)
+
+	log.Info("SetPlayerCharacter: %s", filename)
+	s.installPlayerDoodad(filename, spawn, render.Rect{})
+	if err := s.drawing.InstallScripts(); err != nil {
+		log.Error("SetPlayerCharacter: InstallScripts: %s", err)
+	}
+}
+
 // setupPlayer creates and configures the Player Character in the level.
-func (s *PlayScene) setupPlayer() {
+func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 	// Find the spawn point of the player. Search the level for the
 	// "start-flag.doodad"
 	var (
-		playerCharacterFilename = balance.PlayerCharacterDoodad
-		isStartFlagCharacter    bool
+		isStartFlagCharacter bool
 
 		spawn     render.Point
+		centerIn  render.Rect
 		flag      = &level.Actor{}
 		flagSize  = render.NewRect(86, 86) // TODO: start-flag.doodad is 86x86 px
 		flagCount int
@@ -333,23 +350,14 @@ func (s *PlayScene) setupPlayer() {
 	// The Start Flag becomes the player's initial checkpoint.
 	s.lastCheckpoint = flag.Point
 
-	// Load in the player character.
-	player, err := doodads.LoadFile(playerCharacterFilename)
-	if err != nil {
-		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
-		player = doodads.NewDummy(32)
-	}
-
 	if !s.SpawnPoint.IsZero() {
 		spawn = s.SpawnPoint
 	} else {
-		spawn = render.NewPoint(
-			// X: centered inside the flag.
-			flag.Point.X+(flagSize.W/2)-(player.Layers[0].Chunker.Size/2),
-
-			// Y: the bottom of the flag, 4 pixels from the floor.
-			flag.Point.Y+flagSize.H-4-(player.Layers[0].Chunker.Size),
-		)
+		spawn = flag.Point
+		centerIn = render.Rect{
+			W: flagSize.W,
+			H: flagSize.H,
+		}
 	}
 
 	// Surface warnings around the spawn flag.
@@ -357,6 +365,33 @@ func (s *PlayScene) setupPlayer() {
 		s.d.FlashError("Warning: this level contained no Start Flag.")
 	} else if flagCount > 1 {
 		s.d.FlashError("Warning: this level contains multiple Start Flags. Player spawn point is ambiguous.")
+	}
+
+	s.installPlayerDoodad(playerCharacterFilename, spawn, centerIn)
+}
+
+// Load and install the player doodad onto the level.
+// Make sure the previous PLAYER was removed.
+// If spawn is zero, uses the player's last spawn point.
+// centerIn is optional, ignored if zero.
+func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, centerIn render.Rect) {
+	// Load in the player character.
+	player, err := doodads.LoadFile(filename)
+	if err != nil {
+		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
+		player = doodads.NewDummy(32)
+	}
+
+	// Center the player within the box of the doodad, for the Start Flag especially.
+	if !centerIn.IsZero() {
+		spawn = render.NewPoint(
+			spawn.X+(centerIn.W/2)-(player.Layers[0].Chunker.Size/2),
+
+			// Y: the bottom of the flag, 4 pixels from the floor.
+			spawn.Y+centerIn.H-4-(player.Layers[0].Chunker.Size),
+		)
+	} else if spawn.IsZero() && !s.SpawnPoint.IsZero() {
+		spawn = s.SpawnPoint
 	}
 
 	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)

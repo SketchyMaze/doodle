@@ -39,6 +39,10 @@ func (w *Canvas) loopActorCollision() error {
 	//       trying to take your inventory.
 	// var wg sync.WaitGroup
 	for i, a := range w.actors {
+		if a.IsFrozen() {
+			continue
+		}
+
 		// wg.Add(1)
 		//go
 		func(i int, a *Actor) {
@@ -236,6 +240,9 @@ func (w *Canvas) loopActorCollision() error {
 								lastGoodBox.X = lockX
 							}
 						} else {
+							if err != nil {
+								log.Error("RunCollide on %s (%s) errored: %s", a.ID(), a.Actor.Filename, err)
+							}
 							// Move them back to the last good box.
 							lastGoodBox = test
 						}

@@ -109,3 +109,12 @@ func (s *Supervisor) GetVM(name string) (*VM, error) {
 	}
 	return nil, errors.New("not found")
 }
+
+// RemoveVM removes a script from the supervisor, stopping it.
+func (s *Supervisor) RemoveVM(name string) error {
+	if _, ok := s.scripts[name]; ok {
+		delete(s.scripts, name)
+		return nil
+	}
+	return errors.New("not found")
+}

@@ -81,6 +81,11 @@ func (w *Canvas) InstallScripts() error {
 	for _, actor := range w.actors {
 		vm := w.scripting.To(actor.ID())
 
+		if vm.Self != nil {
+			// Already initialized!
+			continue
+		}
+
 		// Security: expose a selective API to the actor to the JS engine.
 		vm.Self = w.MakeSelfAPI(actor)
 		w.MakeScriptAPI(vm)
@@ -112,6 +117,19 @@ func (w *Canvas) InstallScripts() error {
 func (w *Canvas) AddActor(actor *Actor) error {
 	w.actors = append(w.actors, actor)
 	return nil
+}
+
+// RemoveActor removes the actor from the canvas.
+func (w *Canvas) RemoveActor(actor *Actor) {
+	var actors = []*Actor{}
+	for _, exist := range w.actors {
+		if actor == exist {
+			w.scripting.RemoveVM(actor.ID())
+			continue
+		}
+		actors = append(actors, exist)
+	}
+	w.actors = actors
 }
 
 // drawActors is a subroutine of Present() that superimposes the actors on top

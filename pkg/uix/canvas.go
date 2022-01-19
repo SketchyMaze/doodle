@@ -91,6 +91,10 @@ type Canvas struct {
 	// Collision handlers for level geometry.
 	OnLevelCollision func(*Actor, *collision.Collide)
 
+	// Handler when a doodad script called Actors.SetPlayerCharacter.
+	// The filename.doodad is given.
+	OnSetPlayerCharacter func(filename string)
+
 	/********
 	 * Editable canvas private variables.
 	 ********/

@@ -1,14 +1,25 @@
 // Checkpoint Flag.
-var isCurrentCheckpoint = false;
+var isCurrentCheckpoint = false,
+    playerEntered = false
+    broadcastCooldown = time.Now();
 
 function main() {
     Self.SetHitbox(22 + 16, 16, 75 - 16, 86);
     setActive(false);
 
+    // If the checkpoint is linked to any doodad, the player character will
+    // become that doodad when they cross this checkpoint.
+    let skin = null;
+    for (let actor of Self.GetLinks()) {
+        skin = actor.Filename;
+        actor.Destroy();
+    }
+
     // Checkpoints broadcast to all of their peers so they all
     // know which one is the most recently activated.
     Message.Subscribe("broadcast:checkpoint", (currentID) => {
         setActive(false);
+        return "a ok";
     });
 
     Events.OnCollide((e) => {
@@ -21,10 +32,19 @@ function main() {
             return;
         }
 
-        // Set the player checkpoint.
         SetCheckpoint(Self.Position());
         setActive(true);
-        Message.Broadcast("broadcast:checkpoint", Self.ID())
+
+        // Don't spam the PubSub queue or we get races and deadlocks.
+        if (time.Now().After(broadcastCooldown)) {
+            Message.Broadcast("broadcast:checkpoint", Self.ID());
+            broadcastCooldown = time.Now().Add(5 * time.Second)
+        }
+
+        // Are we setting a new player skin?
+        if (skin && e.Actor.Doodad().Filename !== skin) {
+            Actors.SetPlayerCharacter(skin);
+        }
     });
 }
 

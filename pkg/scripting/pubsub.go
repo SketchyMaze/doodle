@@ -23,6 +23,14 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 	// Goroutine to watch the VM's inbound channel and invoke Subscribe handlers
 	// for any matching messages received.
 	go func() {
+		// Catch any exceptions raised by the JavaScript VM.
+		defer func() {
+			if err := recover(); err != nil {
+				// TODO EXCEPTIONS
+				log.Error("RegisterPublishHooks(%s): %s", vm.Name, err)
+			}
+		}()
+
 		for msg := range vm.Inbound {
 			vm.muSubscribe.Lock()
 
@@ -30,8 +38,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 				for _, callback := range vm.subscribe[msg.Name] {
 					log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
 					if function, ok := goja.AssertFunction(callback); ok {
-						result, err := function(goja.Undefined(), msg.Args...)
-						log.Debug("Result: %s, %s", result, err)
+						function(goja.Undefined(), msg.Args...)
 					}
 				}
 			}
@@ -70,6 +77,10 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		"Broadcast": func(name string, v ...goja.Value) {
 			// Send the message to all actor VMs.
 			for _, toVM := range s.scripts {
+				if toVM == nil {
+					continue
+				}
+
 				if vm.Name == toVM.Name {
 					log.Debug("Broadcast(%s): skip to vm '%s' cuz it is the sender", name, toVM.Name)
 					continue

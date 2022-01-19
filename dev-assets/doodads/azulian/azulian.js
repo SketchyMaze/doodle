@@ -52,7 +52,7 @@ function main() {
 	Events.OnCollide((e) => {
 		// If we're diving and we hit the player, game over!
 		// Azulians are friendly to Thieves though!
-		if (e.Settled && e.Actor.IsPlayer() && e.Actor.Doodad().Filename !== "thief.doodad") {
+		if (e.Settled && e.Actor.IsPlayer() && e.Actor.Doodad().Filename !== "thief.doodad" && e.Actor.Doodad().Title.indexOf("Azulian") < 0) {
 			FailLevel("Watch out for the Azulians!");
 			return;
 		}

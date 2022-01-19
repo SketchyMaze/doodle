@@ -107,24 +107,17 @@ function ai() {
 // If under control of the player character.
 function playable() {
     Events.OnKeypress((ev) => {
-        Vx = 0;
-        Vy = 0;
-
         if (ev.Right) {
             if (!Self.IsAnimating()) {
                 Self.PlayAnimation("walk-right", null);
             }
-            Vx = playerSpeed;
         } else if (ev.Left) {
             if (!Self.IsAnimating()) {
                 Self.PlayAnimation("walk-left", null);
             }
-            Vx = -playerSpeed;
         } else {
             Self.StopAnimation();
             animating = false;
         }
-
-        // Self.SetVelocity(Point(Vx, Vy));
     })
 }

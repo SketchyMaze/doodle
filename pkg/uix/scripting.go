@@ -54,6 +54,15 @@ func (w *Canvas) MakeScriptAPI(vm *scripting.VM) {
 
 			return actor
 		},
+
+		// Actors.SetPlayerCharacter: remake the player character.
+		"SetPlayerCharacter": func(filename string) {
+			if w.OnSetPlayerCharacter != nil {
+				w.OnSetPlayerCharacter(filename)
+			} else {
+				log.Error("Actors.SetPlayerCharacter: caller was not ready")
+			}
+		},
 	})
 }
 
@@ -98,6 +107,8 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"HasItem":        actor.HasItem,
 		"ClearInventory": actor.ClearInventory,
 		"Destroy":        actor.Destroy,
+		"Freeze":         actor.Freeze,
+		"Unfreeze":       actor.Unfreeze,
 		"Hide":           actor.Hide,
 		"Show":           actor.Show,
 		"GetLinks": func() []map[string]interface{} {

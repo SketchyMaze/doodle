@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"git.kirsle.net/apps/doodle/pkg/keybind"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/dop251/goja"
 )
 
@@ -99,6 +100,15 @@ func (e *Events) run(name string, args ...interface{}) error {
 	e.lock.RLock()
 	defer e.lock.RUnlock()
 
+	defer func() {
+		if err := recover(); err != nil {
+			// TODO EXCEPTIONS: I once saw a "runtime error: index out of range [-1]"
+			// from an OnCollide handler between azu-white and thief that was crashing
+			// the app, report this upstream nicely to the user.
+			log.Error("PANIC: JS %s handler: %s", name, err)
+		}
+	}()
+
 	if _, ok := e.registry[name]; !ok {
 		return nil
 	}
@@ -116,6 +126,10 @@ func (e *Events) run(name string, args ...interface{}) error {
 
 		value, err := function(goja.Undefined(), params...)
 		if err != nil {
+			// TODO EXCEPTIONS: this err is useful like
+			// `ReferenceError: playerSpeed is not defined at <eval>:173:9(93)`
+			// but wherever we're returning the err to isn't handling it!
+			log.Error("Scripting error on %s: %s", name, err)
 			return err
 		}
 

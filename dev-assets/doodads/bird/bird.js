@@ -144,32 +144,45 @@ function AI_ScanForPlayer() {
 
 // If under control of the player character.
 function player() {
+	var playerSpeed = 12;
+
 	Self.SetInventory(true);
 	Events.OnKeypress((ev) => {
 		Vx = 0;
 		Vy = 0;
 
-		if (ev.Up) {
-			Vy = -playerSpeed;
-		} else if (ev.Down) {
-			Vy = playerSpeed;
+		if (ev.Right) {
+			direction = "right";
+		} else if (ev.Left) {
+			direction = "left";
 		}
 
-		if (ev.Right) {
+		// Dive!
+		if (ev.Down && ev.Right) {
+			Self.StopAnimation();
+			Self.ShowLayerNamed("dive-right");
+		} else if (ev.Down && ev.Left) {
+			Self.StopAnimation();
+			Self.ShowLayerNamed("dive-left");
+		} else if (ev.Right) {
+			// Fly right.
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("fly-right", null);
 			}
 			Vx = playerSpeed;
 		} else if (ev.Left) {
+			// Fly left.
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("fly-left", null);
 			}
 			Vx = -playerSpeed;
 		} else {
-			Self.StopAnimation();
-			animating = false;
+			// Hover in place.
+			if (!Self.IsAnimating()) {
+				Self.PlayAnimation("fly-"+direction);
+			}
 		}
 
-		Self.SetVelocity(Vector(Vx, Vy));
+		// Self.SetVelocity(Vector(Vx, Vy));
 	})
 }
