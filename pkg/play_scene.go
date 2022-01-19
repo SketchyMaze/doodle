@@ -66,11 +66,12 @@ type PlayScene struct {
 	Player              *uix.Actor
 	playerPhysics       *physics.Mover
 	lastCheckpoint      render.Point
-	playerLastDirection float64 // player's heading last tick
-	antigravity         bool    // Cheat: disable player gravity
-	noclip              bool    // Cheat: disable player clipping
-	godMode             bool    // Cheat: player can't die
-	playerJumpCounter   int     // limit jump length
+	playerLastDirection float64   // player's heading last tick
+	antigravity         bool      // Cheat: disable player gravity
+	noclip              bool      // Cheat: disable player clipping
+	godMode             bool      // Cheat: player can't die
+	godModeUntil        time.Time // Invulnerability timer at respawn.
+	playerJumpCounter   int       // limit jump length
 
 	// Inventory HUD. Impl. in play_inventory.go
 	invenFrame   *ui.Frame
@@ -404,6 +405,9 @@ func (s *PlayScene) SetCheckpoint(where render.Point) {
 
 // RetryCheckpoint moves the player back to their last checkpoint.
 func (s *PlayScene) RetryCheckpoint() {
+	// Grant the player invulnerability for 5 seconds
+	s.godModeUntil = time.Now().Add(balance.RespawnGodModeTimer)
+
 	log.Info("Move player back to last checkpoint")
 	s.Player.MoveTo(s.lastCheckpoint)
 	s.running = true
@@ -421,11 +425,12 @@ func (s *PlayScene) BeatLevel() {
 
 // FailLevel handles a level failure triggered by a doodad.
 func (s *PlayScene) FailLevel(message string) {
-	if s.godMode {
+	if s.godMode || s.godModeUntil.After(time.Now()) {
 		return
 	}
 	s.SetImperfect()
 	s.d.FlashError(message)
+
 	s.ShowEndLevelModal(
 		false,
 		"You've died!",

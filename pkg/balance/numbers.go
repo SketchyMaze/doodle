@@ -88,6 +88,10 @@ var (
 	PlayModeIdleTimeout = 2200 * time.Millisecond
 	PlayModeAlphaStep   = 8 // 0-255 alpha, steps per tick for fade in
 	PlayModeAlphaMax    = 220
+
+	// Invulnerability time in seconds at respawn from checkpoint, in case
+	// enemies are spawn camping.
+	RespawnGodModeTimer = 3 * time.Second
 )
 
 // Edit Mode Values

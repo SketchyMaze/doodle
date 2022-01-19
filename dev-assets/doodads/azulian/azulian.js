@@ -9,9 +9,17 @@ var playerSpeed = color === 'blue' ? 2 : 4,
 	direction = "right",
 	lastDirection = "right";
 
+// white Azulian is faster yet than the red
+if (color === 'white') {
+	aggroX = 1000;
+	aggroY = 400;
+	playerSpeed = 8;
+	jumpSpeed = 16;
+}
+
 function setupAnimations(color) {
-	let left = color === 'blue' ? 'blu-wl' : 'red-wl',
-		right = color === 'blue' ? 'blu-wr' : 'red-wr',
+	let left = color === 'blue' ? 'blu-wl' : color+'-wl',
+		right = color === 'blue' ? 'blu-wr' : color+'-wr',
 		leftFrames = [left + '1', left + '2', left + '3', left + '4'],
 		rightFrames = [right + '1', right + '2', right + '3', right + '4'];
 

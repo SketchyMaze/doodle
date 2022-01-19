@@ -4,13 +4,13 @@ let speed = 4,
 		Vx = Vy = 0,
 		altitude = Self.Position().Y; // original height in the level
 
-	let direction = "left",
-		lastDirection = "left";
-	let states = {
-		flying: 0,
-		diving: 1,
-	};
-	let state = states.flying;
+let direction = "left",
+	lastDirection = "left";
+let states = {
+	flying: 0,
+	diving: 1,
+};
+let state = states.flying;
 
 function main() {
 	Self.SetMobile(true);
@@ -106,6 +106,8 @@ function main() {
 // A.I. subroutine: scan for the player character.
 // The bird scans in a 45 degree angle downwards, if the
 // player is seen nearby in that scan it will begin a dive.
+// It's not hostile towards characters that can fly (having
+// no gravity).
 function AI_ScanForPlayer() {
 	let stepY = 12, // number of pixels to skip
 		stepX = stepY,
@@ -130,7 +132,7 @@ function AI_ScanForPlayer() {
 		scanX += stepX;
 		scanY += stepY;
 		for (let actor of Actors.At(Point(scanX, scanY))) {
-			if (actor.IsPlayer()) {
+			if (actor.IsPlayer() && actor.HasGravity()) {
 				state = states.diving;
 				return;
 			}
