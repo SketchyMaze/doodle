@@ -52,7 +52,7 @@ function main() {
 	Events.OnCollide((e) => {
 		// If we're diving and we hit the player, game over!
 		// Azulians are friendly to Thieves though!
-		if (e.Settled && e.Actor.IsPlayer() && e.Actor.Doodad().Filename !== "thief.doodad" && e.Actor.Doodad().Title.indexOf("Azulian") < 0) {
+		if (e.Settled && isPlayerFood(e.Actor)) {
 			FailLevel("Watch out for the Azulians!");
 			return;
 		}
@@ -64,7 +64,9 @@ function main() {
 		let player = Actors.FindPlayer(),
 			followPlayer = false,
 			jump = false;
-		if (player !== null) {
+
+		// Don't follow boring players.
+		if (player !== null && isPlayerFood(player)) {
 			let playerPt = player.Position(),
 				myPt = Self.Position();
 
@@ -126,4 +128,21 @@ function playerControls() {
 			animating = false;
 		}
 	})
+}
+
+// Logic to decide if the player is interesting to the Azulian (aka, if the Azulian
+// will be hostile towards the player). Boring players will not be chased after and
+// the Azulian will not harm them if they make contact.
+function isPlayerFood(actor) {
+	// Not a player or is invulnerable.
+	if (!actor.IsPlayer() || actor.Invulnerable()) {
+		return false;
+	}
+
+	// Azulians are friendly to Thieves and other Azulians.
+	if (actor.Doodad().Filename === "thief.doodad" || actor.Doodad().Title.indexOf("Azulian") > -1) {
+		return false;
+	}
+
+	return true;
 }
