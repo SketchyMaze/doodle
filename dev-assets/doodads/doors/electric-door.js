@@ -14,9 +14,9 @@ function setPoweredState(powered) {
 		}
 
 		animating = true;
+		opened = true;
 		Sound.Play("electric-door.wav")
 		Self.PlayAnimation("open", () => {
-			opened = true;
 			animating = false;
 		});
 	} else {

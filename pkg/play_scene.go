@@ -399,6 +399,7 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 	}
 
 	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
+	s.Player.SetInventory(true) // player always can pick up items
 	s.Player.MoveTo(spawn)
 	s.drawing.AddActor(s.Player)
 	s.drawing.FollowActor = s.Player.ID()
@@ -465,7 +466,7 @@ func (s *PlayScene) BeatLevel() {
 
 // FailLevel handles a level failure triggered by a doodad.
 func (s *PlayScene) FailLevel(message string) {
-	if s.godMode || s.godModeUntil.After(time.Now()) {
+	if s.Player.Invulnerable() || s.godMode || s.godModeUntil.After(time.Now()) {
 		return
 	}
 	s.SetImperfect()

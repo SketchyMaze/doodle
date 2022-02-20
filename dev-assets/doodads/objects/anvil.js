@@ -6,6 +6,7 @@ function main() {
     Self.SetHitbox(0, 0, 48, 25);
     Self.SetMobile(true);
     Self.SetGravity(true);
+    Self.SetInvulnerable(true);
 
     // Monitor our Y position to tell if we've been falling.
     let lastPoint = Self.Position();
@@ -33,7 +34,7 @@ function main() {
                     FailLevel("Watch out for anvils!");
                     return;
                 }
-                else if (e.Actor.IsMobile()) {
+                else if (e.Actor.IsMobile() && !e.Actor.Invulnerable()) {
                     // Destroy mobile doodads.
                     Sound.Play("crumbly-break.wav");
                     e.Actor.Destroy();

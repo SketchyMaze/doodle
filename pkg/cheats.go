@@ -128,6 +128,10 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		balance.PlayerCharacterDoodad = "thief.doodad"
 		d.Flash("Set default player character to Thief")
 
+	case balance.CheatPlayAsAnvil:
+		balance.PlayerCharacterDoodad = "anvil.doodad"
+		d.Flash("Set default player character to the Anvil")
+
 	case balance.CheatGodMode:
 		if isPlay {
 			d.Flash("God mode toggled")

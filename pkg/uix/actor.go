@@ -40,6 +40,7 @@ type Actor struct {
 	noclip       bool // Disable collision detection
 	hidden       bool // invisible, via Hide() and Show()
 	frozen       bool // Frozen, via Freeze() and Unfreeze()
+	immortal     bool // Invulnerable to damage
 	hitbox       render.Rect
 	inventory    map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
 	data         map[string]string // arbitrary key/value store. DEPRECATED ??
@@ -139,6 +140,16 @@ func (a *Actor) HasInventory() bool {
 // HasGravity returns if gravity applies to the actor.
 func (a *Actor) HasGravity() bool {
 	return a.hasGravity
+}
+
+// Invulnerable returns whether the actor is marked as immortal.
+func (a *Actor) Invulnerable() bool {
+	return a.immortal
+}
+
+// SetInvulnerable sets the actor's immortal flag.
+func (a *Actor) SetInvulnerable(v bool) {
+	a.immortal = v
 }
 
 // Size returns the size of the actor, from the underlying doodads.Drawing.

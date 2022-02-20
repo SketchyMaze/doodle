@@ -4,10 +4,15 @@
 
 New features:
 
-* The **JavaScript Engine** for the game has been switched from
+* **Game Controller** support has been added! The game can now be played
+  with an Xbox style controller, including Nintendo Pro Controllers. The
+  game supports an "X Style" and "N Style" button layout, the latter of
+  which swaps the A/B and the X/Y buttons so gameplay controls match the
+  button labels in your controller.
+* The **JavaScript Engine** for doodad scripts has been switched from
   github.com/robertkrimen/otto to github.com/dop251/goja which helps
   "modernize" the experience of writing doodads. Goja supports many
-  common ES6 functions already, such as:
+  common ES6 features already, such as:
   * Arrow functions
   * `let` and `const` keywords
   * Promises
@@ -23,11 +28,21 @@ are becoming more dangerous:
 
 * The **Bird** now searches for the player diagonally in front of
   it for about 240px or so. If spotted it will dive toward you and
-  it is dangerous when diving!
+  it is dangerous when diving! When playing as the bird, the dive sprite
+  is used when flying diagonally downwards.
 * The **Azulians** will start to follow the player when you get
   close and they are dangerous when they touch you -- but not if
   you're the **Thief.** The red Azulian has a wider search radius,
   higher jump and faster speed than the blue Azulian.
+* A new **White Azulian** has been added to the game. It is even faster
+  than the Red Azulian! And it can jump higher, too!
+* The **Checkpoint Flag** can now re-assign the player character when
+  activated! Just link a doodad to the Checkpoint Flag like you do the
+  Start Flag. When the player reaches the checkpoint, their character
+  sprite is replaced with the linked doodad!
+* The **Anvil** is invulnerable -- if the player character is the Anvil
+  it can not die by fire or hostile enemies, and Anvils can not destroy
+  other Anvils.
 
 New functions are available on the JavaScript API for doodads:
 
@@ -35,17 +50,32 @@ New functions are available on the JavaScript API for doodads:
 * `Actors.FindPlayer() *Actor`: returns the nearest player character
 * `Actors.New(filename string)`: create a new actor (NOT TESTED YET!)
 * `Self.Grounded() bool`: query the grounded status of current actor
+* `Actors.SetPlayerCharacter(filename string)`: replace the nearest
+  player character with the named doodad, e.g. "boy.doodad"
+* `Self.Invulnerable() bool` and `Self.SetInvulnerable(bool)`: set a
+  doodad is invulnerable, especially for the player character, e.g.
+  if playing as the Anvil you can't be defeated by mobs or fire.
 
-New cheat code:
+New cheat codes:
 
 * `god mode`: toggle invincibility. When on, fire pixels and hostile
   mobs can't make you fail the level.
+* `megaton weight`: play as the Anvil by default on levels that don't
+  specify a player character otherwise.
 
 Other changes:
 
+* When respawning from a checkpoint, the player is granted 3 seconds of
+  invulnerability; so if hostile mobs are spawn camping the player, you
+  don't get soft-locked!
 * The draw order of actors on a level is now deterministic: the most
   recently added actor will always draw on top when overlapping another,
   and the player actor is always on top.
+* JavaScript exceptions raised in doodad scripts will be logged to the
+  console instead of crashing the game. In the future these will be
+  caught and presented nicely in an in-game popup window.
+* When playing as the Bird, the flying animation now loops while the
+  player is staying still rather than pausing.
 * When the game checks if there's an update available via
   <https://download.sketchymaze.com/version.json> it will send a user
   agent header like: "Sketchy Maze v0.10.2 on linux/amd64" sending only
