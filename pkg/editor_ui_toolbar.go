@@ -110,7 +110,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Style:    &balance.ButtonBabyBlue,
 			Click: func() {
 				u.Canvas.Tool = drawtool.ActorTool
-				u.doodadWindow.Show()
+				u.OpenDoodadDropper()
 				d.Flash("Actor Tool selected. Drag a Doodad from the drawer into your level.")
 			},
 		},

@@ -126,6 +126,7 @@ func Loop(ev *event.State) {
 			for idx, ctrl := range ev.Controllers {
 				SetControllerIndex(idx)
 				log.Info("gamepad: using controller #%d (%s) as Player 1", idx, ctrl)
+				break
 			}
 		} else {
 			return
@@ -377,7 +378,7 @@ func Loop(ev *event.State) {
 
 // Draw the cursor on screen if the game controller is emulating a mouse.
 func Draw(e render.Engine) {
-	if p1mode != MouseMode || !cursorVisible {
+	if playerOne == nil || p1mode != MouseMode || !cursorVisible {
 		return
 	}
 

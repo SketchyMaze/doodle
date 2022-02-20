@@ -246,7 +246,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	if u.Scene.DrawingType == enum.LevelDrawing {
 		toolMenu.AddItemAccel("Doodads", "q", func() {
 			log.Info("Open the DoodadDropper")
-			u.doodadWindow.Show()
+			u.OpenDoodadDropper()
 		})
 		toolMenu.AddItem("Link Tool", func() {
 			u.Canvas.Tool = drawtool.LinkTool
@@ -267,6 +267,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	}
 	helpMenu.AddItem(registerText, func() {
 		u.licenseWindow.Show()
+		u.Supervisor.FocusWindow(u.licenseWindow)
 	})
 
 	menu.Supervise(u.Supervisor)

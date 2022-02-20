@@ -46,6 +46,7 @@ func (u *EditorUI) OpenDoodadDropper() {
 	// NOTE: most places in the code call this directly, nice
 	// and simple window :) but OpenDoodadDropper() added for consistency.
 	u.doodadWindow.Show()
+	u.Supervisor.FocusWindow(u.doodadWindow)
 }
 
 // OpenPublishWindow opens the Publisher window.

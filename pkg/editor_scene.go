@@ -427,7 +427,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 		s.UI.Canvas.Tool = drawtool.EraserTool
 		s.UI.activeTool = s.UI.Canvas.Tool.String()
 	} else if keybind.DoodadDropper(ev) {
-		s.UI.doodadWindow.Show()
+		s.UI.OpenDoodadDropper()
 	}
 
 	s.UI.Loop(ev)
