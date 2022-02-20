@@ -16,6 +16,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/chatbot"
+	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -25,6 +26,7 @@ import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli/v2"
+	sdl2 "github.com/veandco/go-sdl2/sdl"
 
 	_ "image/png"
 )
@@ -69,6 +71,9 @@ func main() {
 	if usercfg.Current.CrosshairColor == render.Invisible {
 		usercfg.Current.CrosshairColor = balance.DefaultCrosshairColor
 	}
+
+	// Set GameController style.
+	gamepad.SetStyle(gamepad.Style(usercfg.Current.ControllerStyle))
 
 	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
 		branding.Version,
@@ -148,6 +153,9 @@ func main() {
 			balance.Width,
 			balance.Height,
 		)
+
+		// Activate game controller event support.
+		sdl2.GameControllerEventState(1)
 
 		// Load the SDL fonts in from bindata storage.
 		if fonts, err := assets.AssetDir("assets/fonts"); err == nil {

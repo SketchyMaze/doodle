@@ -92,6 +92,10 @@ var (
 	// Invulnerability time in seconds at respawn from checkpoint, in case
 	// enemies are spawn camping.
 	RespawnGodModeTimer = 3 * time.Second
+
+	// GameController thresholds.
+	GameControllerMouseMoveMax float64 = 20  // Max pixels per tick to simulate mouse movement.
+	GameControllerScrollMin    float64 = 0.3 // Minimum threshold for a right-stick scroll event.
 )
 
 // Edit Mode Values

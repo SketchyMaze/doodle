@@ -97,6 +97,43 @@ Ctrl-Y
   Redo
 ```
 
+# Gamepad Controls
+
+The game supports Xbox and Nintendo style game controllers. The button
+bindings are not yet customizable, except to choose between the
+"X Style" or "N Style" for A/B and X/Y button mappings.
+
+Gamepad controls very depending on two modes the game can be in:
+
+## Mouse Mode
+
+The Gamepad emulates a mouse cursor in this mode.
+
+* The left analog stick moves a cursor around the screen.
+* The right analog stick scrolls the level (title screen and editor)
+* A or X button simulates a Left-click
+* B or Y button simulates a Right-click
+* L1 (left shoulder) emulates a Middle-click
+* L2 (left trigger) closes the top-most window in the editor mode
+  (like the Backspace key).
+
+## Gameplay Mode
+
+When playing a level, the controls are as follows:
+
+* The left analog stick and the D-Pad will move the player character.
+* A or X button to "Use" objects such as Warp Doors.
+* B or Y button to "Jump"
+* R1 (right shoulder) toggles between Mouse Mode and Gameplay Mode.
+
+You can use the R1 button to access Mouse Mode to interact with the
+menus or click on the "Edit Level" button.
+
+Note: characters with antigravity (such as the Bird) can move in all
+four directions but characters with gravity only move left and right
+and have the dedicated "Jump" button. This differs from regular
+keyboard controls where the Up arrow is to Jump.
+
 # Built-In Doodads
 
 A brief introduction to the built-in doodads available so far:

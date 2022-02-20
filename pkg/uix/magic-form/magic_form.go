@@ -59,9 +59,10 @@ type Field struct {
 	Frame *ui.Frame
 
 	// Variable bindings, the type may infer to be:
-	BoolVariable *bool    // Checkbox
-	TextVariable *string  // Textbox
-	Options      []Option // Selectbox
+	BoolVariable *bool       // Checkbox
+	TextVariable *string     // Textbox
+	Options      []Option    // Selectbox
+	SelectValue  interface{} // Selectbox default choice
 
 	// Tooltip to add to a form control.
 	// Checkbox only for now.
@@ -208,8 +209,9 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				Font: row.Font,
 			})
 			frame.Pack(btn, ui.Pack{
-				Side:  ui.W,
-				FillX: true,
+				Side:   ui.W,
+				FillX:  true,
+				Expand: true,
 			})
 
 			if row.Options != nil {
@@ -218,7 +220,11 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				}
 			}
 
-			btn.Handle(ui.Click, func(ed ui.EventData) error {
+			if row.SelectValue != nil {
+				btn.SetValue(row.SelectValue)
+			}
+
+			btn.Handle(ui.Change, func(ed ui.EventData) error {
 				if selection, ok := btn.GetValue(); ok {
 					if row.OnSelect != nil {
 						row.OnSelect(selection.Value)
@@ -227,6 +233,7 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				return nil
 			})
 
+			btn.Supervise(form.Supervisor)
 			form.Supervisor.Add(btn)
 		}
 	}

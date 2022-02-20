@@ -5,9 +5,11 @@ import (
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
+	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
@@ -30,6 +32,7 @@ type Settings struct {
 	CrosshairColor     *render.Color
 	HideTouchHints     *bool
 	DisableAutosave    *bool
+	ControllerStyle    *int
 
 	// Configuration options.
 	SceneName string // name of scene which called this window
@@ -81,6 +84,7 @@ func NewSettingsWindow(cfg Settings) *ui.Window {
 	// Make the tabs
 	cfg.makeOptionsTab(tabFrame, Width, Height)
 	cfg.makeControlsTab(tabFrame, Width, Height)
+	cfg.makeControllerTab(tabFrame, Width, Height)
 	cfg.makeExperimentalTab(tabFrame, Width, Height)
 
 	tabFrame.Supervise(cfg.Supervisor)
@@ -718,6 +722,85 @@ func (c Settings) makeExperimentalTab(tabFrame *ui.TabFrame, Width, Height int) 
 			})
 		}
 	}
+
+	return tab
+}
+
+// Settings Window "Controller" Tab
+func (c Settings) makeControllerTab(tabFrame *ui.TabFrame, Width, Height int) *ui.Frame {
+	tab := tabFrame.AddTab("Gamepad", ui.NewLabel(ui.Label{
+		Text: "Gamepad",
+		Font: balance.TabFont,
+	}))
+	tab.Resize(render.NewRect(Width-4, Height-tab.Size().H-46))
+
+	// Render the form.
+	form := magicform.Form{
+		Supervisor: c.Supervisor,
+		Engine:     c.Engine,
+		Vertical:   true,
+		LabelWidth: 150,
+	}
+	form.Create(tab, []magicform.Field{
+		{
+			Label: "About",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "Play Sketchy Maze with an Xbox or Nintendo controller!\n\n" +
+				"Full customization options aren't here yet, but you can\n" +
+				"choose between the 'X Style' or 'N Style' profile below.\n" +
+				"'N Style' will swap the A/B and X/Y buttons.",
+			Font: balance.UIFont,
+		},
+		{
+			Label: "Button Style:",
+			Font:  balance.LabelFont,
+			Type:  magicform.Selectbox,
+			Options: []magicform.Option{
+				{
+					Label: "X Style (default)",
+					Value: int(gamepad.XStyle),
+				},
+				{
+					Label: "N Style",
+					Value: int(gamepad.NStyle),
+				},
+			},
+			SelectValue: *c.ControllerStyle,
+			OnSelect: func(v interface{}) {
+				style, _ := v.(int)
+				log.Error("style: %d", style)
+				gamepad.SetStyle(gamepad.Style(style))
+				saveGameSettings()
+			},
+		},
+		{
+			Label: "\nThe gamepad controls vary between two modes:",
+			Font:  balance.UIFont,
+		},
+		{
+			Label: "Mouse Mode (outside of gameplay)",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "The left analog stick moves a mouse cursor around.\n" +
+				"The right analog stick scrolls the level around.\n" +
+				"A or X: Left-click    B or Y: Right-click\n" +
+				"L1: Middle-click  L2: Close window",
+			Font: balance.UIFont,
+		},
+		{
+			Label: "Gameplay Mode",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "Left stick or D-Pad to move the player around.\n" +
+				"A or X: 'Use'    B or Y: 'Jump'\n" +
+				"R1: Toggle between Mouse and Gameplay controls.",
+			Font: balance.UIFont,
+		},
+	})
 
 	return tab
 }

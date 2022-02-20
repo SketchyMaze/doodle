@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/levelpack"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -131,13 +132,19 @@ func (d *Doodle) Run() error {
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()
-		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 		if err != nil {
 			log.Error("event poll error: %s", err)
 			d.running = false
 			break
 		}
 		d.event = ev
+
+		// Let the gamepad controller check for events, if it's in MouseMode
+		// it will fake the mouse cursor.
+		gamepad.Loop(ev)
+
+		// Globally store the cursor position.
+		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 
 		// Command line shell.
 		if d.shell.Open {
@@ -196,6 +203,9 @@ func (d *Doodle) Run() error {
 		// Draw the debug overlay over all scenes.
 		d.DrawDebugOverlay()
 
+		// Let the gamepad controller draw in case of MouseMode to show the cursor.
+		gamepad.Draw(d.Engine)
+
 		// Render the pixels to the screen.
 		err = d.Engine.Present()
 		if err != nil {
@@ -246,6 +256,7 @@ func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
 		CrosshairColor:     &usercfg.Current.CrosshairColor,
 		HideTouchHints:     &usercfg.Current.HideTouchHints,
 		DisableAutosave:    &usercfg.Current.DisableAutosave,
+		ControllerStyle:    &usercfg.Current.ControllerStyle,
 	}
 	return windows.MakeSettingsWindow(d.width, d.height, cfg)
 }

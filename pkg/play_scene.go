@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/levelpack"
@@ -282,6 +283,9 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// runtime, + the bitmap generation is pretty wicked fast anyway.
 	loadscreen.PreloadAllChunkBitmaps(s.Level.Chunker)
 
+	// Gamepad: put into GameplayMode.
+	gamepad.SetMode(gamepad.GameplayMode)
+
 	s.startTime = time.Now()
 	s.perfectRun = true
 	s.running = true
@@ -416,6 +420,7 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 // EditLevel toggles out of Play Mode to edit the level.
 func (s *PlayScene) EditLevel() {
 	log.Info("Edit Mode, Go!")
+	gamepad.SetMode(gamepad.MouseMode)
 	s.d.Goto(&EditorScene{
 		Filename:               s.Filename,
 		Level:                  s.Level,
@@ -518,6 +523,7 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 		OnRestartLevel:    s.RestartLevel,
 		OnRetryCheckpoint: s.RetryCheckpoint,
 		OnExitToMenu: func() {
+			gamepad.SetMode(gamepad.MouseMode)
 			s.d.Goto(&MainScene{})
 		},
 	}
@@ -589,6 +595,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 		return nil
 	}
 
+	// Inform the gamepad controller whether we have antigravity controls.
+	gamepad.PlayModeAntigravity = s.antigravity || !s.Player.HasGravity()
+
 	// Update debug overlay values.
 	*s.debWorldIndex = s.drawing.WorldIndexAt(render.NewPoint(ev.CursorX, ev.CursorY)).String()
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
@@ -614,6 +623,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 
 	// Switching to Edit Mode?
 	if s.CanEdit && keybind.GotoEdit(ev) {
+		gamepad.SetMode(gamepad.MouseMode)
 		s.EditLevel()
 		return nil
 	}

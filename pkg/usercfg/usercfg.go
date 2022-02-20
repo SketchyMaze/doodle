@@ -37,6 +37,7 @@ type Settings struct {
 	CrosshairColor     render.Color
 	HideTouchHints     bool `json:",omitempty"`
 	DisableAutosave    bool `json:",omitempty"`
+	ControllerStyle    int
 
 	// Secret boolprops from balance/boolprops.go
 	ShowHiddenDoodads bool `json:",omitempty"`

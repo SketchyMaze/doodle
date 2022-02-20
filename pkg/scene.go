@@ -1,6 +1,7 @@
 package doodle
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render/event"
 )
@@ -23,6 +24,9 @@ type Scene interface {
 
 // Goto a scene. First it unloads the current scene.
 func (d *Doodle) Goto(scene Scene) error {
+	// Inform the gamepad controller what scene.
+	gamepad.SceneName = scene.Name()
+
 	// Clear any debug labels.
 	customDebugLabels = []debugLabel{}
 
