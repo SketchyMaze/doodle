@@ -1,6 +1,6 @@
 # Changes
 
-## v0.11.0 (TBD)
+## v0.11.0 (Feb 20 2022)
 
 New features:
 
@@ -22,6 +22,12 @@ New features:
 * For full versions of the game, the **Publish Level** function is now
   more streamlined to just a checkbox for automatically bundling your
   doodads next time you save the level.
+
+New level:
+
+* **The Zoo:** part of the Tutorial levelpack, it shows off all of the
+  game's built-in doodads and features a character selection room to
+  play as different creatures.
 
 Some of the built-in doodads have updates to their A.I. and creatures
 are becoming more dangerous:

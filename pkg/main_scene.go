@@ -301,15 +301,57 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 	s.canvas.SetScriptSupervisor(s.scripting)
 
 	// Title screen level to load. Pick a random level.
-	levelName := balance.DemoLevelName[0]
+	var (
+		levelName     = balance.DemoLevelName[0]
+		fromLevelPack = true
+		lvl           *level.Level
+	)
 	if s.LevelFilename != "" {
+		// User provided a custom level name, nix the demo levelpack.
 		levelName = s.LevelFilename
+		fromLevelPack = false
 	} else if len(balance.DemoLevelName) > 1 {
 		randIndex := rand.Intn(len(balance.DemoLevelName))
 		levelName = balance.DemoLevelName[randIndex]
 	}
 
-	if lvl, err := level.LoadFile(levelName); err == nil {
+	// Get the level from the DemoLevelPack?
+	if fromLevelPack {
+		log.Debug("Initializing titlescreen from DemoLevelPack: %s", balance.DemoLevelPack)
+		lp, err := levelpack.LoadFile(balance.DemoLevelPack)
+		if err != nil {
+			log.Error("Error loading DemoLevelPack(%s): %s", balance.DemoLevelPack, err)
+		} else {
+			log.Debug("Loading selected level from pack: %s", levelName)
+			levelbin, err := lp.GetData("levels/" + levelName)
+			if err != nil {
+				log.Error("Error getting level from DemoLevelpack(%s#%s): %s",
+					balance.DemoLevelPack,
+					levelName,
+					err,
+				)
+			} else {
+				log.Debug("Parsing loaded level data (%d bytes)", len(levelbin))
+				lvl, err = level.FromJSON(levelName, levelbin)
+				if err != nil {
+					log.Error("DemoLevelPack FromJSON(%s): %s", levelName, err)
+					lvl = nil
+				}
+			}
+		}
+	}
+
+	// May be a user-provided level.
+	if lvl == nil {
+		if trylvl, err := level.LoadFile(levelName); err == nil {
+			lvl = trylvl
+		} else {
+			log.Error("Error loading demo level %s: %s", balance.DemoLevelName, err)
+		}
+	}
+
+	// If still no level, initialize a basic notebook background.
+	if lvl != nil {
 		s.canvas.LoadLevel(lvl)
 		s.canvas.InstallActors(lvl.Actors)
 
@@ -323,8 +365,6 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 			log.Error("Error running actor main() functions: %s", err)
 		}
 	} else {
-		log.Error("Error loading demo level %s: %s", balance.DemoLevelName, err)
-
 		// Create a basic notebook level.
 		s.canvas.LoadLevel(&level.Level{
 			Chunker:   level.NewChunker(100),

@@ -296,7 +296,16 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 // SetPlayerCharacter changes the doodad used for the player, by destroying the
 // current player character and making it from scratch.
 func (s *PlayScene) SetPlayerCharacter(filename string) {
-	spawn := s.Player.Position()
+	// Record the player position and size and back up their inventory.
+	var (
+		spawn     = s.Player.Position()
+		inventory = s.Player.Inventory()
+	)
+
+	// TODO: to account for different height players, the position ought to be
+	// adjusted so the player doesn't clip and fall thru the floor.
+	spawn.Y -= 20 // work-around
+
 	s.Player.Destroy()
 	s.drawing.RemoveActor(s.Player)
 
@@ -304,6 +313,11 @@ func (s *PlayScene) SetPlayerCharacter(filename string) {
 	s.installPlayerDoodad(filename, spawn, render.Rect{})
 	if err := s.drawing.InstallScripts(); err != nil {
 		log.Error("SetPlayerCharacter: InstallScripts: %s", err)
+	}
+
+	// Restore their inventory.
+	for item, qty := range inventory {
+		s.Player.AddItem(item, qty)
 	}
 }
 
@@ -646,6 +660,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 
 		// Check if the player hit the death barrier.
 		if s.Player.Position().Y > s.deathBarrier {
+			// The player must die to avoid the softlock of falling forever.
+			s.godMode = false
+			s.Player.SetInvulnerable(false)
 			s.DieByFire("falling off the map")
 		}
 

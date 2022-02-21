@@ -65,7 +65,8 @@ var (
 	// Default player character doodad in Play Mode.
 	PlayerCharacterDoodad = "boy.doodad"
 
-	// Level names for the title screen.
+	// Levelpack and level names for the title screen.
+	DemoLevelPack = "assets/levelpacks/001000-TUTORIAL.levelpack"
 	DemoLevelName = []string{
 		"Tutorial 1.level",
 		"Tutorial 2.level",

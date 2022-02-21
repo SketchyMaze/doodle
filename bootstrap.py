@@ -119,8 +119,6 @@ def copy_assets():
     """Copy assets from other repos into doodle."""
     if not os.path.isdir("assets/fonts"):
         shell("cp -rv deps/vendor/fonts assets/fonts")
-    if not os.path.isdir("assets/levels"):
-        shell("cp -rv deps/masters/levels assets/levels")
     if not os.path.isdir("assets/levelpacks"):
         shell("cp -rv deps/masters/levelpacks/levelpacks assets/levelpacks")
     if not os.path.isdir("rtp"):
