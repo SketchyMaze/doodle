@@ -144,9 +144,24 @@ function AI_ScanForPlayer() {
 
 // If under control of the player character.
 function player() {
-	var playerSpeed = 12;
+	let playerSpeed = 12,
+		diving = false,
+		falling = false;
 
-	Self.SetInventory(true);
+	// The player can dive by moving downwards and laterally, but
+	// de-cheese their ability to just sweep across the ground; if
+	// they aren't seen to be moving downwards, cancel the dive.
+	let lastPoint = Self.Position();
+	setInterval(() => {
+        let nowAt = Self.Position();
+        if (nowAt.Y > lastPoint.Y) {
+            falling = true;
+        } else {
+            falling = false;
+        }
+        lastPoint = nowAt;
+    }, 100);
+
 	Events.OnKeypress((ev) => {
 		Vx = 0;
 		Vy = 0;
@@ -158,31 +173,45 @@ function player() {
 		}
 
 		// Dive!
-		if (ev.Down && ev.Right) {
+		if (ev.Down && ev.Right && falling) {
 			Self.StopAnimation();
 			Self.ShowLayerNamed("dive-right");
-		} else if (ev.Down && ev.Left) {
+			diving = falling;
+		} else if (ev.Down && ev.Left && falling) {
 			Self.StopAnimation();
 			Self.ShowLayerNamed("dive-left");
+			diving = falling;
 		} else if (ev.Right) {
 			// Fly right.
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("fly-right", null);
 			}
 			Vx = playerSpeed;
+			diving = false;
 		} else if (ev.Left) {
 			// Fly left.
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("fly-left", null);
 			}
 			Vx = -playerSpeed;
+			diving = false;
 		} else {
 			// Hover in place.
 			if (!Self.IsAnimating()) {
 				Self.PlayAnimation("fly-"+direction);
 			}
+			diving = false;
 		}
 
-		// Self.SetVelocity(Vector(Vx, Vy));
-	})
+		// Player is invulnerable while diving.
+		Self.SetInvulnerable(diving);
+	});
+
+	Events.OnCollide((e) => {
+		// If the player is diving at an enemy mob, destroy it.
+		if (diving && e.Settled && e.Actor.IsMobile() && !e.Actor.Invulnerable()) {
+			Sound.Play("crumbly-break.wav");
+			e.Actor.Destroy();
+		}
+	});
 }

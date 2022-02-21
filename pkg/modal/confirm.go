@@ -12,15 +12,16 @@ func Confirm(message string, args ...interface{}) *Modal {
 	if !ready {
 		panic("modal.Confirm(): not ready")
 	} else if current != nil {
-		return current
+		current.Dismiss(false)
 	}
 
 	// Reset the supervisor.
 	supervisor = ui.NewSupervisor()
 
 	m := &Modal{
-		title:   "Confirm",
-		message: fmt.Sprintf(message, args...),
+		title:      "Confirm",
+		message:    fmt.Sprintf(message, args...),
+		cancelable: true,
 	}
 	m.window = makeConfirm(m)
 

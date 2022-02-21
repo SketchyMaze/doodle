@@ -66,6 +66,12 @@ func Handled(ev *event.State) bool {
 		return true
 	}
 
+	// Escape key cancels the modal.
+	if keybind.Shutdown(ev) && current.cancelable {
+		current.Dismiss(false)
+		return true
+	}
+
 	supervisor.Loop(ev)
 
 	// Has the window changed size?
@@ -107,10 +113,11 @@ func center(win *ui.Window) {
 
 // Modal is an instance of a modal, i.e. Alert or Confirm.
 type Modal struct {
-	title    string
-	message  string
-	window   *ui.Window
-	callback func()
+	title      string
+	message    string
+	window     *ui.Window
+	callback   func()
+	cancelable bool // Escape key can cancel the modal
 }
 
 // WithTitle sets the title of the modal.

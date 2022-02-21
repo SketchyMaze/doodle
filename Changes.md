@@ -1,6 +1,6 @@
 # Changes
 
-## v0.11.0 (Feb 20 2022)
+## v0.11.0 (Feb 21 2022)
 
 New features:
 
@@ -34,8 +34,9 @@ are becoming more dangerous:
 
 * The **Bird** now searches for the player diagonally in front of
   it for about 240px or so. If spotted it will dive toward you and
-  it is dangerous when diving! When playing as the bird, the dive sprite
-  is used when flying diagonally downwards.
+  it is dangerous when diving! When _playing_ as the bird, the dive sprite
+  is used when flying diagonally downwards. The player-controlled bird
+  can kill mobile doodads by diving into them.
 * The **Azulians** will start to follow the player when you get
   close and they are dangerous when they touch you -- but not if
   you're the **Thief.** The red Azulian has a wider search radius,
@@ -49,6 +50,8 @@ are becoming more dangerous:
 * The **Anvil** is invulnerable -- if the player character is the Anvil
   it can not die by fire or hostile enemies, and Anvils can not destroy
   other Anvils.
+* The **Box** is also made invulnerable so it can't be destroyed by a
+  player-controlled Anvil or Bird.
 
 New functions are available on the JavaScript API for doodads:
 
@@ -82,6 +85,8 @@ Other changes:
   caught and presented nicely in an in-game popup window.
 * When playing as the Bird, the flying animation now loops while the
   player is staying still rather than pausing.
+* The "Level" menu in Play Mode has options to restart the level or
+  retry from last checkpoint, in case a player got softlocked.
 * When the game checks if there's an update available via
   <https://download.sketchymaze.com/version.json> it will send a user
   agent header like: "Sketchy Maze v0.10.2 on linux/amd64" sending only

@@ -85,7 +85,9 @@ func FromEvent(ev *event.State) State {
 
 // Shutdown (Escape) signals the game to start closing down.
 func Shutdown(ev *event.State) bool {
-	return ev.Escape
+	result := ev.Escape
+	ev.Escape = false
+	return result
 }
 
 // Help (F1) can be checked one time.

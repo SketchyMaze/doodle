@@ -5,6 +5,7 @@ const speed = 4,
 
 function main() {
     Self.SetMobile(true);
+    Self.SetInvulnerable(true);
     Self.SetGravity(true);
     Self.SetHitbox(0, 0, size, size);
 

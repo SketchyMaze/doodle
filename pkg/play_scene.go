@@ -435,6 +435,19 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 // EditLevel toggles out of Play Mode to edit the level.
 func (s *PlayScene) EditLevel() {
 	log.Info("Edit Mode, Go!")
+
+	// If they didn't come from the Level Editor originally, e.g. they are in Story Mode,
+	// confirm they want the editor in case they accidentally hit the "E" key due to
+	// its proximity to the WASD keys.
+	if !s.CanEdit {
+		modal.Confirm("Open this level in the editor?").Then(s.doEditLevel)
+	} else {
+		s.doEditLevel()
+	}
+}
+
+// Common logic to transition into the Editor.
+func (s *PlayScene) doEditLevel() {
 	gamepad.SetMode(gamepad.MouseMode)
 	s.d.Goto(&EditorScene{
 		Filename:               s.Filename,
@@ -447,9 +460,10 @@ func (s *PlayScene) EditLevel() {
 func (s *PlayScene) RestartLevel() {
 	log.Info("Restart Level")
 	s.d.Goto(&PlayScene{
-		Filename: s.Filename,
-		Level:    s.Level,
-		CanEdit:  s.CanEdit,
+		LevelPack: s.LevelPack,
+		Filename:  s.Filename,
+		Level:     s.Level,
+		CanEdit:   s.CanEdit,
 	})
 }
 
@@ -637,8 +651,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	}
 
 	// Switching to Edit Mode?
-	if s.CanEdit && keybind.GotoEdit(ev) {
-		gamepad.SetMode(gamepad.MouseMode)
+	if keybind.GotoEdit(ev) {
 		s.EditLevel()
 		return nil
 	}

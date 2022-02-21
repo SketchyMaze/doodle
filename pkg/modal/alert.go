@@ -13,15 +13,16 @@ func Alert(message string, args ...interface{}) *Modal {
 	if !ready {
 		panic("modal.Alert(): not ready")
 	} else if current != nil {
-		return current
+		current.Dismiss(false)
 	}
 
 	// Reset the supervisor.
 	supervisor = ui.NewSupervisor()
 
 	m := &Modal{
-		title:   "Alert",
-		message: fmt.Sprintf(message, args...),
+		title:      "Alert",
+		message:    fmt.Sprintf(message, args...),
+		cancelable: true,
 	}
 	m.window = makeAlert(m)
 

@@ -53,6 +53,12 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 	////////
 	// Level menu
 	levelMenu := menu.AddMenu("Level")
+	levelMenu.AddItem("Restart level", u.RestartLevel)
+	levelMenu.AddItem("Retry from checkpoint", func() {
+		u.SetImperfect()
+		u.RetryCheckpoint()
+	})
+	levelMenu.AddSeparator()
 	levelMenu.AddItemAccel("Edit level", "E", u.EditLevel)
 
 	// Hilariously broken, someday!

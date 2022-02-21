@@ -152,16 +152,6 @@ func (d *Doodle) Run() error {
 			log.Debug("Shell: opening shell")
 			d.shell.Open = true
 		} else {
-			// Global event handlers.
-			if keybind.Shutdown(ev) {
-				if d.Debug { // fast exit in -debug mode.
-					d.running = false
-				} else {
-					d.ConfirmExit()
-				}
-				continue
-			}
-
 			if keybind.Help(ev) {
 				// Launch the local guidebook
 				native.OpenLocalURL(balance.GuidebookPath)
@@ -174,6 +164,16 @@ func (d *Doodle) Run() error {
 			// Make sure no UI modals (alerts, confirms)
 			// or loadscreen are currently visible.
 			if !modal.Handled(ev) {
+				// Global event handlers.
+				if keybind.Shutdown(ev) {
+					if d.Debug { // fast exit in -debug mode.
+						d.running = false
+					} else {
+						d.ConfirmExit()
+					}
+					continue
+				}
+
 				// Run the scene's logic.
 				err = d.Scene.Loop(d, ev)
 				if err != nil {
