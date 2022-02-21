@@ -23,11 +23,14 @@ New features:
   more streamlined to just a checkbox for automatically bundling your
   doodads next time you save the level.
 
-New level:
+New levels:
 
 * **The Zoo:** part of the Tutorial levelpack, it shows off all of the
   game's built-in doodads and features a character selection room to
   play as different creatures.
+* **Shapeshifter:** a new level on the First Quest where you switch
+  controls between the Boy, Azulian and the Bird in order to clear the
+  level.
 
 Some of the built-in doodads have updates to their A.I. and creatures
 are becoming more dangerous:
