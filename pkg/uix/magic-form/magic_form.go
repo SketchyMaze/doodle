@@ -31,6 +31,8 @@ type Form struct {
 	// For vertical forms.
 	Vertical   bool
 	LabelWidth int // size of left frame for labels.
+	PadY       int // spacer between (vertical) forms
+	PadX       int
 }
 
 /*
@@ -61,6 +63,7 @@ type Field struct {
 	// Variable bindings, the type may infer to be:
 	BoolVariable *bool       // Checkbox
 	TextVariable *string     // Textbox
+	IntVariable  *int        // Textbox
 	Options      []Option    // Selectbox
 	SelectValue  interface{} // Selectbox default choice
 
@@ -100,6 +103,7 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 		into.Pack(frame, ui.Pack{
 			Side:  ui.N,
 			FillX: true,
+			PadY:  form.PadY,
 		})
 
 		// Pager row?
@@ -174,6 +178,35 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 			})
 			labFrame.Pack(label, ui.Pack{
 				Side: ui.W,
+			})
+		}
+
+		// Buttons and Text fields (for now).
+		if row.Type == Button || row.Type == Textbox {
+			btn := ui.NewButton("Button", ui.NewLabel(ui.Label{
+				Text:         row.Label,
+				Font:         row.Font,
+				TextVariable: row.TextVariable,
+				IntVariable:  row.IntVariable,
+			}))
+			form.Supervisor.Add(btn)
+			frame.Pack(btn, ui.Pack{
+				Side:   ui.W,
+				FillX:  true,
+				Expand: true,
+			})
+
+			// Tooltip? TODO - make nicer.
+			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
+				ui.NewTooltip(btn, row.Tooltip)
+			}
+
+			// Handlers
+			btn.Handle(ui.Click, func(ed ui.EventData) error {
+				if row.OnClick != nil {
+					row.OnClick()
+				}
+				return nil
 			})
 		}
 
@@ -266,7 +299,7 @@ func (field Field) Infer() Type {
 		return Selectbox
 	}
 
-	if field.TextVariable != nil {
+	if field.TextVariable != nil || field.IntVariable != nil {
 		return Textbox
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -89,19 +90,22 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 	}
 
 	// Middle click of the mouse to pan the level.
-	if keybind.MiddleClick(ev) {
-		if !w.scrollDragging {
-			w.scrollDragging = true
-			w.scrollStartAt = shmem.Cursor
-			w.scrollWasAt = w.Scroll
+	// NOTE: PanTool intercepts both Left and MiddleClick.
+	if w.Tool != drawtool.PanTool {
+		if keybind.MiddleClick(ev) {
+			if !w.scrollDragging {
+				w.scrollDragging = true
+				w.scrollStartAt = shmem.Cursor
+				w.scrollWasAt = w.Scroll
+			} else {
+				delta := shmem.Cursor.Compare(w.scrollStartAt)
+				w.Scroll = w.scrollWasAt
+				w.Scroll.Subtract(delta)
+			}
 		} else {
-			delta := shmem.Cursor.Compare(w.scrollStartAt)
-			w.Scroll = w.scrollWasAt
-			w.Scroll.Subtract(delta)
-		}
-	} else {
-		if w.scrollDragging {
-			w.scrollDragging = false
+			if w.scrollDragging {
+				w.scrollDragging = false
+			}
 		}
 	}
 

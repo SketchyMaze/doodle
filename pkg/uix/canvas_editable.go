@@ -2,7 +2,9 @@ package uix
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -137,6 +139,30 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 	}
 
 	switch w.Tool {
+	case drawtool.PanTool:
+		// Pan tool = click to pan the level.
+		if ev.Button1 || keybind.MiddleClick(ev) {
+			if !w.scrollDragging {
+				w.scrollDragging = true
+				w.scrollStartAt = shmem.Cursor
+				w.scrollWasAt = w.Scroll
+			} else {
+				delta := shmem.Cursor.Compare(w.scrollStartAt)
+				w.Scroll = w.scrollWasAt
+				w.Scroll.Subtract(delta)
+
+				// TODO: if I don't call this, the user is able to (temporarily!)
+				// pan outside the level boundaries before it snaps-back when they
+				// release. But the normal middle-click to pan code doesn't let
+				// them do this.. investigate why later.
+				w.loopConstrainScroll()
+			}
+		} else {
+			if w.scrollDragging {
+				w.scrollDragging = false
+			}
+		}
+
 	case drawtool.PencilTool:
 		// If no swatch is active, do nothing with mouse clicks.
 		if w.Palette.ActiveSwatch == nil {
@@ -253,6 +279,47 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+	case drawtool.TextTool:
+		// The Text Tool popup should initialize this for us, if somehow not
+		// initialized skip this tool processing.
+		if w.Palette.ActiveSwatch == nil || drawtool.TT.IsZero() {
+			return nil
+		}
+
+		// Do we need to create the Label?
+		if drawtool.TT.Label == nil {
+			drawtool.TT.Label = ui.NewLabel(ui.Label{
+				Text: drawtool.TT.Message,
+				Font: render.Text{
+					FontFilename: drawtool.TT.Font,
+					Size:         drawtool.TT.Size,
+					Color:        w.Palette.ActiveSwatch.Color,
+				},
+			})
+		}
+
+		// Do we need to update the color of the label?
+		if drawtool.TT.Label.Font.Color != w.Palette.ActiveSwatch.Color {
+			drawtool.TT.Label.Font.Color = w.Palette.ActiveSwatch.Color
+		}
+
+		// NOTE: Canvas.presentStrokes() will handle drawing the font preview
+		// at the cursor location while the TextTool is active.
+
+		// On mouse click, commit the text to the drawing.
+		if ev.Button1 {
+			if stroke, err := drawtool.TT.ToStroke(shmem.CurrentRenderEngine, w.Palette.ActiveSwatch.Color, cursor); err != nil {
+				shmem.FlashError("Text Tool error: %s", err)
+				return nil
+			} else {
+				w.currentStroke = stroke
+				w.currentStroke.ExtraData = w.Palette.ActiveSwatch
+				w.commitStroke(drawtool.PencilTool, true)
+			}
+
+			ev.Button1 = false
+		}
+
 	case drawtool.EraserTool:
 		// Clicking? Log all the pixels while doing so.
 		if ev.Button1 {

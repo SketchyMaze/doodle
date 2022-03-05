@@ -143,6 +143,11 @@ func (w *Canvas) presentStrokes(e render.Engine) {
 	if w.Tool == drawtool.ActorTool || w.Tool == drawtool.LinkTool {
 		w.presentActorLinks(e)
 	}
+
+	// Text Tool preview.
+	if w.Tool == drawtool.TextTool && drawtool.TT.Label != nil {
+		drawtool.TT.Label.Present(e, shmem.Cursor)
+	}
 }
 
 // presentActorLinks draws strokes connecting actors together by their links.

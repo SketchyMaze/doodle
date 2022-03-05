@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
@@ -47,6 +48,12 @@ func (u *EditorUI) OpenDoodadDropper() {
 	// and simple window :) but OpenDoodadDropper() added for consistency.
 	u.doodadWindow.Show()
 	u.Supervisor.FocusWindow(u.doodadWindow)
+}
+
+// OpenTextTool opens the Text Tool window.
+func (u *EditorUI) OpenTextTool() {
+	u.textToolWindow.Show()
+	u.Supervisor.FocusWindow(u.textToolWindow)
 }
 
 // OpenPublishWindow opens the Publisher window.
@@ -146,6 +153,23 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			},
 		})
 		u.ConfigureWindow(d, u.doodadWindow)
+	}
+
+	// Text Tool window.
+	if u.textToolWindow == nil {
+		u.textToolWindow = windows.NewTextToolWindow(windows.TextTool{
+			Supervisor: u.Supervisor,
+			Engine:     d.Engine,
+			OnChangeSettings: func(font string, size int, message string) {
+				log.Info("Updated Text Tool settings: %s (%d): %s", font, size, message)
+				drawtool.TT = drawtool.TextSettings{
+					Font:    font,
+					Size:    size,
+					Message: message,
+				}
+			},
+		})
+		u.ConfigureWindow(d, u.textToolWindow)
 	}
 
 	// Page Settings

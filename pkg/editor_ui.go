@@ -51,6 +51,7 @@ type EditorUI struct {
 	doodadWindow           *ui.Window
 	paletteEditor          *ui.Window
 	layersWindow           *ui.Window
+	textToolWindow         *ui.Window
 	publishWindow          *ui.Window
 	filesystemWindow       *ui.Window
 	licenseWindow          *ui.Window

@@ -1,6 +1,8 @@
 package doodle
 
 import (
+	"fmt"
+
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -11,32 +13,53 @@ import (
 	"git.kirsle.net/go/ui/style"
 )
 
-// Width of the toolbar frame.
-var toolbarWidth = 44      // 38px button (32px sprite + borders) + padding
-var toolbarSpriteSize = 32 // 32x32 sprites.
+// Global toolbarWidth, TODO: editor_ui.go wants it
+var toolbarWidth int
 
 // SetupToolbar configures the UI for the Tools panel.
 func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 	// Horizontal toolbar instead of vertical?
 	var (
-		isHoz       = usercfg.Current.HorizontalToolbars
-		packAlign   = ui.N
-		frameSize   = render.NewRect(toolbarWidth, 100)
-		tooltipEdge = ui.Right
-		btnPack     = ui.Pack{
+		toolbarSpriteSize = 24 // size of sprite images
+		frameSize         render.Rect
+		isHoz             = usercfg.Current.HorizontalToolbars
+		buttonsPerRow     = 2
+		packAlign         = ui.N
+		tooltipEdge       = ui.Right
+		btnRowPack        = ui.Pack{
 			Side: packAlign,
-			PadY: 2,
+			PadY: 1,
+			Fill: true,
+		}
+		btnPack = ui.Pack{
+			Side: ui.W,
+			PadX: 1,
 		}
 	)
 	if isHoz {
 		packAlign = ui.W
-		frameSize = render.NewRect(100, toolbarWidth)
 		tooltipEdge = ui.Bottom
-		btnPack = ui.Pack{
+		btnRowPack = ui.Pack{
 			Side: packAlign,
 			PadX: 2,
 		}
+		btnPack = ui.Pack{
+			Side: ui.N,
+			PadY: 1,
+		}
 	}
+
+	// Button Layout Controls:
+	// We can draw 2 buttons per row, but for very small screens
+	// e.g. mobile in portrait orientation, draw 1 button per row.
+	buttonsPerRow = 1
+	if isHoz || d.width >= enum.ScreenWidthSmall {
+		buttonsPerRow = 2
+	}
+
+	// Compute toolbar size to accommodate all buttons (+10 for borders/padding)
+	toolbarWidth = buttonsPerRow * (toolbarSpriteSize + 10)
+	frameSize = render.NewRect(toolbarWidth, 100)
 
 	frame := ui.NewFrame("Tool Bar")
 	frame.Resize(frameSize)
@@ -62,6 +85,16 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		// Optional fields.
 		NoDoodad bool // tool not available for Doodad editing (Levels only)
 	}{
+		{
+			Value:   drawtool.PanTool.String(),
+			Icon:    "assets/sprites/pan-tool.png",
+			Tooltip: "Pan Tool",
+			Click: func() {
+				u.Canvas.Tool = drawtool.PanTool
+				d.Flash("Pan Tool selected.")
+			},
+		},
+
 		{
 			Value:   drawtool.PencilTool.String(),
 			Icon:    "assets/sprites/pencil-tool.png",
@@ -99,6 +132,17 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Click: func() {
 				u.Canvas.Tool = drawtool.EllipseTool
 				d.Flash("Ellipse Tool selected.")
+			},
+		},
+
+		{
+			Value:   drawtool.TextTool.String(),
+			Icon:    "assets/sprites/text-tool.png",
+			Tooltip: "Text Tool",
+			Click: func() {
+				u.Canvas.Tool = drawtool.TextTool
+				u.OpenTextTool()
+				d.Flash("Text Tool selected.")
 			},
 		},
 
@@ -146,10 +190,18 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			},
 		},
 	}
-	for _, button := range buttons {
+
+	// Arrange the buttons 2x2.
+	var btnRow *ui.Frame
+	for i, button := range buttons {
 		button := button
 		if button.NoDoodad && u.Scene.DrawingType == enum.DoodadDrawing {
 			continue
+		}
+
+		if buttonsPerRow == 1 || i%buttonsPerRow == 0 {
+			btnRow = ui.NewFrame(fmt.Sprintf("Button Row %d", i))
+			btnFrame.Pack(btnRow, btnRowPack)
 		}
 
 		image, err := sprites.LoadImage(d.Engine, button.Icon)
@@ -168,6 +220,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		}
 
 		var btnSize = btn.BoxThickness(2) + toolbarSpriteSize
+		btn.SetBorderSize(1)
 		btn.Resize(render.NewRect(btnSize, btnSize))
 
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
@@ -181,7 +234,7 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Edge: tooltipEdge,
 		})
 
-		btnFrame.Pack(btn, btnPack)
+		btnRow.Pack(btn, btnPack)
 	}
 
 	// Doodad Editor: show the Layers button.

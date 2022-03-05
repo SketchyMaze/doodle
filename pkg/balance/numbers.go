@@ -59,6 +59,10 @@ var (
 	DefaultEraserBrushSize = 8
 	MaxEraserBrushSize     = 32 // the bigger, the slower
 
+	// Default font filename selected for Text Tool in the editor.
+	// TODO: better centralize font filenames, here and in theme.go
+	TextToolDefaultFont = "DejaVuSans.ttf"
+
 	// Interval for auto-save in the editor
 	AutoSaveInterval = 5 * time.Minute
 
