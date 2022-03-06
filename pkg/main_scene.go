@@ -113,7 +113,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.updateButton = ui.NewButton("Update Button", ui.NewLabel(ui.Label{
 		Text: "An update is available!",
 		Font: render.Text{
-			FontFilename: "DejaVuSans-Bold.ttf",
+			FontFilename: balance.SansBoldFont,
 			Size:         16,
 			Color:        render.Blue,
 			Padding:      4,

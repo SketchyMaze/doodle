@@ -23,7 +23,7 @@ var (
 		Shadow: render.Black,
 	}
 	TitleScreenSubtitleFont = render.Text{
-		FontFilename: "DejaVuSans.ttf",
+		FontFilename: SansSerifFont,
 		Size:         18,
 		Color:        render.SkyBlue,
 		Shadow:       render.SkyBlue.Darken(128),
@@ -44,7 +44,7 @@ var (
 		Shadow: render.Black,
 	}
 	LoadScreenSecondaryFont = render.Text{
-		FontFilename: "DejaVuSans.ttf",
+		FontFilename: SansSerifFont,
 		Size:         18,
 		Color:        render.SkyBlue,
 		Shadow:       render.SkyBlue.Darken(128),
@@ -54,7 +54,7 @@ var (
 
 	// Play Mode Touch UI Hints Font
 	TouchHintsFont = render.Text{
-		FontFilename: "DejaVuSans.ttf",
+		FontFilename: SansSerifFont,
 		Size:         14,
 		Color:        render.SkyBlue,
 		Shadow:       render.SkyBlue.Darken(128),
@@ -69,7 +69,7 @@ var (
 		OutlineColor: render.Black,
 	}
 	TitleFont = render.Text{
-		FontFilename: "DejaVuSans-Bold.ttf",
+		FontFilename: SansBoldFont,
 		Size:         9,
 		Padding:      4,
 		Color:        render.White,
@@ -99,7 +99,7 @@ var (
 		PadX: 4,
 	}
 	MenuFontBold = render.Text{
-		FontFilename: "DejaVuSans-Bold.ttf",
+		FontFilename: SansBoldFont,
 		Size:         12,
 		PadX:         4,
 	}
@@ -131,7 +131,7 @@ var (
 	// LabelFont is the font for strong labels in UI.
 	LabelFont = render.Text{
 		Size:         12,
-		FontFilename: "DejaVuSans-Bold.ttf",
+		FontFilename: SansBoldFont,
 		Padding:      4,
 		Color:        render.Black,
 	}
@@ -148,7 +148,7 @@ var (
 
 	LargeLabelFont = render.Text{
 		Size:         18,
-		FontFilename: "DejaVuSans-Bold.ttf",
+		FontFilename: SansBoldFont,
 		Padding:      4,
 		Color:        render.Black,
 	}
@@ -157,7 +157,7 @@ var (
 	SmallMonoFont = render.Text{
 		Size:         14,
 		PadX:         3,
-		FontFilename: "DejaVuSansMono.ttf",
+		FontFilename: MonospaceFont,
 		Color:        render.Black,
 	}
 
@@ -165,7 +165,7 @@ var (
 	CodeLiteralFont = render.Text{
 		Size:         11,
 		PadX:         3,
-		FontFilename: "DejaVuSansMono.ttf",
+		FontFilename: MonospaceFont,
 		Color:        render.Magenta,
 	}
 
@@ -185,7 +185,7 @@ var (
 	LinkAnimSpeed uint64 = 30 // ticks
 
 	PlayButtonFont = render.Text{
-		FontFilename: "DejaVuSans-Bold.ttf",
+		FontFilename: SansBoldFont,
 		Size:         16,
 		Padding:      4,
 		Color:        render.RGBA(255, 255, 0, 255),
@@ -194,7 +194,7 @@ var (
 
 	// In-game level timer font.
 	TimerFont = render.Text{
-		FontFilename: "DejaVuSansMono.ttf",
+		FontFilename: MonospaceFont,
 		Size:         16,
 		Color:        render.Cyan,
 		Stroke:       render.DarkCyan,

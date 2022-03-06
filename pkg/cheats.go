@@ -1,7 +1,10 @@
 package doodle
 
 import (
+	"time"
+
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 )
 
 // IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has
@@ -145,6 +148,18 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		} else {
 			d.FlashError("Use this cheat in Play Mode to toggle invincibility.")
 		}
+
+	case balance.CheatDebugLoadScreen:
+		loadscreen.ShowWithProgress()
+		loadscreen.SetSubtitle("Loading: /dev/null", "Loadscreen testing.")
+		go func() {
+			var i float64
+			for i = 0; i < 100; i++ {
+				time.Sleep(100 * time.Millisecond)
+				loadscreen.SetProgress(i / 100)
+			}
+			loadscreen.Hide()
+		}()
 
 	default:
 		return false

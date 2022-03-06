@@ -244,10 +244,11 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			})
 
 			// Tooltip hover to show the doodad's name.
-			ui.NewTooltip(btn, ui.Tooltip{
+			tt := ui.NewTooltip(btn, ui.Tooltip{
 				Text: doodad.Title,
 				Edge: ui.Top,
 			})
+			tt.Supervise(config.Supervisor)
 
 			// Begin the drag event to grab this Doodad.
 			// NOTE: The drag target is the EditorUI.Canvas in

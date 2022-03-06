@@ -53,8 +53,16 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 	// We can draw 2 buttons per row, but for very small screens
 	// e.g. mobile in portrait orientation, draw 1 button per row.
 	buttonsPerRow = 1
-	if isHoz || d.width >= enum.ScreenWidthSmall {
-		buttonsPerRow = 2
+	if isHoz {
+		if d.width < enum.ScreenWidthSmall {
+			// Narrow screens
+			buttonsPerRow = 2
+		}
+	} else {
+		if d.width >= enum.ScreenWidthSmall {
+			// Screen wider than 600px = can spare room for 2 buttons per row.
+			buttonsPerRow = 2
+		}
 	}
 
 	// Compute toolbar size to accommodate all buttons (+10 for borders/padding)
@@ -229,10 +237,11 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		})
 		u.Supervisor.Add(btn)
 
-		ui.NewTooltip(btn, ui.Tooltip{
+		tt := ui.NewTooltip(btn, ui.Tooltip{
 			Text: button.Tooltip,
 			Edge: tooltipEdge,
 		})
+		tt.Supervise(u.Supervisor)
 
 		btnRow.Pack(btn, btnPack)
 	}
@@ -352,13 +361,22 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 				Text: button.Label,
 				Font: balance.SmallMonoFont,
 			}))
+			btn.SetBorderSize(1)
 			btn.Handle(ui.Click, func(ed ui.EventData) error {
 				button.F()
 				return nil
 			})
 			u.Supervisor.Add(btn)
+
+			// Which side to pack on?
+			var side = ui.W
+			if !isHoz && buttonsPerRow == 1 {
+				// Vertical layout w/ narrow one-button-per-row, the +-
+				// buttons stick out so stack them vertically.
+				side = ui.S
+			}
 			sizeBtnFrame.Pack(btn, ui.Pack{
-				Side: ui.W,
+				Side: side,
 			})
 		}
 	}

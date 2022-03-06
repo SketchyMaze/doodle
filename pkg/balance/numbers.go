@@ -61,7 +61,7 @@ var (
 
 	// Default font filename selected for Text Tool in the editor.
 	// TODO: better centralize font filenames, here and in theme.go
-	TextToolDefaultFont = "DejaVuSans.ttf"
+	TextToolDefaultFont = SansSerifFont
 
 	// Interval for auto-save in the editor
 	AutoSaveInterval = 5 * time.Minute

@@ -4,7 +4,7 @@ import "git.kirsle.net/go/render"
 
 // Shell related variables.
 var (
-	ShellFontFilename            = "DejaVuSansMono.ttf"
+	ShellFontFilename            = MonospaceFont
 	ShellBackgroundColor         = render.RGBA(0, 20, 40, 200)
 	ShellForegroundColor         = render.RGBA(0, 153, 255, 255)
 	ShellPromptColor             = render.White

@@ -31,4 +31,5 @@ var (
 	CheatPlayAsThief      = "play as thief"
 	CheatPlayAsAnvil      = "megaton weight"
 	CheatGodMode          = "god mode"
+	CheatDebugLoadScreen  = "test load screen"
 )

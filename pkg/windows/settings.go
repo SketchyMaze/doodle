@@ -1,20 +1,17 @@
 package windows
 
 import (
-	"strconv"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
 	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
-	"git.kirsle.net/go/ui/style"
 )
 
 // Settings window.
@@ -61,7 +58,7 @@ func MakeSettingsWindow(windowWidth, windowHeight int, cfg Settings) *ui.Window 
 func NewSettingsWindow(cfg Settings) *ui.Window {
 	var (
 		Width  = 400
-		Height = 400
+		Height = 360
 	)
 
 	window := ui.NewWindow("Settings")
@@ -111,305 +108,98 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 
 	// Common click handler for all settings,
 	// so we can write the updated info to disk.
-	onClick := func(ed ui.EventData) error {
+	onClick := func() {
 		saveGameSettings()
-		return nil
 	}
 
-	var inputBoxWidth = 120
-	rows := []struct {
-		Header       string
-		Text         string
-		Boolean      *bool
-		Integer      *int
-		TextVariable *string
-		Color        *render.Color
-		PadY         int
-		PadX         int
-		name         string // for special cases
-	}{
-		{
-			Text: "Notice: all settings are temporary and controls are not editable.",
-			PadY: 2,
-		},
-		{
-			Header: "Game Options",
-		},
-		{
-			Boolean: c.HorizontalToolbars,
-			Text:    "Editor: Horizontal instead of vertical toolbars",
-			PadX:    4,
-			name:    "toolbars",
-		},
-		{
-			Boolean: c.HideTouchHints,
-			Text:    "Hide touchscreen control hints during Play Mode",
-			PadX:    4,
-			name:    "toolbars",
-		},
-		{
-			Boolean: c.DisableAutosave,
-			Text:    "Disable auto-save in the Editor",
-			PadX:    4,
-			name:    "autosave",
-		},
-		{
-			Integer: c.CrosshairSize,
-			Text:    "Editor: Crosshair size (0 to disable):",
-			PadX:    4,
-		},
-		{
-			Color: c.CrosshairColor,
-			Text:  "Editor: Crosshair color:",
-			PadX:  4,
-		},
-		{
-			Header: "Debug Options (temporary)",
-		},
-		{
-			Boolean: c.DebugOverlay,
-			Text:    "Show debug text overlay (F3)",
-			PadX:    4,
-		},
-		{
-			Boolean: c.DebugCollision,
-			Text:    "Show collision hitboxes (F4)",
-			PadX:    4,
-		},
-		{
-			Header: "My Custom Content",
-		},
-		{
-			Text: "Levels and doodads you create in-game are placed in your\n" +
-				"Profile Directory, which you can access below:",
-		},
+	// The CrosshairSize is ideally a 0-100 (percent) how big the editor
+	// crosshair is, but options now are only 0% or 100% so it presents
+	// this as a checkbox for now.
+	var crosshairEnabled = *c.CrosshairSize > 0
+
+	form := magicform.Form{
+		Supervisor: c.Supervisor,
+		Engine:     c.Engine,
+		Vertical:   true,
+		LabelWidth: 150,
 	}
-	for _, row := range rows {
-		row := row
-		frame := ui.NewFrame("Frame")
-		tab.Pack(frame, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-			PadY:  row.PadY,
-		})
-
-		// Headers get their own row to themselves.
-		if row.Header != "" {
-			label := ui.NewLabel(ui.Label{
-				Text: row.Header,
-				Font: balance.LabelFont,
-			})
-			frame.Pack(label, ui.Pack{
-				Side: ui.W,
-				PadX: row.PadX,
-			})
-			continue
-		}
-
-		// Checkboxes get their own row.
-		if row.Boolean != nil {
-			cb := ui.NewCheckbox(row.Text, row.Boolean, ui.NewLabel(ui.Label{
-				Text: row.Text,
-				Font: balance.UIFont,
-			}))
-			cb.Handle(ui.Click, onClick)
-			cb.Supervise(c.Supervisor)
-
-			// Add warning to the toolbars option if the EditMode is currently active.
-			if row.name == "toolbars" && c.SceneName == "Edit" {
-				ui.NewTooltip(cb, ui.Tooltip{
-					Text: "Note: reload your level after changing this option.\n" +
-						"Playtesting and returning will do.",
-					Edge: ui.Top,
-				})
-			}
-
-			frame.Pack(cb, ui.Pack{
-				Side: ui.W,
-				PadX: row.PadX,
-			})
-			continue
-		} else {
-			// Reserve indented space where the checkbox would have gone.
-			spacer := ui.NewFrame("Spacer")
-			spacer.Resize(render.NewRect(9, 9)) // TODO: ugly UI hack ;)
-			frame.Pack(spacer, ui.Pack{
-				Side: ui.W,
-				PadX: row.PadX,
-			})
-		}
-
-		// Any leftover Text gets packed to the left.
-		if row.Text != "" {
-			tf := ui.NewFrame("TextFrame")
-			label := ui.NewLabel(ui.Label{
-				Text: row.Text,
-				Font: balance.UIFont,
-			})
-			tf.Pack(label, ui.Pack{
-				Side: ui.W,
-			})
-			frame.Pack(tf, ui.Pack{
-				Side: ui.W,
-			})
-		}
-
-		// Int variables draw as a button to prompt for new value.
-		// In future: TextVariable works here too.
-		if row.Integer != nil {
-			varButton := ui.NewButton("VarButton", ui.NewLabel(ui.Label{
-				IntVariable: row.Integer,
-				Font:        ui.MenuFont,
-			}))
-			varButton.Handle(ui.Click, func(ed ui.EventData) error {
-				shmem.Prompt(row.Text+" ", func(answer string) {
-					if answer == "" {
-						return
-					}
-
-					a, err := strconv.Atoi(answer)
-					if err != nil {
-						shmem.FlashError(err.Error())
-						return
-					}
-
-					if a < 0 {
-						a = 0
-					} else if a > 100 {
-						a = 100
-					}
-
-					*row.Integer = a
-					shmem.Flash("Crosshair size set to %d%% (WIP)", a)
-
-					// call onClick to save change to disk now
-					onClick(ed)
-				})
-				return nil
-			})
-
-			varButton.Compute(c.Engine)
-			varButton.Resize(render.Rect{
-				W: inputBoxWidth,
-				H: varButton.Size().H,
-			})
-
-			c.Supervisor.Add(varButton)
-			frame.Pack(varButton, ui.Pack{
-				Side: ui.E,
-				PadX: row.PadX,
-			})
-		}
-
-		// Color picker button.
-		if row.Color != nil {
-			btn := ui.NewButton("ColorBtn", ui.NewFrame(""))
-			style := style.DefaultButton
-			style.Background = *row.Color
-			style.HoverBackground = style.Background.Lighten(20)
-			btn.SetStyle(&style)
-			btn.Handle(ui.Click, func(ed ui.EventData) error {
-				// Open a ColorPicker widget.
-				picker, err := ui.NewColorPicker(ui.ColorPicker{
-					Title:      "Select a color",
-					Supervisor: c.Supervisor,
-					Engine:     c.Engine,
-					Color:      *row.Color,
-					OnManualInput: func(callback func(render.Color)) {
-						// Prompt the user to enter a hex color using the developer shell.
-						shmem.Prompt("New color in hex notation: ", func(answer string) {
-							if answer != "" {
-								// XXX: pure white renders as invisible, fudge it a bit.
-								if answer == "FFFFFF" {
-									answer = "FFFFFE"
-								}
-
-								color, err := render.HexColor(answer)
-								if err != nil {
-									shmem.Flash("Error with that color code: %s", err)
-									return
-								}
-
-								callback(color)
-							}
-						})
-					},
-				})
-				if err != nil {
-					log.Error("Couldn't open ColorPicker: %s", err)
-					return err
-				}
-
-				picker.Then(func(color render.Color) {
-					*row.Color = color
-					style.Background = color
-					style.HoverBackground = style.Background.Lighten(20)
-
-					// call onClick to save change to disk now
-					onClick(ed)
-				})
-
-				picker.Center(shmem.CurrentRenderEngine.WindowSize())
-				picker.Show()
-
-				return nil
-			})
-
-			btn.Compute(c.Engine)
-			btn.Resize(render.Rect{
-				W: inputBoxWidth,
-				H: 20, // TODO
-			})
-
-			c.Supervisor.Add(btn)
-			frame.Pack(btn, ui.Pack{
-				Side: ui.E,
-				PadX: row.PadX,
-			})
-		}
-	}
-
-	// Button toolbar.
-	btnFrame := ui.NewFrame("Button Frame")
-	tab.Pack(btnFrame, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-		PadY:  4,
-	})
-	for _, button := range []struct {
-		Label string
-		Fn    func()
-		Style *style.Button
-	}{
+	form.Create(tab, []magicform.Field{
 		{
-			Label: "Open profile directory",
-			Fn: func() {
-				path := strings.ReplaceAll(userdir.ProfileDirectory, "\\", "/")
-				if path[0] != '/' {
-					path = "/" + path
-				}
-				native.OpenURL("file://" + path)
+			Label: "Game Options",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label:        "Hide touchscreen control hints during Play Mode",
+			Font:         balance.UIFont,
+			BoolVariable: c.HideTouchHints,
+		},
+		{
+			Label: "Level & Doodad Editor",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label:        "Horizontal instead of vertical toolbars",
+			Font:         balance.UIFont,
+			BoolVariable: c.HorizontalToolbars,
+			Tooltip: ui.Tooltip{
+				Text: "Note: reload your level after changing this option.\n" +
+					"Playtesting and returning will do.",
+				Edge: ui.Top,
 			},
-			Style: &balance.ButtonPrimary,
 		},
-	} {
-		btn := ui.NewButton(button.Label, ui.NewLabel(ui.Label{
-			Text: button.Label,
+		{
+			Label:        "Disable auto-save in the Editor",
+			Font:         balance.UIFont,
+			BoolVariable: c.DisableAutosave,
+		},
+		{
+			Label:        "Draw a crosshair at the mouse cursor.",
+			Font:         balance.UIFont,
+			BoolVariable: &crosshairEnabled,
+			OnClick: func() {
+				if crosshairEnabled {
+					*c.CrosshairSize = 100
+				} else {
+					*c.CrosshairSize = 0
+				}
+				onClick()
+			},
+		},
+		{
+			Type:  magicform.Color,
+			Label: "Crosshair color:",
+			Font:  balance.UIFont,
+			Color: c.CrosshairColor,
+			OnClick: func() {
+				onClick()
+			},
+		},
+		{
+			Label: "My Custom Content",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "Levels and doodads you create in-game are placed in your\n" +
+				"Profile Directory, which you can access below:",
 			Font: balance.UIFont,
-		}))
-		if button.Style != nil {
-			btn.SetStyle(button.Style)
-		}
-		btn.Handle(ui.Click, func(ed ui.EventData) error {
-			button.Fn()
-			return nil
-		})
-		c.Supervisor.Add(btn)
-		btnFrame.Pack(btn, ui.Pack{
-			Side:   ui.W,
-			Expand: true,
-		})
-	}
+		},
+		{
+			Buttons: []magicform.Field{
+				{
+					Label:       "Open profile directory",
+					Font:        balance.UIFont,
+					ButtonStyle: &balance.ButtonPrimary,
+					OnClick: func() {
+						path := strings.ReplaceAll(userdir.ProfileDirectory, "\\", "/")
+						if path[0] != '/' {
+							path = "/" + path
+						}
+						native.OpenURL("file://" + path)
+					},
+				},
+			},
+		},
+	})
 
 	return tab
 }
@@ -575,7 +365,7 @@ func (c Settings) makeControlsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.
 			frame.Pack(curFrame, ui.Pack{
 				Side:  ui.N,
 				FillX: true,
-				PadY:  2,
+				PadY:  1,
 			})
 		}
 
@@ -743,14 +533,13 @@ func (c Settings) makeControllerTab(tabFrame *ui.TabFrame, Width, Height int) *u
 	}
 	form.Create(tab, []magicform.Field{
 		{
-			Label: "About",
+			Label: "Play with an Xbox or Nintendo controller!",
 			Font:  balance.LabelFont,
 		},
 		{
-			Label: "Play Sketchy Maze with an Xbox or Nintendo controller!\n\n" +
-				"Full customization options aren't here yet, but you can\n" +
-				"choose between the 'X Style' or 'N Style' profile below.\n" +
-				"'N Style' will swap the A/B and X/Y buttons.",
+			Label: "If you have a Nintendo-style controller (your A button is on\n" +
+				"the right and B button on bottom), pick 'N Style' to reverse\n" +
+				"the A/B and X/Y buttons.",
 			Font: balance.UIFont,
 		},
 		{
@@ -776,7 +565,7 @@ func (c Settings) makeControllerTab(tabFrame *ui.TabFrame, Width, Height int) *u
 			},
 		},
 		{
-			Label: "\nThe gamepad controls vary between two modes:",
+			Label: "The gamepad controls vary between two modes:",
 			Font:  balance.UIFont,
 		},
 		{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"
@@ -21,6 +22,7 @@ const (
 	Checkbox
 	Radiobox
 	Selectbox
+	Color
 )
 
 // Form configuration.
@@ -61,11 +63,12 @@ type Field struct {
 	Frame *ui.Frame
 
 	// Variable bindings, the type may infer to be:
-	BoolVariable *bool       // Checkbox
-	TextVariable *string     // Textbox
-	IntVariable  *int        // Textbox
-	Options      []Option    // Selectbox
-	SelectValue  interface{} // Selectbox default choice
+	BoolVariable *bool         // Checkbox
+	TextVariable *string       // Textbox
+	IntVariable  *int          // Textbox
+	Options      []Option      // Selectbox
+	SelectValue  interface{}   // Selectbox default choice
+	Color        *render.Color // Color
 
 	// Tooltip to add to a form control.
 	// Checkbox only for now.
@@ -181,6 +184,77 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 			})
 		}
 
+		// Color picker button.
+		if row.Type == Color && row.Color != nil {
+			btn := ui.NewButton("ColorPicker", ui.NewLabel(ui.Label{
+				Text: " ",
+				Font: row.Font,
+			}))
+			style := style.DefaultButton
+			style.Background = *row.Color
+			style.HoverBackground = style.Background.Lighten(20)
+			btn.SetStyle(&style)
+
+			form.Supervisor.Add(btn)
+			frame.Pack(btn, ui.Pack{
+				Side:   ui.W,
+				FillX:  true,
+				Expand: true,
+			})
+
+			btn.Handle(ui.Click, func(ed ui.EventData) error {
+				// Open a ColorPicker widget.
+				picker, err := ui.NewColorPicker(ui.ColorPicker{
+					Title:      "Select a color",
+					Supervisor: form.Supervisor,
+					Engine:     form.Engine,
+					Color:      *row.Color,
+					OnManualInput: func(callback func(render.Color)) {
+						// Prompt the user to enter a hex color using the developer shell.
+						shmem.Prompt("New color in hex notation: ", func(answer string) {
+							if answer != "" {
+								// XXX: pure white renders as invisible, fudge it a bit.
+								if answer == "FFFFFF" {
+									answer = "FFFFFE"
+								}
+
+								color, err := render.HexColor(answer)
+								if err != nil {
+									shmem.Flash("Error with that color code: %s", err)
+									return
+								}
+
+								// Reconfigure the button now.
+								style.Background = color
+								style.HoverBackground = style.Background.Lighten(20)
+
+								callback(color)
+							}
+						})
+					},
+				})
+				if err != nil {
+					log.Error("Couldn't open ColorPicker: %s", err)
+					return err
+				}
+
+				picker.Then(func(color render.Color) {
+					*row.Color = color
+					style.Background = color
+					style.HoverBackground = style.Background.Lighten(20)
+
+					// call onClick to save change to disk now
+					if row.OnClick != nil {
+						row.OnClick()
+					}
+				})
+
+				picker.Center(shmem.CurrentRenderEngine.WindowSize())
+				picker.Show()
+				return nil
+			})
+		}
+
 		// Buttons and Text fields (for now).
 		if row.Type == Button || row.Type == Textbox {
 			btn := ui.NewButton("Button", ui.NewLabel(ui.Label{
@@ -198,7 +272,8 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 
 			// Tooltip? TODO - make nicer.
 			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
-				ui.NewTooltip(btn, row.Tooltip)
+				tt := ui.NewTooltip(btn, row.Tooltip)
+				tt.Supervise(form.Supervisor)
 			}
 
 			// Handlers
@@ -224,7 +299,8 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 
 			// Tooltip? TODO - make nicer.
 			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
-				ui.NewTooltip(cb, row.Tooltip)
+				tt := ui.NewTooltip(cb, row.Tooltip)
+				tt.Supervise(form.Supervisor)
 			}
 
 			// Handlers
