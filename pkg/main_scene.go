@@ -393,10 +393,7 @@ func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 	s.canvas.Loop(ev)
 
 	if ev.WindowResized {
-		w, h := d.Engine.WindowSize()
-		d.width = w
-		d.height = h
-		s.Resized(w, h)
+		s.Resized(d.width, d.height)
 	}
 
 	return nil

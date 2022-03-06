@@ -640,14 +640,9 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 
 	// Has the window been resized?
 	if ev.WindowResized {
-		w, h := d.Engine.WindowSize()
-		if w != d.width || h != d.height {
-			d.width = w
-			d.height = h
-			s.drawing.Resize(render.NewRect(d.width, d.height))
-			s.screen.Resize(render.NewRect(d.width, d.height))
-			return nil
-		}
+		s.drawing.Resize(render.NewRect(d.width, d.height))
+		s.screen.Resize(render.NewRect(d.width, d.height))
+		return nil
 	}
 
 	// Switching to Edit Mode?

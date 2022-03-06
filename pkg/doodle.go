@@ -139,6 +139,11 @@ func (d *Doodle) Run() error {
 		}
 		d.event = ev
 
+		// Always have an accurate idea of the window size.
+		if ev.WindowResized {
+			d.width, d.height = d.Engine.WindowSize()
+		}
+
 		// Let the gamepad controller check for events, if it's in MouseMode
 		// it will fake the mouse cursor.
 		gamepad.Loop(ev)

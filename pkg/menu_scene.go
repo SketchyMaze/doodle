@@ -211,9 +211,6 @@ func (s *MenuScene) Loop(d *Doodle, ev *event.State) error {
 	s.Supervisor.Loop(ev)
 
 	if ev.WindowResized {
-		w, h := d.Engine.WindowSize()
-		d.width = w
-		d.height = h
 		log.Info("Resized to %dx%d", d.width, d.height)
 		s.canvas.Resize(render.Rect{
 			W: d.width,

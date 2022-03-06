@@ -286,14 +286,8 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 
 	// Has the window been resized?
 	if ev.WindowResized {
-		w, h := d.Engine.WindowSize()
-		if w != d.width || h != d.height {
-			// Not a false alarm.
-			d.width = w
-			d.height = h
-			s.UI.Resized(d)
-			return nil
-		}
+		s.UI.Resized(d)
+		return nil
 	}
 
 	// Run all of the keybinds.

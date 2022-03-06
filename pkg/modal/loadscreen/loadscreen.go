@@ -16,7 +16,7 @@ import (
 // Configuration values.
 const (
 	ProgressWidth  = 300
-	ProgressHeight = 34
+	ProgressHeight = 16
 )
 
 // State variables for the loading screen.
@@ -76,6 +76,14 @@ func SetSubtitle(value ...string) {
 // IsActive returns whether the loading screen is currently visible.
 func IsActive() bool {
 	return visible
+}
+
+// Resized the window.
+func Resized() {
+	if visible {
+		size := render.NewRect(shmem.CurrentRenderEngine.WindowSize())
+		window.Resize(size)
+	}
 }
 
 // Hide the loading screen.
@@ -141,8 +149,9 @@ func setup() {
 		Background:  render.DarkGrey,
 	})
 	window.Place(progressTrough, ui.Place{
+		// Nestle it between the Title and Subtitle.
 		Center: true,
-		Middle: true,
+		Top:    128 + label.Size().H + 16,
 	})
 
 	progressBar = ui.NewFrame("Progress Bar")

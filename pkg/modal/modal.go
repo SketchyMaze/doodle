@@ -52,6 +52,10 @@ func Reset() {
 func Handled(ev *event.State) bool {
 	// The loadscreen counts as a modal for this purpose.
 	if loadscreen.IsActive() {
+		// Pass in window resize events in case the user maximizes the window during loading.
+		if ev.WindowResized {
+			loadscreen.Resized()
+		}
 		return true
 	}
 

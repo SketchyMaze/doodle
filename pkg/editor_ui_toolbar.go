@@ -284,10 +284,11 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		Side: ui.N,
 	})
 
-	ui.NewTooltip(bsLabel, ui.Tooltip{
+	tt := ui.NewTooltip(bsLabel, ui.Tooltip{
 		Text: "Set the line thickness for drawing",
 		Edge: tooltipEdge,
 	})
+	tt.Supervise(u.Supervisor)
 	u.Supervisor.Add(bsLabel)
 
 	sizeLabel := ui.NewLabel(ui.Label{
