@@ -44,8 +44,12 @@ git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b/go.mod h1:jl+Qr58W3Op7O
 git.kirsle.net/go/render v0.0.0-20211231003948-9e640ab5c3da/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
 git.kirsle.net/go/render v0.0.0-20220220022255-1f4af682e11f h1:Hep0AVXM7gwvgY+3oRlQ6xd6mxRJmQrQwYTwe/NRxe8=
 git.kirsle.net/go/render v0.0.0-20220220022255-1f4af682e11f/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
+git.kirsle.net/go/render v0.0.0-20220305232212-c1b8bc910b2d h1:A2pVWXwPQ9CbPqyN91FNfVJC71R7lxG0VRmCklvgrpQ=
+git.kirsle.net/go/render v0.0.0-20220305232212-c1b8bc910b2d/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
 git.kirsle.net/go/ui v0.0.0-20220220041452-76ddda352d3d h1:8+A9Y1aMR3I301DAdt0CmqCtBGZRpR/rPIBd5AStWs4=
 git.kirsle.net/go/ui v0.0.0-20220220041452-76ddda352d3d/go.mod h1:cWD/tl2OUj0jWUQxW7BcapxiOFmnCPkrfzJt2tOiD1E=
+git.kirsle.net/go/ui v0.0.0-20220306064120-c9c7b33647cb h1:0bKgB/vLJDTDfTcG4qsXHHgfewpUhU1jPzBqdvheYnw=
+git.kirsle.net/go/ui v0.0.0-20220306064120-c9c7b33647cb/go.mod h1:cWD/tl2OUj0jWUQxW7BcapxiOFmnCPkrfzJt2tOiD1E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/aichaos/rivescript-go v0.3.1 h1:MvSssqWAU+oU3yfnanKpK5n+e0pLCA0MEELZE4VXV0g=
@@ -279,6 +283,8 @@ github.com/veandco/go-sdl2 v0.4.1/go.mod h1:FB+kTpX9YTE+urhYiClnRzpOXbiWgaU3+5F2
 github.com/veandco/go-sdl2 v0.4.8/go.mod h1:OROqMhHD43nT4/i9crJukyVecjPNYYuCofep6SNiAjY=
 github.com/veandco/go-sdl2 v0.4.14 h1:ShagETHJG8NCWVn9rwfZ9WLIaN4c2maw3gfFH+9DlOg=
 github.com/veandco/go-sdl2 v0.4.14/go.mod h1:OROqMhHD43nT4/i9crJukyVecjPNYYuCofep6SNiAjY=
+github.com/veandco/go-sdl2 v0.4.15 h1:pQ0jImwwG2nOc+QMUw8SGImvfFCdvyd+bvw7ca7jubo=
+github.com/veandco/go-sdl2 v0.4.15/go.mod h1:OROqMhHD43nT4/i9crJukyVecjPNYYuCofep6SNiAjY=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
@@ -322,6 +328,8 @@ golang.org/x/image v0.0.0-20190802002840-cff245a6509b/go.mod h1:FeLwcggjj3mMvU+o
 golang.org/x/image v0.0.0-20200119044424-58c23975cae1/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
 golang.org/x/image v0.0.0-20211028202545-6944b10bf410 h1:hTftEOvwiOq2+O8k2D5/Q7COC7k5Qcrgc2TFURJYnvQ=
 golang.org/x/image v0.0.0-20211028202545-6944b10bf410/go.mod h1:023OzeP/+EPmXeapQh35lcL3II3LrY8Ic+EFFKVhULM=
+golang.org/x/image v0.0.0-20220302094943-723b81ca9867 h1:TcHcE0vrmgzNH1v3ppjcMGbhG5+9fMuvOmUYwNEF4q4=
+golang.org/x/image v0.0.0-20220302094943-723b81ca9867/go.mod h1:023OzeP/+EPmXeapQh35lcL3II3LrY8Ic+EFFKVhULM=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
@@ -459,6 +467,8 @@ golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220209214540-3681064d5158 h1:rm+CHSpPEEW2IsXUib1ThaHIjuBVZjxNgSKmBLFfD4c=
 golang.org/x/sys v0.0.0-20220209214540-3681064d5158/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 h1:nhht2DYV/Sn3qOayu8lM+cU1ii9sTLUeBQwQQfUHtrs=
+golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 h1:JGgROgKl9N8DuW20oFS5gxc+lE67/N3FcwmBPMe7ArY=
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
