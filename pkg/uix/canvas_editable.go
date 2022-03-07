@@ -1,6 +1,7 @@
 package uix
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -109,6 +110,10 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 	if w.level != nil && addHistory {
 		w.level.UndoHistory.AddStroke(w.currentStroke)
 	} else if w.doodad != nil && addHistory {
+		if w.doodad.UndoHistory == nil {
+			// HACK: if UndoHistory was not initialized properly.
+			w.doodad.UndoHistory = drawtool.NewHistory(balance.UndoHistory)
+		}
 		w.doodad.UndoHistory.AddStroke(w.currentStroke)
 	}
 

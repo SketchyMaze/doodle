@@ -52,6 +52,10 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 	// Load all the doodads, skip hidden ones.
 	var items []*doodads.Doodad
 	for _, filename := range doodadsAvailable {
+		if filename == "_autosave.doodad" {
+			continue
+		}
+
 		doodad, err := doodads.LoadFile(filename)
 		if err != nil {
 			log.Error(err.Error())

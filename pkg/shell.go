@@ -36,6 +36,14 @@ func (d *Doodle) Prompt(question string, callback func(string)) {
 	d.shell.Open = true
 }
 
+// PromptPre prompts with a pre-filled value.
+func (d *Doodle) PromptPre(question string, prefilled string, callback func(string)) {
+	d.shell.Text = prefilled
+	d.shell.Prompt = question
+	d.shell.callback = callback
+	d.shell.Open = true
+}
+
 // Shell implements the developer console in-game.
 type Shell struct {
 	parent *Doodle

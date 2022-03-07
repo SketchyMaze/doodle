@@ -73,6 +73,7 @@ func New(debug bool, engine render.Engine) *Doodle {
 	shmem.Flash = d.Flash
 	shmem.FlashError = d.FlashError
 	shmem.Prompt = d.Prompt
+	shmem.PromptPre = d.PromptPre
 
 	if debug {
 		log.Logger.Config.Level = golog.DebugLevel

@@ -1,8 +1,8 @@
 // Bird
 
 let speed = 4,
-		Vx = Vy = 0,
-		altitude = Self.Position().Y; // original height in the level
+	Vx = Vy = 0,
+	altitude = Self.Position().Y; // original height in the level
 
 let direction = "left",
 	lastDirection = "left";
@@ -72,7 +72,7 @@ function main() {
 			// Scan for the player character and dive.
 			try {
 				AI_ScanForPlayer()
-			} catch(e) {
+			} catch (e) {
 				console.error("Error in AI_ScanForPlayer: %s", e);
 			}
 		}
@@ -84,7 +84,7 @@ function main() {
 
 		// If diving, exit - don't edit animation.
 		if (state === states.diving) {
-			Self.ShowLayerNamed("dive-"+direction);
+			Self.ShowLayerNamed("dive-" + direction);
 			lastDirection = direction;
 			return;
 		}
@@ -109,6 +109,11 @@ function main() {
 // It's not hostile towards characters that can fly (having
 // no gravity).
 function AI_ScanForPlayer() {
+	// If Peaceful difficulty, do not attack.
+	if (Level.Difficulty < 0) {
+		return
+	}
+
 	let stepY = 12, // number of pixels to skip
 		stepX = stepY,
 		limit = stepX * 20, // furthest we'll scan
@@ -153,14 +158,14 @@ function player() {
 	// they aren't seen to be moving downwards, cancel the dive.
 	let lastPoint = Self.Position();
 	setInterval(() => {
-        let nowAt = Self.Position();
-        if (nowAt.Y > lastPoint.Y) {
-            falling = true;
-        } else {
-            falling = false;
-        }
-        lastPoint = nowAt;
-    }, 100);
+		let nowAt = Self.Position();
+		if (nowAt.Y > lastPoint.Y) {
+			falling = true;
+		} else {
+			falling = false;
+		}
+		lastPoint = nowAt;
+	}, 100);
 
 	Events.OnKeypress((ev) => {
 		Vx = 0;
@@ -198,7 +203,7 @@ function player() {
 		} else {
 			// Hover in place.
 			if (!Self.IsAnimating()) {
-				Self.PlayAnimation("fly-"+direction);
+				Self.PlayAnimation("fly-" + direction);
 			}
 			diving = false;
 		}

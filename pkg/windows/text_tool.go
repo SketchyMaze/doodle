@@ -103,7 +103,7 @@ func NewTextToolWindow(cfg TextTool) *ui.Window {
 			Font:         balance.LabelFont,
 			TextVariable: &currentText,
 			OnClick: func() {
-				shmem.Prompt("Enter new message: ", func(answer string) {
+				shmem.PromptPre("Enter new message: ", currentText, func(answer string) {
 					if answer != "" {
 						currentText = answer
 						if cfg.OnChangeSettings != nil {

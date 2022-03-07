@@ -70,6 +70,10 @@ type Field struct {
 	SelectValue  interface{}   // Selectbox default choice
 	Color        *render.Color // Color
 
+	// For text-type fields, opt-in to let magicform prompt the
+	// user using the game's developer shell.
+	PromptUser func(answer string)
+
 	// Tooltip to add to a form control.
 	// Checkbox only for now.
 	Tooltip ui.Tooltip // config for the tooltip only
@@ -81,8 +85,9 @@ type Field struct {
 
 // Option used in Selectbox or Radiobox fields.
 type Option struct {
-	Value interface{}
-	Label string
+	Value     interface{}
+	Label     string
+	Separator bool
 }
 
 /*
@@ -278,6 +283,22 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 
 			// Handlers
 			btn.Handle(ui.Click, func(ed ui.EventData) error {
+				// Text boxes, we want to prompt the user to enter new value?
+				if row.PromptUser != nil {
+					var value string
+					if row.TextVariable != nil {
+						value = *row.TextVariable
+					} else if row.IntVariable != nil {
+						value = fmt.Sprintf("%d", *row.IntVariable)
+					}
+
+					shmem.PromptPre("Enter new value: ", value, func(answer string) {
+						if answer != "" {
+							row.PromptUser(answer)
+						}
+					})
+				}
+
 				if row.OnClick != nil {
 					row.OnClick()
 				}
@@ -325,6 +346,10 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 
 			if row.Options != nil {
 				for _, option := range row.Options {
+					if option.Separator {
+						btn.AddSeparator()
+						continue
+					}
 					btn.AddItem(option.Label, option.Value, func() {})
 				}
 			}
@@ -341,6 +366,12 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				}
 				return nil
 			})
+
+			// Tooltip? TODO - make nicer.
+			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
+				tt := ui.NewTooltip(btn, row.Tooltip)
+				tt.Supervise(form.Supervisor)
+			}
 
 			btn.Supervise(form.Supervisor)
 			form.Supervisor.Add(btn)

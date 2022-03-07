@@ -25,3 +25,21 @@ const (
 	ScreenWidthMedium = 800
 	ScreenWidthLarge  = 1000
 )
+
+type Difficulty int
+
+const (
+	// The zero value is the default (Normal) so is b/w compatible with
+	// level files pre-difficulty setting.
+	Peaceful Difficulty = iota - 1
+	Normal
+	Hard
+)
+
+func (d Difficulty) String() string {
+	return []string{
+		"Normal",
+		"Hard",
+		"Peaceful",
+	}[d]
+}

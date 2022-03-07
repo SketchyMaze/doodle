@@ -27,7 +27,8 @@ var (
 	FlashError func(string, ...interface{})
 
 	// Globally available Prompt() function.
-	Prompt func(string, func(string))
+	Prompt    func(string, func(string))
+	PromptPre func(string, string, func(string))
 
 	// Ajax file cache for WASM use.
 	AjaxCache map[string][]byte

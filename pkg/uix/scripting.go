@@ -64,6 +64,10 @@ func (w *Canvas) MakeScriptAPI(vm *scripting.VM) {
 			}
 		},
 	})
+
+	vm.Set("Level", map[string]interface{}{
+		"Difficulty": w.level.Difficulty,
+	})
 }
 
 // MakeSelfAPI generates the `Self` object for the scripting API in

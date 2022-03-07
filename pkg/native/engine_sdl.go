@@ -5,7 +5,6 @@ package native
 import (
 	"image"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
 	sdl2 "github.com/veandco/go-sdl2/sdl"
@@ -46,7 +45,6 @@ func TextToImage(e render.Engine, text render.Text) (image.Image, error) {
 		return nil, err
 	}
 	defer surface.Free()
-	log.Error("surf fmt: %+v", surface.Format)
 
 	// Convert the Surface into a pixelformat that supports the .At(x,y)
 	// function properly, as the one we got above is "Not implemented"

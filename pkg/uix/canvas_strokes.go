@@ -46,6 +46,10 @@ func (w *Canvas) UndoStroke() bool {
 	if w.level != nil {
 		undoer = w.level.UndoHistory
 	} else if w.doodad != nil {
+		if w.doodad.UndoHistory == nil {
+			// HACK: if UndoHistory was not initialized properly.
+			w.doodad.UndoHistory = drawtool.NewHistory(balance.UndoHistory)
+		}
 		undoer = w.doodad.UndoHistory
 	} else {
 		log.Error("Canvas.UndoStroke: no Level or Doodad currently available to the canvas")

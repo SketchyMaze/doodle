@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/go/render"
 )
 
@@ -30,7 +31,8 @@ type Base struct {
 // Level is the container format for Doodle map drawings.
 type Level struct {
 	Base
-	Password string `json:"passwd"`
+	Password   string          `json:"passwd"`
+	Difficulty enum.Difficulty `json:"difficulty"`
 
 	// Chunked pixel data.
 	Chunker *Chunker `json:"chunks"`

@@ -18,8 +18,8 @@ if (color === 'white') {
 }
 
 function setupAnimations(color) {
-	let left = color === 'blue' ? 'blu-wl' : color+'-wl',
-		right = color === 'blue' ? 'blu-wr' : color+'-wr',
+	let left = color === 'blue' ? 'blu-wl' : color + '-wl',
+		right = color === 'blue' ? 'blu-wr' : color + '-wr',
 		leftFrames = [left + '1', left + '2', left + '3', left + '4'],
 		rightFrames = [right + '1', right + '2', right + '3', right + '4'];
 
@@ -71,7 +71,8 @@ function main() {
 				myPt = Self.Position();
 
 			// If the player is within aggro range, move towards.
-			if (Math.abs(playerPt.X - myPt.X) < aggroX && Math.abs(playerPt.Y - myPt.Y) < aggroY) {
+			if ((Math.abs(playerPt.X - myPt.X) < aggroX && Math.abs(playerPt.Y - myPt.Y) < aggroY)
+				|| (Level.Difficulty > 0)) {
 				direction = playerPt.X < myPt.X ? "left" : "right";
 				followPlayer = true;
 
@@ -134,9 +135,14 @@ function playerControls() {
 // will be hostile towards the player). Boring players will not be chased after and
 // the Azulian will not harm them if they make contact.
 function isPlayerFood(actor) {
-	// Not a player or is invulnerable.
-	if (!actor.IsPlayer() || actor.Invulnerable()) {
+	// Not a player or is invulnerable, or Peaceful difficulty.
+	if (!actor.IsPlayer() || actor.Invulnerable() || Level.Difficulty < 0) {
 		return false;
+	}
+
+	// On hard mode they are hostile to any player.
+	if (Level.Difficulty > 0) {
+		return true;
 	}
 
 	// Azulians are friendly to Thieves and other Azulians.
