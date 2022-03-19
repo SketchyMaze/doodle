@@ -1,5 +1,48 @@
 # Changes
 
+## v0.12.0 (TBD)
+
+New features:
+
+* **Level Difficulty Setting:** in the Level Properties you can choose
+  from Peaceful, Normal or Hard for your level.
+  * On Peaceful, Azulians and Birds don't attack the player, acting like
+    pre-0.11.0 versions that ignored the player character.
+  * On Hard difficulty, Azulians have an infinite aggro radius (they'll
+    immediately hunt the player from any distance on level start) and
+    they are hostile to all player creatures.
+
+An update to the Level Editor's toolbar:
+
+* New **Text Tool** to easily paste messages onto your level, selecting
+  from the game's built-in fonts.
+* New **Pan Tool** to be able to scroll the level safely by dragging with
+  your mouse or finger.
+* The toolbar buttons are smaller and rearranged. On medium-size screens
+  or larger, the toolbar buttons are drawn side-by-side in two columns.
+  On narrower screens with less real estate, it will use a single column
+  when it fits better.
+
+Updates to the JavaScript API for custom doodads:
+
+* New global integer `Level.Difficulty` is available to doodad scripts to
+  query the difficulty setting of the current level:
+  * Peaceful (-1): `Level.Difficulty < 0`
+  * Normal (0): `Level.Difficulty == 0`
+  * Hard (1): `Level.Difficulty > 1`
+
+New cheat codes:
+
+* `test load screen` tests the loading screen UI for a few seconds.
+
+Other changes:
+
+* Several screens were re-worked to be responsive to mobile screen sizes,
+  including the Settings window, loading screen, and the level editor.
+* Fixed a bug where making the app window bigger during a loading screen
+  caused the Editor to not adapt to the larger window.
+* Don't show the _autosave.doodad in the Doodad Dropper.
+
 ## v0.11.0 (Feb 21 2022)
 
 New features:
