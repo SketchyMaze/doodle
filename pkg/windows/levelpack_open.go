@@ -466,7 +466,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		btn := ui.NewButton(level.Filename, btnFrame)
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			// Is this level locked?
-			if locked {
+			if locked && !balance.CheatEnabledUnlockLevels {
 				modal.Alert(
 					"This level hasn't been unlocked! Complete the earlier\n" +
 						"levels in this pack to unlock later levels.",

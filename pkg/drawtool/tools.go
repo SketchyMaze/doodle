@@ -14,6 +14,7 @@ const (
 	EraserTool
 	PanTool
 	TextTool
+	FloodTool
 )
 
 var toolNames = []string{
@@ -26,6 +27,7 @@ var toolNames = []string{
 	"Eraser",
 	"PanTool",
 	"TextTool",
+	"FloodTool",
 }
 
 func (t Tool) String() string {

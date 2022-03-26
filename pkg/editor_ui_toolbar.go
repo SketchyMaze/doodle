@@ -155,6 +155,35 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 		},
 
 		{
+			Value:   drawtool.FloodTool.String(),
+			Icon:    "assets/sprites/flood-tool.png",
+			Tooltip: "Flood Tool",
+			Click: func() {
+				u.Canvas.Tool = drawtool.FloodTool
+				d.Flash("Flood Tool selected.")
+			},
+		},
+
+		{
+			Value:   drawtool.EraserTool.String(),
+			Icon:    "assets/sprites/eraser-tool.png",
+			Tooltip: "Eraser Tool",
+			Style:   &balance.ButtonLightRed,
+			Click: func() {
+				u.Canvas.Tool = drawtool.EraserTool
+
+				// Set the brush size within range for the eraser.
+				if u.Canvas.BrushSize < balance.DefaultEraserBrushSize {
+					u.Canvas.BrushSize = balance.DefaultEraserBrushSize
+				} else if u.Canvas.BrushSize > balance.MaxEraserBrushSize {
+					u.Canvas.BrushSize = balance.MaxEraserBrushSize
+				}
+
+				d.Flash("Eraser Tool selected.")
+			},
+		},
+
+		{
 			Value:    drawtool.ActorTool.String(),
 			Icon:     "assets/sprites/actor-tool.png",
 			Tooltip:  "Doodad Tool\nDrag-and-drop objects into your map",
@@ -176,25 +205,6 @@ func (u *EditorUI) SetupToolbar(d *Doodle) *ui.Frame {
 			Click: func() {
 				u.Canvas.Tool = drawtool.LinkTool
 				d.Flash("Link Tool selected. Click a doodad in your level to link it to another.")
-			},
-		},
-
-		{
-			Value:   drawtool.EraserTool.String(),
-			Icon:    "assets/sprites/eraser-tool.png",
-			Tooltip: "Eraser Tool",
-			Style:   &balance.ButtonLightRed,
-			Click: func() {
-				u.Canvas.Tool = drawtool.EraserTool
-
-				// Set the brush size within range for the eraser.
-				if u.Canvas.BrushSize < balance.DefaultEraserBrushSize {
-					u.Canvas.BrushSize = balance.DefaultEraserBrushSize
-				} else if u.Canvas.BrushSize > balance.MaxEraserBrushSize {
-					u.Canvas.BrushSize = balance.MaxEraserBrushSize
-				}
-
-				d.Flash("Eraser Tool selected.")
 			},
 		},
 	}

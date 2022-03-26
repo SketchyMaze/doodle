@@ -90,6 +90,14 @@ func (p *Palette) Inflate() {
 	p.update()
 }
 
+// FlushCaches if you have modified the swatches, especially if you have
+// changed the name of an existing color. This invalidates the "by name"
+// cache and rebuilds it from scratch.
+func (p *Palette) FlushCaches() {
+	p.byName = nil
+	p.update()
+}
+
 // AddSwatch adds a new swatch to the palette.
 func (p *Palette) AddSwatch() *Swatch {
 	p.update()

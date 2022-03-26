@@ -1,6 +1,8 @@
 package windows
 
 import (
+	"fmt"
+	"regexp"
 	"strconv"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -48,15 +50,12 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	window.SetButtons(ui.CloseButton)
 	window.Configure(ui.Config{
 		Width:      400,
-		Height:     280,
+		Height:     290,
 		Background: render.Grey,
 	})
 
 	// Tabbed UI for New Level or New Doodad.
 	tabframe := ui.NewTabFrame("Level Tabs")
-	if config.EditLevel != nil {
-		tabframe.SetTabsHidden(true)
-	}
 	window.Pack(tabframe, ui.Pack{
 		Side:   ui.N,
 		Fill:   true,
@@ -64,8 +63,14 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	})
 
 	// Add the tabs.
-	config.setupLevelFrame(tabframe)
-	config.setupDoodadFrame(tabframe)
+	config.setupLevelFrame(tabframe) // Level Properties (always)
+	if config.EditLevel == nil {
+		// New Doodad properties (New window only)
+		config.setupDoodadFrame(tabframe)
+	} else {
+		// Additional Level tabs (existing level only)
+		config.setupGameRuleFrame(tabframe)
+	}
 
 	tabframe.Supervise(config.Supervisor)
 
@@ -77,6 +82,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 	// Default options.
 	var (
+		tabLabel     = "New Level"
 		newPageType  = level.Bounded.String()
 		newWallpaper = "notebook.png"
 		paletteName  = level.DefaultPaletteNames[0]
@@ -94,13 +100,14 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 
 	// Given a level to edit?
 	if !isNewLevel {
+		tabLabel = "Properties"
 		newPageType = config.EditLevel.PageType.String()
 		newWallpaper = config.EditLevel.Wallpaper
 		paletteName = textCurrentPalette
 	}
 
 	frame := tf.AddTab("index", ui.NewLabel(ui.Label{
-		Text: "New Level",
+		Text: tabLabel,
 		Font: balance.TabFont,
 	}))
 
@@ -126,10 +133,6 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 			Label: "Page type:",
 			Font:  balance.UIFont,
 			Options: []magicform.Option{
-				{
-					Label: "Bounded",
-					Value: level.Bounded,
-				},
 				{
 					Label: "Bounded",
 					Value: level.Bounded,
@@ -286,35 +289,33 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 	 ******************/
 
 	if config.EditLevel != nil {
+		var (
+			levelSizeStr    = fmt.Sprintf("%dx%d", config.EditLevel.MaxWidth, config.EditLevel.MaxHeight)
+			levelSizeRegexp = regexp.MustCompile(`^(\d+)x(\d+)$`)
+		)
 		fields = append(fields, []magicform.Field{
 			{
-				Label:       "Difficulty:",
-				Font:        balance.UIFont,
-				SelectValue: config.EditLevel.Difficulty,
-				Tooltip: ui.Tooltip{
-					Text: "Peaceful: enemies may not attack\n" +
-						"Normal: default difficulty\n" +
-						"Hard: enemies may be more aggressive",
-					Edge: ui.Top,
-				},
-				Options: []magicform.Option{
-					{
-						Label: "Peaceful",
-						Value: enum.Peaceful,
-					},
-					{
-						Label: "Normal (recommended)",
-						Value: enum.Normal,
-					},
-					{
-						Label: "Hard",
-						Value: enum.Hard,
-					},
-				},
-				OnSelect: func(v interface{}) {
-					value, _ := v.(enum.Difficulty)
-					config.EditLevel.Difficulty = value
-					log.Info("Set level difficulty to: %d (%s)", value, value)
+				Label:        "Limits (bounded):",
+				Font:         balance.UIFont,
+				TextVariable: &levelSizeStr,
+				OnClick: func() {
+					shmem.Prompt(fmt.Sprintf("Enter new limits in WxH format or [%s]: ", levelSizeStr), func(answer string) {
+						if answer == "" {
+							return
+						}
+
+						match := levelSizeRegexp.FindStringSubmatch(answer)
+						if match == nil {
+							return
+						}
+
+						levelSizeStr = match[0]
+						width, _ := strconv.Atoi(match[1])
+						height, _ := strconv.Atoi(match[2])
+
+						config.EditLevel.MaxWidth = int64(width)
+						config.EditLevel.MaxHeight = int64(height)
+					})
 				},
 			},
 			{
@@ -341,7 +342,7 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 	}
 
 	// The confirm/cancel buttons.
-	var okLabel = "Ok"
+	var okLabel = "Apply"
 	if config.EditLevel == nil {
 		okLabel = "Continue"
 	}
@@ -536,4 +537,71 @@ func (config AddEditLevel) setupDoodadFrame(tf *ui.TabFrame) {
 			PadY: 8,
 		})
 	}
+}
+
+// Creates the Game Rules frame for existing level (set difficulty, etc.)
+func (config AddEditLevel) setupGameRuleFrame(tf *ui.TabFrame) {
+	frame := tf.AddTab("GameRules", ui.NewLabel(ui.Label{
+		Text: "Game Rules",
+		Font: balance.TabFont,
+	}))
+
+	form := magicform.Form{
+		Supervisor: config.Supervisor,
+		Engine:     config.Engine,
+		Vertical:   true,
+		LabelWidth: 120,
+		PadY:       2,
+	}
+	fields := []magicform.Field{
+		{
+			Label: "Game Rules are specific to this level and can change some of\n" +
+				"the game's default behaviors.",
+			Font: balance.UIFont,
+		},
+		{
+			Label:       "Difficulty:",
+			Font:        balance.UIFont,
+			SelectValue: config.EditLevel.GameRule.Difficulty,
+			Tooltip: ui.Tooltip{
+				Text: "Peaceful: enemies may not attack\n" +
+					"Normal: default difficulty\n" +
+					"Hard: enemies may be more aggressive",
+				Edge: ui.Top,
+			},
+			Options: []magicform.Option{
+				{
+					Label: "Peaceful",
+					Value: enum.Peaceful,
+				},
+				{
+					Label: "Normal (recommended)",
+					Value: enum.Normal,
+				},
+				{
+					Label: "Hard",
+					Value: enum.Hard,
+				},
+			},
+			OnSelect: func(v interface{}) {
+				value, _ := v.(enum.Difficulty)
+				config.EditLevel.GameRule.Difficulty = value
+				log.Info("Set level difficulty to: %d (%s)", value, value)
+			},
+		},
+		{
+			Label:        "Survival Mode (silver high score)",
+			Font:         balance.UIFont,
+			BoolVariable: &config.EditLevel.GameRule.Survival,
+			Tooltip: ui.Tooltip{
+				Text: "Use for levels where dying at least once is very likely\n" +
+					"(e.g. Azulian Tag). The silver high score will be for\n" +
+					"longest time rather than fastest time. The gold high\n" +
+					"score will still be for fastest time.",
+				Edge: ui.Top,
+			},
+		},
+	}
+
+	form.Create(frame, fields)
 }

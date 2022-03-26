@@ -4,8 +4,7 @@ package balance
 var Feature = feature{
 	/////////
 	// Experimental features that are off by default
-	Zoom:          false, // enable the zoom in/out feature (very buggy rn)
-	ChangePalette: false, // reset your palette after level creation to a diff preset
+	ViewportWindow: false, // Open new viewport into your level
 
 	/////////
 	// Fully activated features
@@ -15,12 +14,17 @@ var Feature = feature{
 
 	// Allow embedded doodads in levels.
 	EmbeddableDoodads: true,
+
+	// Enable the zoom in/out feature (kinda buggy still)
+	Zoom: true,
+
+	// Reassign an existing level's palette to a different builtin.
+	ChangePalette: true,
 }
 
 // FeaturesOn turns on all feature flags, from CLI --experimental option.
 func FeaturesOn() {
-	Feature.Zoom = true
-	Feature.ChangePalette = true
+	Feature.ViewportWindow = true
 }
 
 type feature struct {
@@ -28,4 +32,5 @@ type feature struct {
 	CustomWallpaper   bool
 	ChangePalette     bool
 	EmbeddableDoodads bool
+	ViewportWindow    bool
 }

@@ -32,4 +32,10 @@ var (
 	CheatPlayAsAnvil      = "megaton weight"
 	CheatGodMode          = "god mode"
 	CheatDebugLoadScreen  = "test load screen"
+	CheatUnlockLevels     = "master key"
+)
+
+// Global cheat boolean states.
+var (
+	CheatEnabledUnlockLevels bool
 )

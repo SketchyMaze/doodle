@@ -66,7 +66,7 @@ func (w *Canvas) MakeScriptAPI(vm *scripting.VM) {
 	})
 
 	vm.Set("Level", map[string]interface{}{
-		"Difficulty": w.level.Difficulty,
+		"Difficulty": w.level.GameRule.Difficulty,
 	})
 }
 

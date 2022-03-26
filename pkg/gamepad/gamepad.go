@@ -125,7 +125,7 @@ func Loop(ev *event.State) {
 		if len(ev.Controllers) > 0 {
 			for idx, ctrl := range ev.Controllers {
 				SetControllerIndex(idx)
-				log.Info("gamepad: using controller #%d (%s) as Player 1", idx, ctrl)
+				log.Info("Gamepad: using controller #%d (%d) as Player 1", idx, ctrl.Name())
 				break
 			}
 		} else {

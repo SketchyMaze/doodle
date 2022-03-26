@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 )
@@ -130,7 +131,7 @@ func (sg *SaveGame) MarkCompleted(levelpack, filename string) {
 // than the stored one it will update.
 //
 // Returns true if a new high score was logged.
-func (sg *SaveGame) NewHighScore(levelpack, filename string, isPerfect bool, elapsed time.Duration) bool {
+func (sg *SaveGame) NewHighScore(levelpack, filename string, isPerfect bool, elapsed time.Duration, rules level.GameRule) bool {
 	levelpack = filepath.Base(levelpack)
 	filename = filepath.Base(filename)
 
@@ -144,9 +145,19 @@ func (sg *SaveGame) NewHighScore(levelpack, filename string, isPerfect bool, ela
 			newHigh = true
 		}
 	} else {
-		if score.BestTime == nil || *score.BestTime > elapsed {
-			score.BestTime = &elapsed
-			newHigh = true
+		// GameRule: Survival (silver) - high score is based on longest time left alive rather
+		// than fastest time completed.
+		if rules.Survival {
+			if score.BestTime == nil || *score.BestTime < elapsed {
+				score.BestTime = &elapsed
+				newHigh = true
+			}
+		} else {
+			// Normally: fastest time is best time.
+			if score.BestTime == nil || *score.BestTime > elapsed {
+				score.BestTime = &elapsed
+				newHigh = true
+			}
 		}
 	}
 

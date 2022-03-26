@@ -276,7 +276,17 @@ func Use(ev *event.State) bool {
 	return ev.Space || ev.KeyDown("q")
 }
 
+// LeftClick of the primary mouse button.
+func LeftClick(ev *event.State) bool {
+	return ev.Button1
+}
+
 // MiddleClick of the mouse for panning the level.
 func MiddleClick(ev *event.State) bool {
 	return ev.Button2
+}
+
+// ClearLeftClick sets the primary mouse button state to false.
+func ClearLeftClick(ev *event.State) {
+	ev.Button1 = false
 }

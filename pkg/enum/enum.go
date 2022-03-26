@@ -38,8 +38,8 @@ const (
 
 func (d Difficulty) String() string {
 	return []string{
+		"Peaceful",
 		"Normal",
 		"Hard",
-		"Peaceful",
-	}[d]
+	}[d+1]
 }

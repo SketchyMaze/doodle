@@ -5,13 +5,13 @@ package doodle
 // The rest of it is controlled in editor_ui.go
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/level/giant_screenshot"
 	"git.kirsle.net/apps/doodle/pkg/license"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/native"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
 	"git.kirsle.net/apps/doodle/pkg/userdir"
 	"git.kirsle.net/apps/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
@@ -137,7 +137,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 			native.OpenLocalURL(userdir.ScreenshotDirectory)
 		})
 
-		if usercfg.Current.EnableFeatures {
+		if balance.Feature.ViewportWindow {
 			levelMenu.AddSeparator()
 			levelMenu.AddItemAccel("New viewport", "v", func() {
 				pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{

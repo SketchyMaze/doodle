@@ -298,6 +298,10 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 					u.Scene.Doodad.Layers[u.Scene.ActiveLayer].Chunker.Redraw()
 				}
 
+				// Flush the palette cache in case swatches got renamed,
+				// so it rebuilds the "color by name" map from scratch.
+				pal.FlushCaches()
+
 				// Reload the palette frame to reflect the changed data.
 				u.Palette.Hide()
 				u.Palette = u.SetupPalette(d)

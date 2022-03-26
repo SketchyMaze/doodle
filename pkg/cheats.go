@@ -161,6 +161,14 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			loadscreen.Hide()
 		}()
 
+	case balance.CheatUnlockLevels:
+		balance.CheatEnabledUnlockLevels = !balance.CheatEnabledUnlockLevels
+		if balance.CheatEnabledUnlockLevels {
+			d.Flash("All locked Story Mode levels can now be played.")
+		} else {
+			d.Flash("All locked Story Mode levels are again locked.")
+		}
+
 	default:
 		return false
 	}

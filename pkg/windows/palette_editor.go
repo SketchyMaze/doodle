@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/modal"
 	"git.kirsle.net/apps/doodle/pkg/pattern"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
@@ -118,6 +119,8 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 	// Draw the main table of Palette rows.
 	if pal := config.EditPalette; pal != nil {
 		for i, swatch := range pal.Swatches {
+			i := i
+
 			var idStr = fmt.Sprintf("%d", i)
 			swatch := swatch
 
@@ -153,6 +156,14 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				shmem.Prompt("New swatch name ["+swatch.Name+"]: ", func(answer string) {
 					log.Warn("Answer: %s", answer)
 					if answer != "" {
+						// Confirm it is unique.
+						for j, exist := range pal.Swatches {
+							if exist.Name == answer && i != j {
+								modal.Alert("That name is already used by another color.")
+								return
+							}
+						}
+
 						swatch.Name = answer
 						if config.OnChange != nil {
 							config.OnChange()
@@ -166,19 +177,8 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			//////////////
 			// Color Choice button.
 			btnColor := ui.NewButton("Color", ui.NewFrame("Color Frame"))
-			btnColor.SetStyle(&style.Button{
-				Background:      swatch.Color,
-				HoverBackground: swatch.Color.Lighten(40),
-				OutlineColor:    render.Black,
-				OutlineSize:     1,
-				BorderStyle:     style.BorderRaised,
-				BorderSize:      2,
-			})
-			btnColor.Configure(ui.Config{
-				Background: swatch.Color,
-				Width:      col2,
-				Height:     24,
-			})
+			setPaletteButtonColor(btnColor, swatch.Color)
+			btnColor.Resize(render.NewRect(col2, 24))
 			btnColor.Handle(ui.Click, func(ed ui.EventData) error {
 				// Open a ColorPicker widget.
 				picker, err := ui.NewColorPicker(ui.ColorPicker{
@@ -214,17 +214,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 
 				picker.Then(func(color render.Color) {
 					swatch.Color = color
-
-					// TODO: redundant from above, consolidate these
-					fmt.Printf("Set button style to: %s\n", swatch.Color)
-					btnColor.SetStyle(&style.Button{
-						Background:      swatch.Color,
-						HoverBackground: swatch.Color.Lighten(40),
-						OutlineColor:    render.Black,
-						OutlineSize:     1,
-						BorderStyle:     style.BorderRaised,
-						BorderSize:      2,
-					})
+					setPaletteButtonColor(btnColor, color)
 
 					if config.OnChange != nil {
 						config.OnChange()
@@ -243,10 +233,7 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			selTexture := ui.NewSelectBox("Texture", ui.Label{
 				Font: balance.MenuFont,
 			})
-			selTexture.Configure(ui.Config{
-				Width:  col5,
-				Height: 24,
-			})
+			selTexture.Resize(render.NewRect(col5, 24))
 
 			for _, t := range pattern.Builtins {
 				if t.Hidden && !usercfg.Current.ShowHiddenDoodads {
@@ -458,4 +445,16 @@ func setImageOnSelect(sel *ui.SelectBox, filename string) {
 	} else {
 		sel.SetImage(nil)
 	}
+}
+
+// Helper function to assign a palette "color button" color.
+func setPaletteButtonColor(btn *ui.Button, color render.Color) {
+	btn.SetStyle(&style.Button{
+		Background:      color,
+		HoverBackground: color.Lighten(40),
+		OutlineColor:    render.Black,
+		OutlineSize:     1,
+		BorderStyle:     style.BorderRaised,
+		BorderSize:      2,
+	})
 }

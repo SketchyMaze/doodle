@@ -5,6 +5,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -107,20 +108,27 @@ func (w *Canvas) commitStroke(tool drawtool.Tool, addHistory bool) {
 	}
 
 	// Add the stroke to level history.
-	if w.level != nil && addHistory {
-		w.level.UndoHistory.AddStroke(w.currentStroke)
-	} else if w.doodad != nil && addHistory {
-		if w.doodad.UndoHistory == nil {
-			// HACK: if UndoHistory was not initialized properly.
-			w.doodad.UndoHistory = drawtool.NewHistory(balance.UndoHistory)
-		}
-		w.doodad.UndoHistory.AddStroke(w.currentStroke)
+	if addHistory {
+		w.strokeToHistory(w.currentStroke)
 	}
 
 	w.RemoveStroke(w.currentStroke)
 	w.currentStroke = nil
 
 	w.lastPixel = nil
+}
+
+// Add a recently drawn stroke to the UndoHistory.
+func (w *Canvas) strokeToHistory(stroke *drawtool.Stroke) {
+	if w.level != nil {
+		w.level.UndoHistory.AddStroke(stroke)
+	} else if w.doodad != nil {
+		if w.doodad.UndoHistory == nil {
+			// HACK: if UndoHistory was not initialized properly.
+			w.doodad.UndoHistory = drawtool.NewHistory(balance.UndoHistory)
+		}
+		w.doodad.UndoHistory.AddStroke(stroke)
+	}
 }
 
 // loopEditable handles the Loop() part for editable canvases.
@@ -146,7 +154,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 	switch w.Tool {
 	case drawtool.PanTool:
 		// Pan tool = click to pan the level.
-		if ev.Button1 || keybind.MiddleClick(ev) {
+		if keybind.LeftClick(ev) || keybind.MiddleClick(ev) {
 			if !w.scrollDragging {
 				w.scrollDragging = true
 				w.scrollStartAt = shmem.Cursor
@@ -175,7 +183,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
@@ -221,6 +229,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+
 	case drawtool.LineTool:
 		// If no swatch is active, do nothing with mouse clicks.
 		if w.Palette.ActiveSwatch == nil {
@@ -228,7 +237,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Line, w.Palette.ActiveSwatch.Color)
@@ -243,6 +252,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+
 	case drawtool.RectTool:
 		// If no swatch is active, do nothing with mouse clicks.
 		if w.Palette.ActiveSwatch == nil {
@@ -250,7 +260,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		}
 
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Rectangle, w.Palette.ActiveSwatch.Color)
@@ -265,12 +275,13 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+
 	case drawtool.EllipseTool:
 		if w.Palette.ActiveSwatch == nil {
 			return nil
 		}
 
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			if w.currentStroke == nil {
 				w.currentStroke = drawtool.NewStroke(drawtool.Ellipse, w.Palette.ActiveSwatch.Color)
 				w.currentStroke.Pattern = w.Palette.ActiveSwatch.Pattern
@@ -284,6 +295,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+
 	case drawtool.TextTool:
 		// The Text Tool popup should initialize this for us, if somehow not
 		// initialized skip this tool processing.
@@ -312,7 +324,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		// at the cursor location while the TextTool is active.
 
 		// On mouse click, commit the text to the drawing.
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			if stroke, err := drawtool.TT.ToStroke(shmem.CurrentRenderEngine, w.Palette.ActiveSwatch.Color, cursor); err != nil {
 				shmem.FlashError("Text Tool error: %s", err)
 				return nil
@@ -322,12 +334,83 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				w.commitStroke(drawtool.PencilTool, true)
 			}
 
-			ev.Button1 = false
+			keybind.ClearLeftClick(ev)
+		}
+
+	case drawtool.FloodTool:
+		if w.Palette.ActiveSwatch == nil {
+			return nil
+		}
+
+		// Click to activate.
+		if keybind.LeftClick(ev) {
+			var (
+				chunker = w.Chunker()
+				stroke  = drawtool.NewStroke(drawtool.Freehand, w.Palette.ActiveSwatch.Color)
+			)
+
+			// Set some max boundaries to prevent runaway infinite loops, e.g. if user
+			// clicked the wide open void the flood fill would never finish!
+			limit := balance.FloodToolLimit
+
+			// Get the original color at this location.
+			// Error cases can include: no chunk at this spot, or no pixel at this spot.
+			// Treat these as just a null color and proceed anyway, user should be able
+			// to flood fill blank areas of their level.
+			baseColor, err := chunker.Get(cursor)
+			if err != nil {
+				limit = balance.FloodToolVoidLimit
+				log.Warn("FloodTool: couldn't get base color at %s: %s (got %s)", cursor, err)
+			}
+
+			// If no change, do nothing.
+			if baseColor == w.Palette.ActiveSwatch {
+				break
+			}
+
+			// The flood fill algorithm.
+			queue := []render.Point{cursor}
+			for len(queue) > 0 {
+				node := queue[0]
+				queue = queue[1:]
+
+				colorAt, _ := chunker.Get(node)
+				if colorAt != baseColor {
+					continue
+				}
+
+				// For Undo history, store the original color at this point.
+				if colorAt != nil {
+					stroke.OriginalPoints[node] = colorAt
+				}
+
+				// Add the neighboring pixels.
+				for _, neighbor := range []render.Point{
+					{X: node.X - 1, Y: node.Y},
+					{X: node.X + 1, Y: node.Y},
+					{X: node.X, Y: node.Y - 1},
+					{X: node.X, Y: node.Y + 1},
+				} {
+					// Only if not too far from the origin!
+					if render.AbsInt(neighbor.X-cursor.X) <= limit && render.AbsInt(neighbor.Y-cursor.Y) <= limit {
+						queue = append(queue, neighbor)
+					}
+				}
+
+				stroke.AddPoint(node)
+				err = chunker.Set(node, w.Palette.ActiveSwatch)
+				if err != nil {
+					log.Error("FloodTool: error setting %s to %s: %s", node, w.Palette.ActiveSwatch, err)
+				}
+			}
+
+			w.strokeToHistory(stroke)
+			keybind.ClearLeftClick(ev)
 		}
 
 	case drawtool.EraserTool:
 		// Clicking? Log all the pixels while doing so.
-		if ev.Button1 {
+		if keybind.LeftClick(ev) {
 			// Initialize a new Stroke for this atomic drawing operation?
 			if w.currentStroke == nil {
 				// The color is white, will look like white-out that covers the
@@ -370,6 +453,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			w.commitStroke(w.Tool, true)
 		}
+
 	case drawtool.ActorTool:
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
@@ -406,7 +490,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 
 				// Check for a mouse down event to begin dragging this
 				// canvas around.
-				if ev.Button1 {
+				if keybind.LeftClick(ev) {
 					// Pop this canvas out for the drag/drop.
 					if w.OnDragStart != nil {
 						deleteActors = append(deleteActors, actor.Actor)
@@ -427,6 +511,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		if len(deleteActors) > 0 && w.OnDeleteActors != nil {
 			w.OnDeleteActors(deleteActors)
 		}
+
 	case drawtool.LinkTool:
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
@@ -467,7 +552,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				})
 
 				// Click handler to start linking this actor.
-				if ev.Button1 {
+				if keybind.LeftClick(ev) {
 					if err := w.LinkAdd(actor); err != nil {
 						return err
 					}
@@ -475,7 +560,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 					// TODO: reset the Button1 state so we don't finish a
 					// link and then LinkAdd the clicked doodad immediately
 					// (causing link chaining)
-					ev.Button1 = false
+					keybind.ClearLeftClick(ev)
 					break
 				}
 			} else {

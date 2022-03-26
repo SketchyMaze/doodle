@@ -4,7 +4,7 @@ const color = Self.GetTag("color");
 var playerSpeed = color === 'blue' ? 2 : 4,
 	aggroX = 250,  // X/Y distance sensitivity from player
 	aggroY = color === 'blue' ? 100 : 200,
-	jumpSpeed = color === 'blue' ? 12 : 14,
+	jumpSpeed = color === 'blue' ? 14 : 18,
 	animating = false,
 	direction = "right",
 	lastDirection = "right";
@@ -14,7 +14,7 @@ if (color === 'white') {
 	aggroX = 1000;
 	aggroY = 400;
 	playerSpeed = 8;
-	jumpSpeed = 16;
+	jumpSpeed = 20;
 }
 
 function setupAnimations(color) {

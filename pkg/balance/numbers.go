@@ -101,6 +101,10 @@ var (
 	// GameController thresholds.
 	GameControllerMouseMoveMax float64 = 20  // Max pixels per tick to simulate mouse movement.
 	GameControllerScrollMin    float64 = 0.3 // Minimum threshold for a right-stick scroll event.
+
+	// Limits on the Flood Fill tool so it doesn't run away on us.
+	FloodToolVoidLimit = 600  // If clicking the void, +- 1000 px limit
+	FloodToolLimit     = 1200 // If clicking a valid color on the level
 )
 
 // Edit Mode Values

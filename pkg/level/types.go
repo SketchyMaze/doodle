@@ -3,6 +3,7 @@ package level
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
@@ -31,8 +32,8 @@ type Base struct {
 // Level is the container format for Doodle map drawings.
 type Level struct {
 	Base
-	Password   string          `json:"passwd"`
-	Difficulty enum.Difficulty `json:"difficulty"`
+	Password string   `json:"passwd"`
+	GameRule GameRule `json:"rules"`
 
 	// Chunked pixel data.
 	Chunker *Chunker `json:"chunks"`
@@ -58,11 +59,19 @@ type Level struct {
 	UndoHistory *drawtool.History `json:"-"`
 }
 
+// GameRule
+type GameRule struct {
+	Difficulty enum.Difficulty `json:"difficulty"`
+	Survival   bool            `json:"survival"`
+}
+
 // New creates a blank level object with all its members initialized.
 func New() *Level {
 	return &Level{
 		Base: Base{
 			Version: 1,
+			Title:   "Untitled",
+			Author:  os.Getenv("USER"),
 		},
 		Chunker: NewChunker(balance.ChunkSize),
 		Palette: &Palette{},
