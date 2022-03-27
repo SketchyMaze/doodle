@@ -31,7 +31,7 @@ function main() {
 			return;
 		}
 
-		if (e.Actor.IsMobile() && e.InHitbox) {
+		if (e.Actor.IsMobile() && e.Actor.HasGravity() && e.InHitbox) {
 			return false;
 		}
 	});

@@ -224,6 +224,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 
 	// Handle a doodad changing the player character.
 	s.drawing.OnSetPlayerCharacter = s.SetPlayerCharacter
+	s.drawing.OnResetTimer = s.ResetTimer
 
 	// Given a filename or map data to play?
 	if s.Level != nil {
@@ -265,11 +266,6 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// Load in the player character.
 	s.setupPlayer(balance.PlayerCharacterDoodad)
 
-	// Run all the actor scripts' main() functions.
-	if err := s.drawing.InstallScripts(); err != nil {
-		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
-	}
-
 	if s.CanEdit {
 		d.Flash("Entered Play Mode. Press 'E' to edit this map.")
 	} else {
@@ -285,6 +281,11 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 
 	// Gamepad: put into GameplayMode.
 	gamepad.SetMode(gamepad.GameplayMode)
+
+	// Run all the actor scripts' main() functions.
+	if err := s.drawing.InstallScripts(); err != nil {
+		log.Error("PlayScene.Setup: failed to drawing.InstallScripts: %s", err)
+	}
 
 	s.startTime = time.Now()
 	s.perfectRun = true
@@ -319,6 +320,11 @@ func (s *PlayScene) SetPlayerCharacter(filename string) {
 	for item, qty := range inventory {
 		s.Player.AddItem(item, qty)
 	}
+}
+
+// ResetTimer sets the level elapsed timer back to zero.
+func (s *PlayScene) ResetTimer() {
+	s.startTime = time.Now()
 }
 
 // setupPlayer creates and configures the Player Character in the level.
@@ -492,13 +498,31 @@ func (s *PlayScene) BeatLevel() {
 	)
 }
 
-// FailLevel handles a level failure triggered by a doodad.
+/*
+FailLevel handles a level failure triggered by a doodad or fire pixel.
+
+If the Survival GameRule is set, this ends the level with a note on how long the
+player had survived for and they get a silver rating.
+*/
 func (s *PlayScene) FailLevel(message string) {
 	if s.Player.Invulnerable() || s.godMode || s.godModeUntil.After(time.Now()) {
 		return
 	}
 	s.SetImperfect()
 	s.d.FlashError(message)
+
+	if s.Level.GameRule.Survival {
+		s.ShowEndLevelModal(
+			true,
+			"Level Completed",
+			fmt.Sprintf(
+				"%s\nCongrats on surviving for %s!",
+				message,
+				savegame.FormatDuration(time.Since(s.startTime)),
+			),
+		)
+		return
+	}
 
 	s.ShowEndLevelModal(
 		false,

@@ -28,6 +28,10 @@ build:
 	doodad edit-doodad --tag "color=invisible" reg-warp-door.doodad
 	doodad install-script ../warp-door/warp-door.js reg-warp-door.doodad
 
+	# Reset Level Timer
+	doodad convert -t "Reset Level Timer" timer-64.png reg-reset-timer.doodad
+	doodad install-script reset-timer.js reg-reset-timer.doodad
+
 	for i in *.doodad; do\
 		doodad edit-doodad --tag "category=technical" $${i};\
 	done

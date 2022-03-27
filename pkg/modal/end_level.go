@@ -175,8 +175,8 @@ func makeEndLevel(m *Modal, cfg ConfigEndLevel) *ui.Window {
 			Font: balance.MenuFont,
 		}))
 		button.Handle(ui.Click, func(ed ui.EventData) error {
-			btn.F()
 			m.Dismiss(false)
+			btn.F()
 			return nil
 		})
 		button.Compute(engine)

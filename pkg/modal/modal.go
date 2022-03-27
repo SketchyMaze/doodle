@@ -138,8 +138,8 @@ func (m *Modal) Then(f func()) *Modal {
 
 // Dismiss the modal and optionally call the callback function.
 func (m *Modal) Dismiss(call bool) {
+	Reset()
 	if call && m.callback != nil {
 		m.callback()
 	}
-	Reset()
 }

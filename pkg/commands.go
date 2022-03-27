@@ -336,6 +336,13 @@ func (c Command) RunScript(d *Doodle, code string) (goja.Value, error) {
 			d.FlashError("Command.RunScript: Panic: %s", err)
 		}
 	}()
+
+	// If we're in Play Mode, consider it cheating if the player is
+	// messing with any in-game structures.
+	if scene, ok := d.Scene.(*PlayScene); ok {
+		scene.SetCheated()
+	}
+
 	out, err := d.shell.js.RunString(code)
 	return out, err
 }

@@ -67,6 +67,13 @@ func (w *Canvas) MakeScriptAPI(vm *scripting.VM) {
 
 	vm.Set("Level", map[string]interface{}{
 		"Difficulty": w.level.GameRule.Difficulty,
+		"ResetTimer": func() {
+			if w.OnResetTimer != nil {
+				w.OnResetTimer()
+			} else {
+				log.Error("Level.ResetTimer: caller was not ready")
+			}
+		},
 	})
 }
 

@@ -95,6 +95,9 @@ type Canvas struct {
 	// The filename.doodad is given.
 	OnSetPlayerCharacter func(filename string)
 
+	// Handler for when a doodad script calls Level.ResetTimer().
+	OnResetTimer func()
+
 	/********
 	 * Editable canvas private variables.
 	 ********/

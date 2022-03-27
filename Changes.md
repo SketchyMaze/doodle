@@ -2,15 +2,26 @@
 
 ## v0.12.0 (TBD)
 
-New features:
+This update adds several new features to gameplay and the Level Editor.
 
-* **Level Difficulty Setting:** in the Level Properties you can choose
-  from Peaceful, Normal or Hard for your level.
-  * On Peaceful, Azulians and Birds don't attack the player, acting like
-    pre-0.11.0 versions that ignored the player character.
-  * On Hard difficulty, Azulians have an infinite aggro radius (they'll
-    immediately hunt the player from any distance on level start) and
-    they are hostile to all player creatures.
+A **Game Rules** feature has been added to the Level Editor which allows
+customizing certain gameplay features while that level is being played.
+These settings are available in the Level Properties window of the editor:
+
+* The **Difficulty** rule can modify the behavior of enemy doodads
+  when the level is played. Choose between Peaceful, Normal, or Hard.
+    * On Peaceful, Azulians and Birds don't attack the player, acting
+      like pre-0.11.0 versions that ignored the player character.
+    * On Hard difficulty, Azulians have an infinite aggro radius
+      (they'll immediately hunt the player from any distance on
+      level start) and they are hostile to _all_ player creatures.
+* **Survival Mode** changes the definition of "high score" for levels
+  where the player is very likely to die at least once.
+    * The silver high score (respawned at checkpoint) will be for the
+      _longest_ time survived on the level rather than the fastest time
+      to complete it.
+    * The gold high score (got to an Exit Flag without dying once) is
+      still rewarded to the fastest time completing the level.
 
 An update to the Level Editor's toolbar:
 
@@ -18,10 +29,19 @@ An update to the Level Editor's toolbar:
   from the game's built-in fonts.
 * New **Pan Tool** to be able to scroll the level safely by dragging with
   your mouse or finger.
+* New **Flood Tool** (or paint bucket tool) can be used to replace
+  contiguous areas of your level from one color to another.
 * The toolbar buttons are smaller and rearranged. On medium-size screens
   or larger, the toolbar buttons are drawn side-by-side in two columns.
   On narrower screens with less real estate, it will use a single column
   when it fits better.
+
+New doodads:
+
+* A technical doodad for **Reset Level Timer** resets the timer to zero,
+  one time, when touched by the player. If the doodad receives a power
+  signal from a linked doodad, it can reset the level timer again if the
+  player touches it once more.
 
 Updates to the JavaScript API for custom doodads:
 
@@ -30,10 +50,13 @@ Updates to the JavaScript API for custom doodads:
   * Peaceful (-1): `Level.Difficulty < 0`
   * Normal (0): `Level.Difficulty == 0`
   * Hard (1): `Level.Difficulty > 1`
+* New function `Level.ResetTimer()` resets the in-game timer to zero.
 
 New cheat codes:
 
 * `test load screen` tests the loading screen UI for a few seconds.
+* `master key` allows playing locked Story Mode levels without unlocking
+  them first by completing the earlier levels.
 
 Other changes:
 
@@ -42,6 +65,17 @@ Other changes:
 * Fixed a bug where making the app window bigger during a loading screen
   caused the Editor to not adapt to the larger window.
 * Don't show the _autosave.doodad in the Doodad Dropper.
+* The Azulians have had their jump heights buffed slightly.
+* Birds no longer register as solid when colliding with other birds (or
+  more generally, characters unaffected by gravity).
+
+Bugs fixed:
+
+* When modifying your Palette to rename a color or add an additional
+  color, it wasn't possible to draw with that new color without fully
+  exiting and reloading the editor - this is now resolved.
+* The palette editor will try and prevent the user from giving the same
+  name to different colors.
 
 ## v0.11.0 (Feb 21 2022)
 
