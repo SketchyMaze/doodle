@@ -59,6 +59,28 @@ type MainScene struct {
 	landscapeMode bool
 }
 
+/*
+MakePhotogenic tweaks some variables to make a screenshotable title screen.
+
+This function is designed to be called from the developer shell:
+
+	$ d.Scene.MakePhotogenic(true)
+
+It automates the pausing of lazy scroll and hiding of UI elements except
+for just the title and version number.
+*/
+func (s *MainScene) MakePhotogenic(v bool) {
+	if v {
+		s.PauseLazyScroll = true
+		s.ButtonFrame().Hide()
+		s.LabelHint().Hide()
+	} else {
+		s.PauseLazyScroll = false
+		s.ButtonFrame().Show()
+		s.LabelHint().Show()
+	}
+}
+
 // Name of the scene.
 func (s *MainScene) Name() string {
 	return "Main"

@@ -62,7 +62,7 @@ type Level struct {
 // GameRule
 type GameRule struct {
 	Difficulty enum.Difficulty `json:"difficulty"`
-	Survival   bool            `json:"survival"`
+	Survival   bool            `json:"survival,omitempty"`
 }
 
 // New creates a blank level object with all its members initialized.

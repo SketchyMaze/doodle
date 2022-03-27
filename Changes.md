@@ -1,6 +1,6 @@
 # Changes
 
-## v0.12.0 (TBD)
+## v0.12.0 (March 27 2022)
 
 This update adds several new features to gameplay and the Level Editor.
 
@@ -35,6 +35,11 @@ An update to the Level Editor's toolbar:
   or larger, the toolbar buttons are drawn side-by-side in two columns.
   On narrower screens with less real estate, it will use a single column
   when it fits better.
+
+New levels:
+
+* An **Azulian Tag** levelpack has been added featuring two levels so
+  far of the Azulian Tag game mode.
 
 New doodads:
 

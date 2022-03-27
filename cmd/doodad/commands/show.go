@@ -103,6 +103,11 @@ func showLevel(c *cli.Context, filename string) error {
 	fmt.Printf("        Locked: %+v\n", lvl.Locked)
 	fmt.Println("")
 
+	fmt.Println("Game Rules:")
+	fmt.Printf("  Difficulty: %s (%d)\n", lvl.GameRule.Difficulty, lvl.GameRule.Difficulty)
+	fmt.Printf("    Survival: %+v\n", lvl.GameRule.Survival)
+	fmt.Println("")
+
 	showPalette(lvl.Palette)
 
 	fmt.Println("Level Settings:")
