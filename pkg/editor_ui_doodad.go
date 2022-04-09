@@ -20,6 +20,12 @@ type DraggableActor struct {
 	actor  *level.Actor    // if a level actor
 }
 
+// Teardown the DraggableActor and free its textures.
+func (da *DraggableActor) Teardown() {
+	log.Debug("Teardown DraggableActor")
+	da.canvas.Destroy()
+}
+
 // startDragActor begins the drag event for a Doodad onto a level.
 // actor may be nil (if you drag a new doodad from the palette) or otherwise
 // is an existing actor from the level.

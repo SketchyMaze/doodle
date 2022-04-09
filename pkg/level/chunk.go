@@ -215,6 +215,26 @@ func (c *Chunk) ToBitmap(mask render.Color) image.Image {
 	return img
 }
 
+// Teardown the chunk and free (SDL2) texture memory in ways Go can not by itself.
+// Returns the number of textures freed.
+func (c *Chunk) Teardown() int {
+	var freed int
+
+	if c.texture != nil {
+		c.texture.Free()
+		c.texture = nil
+		freed++
+	}
+
+	if c.textureMasked != nil {
+		c.textureMasked.Free()
+		c.textureMasked = nil
+		freed++
+	}
+
+	return freed
+}
+
 // Set proxies to the accessor and flags the texture as dirty.
 func (c *Chunk) Set(p render.Point, sw *Swatch) error {
 	c.dirty = true

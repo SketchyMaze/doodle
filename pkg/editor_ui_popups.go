@@ -27,7 +27,7 @@ Functions to manage popup windows in the Editor Mode, such as:
 
 // Opens the "Layers" window (for editing doodads)
 func (u *EditorUI) OpenLayersWindow() {
-	u.layersWindow.Hide()
+	u.layersWindow.Close()
 	u.layersWindow = nil
 	u.SetupPopups(u.d)
 	u.layersWindow.Show()
@@ -36,7 +36,7 @@ func (u *EditorUI) OpenLayersWindow() {
 // OpenPaletteWindow opens the Palette Editor window.
 func (u *EditorUI) OpenPaletteWindow() {
 	// TODO: recompute the window so the actual loaded level palette gets in
-	u.paletteEditor.Hide()
+	u.paletteEditor.Close()
 	u.paletteEditor = nil
 	u.SetupPopups(u.d)
 	u.paletteEditor.Show()
@@ -83,12 +83,12 @@ func (u *EditorUI) OpenPublishWindow() {
 			u.d.Flash("Saved level: %s", u.Scene.filename)
 		},
 		OnCancel: func() {
-			u.publishWindow.Hide()
+			u.publishWindow.Close()
 		},
 	})
 	u.ConfigureWindow(u.d, u.publishWindow)
 
-	u.publishWindow.Hide()
+	u.publishWindow.Close()
 	// u.publishWindow = nil
 	u.SetupPopups(u.d)
 	u.publishWindow.Show()
@@ -96,7 +96,7 @@ func (u *EditorUI) OpenPublishWindow() {
 
 // OpenPublishWindow opens the FileSystem window.
 func (u *EditorUI) OpenFileSystemWindow() {
-	u.filesystemWindow.Hide()
+	u.filesystemWindow.Close()
 	u.filesystemWindow = nil
 	u.SetupPopups(u.d)
 	u.filesystemWindow.Show()
@@ -115,7 +115,7 @@ func (u *EditorUI) ConfigureWindow(d *Doodle, window *ui.Window) {
 		Y: (d.height / 2) - (size.H / 2),
 	})
 
-	window.Hide()
+	window.Close()
 }
 
 // SetupPopups preloads popup windows like the DoodadDropper.
@@ -126,19 +126,19 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			Supervisor: u.Supervisor,
 			Engine:     d.Engine,
 			OnCancel: func() {
-				u.licenseWindow.Hide()
+				u.licenseWindow.Close()
 			},
 		}
 		cfg.OnLicensed = func() {
 			// License status has changed, reload the window!
 			if u.licenseWindow != nil {
-				u.licenseWindow.Hide()
+				u.licenseWindow.Close()
 			}
 			u.licenseWindow = windows.MakeLicenseWindow(d.width, d.height, cfg)
 		}
 
 		cfg.OnLicensed()
-		u.licenseWindow.Hide()
+		u.licenseWindow.Close()
 	}
 
 	// Doodad Dropper.
@@ -149,7 +149,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 
 			OnStartDragActor: u.startDragActor,
 			OnCancel: func() {
-				u.doodadWindow.Hide()
+				u.doodadWindow.Close()
 			},
 		})
 		u.ConfigureWindow(d, u.doodadWindow)
@@ -185,6 +185,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
 				scene.Level.PageType = pageType
 				scene.Level.Wallpaper = wallpaper
+				u.Canvas.Destroy() // clean up old textures
 				u.Canvas.LoadLevel(scene.Level)
 			},
 			OnReload: func() {
@@ -192,7 +193,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				scene.Reset()
 			},
 			OnCancel: func() {
-				u.levelSettingsWindow.Hide()
+				u.levelSettingsWindow.Close()
 			},
 		})
 		u.ConfigureWindow(d, u.levelSettingsWindow)
@@ -210,7 +211,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 
 		// Rebuild the window. TODO: hacky af.
 		cfg.OnRefresh = func() {
-			u.doodadPropertiesWindow.Hide()
+			u.doodadPropertiesWindow.Close()
 			u.doodadPropertiesWindow = nil
 			u.SetupPopups(u.d)
 			u.doodadPropertiesWindow.Show()
@@ -262,7 +263,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				return true
 			},
 			OnCancel: func() {
-				u.filesystemWindow.Hide()
+				u.filesystemWindow.Close()
 			},
 		})
 		u.ConfigureWindow(d, u.filesystemWindow)
@@ -313,13 +314,13 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				log.Info("Added new palette color: %+v", sw)
 
 				// Awkward but... reload this very same window.
-				u.paletteEditor.Hide()
+				u.paletteEditor.Close()
 				u.paletteEditor = nil
 				u.SetupPopups(d)
 				u.paletteEditor.Show()
 			},
 			OnCancel: func() {
-				u.paletteEditor.Hide()
+				u.paletteEditor.Close()
 			},
 		})
 		u.ConfigureWindow(d, u.paletteEditor)
@@ -347,7 +348,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				// Awkward but... reload this very same window.
 				// Otherwise, the window doesn't update to show the new
 				// layer having been added.
-				u.layersWindow.Hide()
+				u.layersWindow.Close()
 				u.layersWindow = nil
 				u.SetupPopups(d)
 				u.layersWindow.Show()
@@ -364,7 +365,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				// Awkward but... reload this very same window.
 				// Otherwise, the window doesn't update to show the new
 				// layer having been added.
-				u.layersWindow.Hide()
+				u.layersWindow.Close()
 				u.layersWindow = nil
 				u.SetupPopups(d)
 				u.layersWindow.Show()
@@ -380,7 +381,7 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.Scene.ActiveLayer = index
 			},
 			OnCancel: func() {
-				u.layersWindow.Hide()
+				u.layersWindow.Close()
 			},
 		})
 		u.ConfigureWindow(d, u.layersWindow)

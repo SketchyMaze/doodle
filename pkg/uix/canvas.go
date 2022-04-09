@@ -79,7 +79,7 @@ type Canvas struct {
 	// When the Canvas wants to delete Actors, but ultimately it is upstream
 	// that controls the actors. Upstream should delete them and then reinstall
 	// the actor list from scratch.
-	OnDeleteActors func([]*level.Actor)
+	OnDeleteActors func([]*Actor)
 	OnDragStart    func(*level.Actor)
 
 	// -- WHEN Canvas.Tool is "Link" --
@@ -150,10 +150,34 @@ func NewCanvas(size int, editable bool) *Canvas {
 	return w
 }
 
-// Destroy the canvas.
-//
-// TODO: Not implemented, here to satisfy ui.Widget, should free up textures tho.
-func (w *Canvas) Destroy() {}
+/*
+Destroy the canvas.
+
+This function satisfies the ui.Widget interface but it also calls Teardown() methods
+on the level or doodad as well as any level actors, which frees up SDL2 texture memory.
+
+Note: the rest of the data can be garbage collected by Go normally, the textures are
+able to regenerate themselves again if needed.
+*/
+func (w *Canvas) Destroy() {
+	if w.level != nil {
+		w.level.Teardown()
+	}
+
+	if w.doodad != nil {
+		w.doodad.Teardown()
+	}
+
+	for _, actor := range w.actors {
+		actor.Canvas.Destroy()
+	}
+
+	if w.wallpaper.WP != nil {
+		if freed := w.wallpaper.WP.Free(); freed > 0 {
+			log.Debug("%s.Destroy(): freed %d wallpaper textures", w, freed)
+		}
+	}
+}
 
 // Load initializes the Canvas using an existing Palette and Grid.
 func (w *Canvas) Load(p *level.Palette, g *level.Chunker) {

@@ -11,6 +11,49 @@ import (
 	"git.kirsle.net/go/render"
 )
 
+/*
+Free all SDL2 textures from memory.
+
+The Canvas widget will free wallpaper textures in its Destroy method. Note that
+if the wallpaper was still somehow in use, the textures will be regenerated the
+next time a method like CornerTexture() asks for one.
+
+Returns the number of textures freed (up to 4) or -1 if wallpaper was not ready.
+*/
+func (wp *Wallpaper) Free() int {
+	if !wp.ready {
+		return -1
+	}
+
+	var freed int
+
+	if wp.tex.corner != nil {
+		wp.tex.corner.Free()
+		wp.tex.corner = nil
+		freed++
+	}
+
+	if wp.tex.top != nil {
+		wp.tex.top.Free()
+		wp.tex.top = nil
+		freed++
+	}
+
+	if wp.tex.left != nil {
+		wp.tex.left.Free()
+		wp.tex.left = nil
+		freed++
+	}
+
+	if wp.tex.repeat != nil {
+		wp.tex.repeat.Free()
+		wp.tex.repeat = nil
+		freed++
+	}
+
+	return freed
+}
+
 // CornerTexture returns the Texture.
 func (wp *Wallpaper) CornerTexture(e render.Engine) (render.Texturer, error) {
 	if !wp.ready {

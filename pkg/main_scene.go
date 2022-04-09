@@ -648,5 +648,7 @@ func (s *MainScene) Draw(d *Doodle) error {
 
 // Destroy the scene.
 func (s *MainScene) Destroy() error {
+	log.Debug("MainScene.Destroy(): clean up the demo level canvas")
+	s.canvas.Destroy()
 	return nil
 }

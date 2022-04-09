@@ -147,6 +147,12 @@ func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	return u
 }
 
+// Teardown the UI manager and free all the SDL2 textures under its control.
+func (u *EditorUI) Teardown() {
+	log.Debug("EditorUI.Teardown()")
+	u.Canvas.Destroy()
+}
+
 // FinishSetup runs the Setup tasks that must be postponed til the end, such
 // as rendering the Palette window so that it can accurately show the palette
 // loaded from a level.
@@ -396,10 +402,10 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	}
 
 	// Handle the Canvas deleting our actors in edit mode.
-	drawing.OnDeleteActors = func(actors []*level.Actor) {
+	drawing.OnDeleteActors = func(actors []*uix.Actor) {
 		if u.Scene.Level != nil {
 			for _, actor := range actors {
-				u.Scene.Level.Actors.Remove(actor)
+				u.Scene.Level.Actors.Remove(actor.Actor)
 			}
 			u.Scene.Level.PruneLinks()
 			drawing.InstallActors(u.Scene.Level.Actors)
@@ -446,6 +452,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 
 			// The actor has been dropped so null it out.
 			defer func() {
+				u.DraggableActor.Teardown()
 				u.DraggableActor = nil
 			}()
 

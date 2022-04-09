@@ -154,6 +154,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 		Engine:     d.Engine,
 		OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
 			log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
+			s.canvas.Destroy() // clean up old textures
 			s.configureCanvas(pageType, wallpaper)
 		},
 		OnCreateNewLevel: func(lvl *level.Level) {
@@ -238,5 +239,8 @@ func (s *MenuScene) Draw(d *Doodle) error {
 
 // Destroy the scene.
 func (s *MenuScene) Destroy() error {
+	// Free (wallpaper) textures.
+	s.canvas.Destroy()
+
 	return nil
 }

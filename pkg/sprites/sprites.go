@@ -47,7 +47,12 @@ func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
 			return nil, err
 		}
 
-		return ui.ImageFromImage(img)
+		if image, err := ui.ImageFromImage(img); err == nil {
+			cache[filename] = image
+			return image, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	// WASM: try the file over HTTP ajax request.
@@ -62,7 +67,12 @@ func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
 			return nil, err
 		}
 
-		return ui.ImageFromImage(img)
+		if image, err := ui.ImageFromImage(img); err == nil {
+			cache[filename] = image
+			return image, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	// Then try the file system.
@@ -79,7 +89,12 @@ func LoadImage(e render.Engine, filename string) (*ui.Image, error) {
 			return nil, err
 		}
 
-		return ui.ImageFromImage(img)
+		if image, err := ui.ImageFromImage(img); err == nil {
+			cache[filename] = image
+			return image, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	return nil, errors.New("no such sprite found")

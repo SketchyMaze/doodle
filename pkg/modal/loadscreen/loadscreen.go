@@ -88,6 +88,7 @@ func Resized() {
 
 // Hide the loading screen.
 func Hide() {
+	canvas.Destroy() // cleanup wallpaper textures
 	visible = false
 }
 

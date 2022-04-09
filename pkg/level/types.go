@@ -8,6 +8,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -84,6 +85,25 @@ func New() *Level {
 
 		UndoHistory: drawtool.NewHistory(balance.UndoHistory),
 	}
+}
+
+// Teardown the level when the game is done with it. This frees up SDL2 cached
+// texture chunks and reclaims memory in ways the Go garbage collector can not.
+func (m *Level) Teardown() {
+	var (
+		chunks   int
+		textures int
+	)
+
+	for coord := range m.Chunker.IterChunks() {
+		if chunk, ok := m.Chunker.GetChunk(coord); ok {
+			freed := chunk.Teardown()
+			chunks++
+			textures += freed
+		}
+	}
+
+	log.Debug("Teardown level (%s): Freed %d textures across %d level chunks", m.Title, textures, chunks)
 }
 
 // Pixel associates a coordinate with a palette index.

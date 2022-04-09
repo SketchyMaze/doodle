@@ -908,5 +908,9 @@ func (s *PlayScene) LoadLevel(filename string) error {
 
 // Destroy the scene.
 func (s *PlayScene) Destroy() error {
+	// Free SDL2 textures. Note: if they are switching to the Editor, the chunks still have
+	// their bitmaps cached and will regen the textures as needed.
+	s.drawing.Destroy()
+
 	return nil
 }

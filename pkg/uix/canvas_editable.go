@@ -460,7 +460,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 
 		// log.Debug("ActorTool, cursor=%s WP=%s zoom=%d P=%s", cursor, WP, w.Zoom, ui.AbsolutePosition(w))
 
-		var deleteActors = []*level.Actor{}
+		var deleteActors = []*Actor{}
 		for _, actor := range w.actors {
 
 			// Compute the bounding box on screen where this doodad
@@ -493,13 +493,13 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				if keybind.LeftClick(ev) {
 					// Pop this canvas out for the drag/drop.
 					if w.OnDragStart != nil {
-						deleteActors = append(deleteActors, actor.Actor)
+						deleteActors = append(deleteActors, actor)
 						w.OnDragStart(actor.Actor)
 					}
 					break
 				} else if ev.Button3 {
 					// Right click to delete an actor.
-					deleteActors = append(deleteActors, actor.Actor)
+					deleteActors = append(deleteActors, actor)
 				}
 			} else {
 				actor.Canvas.SetBorderSize(0)

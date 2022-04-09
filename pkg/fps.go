@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/render/sdl"
 	"git.kirsle.net/go/ui"
 )
 
@@ -57,6 +58,13 @@ func (d *Doodle) DrawDebugOverlay() {
 		framesSkipped = "uncapped"
 	}
 
+	// Get the size of cached SDL2 textures at the render engine level.
+	var texCount = "n/a"
+	if sdl, ok := d.Engine.(*sdl.Renderer); ok {
+		gotex, sdltex := sdl.CountTextures()
+		texCount = fmt.Sprintf("%d img, %d sdl", gotex, sdltex)
+	}
+
 	var (
 		darken  = balance.DebugStrokeDarken
 		Yoffset = 20 // leave room for the menu bar
@@ -65,11 +73,13 @@ func (d *Doodle) DrawDebugOverlay() {
 			"FPS:",
 			"Scene:",
 			"Mouse:",
+			"Textures:",
 		}
 		values = []string{
 			fmt.Sprintf("%d   %s", fpsCurrent, framesSkipped),
 			d.Scene.Name(),
 			fmt.Sprintf("%d,%d", d.event.CursorX, d.event.CursorY),
+			texCount,
 		}
 	)
 

@@ -41,6 +41,11 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		// size of the doodad window
 		width  = buttonSize * columns
 		height = (buttonSize * rows) + 64 // account for button borders :(
+
+		// Collect the Canvas widgets that all the doodads will be drawn in.
+		// When the doodad window is closed or torn down, we can free up
+		// the SDL2 textures and avoid a slow memory leak.
+		canvases = []*uix.Canvas{}
 	)
 
 	// Get all the doodads.
@@ -79,6 +84,17 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 		Background: render.Grey,
 	})
 
+	// When the window is closed, clear canvas textures. Note: we still cache
+	// bitmap images in memory, those would be garbage collected by Go and SDL2
+	// textures can always be regenerated.
+	window.Handle(ui.CloseWindow, func(ed ui.EventData) error {
+		log.Debug("Doodad Dropper: window closed, free %d canvas textures", len(canvases))
+		for _, can := range canvases {
+			can.Destroy()
+		}
+		return nil
+	})
+
 	tabFrame := ui.NewTabFrame("Category Tabs")
 	window.Pack(tabFrame, ui.Pack{
 		Side:   ui.N,
@@ -103,7 +119,8 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 			Text: category.Name,
 			Font: balance.TabFont,
 		}))
-		makeDoodadTab(config, tab1, render.NewRect(width-4, height-60), category.ID, items)
+		cans := makeDoodadTab(config, tab1, render.NewRect(width-4, height-60), category.ID, items)
+		canvases = append(canvases, cans...)
 	}
 
 	tabFrame.Supervise(config.Supervisor)
@@ -113,7 +130,7 @@ func NewDoodadDropper(config DoodadDropper) *ui.Window {
 }
 
 // Function to generate the TabFrame frame of the Doodads window.
-func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, category string, available []*doodads.Doodad) {
+func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, category string, available []*doodads.Doodad) []*uix.Canvas {
 	var (
 		buttonSize = balance.DoodadButtonSize
 		columns    = balance.DoodadDropperCols
@@ -128,6 +145,9 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 		pages          int
 		perPage        = 20
 		maxPageButtons = 10
+
+		// Collect the created Canvas widgets so we can free SDL2 textures later.
+		canvases = []*uix.Canvas{}
 	)
 	frame.Resize(size)
 
@@ -237,6 +257,9 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			can.Name = doodad.Title
 			can.SetBackground(balance.DoodadButtonBackground)
 			can.LoadDoodad(doodad)
+
+			// Keep the canvas to free textures later.
+			canvases = append(canvases, can)
 
 			btn := ui.NewButton(doodad.Title, can)
 			btn.Resize(render.NewRect(
@@ -404,4 +427,6 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			})
 		}
 	}
+
+	return canvases
 }

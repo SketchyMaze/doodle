@@ -19,6 +19,9 @@ func (c Command) cheatCommand(d *Doodle) bool {
 	// Some cheats only work in Play Mode.
 	playScene, isPlay := d.Scene.(*PlayScene)
 
+	// If a character cheat is used during Play Mode, replace the player NOW.
+	var setPlayerCharacter bool
+
 	// Cheat codes
 	switch c.Raw {
 	case balance.CheatUncapFPS:
@@ -117,22 +120,27 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	case balance.CheatPlayAsBird:
 		balance.PlayerCharacterDoodad = "bird-red.doodad"
+		setPlayerCharacter = true
 		d.Flash("Set default player character to Bird (red)")
 
 	case balance.CheatPlayAsBoy:
 		balance.PlayerCharacterDoodad = "boy.doodad"
+		setPlayerCharacter = true
 		d.Flash("Set default player character to Boy")
 
 	case balance.CheatPlayAsAzuBlue:
 		balance.PlayerCharacterDoodad = "azu-blu.doodad"
+		setPlayerCharacter = true
 		d.Flash("Set default player character to Blue Azulian")
 
 	case balance.CheatPlayAsThief:
 		balance.PlayerCharacterDoodad = "thief.doodad"
+		setPlayerCharacter = true
 		d.Flash("Set default player character to Thief")
 
 	case balance.CheatPlayAsAnvil:
 		balance.PlayerCharacterDoodad = "anvil.doodad"
+		setPlayerCharacter = true
 		d.Flash("Set default player character to the Anvil")
 
 	case balance.CheatGodMode:
@@ -171,6 +179,11 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	default:
 		return false
+	}
+
+	// If we're setting the player character and in Play Mode, do it.
+	if setPlayerCharacter && isPlay {
+		playScene.SetPlayerCharacter(balance.PlayerCharacterDoodad)
 	}
 
 	return true

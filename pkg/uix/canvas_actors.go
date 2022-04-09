@@ -27,6 +27,11 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 	}
 	sort.Strings(actorIDs)
 
+	// In case we are replacing the actors, free up all their textures first!
+	for _, actor := range w.actors {
+		actor.Canvas.Destroy()
+	}
+
 	w.actors = make([]*Actor, 0)
 	for _, id := range actorIDs {
 		var actor = actors[id]

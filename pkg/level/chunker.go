@@ -68,6 +68,18 @@ func (c *Chunker) IterViewport(viewport render.Rect) <-chan Pixel {
 	return pipe
 }
 
+// IterChunks returns a channel to iterate over all chunks in the drawing.
+func (c *Chunker) IterChunks() <-chan render.Point {
+	pipe := make(chan render.Point)
+	go func() {
+		for point := range c.Chunks {
+			pipe <- point
+		}
+		close(pipe)
+	}()
+	return pipe
+}
+
 // IterViewportChunks returns a channel to iterate over the Chunk objects that
 // appear within the viewport rect, instead of the pixels in each chunk.
 func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {

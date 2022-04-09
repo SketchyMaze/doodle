@@ -52,6 +52,29 @@ func New(size int) *Doodad {
 	}
 }
 
+// Teardown cleans up texture cache memory when the doodad is no longer needed by the game.
+func (d *Doodad) Teardown() {
+	var (
+		chunks   int
+		textures int
+	)
+
+	for _, layer := range d.Layers {
+		for coord := range layer.Chunker.IterChunks() {
+			if chunk, ok := layer.Chunker.GetChunk(coord); ok {
+				freed := chunk.Teardown()
+				chunks++
+				textures += freed
+			}
+		}
+	}
+
+	// Debug log if any textures were actually freed.
+	if textures > 0 {
+		log.Debug("Teardown doodad (%s): Freed %d textures across %d chunks", d.Title, textures, chunks)
+	}
+}
+
 // Tag gets a value from the doodad's tags.
 func (d *Doodad) Tag(name string) string {
 	if v, ok := d.Tags[name]; ok {
