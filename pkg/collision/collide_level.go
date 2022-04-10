@@ -55,8 +55,8 @@ The `target` is the point the actor wants to move to on this tick.
 */
 func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
-		P = d.Position()
-		S = d.Size()
+		P      = d.Position()
+		S      = d.Size()
 		hitbox = d.Hitbox()
 
 		result = &Collide{
@@ -161,6 +161,10 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 			// TODO: this along with a "+ 1" hack prevents clipping thru the
 			// left wall sometimes, but breaks walking up leftward slopes.
 			point.X = capLeft
+		}
+		if capRight != 0 && point.X > capRight {
+			// This if check fixes the climbing-walls-on-the-right bug.
+			point.X = capRight
 		}
 
 		if has := result.ScanBoundingBox(render.Rect{

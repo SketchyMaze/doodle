@@ -45,6 +45,10 @@ var Boolprops = map[string]Boolprop{
 		Get: func() bool { return CompressDrawings },
 		Set: func(v bool) { CompressDrawings = v },
 	},
+	"eager-render": {
+		Get: func() bool { return EagerRenderLevelChunks },
+		Set: func(v bool) { EagerRenderLevelChunks = v },
+	},
 }
 
 // GetBoolProp reads the current value of a boolProp.

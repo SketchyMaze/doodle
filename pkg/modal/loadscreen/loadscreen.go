@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/apps/doodle/pkg/log"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
@@ -225,9 +226,12 @@ func Loop(windowSize render.Rect, e render.Engine) {
 // of chunks vs. chunks remaining to pre-cache bitmaps from.
 func PreloadAllChunkBitmaps(chunker *level.Chunker) {
 	loadChunksTarget := len(chunker.Chunks)
-	// if loadChunksTarget == 0 {
-	// 	return
-	// }
+
+	// Skipping the eager rendering of chunks?
+	if !balance.EagerRenderLevelChunks {
+		log.Info("PreloadAllChunkBitmaps: skipping eager render")
+		return
+	}
 
 	for {
 		remaining := chunker.PrerenderN(10)

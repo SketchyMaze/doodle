@@ -105,6 +105,14 @@ var (
 	// Limits on the Flood Fill tool so it doesn't run away on us.
 	FloodToolVoidLimit = 600  // If clicking the void, +- 1000 px limit
 	FloodToolLimit     = 1200 // If clicking a valid color on the level
+
+	// Eager render level chunks to images during the load screen.
+	// Originally chunks rendered to image and SDL texture on-demand, the loadscreen was
+	// added to eager load (to image) the whole entire level at once (SDL textures were
+	// still on demand, as they scroll into screen). Control this in-game with
+	// `boolProp eager-render false` and the loadscreen will go quicker cuz it won't
+	// load the whole entire level. Maybe useful to explore memory issues.
+	EagerRenderLevelChunks = true
 )
 
 // Edit Mode Values
