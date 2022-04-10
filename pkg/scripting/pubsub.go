@@ -31,19 +31,26 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 			}
 		}()
 
-		for msg := range vm.Inbound {
-			vm.muSubscribe.Lock()
+		// Watch the Inbound channel for PubSub messages and the stop channel for Teardown.
+		for {
+			select {
+			case <-vm.stop:
+				log.Info("JavaScript VM %s stopping PubSub goroutine", vm.Name)
+				return
+			case msg := <-vm.Inbound:
+				vm.muSubscribe.Lock()
 
-			if _, ok := vm.subscribe[msg.Name]; ok {
-				for _, callback := range vm.subscribe[msg.Name] {
-					log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
-					if function, ok := goja.AssertFunction(callback); ok {
-						function(goja.Undefined(), msg.Args...)
+				if _, ok := vm.subscribe[msg.Name]; ok {
+					for _, callback := range vm.subscribe[msg.Name] {
+						log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
+						if function, ok := goja.AssertFunction(callback); ok {
+							function(goja.Undefined(), msg.Args...)
+						}
 					}
 				}
-			}
 
-			vm.muSubscribe.Unlock()
+				vm.muSubscribe.Unlock()
+			}
 		}
 	}()
 

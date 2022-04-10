@@ -113,6 +113,10 @@ var (
 	// `boolProp eager-render false` and the loadscreen will go quicker cuz it won't
 	// load the whole entire level. Maybe useful to explore memory issues.
 	EagerRenderLevelChunks = true
+
+	// Number of chunks margin outside the Canvas Viewport for the LoadingViewport.
+	LoadingViewportMarginChunks        = 2
+	CanvasLoadUnloadModuloTicks uint64 = 4
 )
 
 // Edit Mode Values

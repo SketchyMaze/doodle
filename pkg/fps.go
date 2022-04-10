@@ -61,8 +61,7 @@ func (d *Doodle) DrawDebugOverlay() {
 	// Get the size of cached SDL2 textures at the render engine level.
 	var texCount = "n/a"
 	if sdl, ok := d.Engine.(*sdl.Renderer); ok {
-		gotex, sdltex := sdl.CountTextures()
-		texCount = fmt.Sprintf("%d img, %d sdl", gotex, sdltex)
+		texCount = fmt.Sprintf("%d", sdl.CountTextures())
 	}
 
 	var (
@@ -73,7 +72,7 @@ func (d *Doodle) DrawDebugOverlay() {
 			"FPS:",
 			"Scene:",
 			"Mouse:",
-			"Textures:",
+			"Tex:",
 		}
 		values = []string{
 			fmt.Sprintf("%d   %s", fpsCurrent, framesSkipped),

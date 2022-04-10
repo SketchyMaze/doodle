@@ -42,8 +42,8 @@ git.kirsle.net/go/audio v0.0.0-20201121073642-65068820cbc0/go.mod h1:RD2Kyiy2lga
 git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b h1:TDxEEWOJqMzsu9JW8/QgmT1lgQ9WD2KWlb2lKN/Ql2o=
 git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b/go.mod h1:jl+Qr58W3Op7OCxIYIT+b42jq8xFncJXzPufhrvza7Y=
 git.kirsle.net/go/render v0.0.0-20211231003948-9e640ab5c3da/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
-git.kirsle.net/go/render v0.0.0-20220409212556-df69b8e52508 h1:cL5XdHJgU81XFfsyXUO+6NxLcZ11IMaV/ZhiC5799cA=
-git.kirsle.net/go/render v0.0.0-20220409212556-df69b8e52508/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
+git.kirsle.net/go/render v0.0.0-20220410192720-c0c2d05619bc h1:tYbgVPFoADy9yQaH7+MeHXDATqTkSHoFXvZLcr9lwyc=
+git.kirsle.net/go/render v0.0.0-20220410192720-c0c2d05619bc/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
 git.kirsle.net/go/ui v0.0.0-20220409211920-3b653e503c5a h1:7pmqBcIfxOxCMCvnCS0XWM9NeXbzKTSQfiJc2IKJW+k=
 git.kirsle.net/go/ui v0.0.0-20220409211920-3b653e503c5a/go.mod h1:cWD/tl2OUj0jWUQxW7BcapxiOFmnCPkrfzJt2tOiD1E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -169,8 +169,8 @@ github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
-github.com/gopherjs/gopherjs v0.0.0-20220221023154-0b2280d3ff96 h1:QJq7UBOuoynsywLk+aC75rC2Cbi2+lQRDaLaizhA+fA=
-github.com/gopherjs/gopherjs v0.0.0-20220221023154-0b2280d3ff96/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
+github.com/gopherjs/gopherjs v0.0.0-20220410123724-9e86199038b0 h1:fWY+zXdWhvWndXqnMj4SyC/vi8sK508OjhGCtMzsA9M=
+github.com/gopherjs/gopherjs v0.0.0-20220410123724-9e86199038b0/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=

@@ -29,6 +29,14 @@ func NewSupervisor() *Supervisor {
 	}
 }
 
+// Teardown the supervisor to clean up goroutines.
+func (s *Supervisor) Teardown() {
+	log.Info("scripting.Teardown(): stop all (%d) scripts", len(s.scripts))
+	for _, vm := range s.scripts {
+		vm.stop <- true
+	}
+}
+
 // Loop the supervisor to invoke timer events in any running scripts.
 func (s *Supervisor) Loop() error {
 	now := time.Now()

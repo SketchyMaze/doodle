@@ -87,9 +87,15 @@ func Resized() {
 	}
 }
 
-// Hide the loading screen.
+/*
+Hide the loading screen.
+
+NOTICE: the loadscreen is hidden on an async goroutine and it is NOT SAFE to clean up
+textures used by the wallpaper images, but this is OK because the loadscreen uses the
+same wallpaper every time and is called many times during gameplay, it can hold its
+textures.
+*/
 func Hide() {
-	canvas.Destroy() // cleanup wallpaper textures
 	visible = false
 }
 
@@ -225,6 +231,11 @@ func Loop(windowSize render.Rect, e render.Engine) {
 // loading screen and will set the Progress percent based on the total number
 // of chunks vs. chunks remaining to pre-cache bitmaps from.
 func PreloadAllChunkBitmaps(chunker *level.Chunker) {
+	// If we're using the smarter (experimental) chunk loader, return.
+	if balance.Feature.LoadUnloadChunk {
+		return
+	}
+
 	loadChunksTarget := len(chunker.Chunks)
 
 	// Skipping the eager rendering of chunks?

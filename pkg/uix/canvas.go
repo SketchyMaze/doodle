@@ -113,6 +113,10 @@ type Canvas struct {
 	scrollStartAt   render.Point // Cursor point at beginning of pan
 	scrollWasAt     render.Point // copy of Scroll at beginning of pan
 	scrollLastDelta render.Point // multitouch spam
+
+	// LoadUnloadChunks metrics for the debug overlay.
+	loadUnloadInside  int
+	loadUnloadOutside int
 }
 
 // NewCanvas initializes a Canvas widget.
@@ -176,6 +180,10 @@ func (w *Canvas) Destroy() {
 		if freed := w.wallpaper.WP.Free(); freed > 0 {
 			log.Debug("%s.Destroy(): freed %d wallpaper textures", w, freed)
 		}
+	}
+
+	if w.scripting != nil {
+		w.scripting.Teardown()
 	}
 }
 
@@ -263,10 +271,14 @@ func (w *Canvas) Loop(ev *event.State) error {
 	}
 	_ = w.loopConstrainScroll()
 
+	// Every so often, eager-load/unload chunk bitmaps to save on memory.
+	w.LoadUnloadChunks()
+
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor
 	for _, a := range w.actors {
 		if a.flagDestroy {
+			a.Canvas.Destroy()
 			continue
 		}
 		newActors = append(newActors, a)
@@ -289,6 +301,7 @@ func (w *Canvas) Loop(ev *event.State) error {
 			return w.loopEditable(ev)
 		}
 	}
+
 	return nil
 }
 
@@ -327,6 +340,40 @@ func (w *Canvas) ViewportRelative() render.Rect {
 		Y: -w.Scroll.Y,
 		W: S.W,
 		H: S.H,
+	}
+}
+
+// LoadingViewport is the viewport of chunks that ought to be preloaded and
+// ready to display soon. It is the Viewport of chunks on screen + a margin
+// of neighboring chunks outside the screen.
+//
+// For memory optimization, chunks falling inside this viewport have their
+// Go image.Image rendered and cached ready to convert to an SDL2 Texture
+// when they come on screen. Chunks outside of the LoadingViewport can be
+// unloaded (textures and images freed) to keep memory consumption on large
+// levels under control.
+func (w *Canvas) LoadingViewport() render.Rect {
+	var (
+		chunkSize int
+		vp        = w.Viewport()
+		margin    = balance.LoadingViewportMarginChunks
+	)
+
+	// This function is meant for levels only, but..
+	if w.level != nil {
+		chunkSize = w.level.Chunker.Size
+	} else if w.doodad != nil {
+		chunkSize = w.doodad.ChunkSize()
+	} else {
+		chunkSize = balance.ChunkSize
+		log.Error("Canvas.LoadingViewport: no drawing to get chunk size from, default to %d", chunkSize)
+	}
+
+	return render.Rect{
+		X: vp.X - chunkSize*margin,
+		Y: vp.Y - chunkSize*margin,
+		W: vp.W + chunkSize*margin,
+		H: vp.H + chunkSize*margin,
 	}
 }
 

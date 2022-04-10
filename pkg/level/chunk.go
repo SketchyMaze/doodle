@@ -220,6 +220,10 @@ func (c *Chunk) ToBitmap(mask render.Color) image.Image {
 func (c *Chunk) Teardown() int {
 	var freed int
 
+	if c.bitmap != nil {
+		c.bitmap = nil
+	}
+
 	if c.texture != nil {
 		c.texture.Free()
 		c.texture = nil

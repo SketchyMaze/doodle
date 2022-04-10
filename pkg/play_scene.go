@@ -62,6 +62,7 @@ type PlayScene struct {
 	debViewport   *string
 	debScroll     *string
 	debWorldIndex *string
+	debLoadUnload *string
 
 	// Player character
 	Player              *uix.Actor
@@ -141,11 +142,13 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	s.debViewport = new(string)
 	s.debScroll = new(string)
 	s.debWorldIndex = new(string)
+	s.debLoadUnload = new(string)
 	customDebugLabels = []debugLabel{
 		{"Pixel:", s.debWorldIndex},
 		{"Player:", s.debPosition},
 		{"Viewport:", s.debViewport},
 		{"Scroll:", s.debScroll},
+		{"Chunks:", s.debLoadUnload},
 	}
 
 	// Initialize the "Edit Map" button.
@@ -656,6 +659,8 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	*s.debPosition = s.Player.Position().String() + " vel " + s.Player.Velocity().String()
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
+	inside, outside := s.drawing.LoadUnloadMetrics()
+	*s.debLoadUnload = fmt.Sprintf("%d in %d out", inside, outside)
 
 	// Update the timer.
 	s.timerLabel.Text = savegame.FormatDuration(time.Since(s.startTime))
@@ -911,6 +916,12 @@ func (s *PlayScene) Destroy() error {
 	// Free SDL2 textures. Note: if they are switching to the Editor, the chunks still have
 	// their bitmaps cached and will regen the textures as needed.
 	s.drawing.Destroy()
+
+	// Free inventory doodad textures.
+	for _, can := range s.invenDoodads {
+		log.Info("Destroy inventory doodad: %s", can)
+		can.Destroy()
+	}
 
 	return nil
 }

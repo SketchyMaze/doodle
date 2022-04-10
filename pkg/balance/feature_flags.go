@@ -20,6 +20,12 @@ var Feature = feature{
 
 	// Reassign an existing level's palette to a different builtin.
 	ChangePalette: true,
+
+	// LoadUnloadChunk feature to better optimize memory. Set it to false and the
+	// loadscreen will eager load all chunk bitmaps (stable, but uses a lot of
+	// memory), set true and the Canvas will load/unload bitmaps + free SDL textures
+	// for chunks falling outside the LoadingViewport (new, maybe unstable).
+	LoadUnloadChunk: true,
 }
 
 // FeaturesOn turns on all feature flags, from CLI --experimental option.
@@ -33,4 +39,5 @@ type feature struct {
 	ChangePalette     bool
 	EmbeddableDoodads bool
 	ViewportWindow    bool
+	LoadUnloadChunk   bool
 }

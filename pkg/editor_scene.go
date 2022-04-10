@@ -44,9 +44,10 @@ type EditorScene struct {
 	ActiveLayer int // which layer (of a doodad) is being edited now?
 
 	// Custom debug overlay values.
-	debTool       *string
-	debSwatch     *string
-	debWorldIndex *string
+	debTool            *string
+	debSwatch          *string
+	debWorldIndex      *string
+	debLoadingViewport *string
 
 	// Last saved filename by the user.
 	filename string
@@ -65,10 +66,12 @@ func (s *EditorScene) Setup(d *Doodle) error {
 	s.debTool = new(string)
 	s.debSwatch = new(string)
 	s.debWorldIndex = new(string)
+	s.debLoadingViewport = new(string)
 	customDebugLabels = []debugLabel{
 		{"Pixel:", s.debWorldIndex},
 		{"Tool:", s.debTool},
 		{"Swatch:", s.debSwatch},
+		{"Chunks:", s.debLoadingViewport},
 	}
 
 	// Initialize autosave time.
@@ -278,10 +281,15 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	*s.debTool = s.UI.Canvas.Tool.String()
 	*s.debSwatch = "???"
 	*s.debWorldIndex = s.UI.Canvas.WorldIndexAt(s.UI.cursor).String()
+	*s.debLoadingViewport = "???"
 
 	// Safely...
 	if s.UI.Canvas.Palette != nil && s.UI.Canvas.Palette.ActiveSwatch != nil {
 		*s.debSwatch = s.UI.Canvas.Palette.ActiveSwatch.Name
+	}
+	if s.UI.Canvas != nil {
+		inside, outside := s.UI.Canvas.LoadUnloadMetrics()
+		*s.debLoadingViewport = fmt.Sprintf("%d in %d out", inside, outside)
 	}
 
 	// Has the window been resized?
