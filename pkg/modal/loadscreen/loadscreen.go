@@ -63,6 +63,12 @@ func ShowWithProgress() {
 	visible = true
 	withProgress = true
 	subtitle = ""
+
+	// TODO: hide the progress trough. With the new LoadUnloadChunks,
+	// the progress bar does nothing - all the loading time is spent
+	// reading the level from disk and then it starts.
+	withProgress = false
+
 	SetProgress(0)
 }
 

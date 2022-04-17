@@ -57,6 +57,9 @@ type MainScene struct {
 	// happens one time, and does not re-adapt when the window is made
 	// tall enough again.
 	landscapeMode bool
+
+	// Debug F3 overlay vars
+	debLoadingViewport *string
 }
 
 /*
@@ -88,6 +91,11 @@ func (s *MainScene) Name() string {
 
 // Setup the scene.
 func (s *MainScene) Setup(d *Doodle) error {
+	s.debLoadingViewport = new(string)
+	customDebugLabels = []debugLabel{
+		{"Chunks:", s.debLoadingViewport},
+	}
+
 	s.Supervisor = ui.NewSupervisor()
 
 	if err := s.SetupDemoLevel(d); err != nil {
@@ -404,6 +412,9 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 // Loop the editor scene.
 func (s *MainScene) Loop(d *Doodle, ev *event.State) error {
 	s.Supervisor.Loop(ev)
+
+	inside, outside := s.canvas.LoadUnloadMetrics()
+	*s.debLoadingViewport = fmt.Sprintf("%d in %d out", inside, outside)
 
 	if err := s.scripting.Loop(); err != nil {
 		log.Error("MainScene.Loop: scripting.Loop: %s", err)

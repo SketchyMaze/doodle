@@ -1,5 +1,37 @@
 # Changes
 
+## v0.12.1 (April 16 2022)
+
+This update focuses on memory and performance improvements for the game.
+Some larger levels such as "Azulian Tag - Forest" could run out of
+memory on 32-bit systems. To improve on memory usage, the game more
+aggressively frees SDL2 textures when no longer needed and it doesn't
+try to keep the _whole_ level's chunks ready in memory (as rendered
+images) -- only the chunks near the window viewport are loaded, and
+chunks that leave the viewport are freed to reclaim memory. Improvements
+are still a work in progress.
+
+New fields are added to the F3 debug overlay to peek at its performance:
+
+* "Textures:" shows the count of SDL2 textures currently loaded
+  in memory. Some textures, such as toolbar buttons and the
+  loadscreen wallpaper, lazy load and persist in memory. Most level
+  and doodad textures should free when the level exits.
+* "Sys/Heap:" shows current memory utilization in terms of MiB taken
+  from the OS and MiB of active heap memory, respectively.
+* "Threads:" counts the number of goroutines currently active. In
+  gameplay, each actor monitors its PubSub queue on a goroutine and
+  these should clean up when the level exits.
+* "Chunks:" shows the count of level chunks inside and outside the
+  loading viewport.
+
+Some other changes and bug fixes in this release include:
+
+* Fixed the bug where the player was able to "climb" vertical walls to
+  their right.
+* When entering a cheat code that changes the default player character
+  during gameplay, you immediately become that character.
+
 ## v0.12.0 (March 27 2022)
 
 This update adds several new features to gameplay and the Level Editor.

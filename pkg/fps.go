@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -38,6 +39,11 @@ var (
 	fpsInterval     uint32 = 1000
 	fpsDoNotCap     bool   // remove the FPS delay cap in main loop
 
+	// Memory usage metrics.
+	memHeap      uint64 // Current heap memory size (shrinks on GC)
+	memSys       uint64 // Current total memory usage
+	numGoroutine int
+
 	// Custom labels for individual Scenes to add debug info.
 	customDebugLabels []debugLabel
 )
@@ -72,13 +78,17 @@ func (d *Doodle) DrawDebugOverlay() {
 			"FPS:",
 			"Scene:",
 			"Mouse:",
-			"Tex:",
+			"Textures:",
+			"Sys/Heap:",
+			"Threads:",
 		}
 		values = []string{
 			fmt.Sprintf("%d   %s", fpsCurrent, framesSkipped),
 			d.Scene.Name(),
 			fmt.Sprintf("%d,%d", d.event.CursorX, d.event.CursorY),
 			texCount,
+			fmt.Sprintf("%d MiB / %d MiB", memSys, memHeap),
+			fmt.Sprintf("%d", numGoroutine),
 		}
 	)
 
@@ -202,4 +212,22 @@ func (d *Doodle) TrackFPS(skipped uint32) {
 
 	// FPS in the title bar.
 	d.Engine.SetTitle(fmt.Sprintf("%s (%d FPS)", d.Title(), fpsCurrent))
+
+	// Refresh memory usage.
+	GetMemUsage()
+}
+
+// GetMemUsage collects statistics on memory utilization.
+func GetMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	memHeap = bToMb(m.Alloc)
+	memSys = bToMb(m.Sys)
+
+	numGoroutine = runtime.NumGoroutine()
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

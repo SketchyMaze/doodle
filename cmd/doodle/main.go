@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"runtime/pprof"
 	"sort"
 	"strconv"
 	"time"
@@ -89,6 +90,10 @@ func main() {
 			Usage:   "enable debug level logging",
 		},
 		&cli.StringFlag{
+			Name:  "pprof",
+			Usage: "record pprof metrics to a filename",
+		},
+		&cli.StringFlag{
 			Name:  "chdir",
 			Usage: "working directory for the game's runtime package",
 		},
@@ -123,6 +128,23 @@ func main() {
 				log.Error("--chdir: couldn't enter '%s': %s", doodlePath, err)
 				return err
 			}
+		}
+
+		// Recording pprof stats?
+		if cpufile := c.String("pprof"); cpufile != "" {
+			log.Info("Saving CPU profiling data to %s", cpufile)
+			fh, err := os.Create(cpufile)
+			if err != nil {
+				log.Error("--pprof: can't create file: %s", err)
+				return err
+			}
+			defer fh.Close()
+
+			if err := pprof.StartCPUProfile(fh); err != nil {
+				log.Error("pprof: %s", err)
+				return err
+			}
+			defer pprof.StopCPUProfile()
 		}
 
 		var filename string

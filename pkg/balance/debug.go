@@ -17,7 +17,7 @@ var (
 
 	// Debug overlay (FPS etc.) settings.
 	DebugFontFilename = SansBoldFont
-	DebugFontSize     = 16
+	DebugFontSize     = 14
 	DebugLabelColor   = render.MustHexColor("#FF9900")
 	DebugValueColor   = render.MustHexColor("#00CCFF")
 	DebugStrokeDarken = 80
