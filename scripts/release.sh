@@ -15,6 +15,7 @@ export PATH="$PATH:$HOME/.local/share/gem/ruby/3.0.0/bin"
 
 VERSION=`egrep -e 'Version\s+=' ./pkg/branding/branding.go | head -n 1 | cut -d '"' -f 2`
 DIST_PATH="$(pwd)/dist/sketchymaze-${VERSION}"
+APPIMAGE_PATH="$(pwd)/dist/AppDir"
 RELEASE_PATH="$(pwd)/dist/release/${VERSION}"
 STAGE_PATH="$(pwd)/dist/stage/${VERSION}"
 
@@ -79,6 +80,12 @@ linux() {
     # fpm it.
     ../../../../scripts/fpm-bundle.sh
     cp *.rpm *.deb "${RELEASE_PATH}/linux/"
+
+    # Does an AppImage exist?
+    ls -hal $APPIMAGE_PATH/*.AppImage
+    if [[ -d "$APPIMAGE_PATH" ]]; then
+        cp -v $APPIMAGE_PATH/*.AppImage "${RELEASE_PATH}/linux"
+    fi
 
     # return
     cd -

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=sketchy-maze
+GenericName=Maze Game
+X-GNOME-FullName=Sketchy Maze - A drawing-based maze game
+Comment=A drawing-based maze game.
+Icon=sketchymaze
+StartupNotify=true
+Keywords=game;maze;
+Categories=Game;

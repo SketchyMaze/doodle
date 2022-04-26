@@ -112,6 +112,11 @@ release:
 release32:
 	env ARCH_LABEL=32bit ./scripts/release.sh
 
+# `make appimage` builds an AppImage, run it after `make dist`
+.PHONY: appimage
+appimage:
+	./appimage.sh
+
 # `make mingw-release` runs a FULL end-to-end release of Linux and Windows
 # binaries of the game, zipped and tagged and ready to go.
 .PHONY: mingw-release
