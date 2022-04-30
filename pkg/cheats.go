@@ -10,6 +10,17 @@ import (
 // IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has
 // been modified
 
+// SetPlayerCharacter -- this is designed to be called in-game with the developer
+// console. Sets your player character to whatever doodad you want, not just the
+// few that have cheat codes. If you set an invalid filename, you become the
+// dummy default doodad sprite (a red "X").
+func (d *Doodle) SetPlayerCharacter(filename string) {
+	balance.PlayerCharacterDoodad = filename
+	if playScene, isPlay := d.Scene.(*PlayScene); isPlay {
+		playScene.SetPlayerCharacter(balance.PlayerCharacterDoodad)
+	}
+}
+
 // cheatCommand is a subroutine of the Command.Run() method of the Doodle
 // developer shell (commands.go). It looks for special cheat codes entered
 // into the command shell and executes them.
