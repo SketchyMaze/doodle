@@ -41,10 +41,6 @@ var Boolprops = map[string]Boolprop{
 		Get: func() bool { return usercfg.Current.HorizontalToolbars },
 		Set: func(v bool) { usercfg.Current.HorizontalToolbars = v },
 	},
-	"compress-drawings": {
-		Get: func() bool { return CompressDrawings },
-		Set: func(v bool) { CompressDrawings = v },
-	},
 	"eager-render": {
 		Get: func() bool { return EagerRenderLevelChunks },
 		Set: func(v bool) { EagerRenderLevelChunks = v },

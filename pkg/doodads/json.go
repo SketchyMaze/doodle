@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -17,10 +18,20 @@ import (
 // and the return value is gz bytes and not the raw JSON.
 func (d *Doodad) ToJSON() ([]byte, error) {
 	// Gzip compressing?
-	if balance.CompressDrawings {
+	if balance.DrawingFormat == balance.FormatGZip {
 		return d.ToGzip()
 	}
 
+	// Zipfile?
+	if balance.DrawingFormat == balance.FormatZipfile {
+		return d.ToZipfile()
+	}
+
+	return d.AsJSON()
+}
+
+// AsJSON returns it just as JSON without any fancy gzip/zip magic.
+func (d *Doodad) AsJSON() ([]byte, error) {
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
 	if usercfg.Current.JSONIndent {
@@ -47,6 +58,12 @@ func FromJSON(filename string, data []byte) (*Doodad, error) {
 			return nil, err
 		} else {
 			doodad = gzd
+		}
+	} else if http.DetectContentType(data) == "application/zip" {
+		if zipdoodad, err := FromZipfile(data); err != nil {
+			return nil, err
+		} else {
+			doodad = zipdoodad
 		}
 	}
 

@@ -59,6 +59,10 @@ func init() {
 				Name:  "remove-actor",
 				Usage: "Remove all instances of the actor from the level. Value is their filename or UUID.",
 			},
+			&cli.BoolFlag{
+				Name:  "touch",
+				Usage: "simply load and re-save the level, to migrate it to a zipfile",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
@@ -93,6 +97,11 @@ func editLevel(c *cli.Context, filename string) error {
 	/***************************
 	* Update level properties *
 	***************************/
+
+	if c.Bool("touch") {
+		log.Info("Just touching and resaving the file")
+		modified = true
+	}
 
 	if c.String("title") != "" {
 		lvl.Title = c.String("title")

@@ -168,10 +168,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 				img := images[i]
 				log.Info("Converting extra layer %d", i)
 				_, chunker := imageToChunker(img, chroma, palette, chunkSize)
-				doodad.Layers = append(doodad.Layers, doodads.Layer{
-					Name:    toLayerName(inputFiles[i]),
-					Chunker: chunker,
-				})
+				doodad.AddLayer(toLayerName(inputFiles[i]), chunker)
 			}
 		}
 

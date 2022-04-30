@@ -226,7 +226,7 @@ func (c *Chunk) Teardown() int {
 
 	if c.texture != nil {
 		c.texture.Free()
-		c.texture = nil
+		c.texture = nil // NPE <- here
 		freed++
 	}
 

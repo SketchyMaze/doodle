@@ -272,7 +272,14 @@ func (w *Canvas) Loop(ev *event.State) error {
 	_ = w.loopConstrainScroll()
 
 	// Every so often, eager-load/unload chunk bitmaps to save on memory.
-	w.LoadUnloadChunks()
+	if w.level != nil {
+		// Unloads bitmaps and textures every N frames...
+		w.LoadUnloadChunks()
+
+		// Unloads chunks themselves (from zipfile levels) that aren't
+		// recently accessed.
+		w.chunks.FreeCaches()
+	}
 
 	// Remove any actors that were destroyed the previous tick.
 	var newActors []*Actor

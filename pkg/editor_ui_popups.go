@@ -354,11 +354,10 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.layersWindow.Show()
 			},
 			OnAddLayer: func() {
-				layer := doodads.Layer{
-					Name:    fmt.Sprintf("layer %d", len(scene.Doodad.Layers)),
-					Chunker: level.NewChunker(scene.DoodadSize),
-				}
-				scene.Doodad.Layers = append(scene.Doodad.Layers, layer)
+				layer := scene.Doodad.AddLayer(
+					fmt.Sprintf("layer %d", len(scene.Doodad.Layers)),
+					nil,
+				)
 				log.Info("Added new layer: %d %s",
 					len(scene.Doodad.Layers), layer.Name)
 

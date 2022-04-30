@@ -92,9 +92,16 @@ func showLevel(c *cli.Context, filename string) error {
 		}
 	}
 
+	// Is it a new zipfile format?
+	var fileType = "json or gzip"
+	if lvl.Zipfile != nil {
+		fileType = "zipfile"
+	}
+
 	fmt.Printf("===== Level: %s =====\n", filename)
 
 	fmt.Println("Headers:")
+	fmt.Printf("   File format: %s\n", fileType)
 	fmt.Printf("  File version: %d\n", lvl.Version)
 	fmt.Printf("  Game version: %s\n", lvl.GameVersion)
 	fmt.Printf("   Level title: %s\n", lvl.Title)
@@ -170,9 +177,16 @@ func showDoodad(c *cli.Context, filename string) error {
 		return nil
 	}
 
+	// Is it a new zipfile format?
+	var fileType = "json or gzip"
+	if dd.Zipfile != nil {
+		fileType = "zipfile"
+	}
+
 	fmt.Printf("===== Doodad: %s =====\n", filename)
 
 	fmt.Println("Headers:")
+	fmt.Printf("   File format: %s\n", fileType)
 	fmt.Printf("  File version: %d\n", dd.Version)
 	fmt.Printf("  Game version: %s\n", dd.GameVersion)
 	fmt.Printf("  Doodad title: %s\n", dd.Title)

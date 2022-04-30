@@ -59,6 +59,10 @@ func init() {
 				Name:  "unlock",
 				Usage: "remove the write-lock on the level file",
 			},
+			&cli.BoolFlag{
+				Name:  "touch",
+				Usage: "simply load and re-save the doodad, to migrate it to a zipfile",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if c.NArg() < 1 {
@@ -93,6 +97,11 @@ func editDoodad(c *cli.Context, filename string) error {
 	/***************************
 	* Update level properties *
 	***************************/
+
+	if c.Bool("touch") {
+		log.Info("Just touching and resaving the file")
+		modified = true
+	}
 
 	if c.String("title") != "" {
 		dd.Title = c.String("title")

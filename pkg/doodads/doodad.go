@@ -52,6 +52,25 @@ func New(size int) *Doodad {
 	}
 }
 
+// AddLayer adds a new layer to the doodad. Call this rather than appending
+// your own layer so it points the Zipfile and layer number in. The chunker
+// is optional - pass nil and a new blank chunker is created.
+func (d *Doodad) AddLayer(name string, chunker *level.Chunker) Layer {
+	if chunker == nil {
+		chunker = level.NewChunker(d.ChunkSize())
+	}
+
+	layer := Layer{
+		Name:    name,
+		Chunker: chunker,
+	}
+	layer.Chunker.Layer = len(d.Layers)
+	d.Layers = append(d.Layers, layer)
+	d.Inflate()
+
+	return layer
+}
+
 // Teardown cleans up texture cache memory when the doodad is no longer needed by the game.
 func (d *Doodad) Teardown() {
 	var (
@@ -101,7 +120,8 @@ func (d *Doodad) Rect() render.Rect {
 // Inflate attaches the pixels to their swatches after loading from disk.
 func (d *Doodad) Inflate() {
 	d.Palette.Inflate()
-	for _, layer := range d.Layers {
+	for i, layer := range d.Layers {
+		layer.Chunker.Layer = i
 		layer.Chunker.Inflate(d.Palette)
 	}
 }

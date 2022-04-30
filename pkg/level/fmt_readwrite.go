@@ -1,7 +1,6 @@
 package level
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"runtime"
@@ -82,9 +81,8 @@ func LoadFile(filename string) (*Level, error) {
 		return level, nil
 	} else {
 		log.Warn(err.Error())
+		return nil, err
 	}
-
-	return nil, errors.New("invalid file type")
 }
 
 // WriteFile saves a level to disk in the user's config directory.
@@ -98,7 +96,6 @@ func (m *Level) WriteFile(filename string) error {
 	m.GameVersion = branding.Version
 
 	// Maintenance functions, clean up cruft before save.
-	m.PruneChunks()
 	m.PruneLinks()
 
 	bin, err := m.ToJSON()

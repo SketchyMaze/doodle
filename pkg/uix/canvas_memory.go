@@ -45,19 +45,18 @@ func (w *Canvas) LoadUnloadChunks() {
 		wg.Add(1)
 		go func(i int) {
 			for coord := range chunks {
-				if chunk, ok := w.level.Chunker.GetChunk(coord); ok {
-					chunk := chunk
-
-					if _, ok := chunksInside[coord]; ok {
-						// Preload its bitmap image.
+				if _, ok := chunksInside[coord]; ok {
+					// This chunk is INSIDE our viewport, preload its bitmap.
+					if chunk, ok := w.level.Chunker.GetChunk(coord); ok {
 						_ = chunk.CachedBitmap(render.Invisible)
 						resultInside++
-					} else {
-						// Unload its bitmap and texture.
-						chunksTeardown = append(chunksTeardown, chunk)
-						resultOutside++
+						continue
 					}
 				}
+
+				// Chunks outside the viewport, we won't load them and
+				// the Chunker will flush them out to (zip) file.
+				resultOutside++
 			}
 			wg.Done()
 		}(i)

@@ -1,6 +1,7 @@
 package level
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -25,6 +26,13 @@ type Base struct {
 	Title       string `json:"title"`
 	Author      string `json:"author"`
 	Locked      bool   `json:"locked"`
+
+	// v2 level format: zip files with external chunks.
+	// (v0 was json text, v1 was gzip compressed json text).
+	// The game must load levels created using the previous
+	// formats, they will not have a Zipfile and will have
+	// Chunkers in memory from their (gz) json.
+	Zipfile *zip.Reader `json:"-"`
 
 	// Every drawing type is able to embed other files inside of itself.
 	Files FileSystem `json:"files"`
@@ -95,12 +103,11 @@ func (m *Level) Teardown() {
 		textures int
 	)
 
-	for coord := range m.Chunker.IterChunks() {
-		if chunk, ok := m.Chunker.GetChunk(coord); ok {
-			freed := chunk.Teardown()
-			chunks++
-			textures += freed
-		}
+	// Free any CACHED chunks' memory.
+	for chunk := range m.Chunker.IterCachedChunks() {
+		freed := chunk.Teardown()
+		chunks++
+		textures += freed
 	}
 
 	log.Debug("Teardown level (%s): Freed %d textures across %d level chunks", m.Title, textures, chunks)

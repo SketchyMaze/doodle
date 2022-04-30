@@ -6,6 +6,15 @@ import (
 	"git.kirsle.net/go/render"
 )
 
+// Format for level and doodad files.
+type Format int
+
+const (
+	FormatJSON    Format = iota // v0: plain json files
+	FormatGZip                  // v1: gzip compressed json files
+	FormatZipfile               // v2: zip archive with external chunks
+)
+
 // Numbers.
 var (
 	// Window dimensions.
@@ -87,7 +96,14 @@ var (
 	EmbeddedWallpaperBasePath = "assets/wallpapers/"
 
 	// File formats: save new levels and doodads gzip compressed
-	CompressDrawings = true
+	DrawingFormat = FormatZipfile
+
+	// Zipfile drawings: max size of the LRU cache for loading chunks from
+	// a zip file. Normally the chunker discards chunks not loaded in a
+	// recent tick, but when iterating the full level this limits the max
+	// size of loaded chunks before some will be freed to make room.
+	// 0 = do not cap the cache.
+	ChunkerLRUCacheMax = 0
 
 	// Play Mode Touchscreen controls.
 	PlayModeIdleTimeout = 2200 * time.Millisecond
