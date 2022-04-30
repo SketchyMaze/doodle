@@ -83,7 +83,7 @@ func (s *Supervisor) InstallScripts(level *level.Level) error {
 // The `name` is used to name the VM for debug logging.
 func (s *Supervisor) AddLevelScript(id string, name string) error {
 	if _, ok := s.scripts[id]; ok {
-		return fmt.Errorf("duplicate actor ID %s in level", id)
+		return fmt.Errorf("AddLevelScript: duplicate actor ID '%s' in level", id)
 	}
 
 	s.scripts[id] = NewVM(fmt.Sprintf("%s#%s", name, id))

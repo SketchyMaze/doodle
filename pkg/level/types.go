@@ -35,7 +35,7 @@ type Base struct {
 	Zipfile *zip.Reader `json:"-"`
 
 	// Every drawing type is able to embed other files inside of itself.
-	Files FileSystem `json:"files"`
+	Files *FileSystem `json:"files,omitempty"`
 }
 
 // Level is the container format for Doodle map drawings.
@@ -81,6 +81,7 @@ func New() *Level {
 			Version: 1,
 			Title:   "Untitled",
 			Author:  os.Getenv("USER"),
+			Files:   NewFileSystem(),
 		},
 		Chunker: NewChunker(balance.ChunkSize),
 		Palette: &Palette{},

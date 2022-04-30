@@ -23,6 +23,13 @@ func (d *Doodad) ToZipfile() ([]byte, error) {
 		}
 	}
 
+	// Migrate attached files to ZIP.
+	if d.Files != nil {
+		if err := d.Files.MigrateZipfile(zipper); err != nil {
+			return nil, fmt.Errorf("FileSystem.MigrateZipfile: %s", err)
+		}
+	}
+
 	// Write the header json.
 	{
 		header, err := d.AsJSON()
@@ -91,10 +98,16 @@ func (d *Doodad) populateFromZipfile(data []byte) error {
 
 	// Keep the zipfile reader handy.
 	d.Zipfile = zf
+	if d.Files != nil {
+		d.Files.Zipfile = zf
+	}
 	for i, layer := range d.Layers {
 		layer.Chunker.Layer = i
 		layer.Chunker.Zipfile = zf
 	}
+
+	// Re-inflate data after saving a new zipfile.
+	d.Inflate()
 
 	return err
 }

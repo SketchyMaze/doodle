@@ -403,7 +403,7 @@ func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 // centerIn is optional, ignored if zero.
 func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, centerIn render.Rect) {
 	// Load in the player character.
-	player, err := doodads.LoadFile(filename)
+	player, err := doodads.LoadFromEmbeddable(filename, s.Level)
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)
@@ -567,6 +567,12 @@ func (s *PlayScene) SetCheated() {
 	if s.timerImperfectImage != nil {
 		s.timerImperfectImage.Hide()
 	}
+}
+
+// GetCheated gives read-only access to tell if you have been cheating. However, by
+// querying this in the dev console during gameplay, you would be marked as cheating. ;)
+func (s *PlayScene) GetCheated() bool {
+	return s.cheated
 }
 
 // ShowEndLevelModal centralizes the EndLevel modal config.

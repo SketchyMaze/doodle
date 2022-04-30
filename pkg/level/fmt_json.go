@@ -114,6 +114,11 @@ func (m *Level) ToZipfile() ([]byte, error) {
 		return nil, fmt.Errorf("MigrateZipfile: %s", err)
 	}
 
+	// Migrate attached files to ZIP.
+	if err := m.Files.MigrateZipfile(zipper); err != nil {
+		return nil, fmt.Errorf("FileSystem.MigrateZipfile: %s", err)
+	}
+
 	// Write the header json.
 	{
 		header, err := m.AsJSON()
@@ -204,6 +209,11 @@ func (m *Level) populateFromZipfile(data []byte) error {
 	// Keep the zipfile reader handy.
 	m.Zipfile = zf
 	m.Chunker.Zipfile = zf
+	m.Files.Zipfile = zf
+
+	// Re-inflate the level: ensures Actor instances get their IDs
+	// and everything is reloaded after saving the level.
+	m.Inflate()
 
 	return err
 }
