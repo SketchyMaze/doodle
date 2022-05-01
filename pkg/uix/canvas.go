@@ -377,10 +377,10 @@ func (w *Canvas) LoadingViewport() render.Rect {
 	}
 
 	return render.Rect{
-		X: vp.X - chunkSize*margin,
-		Y: vp.Y - chunkSize*margin,
-		W: vp.W + chunkSize*margin,
-		H: vp.H + chunkSize*margin,
+		X: vp.X - chunkSize*margin.X,
+		Y: vp.Y - chunkSize*margin.Y,
+		W: vp.W + chunkSize*margin.X,
+		H: vp.H + chunkSize*margin.Y,
 	}
 }
 

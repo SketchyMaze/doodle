@@ -131,8 +131,8 @@ var (
 	EagerRenderLevelChunks = true
 
 	// Number of chunks margin outside the Canvas Viewport for the LoadingViewport.
-	LoadingViewportMarginChunks        = 2
-	CanvasLoadUnloadModuloTicks uint64 = 4
+	LoadingViewportMarginChunks        = render.NewPoint(8, 4) // hoz, vert
+	CanvasLoadUnloadModuloTicks uint64 = 2
 )
 
 // Edit Mode Values

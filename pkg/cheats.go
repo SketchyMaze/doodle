@@ -1,6 +1,7 @@
 package doodle
 
 import (
+	"strings"
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
@@ -134,26 +135,6 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		setPlayerCharacter = true
 		d.Flash("Set default player character to Bird (red)")
 
-	case balance.CheatPlayAsBoy:
-		balance.PlayerCharacterDoodad = "boy.doodad"
-		setPlayerCharacter = true
-		d.Flash("Set default player character to Boy")
-
-	case balance.CheatPlayAsAzuBlue:
-		balance.PlayerCharacterDoodad = "azu-blu.doodad"
-		setPlayerCharacter = true
-		d.Flash("Set default player character to Blue Azulian")
-
-	case balance.CheatPlayAsThief:
-		balance.PlayerCharacterDoodad = "thief.doodad"
-		setPlayerCharacter = true
-		d.Flash("Set default player character to Thief")
-
-	case balance.CheatPlayAsAnvil:
-		balance.PlayerCharacterDoodad = "anvil.doodad"
-		setPlayerCharacter = true
-		d.Flash("Set default player character to the Anvil")
-
 	case balance.CheatGodMode:
 		if isPlay {
 			d.Flash("God mode toggled")
@@ -189,7 +170,15 @@ func (c Command) cheatCommand(d *Doodle) bool {
 		}
 
 	default:
-		return false
+		// See if it was an endorsed actor cheat.
+		if filename, ok := balance.CheatActors[strings.ToLower(c.Raw)]; ok {
+			d.Flash("Set default player character to %s.", filename)
+			balance.PlayerCharacterDoodad = filename
+			setPlayerCharacter = true
+		} else {
+			// Not a cheat code.
+			return false
+		}
 	}
 
 	// If we're setting the player character and in Play Mode, do it.

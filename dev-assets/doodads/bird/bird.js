@@ -1,8 +1,26 @@
-// Bird
+// Bird (red and blue)
+
+/*
+Base A.I. behaviors (red bird) are:
+
+- Tries to maintain original altitude in level and flies left/right.
+- Divebombs the player to attack, then climbs back to its original
+  altitude when it hits a floor/wall.
+
+Blue bird:
+
+- Flies in a sine wave pattern (its target altitude fluctuates
+  around the bird's original placement on the level).
+- Longer aggro radius to dive.
+*/
 
 let speed = 4,
 	Vx = Vy = 0,
-	altitude = Self.Position().Y; // original height in the level
+	color = Self.GetTag("color"), // informs our A.I. behaviors
+	searchStep = 12 // pixels to step while searching for a player
+	searchLimit = color === "blue" ? 24 : 12, // multiples of searchStep for aggro radius
+	altitude = Self.Position().Y, // original height in level
+	targetAltitude = altitude;    // bird's target height to maintain
 
 let direction = "left",
 	lastDirection = "left";
@@ -42,6 +60,11 @@ function main() {
 		lastSampled = Point(0, 0);
 
 	setInterval(() => {
+		// Run blue bird A.I. if we are blue: moves our target altitude along a sine wave.
+		if (color === "blue") {
+			AI_BlueBird();
+		}
+
 		// Sample how far we've moved to detect hitting a wall.
 		if (sampleTick % sampleRate === 0) {
 			let curP = Self.Position()
@@ -65,8 +88,8 @@ function main() {
 			// If we are not flying at our original altitude, correct for that.
 			let curV = Self.Position();
 			Vy = 0.0;
-			if (curV.Y != altitude) {
-				Vy = curV.Y < altitude ? 1 : -1;
+			if (curV.Y != targetAltitude) {
+				Vy = curV.Y < targetAltitude ? 1 : -1;
 			}
 
 			// Scan for the player character and dive.
@@ -114,9 +137,9 @@ function AI_ScanForPlayer() {
 		return
 	}
 
-	let stepY = 12, // number of pixels to skip
+	let stepY = searchStep, // number of pixels to skip
 		stepX = stepY,
-		limit = stepX * 20, // furthest we'll scan
+		limit = stepX * searchLimit, // furthest we'll scan
 		scanX = scanY = 0,
 		size = Self.Size(),
 		fromPoint = Self.Position();
@@ -145,6 +168,35 @@ function AI_ScanForPlayer() {
 	}
 
 	return;
+}
+
+// Sine wave controls for the Blue bird.
+var sineLimit = 32,
+	sineCounter = 0,
+	sineDirection = 1,
+	sineFrequency = 5, // every 500ms
+	sineStep = 16;
+
+// A.I. Subroutine: sine wave pattern (Blue bird).
+function AI_BlueBird() {
+	// The main loop runs on a 100ms interval, control how frequently
+	// to adjust the bird's target velocity.
+	if (sineCounter > 0 && (sineCounter % sineFrequency) > 1) {
+		sineCounter++;
+		return;
+	}
+	sineCounter++;
+
+	targetAltitude += sineStep*sineDirection;
+
+	// Cap the distance between our starting altitude and sine-wave target.
+	if (targetAltitude < altitude && altitude - targetAltitude >= sineLimit) {
+		targetAltitude = altitude - sineLimit;
+		sineDirection = 1
+	} else if (targetAltitude > altitude && targetAltitude - altitude >= sineLimit) {
+		targetAltitude = altitude + sineLimit;
+		sineDirection = -1
+	}
 }
 
 // If under control of the player character.

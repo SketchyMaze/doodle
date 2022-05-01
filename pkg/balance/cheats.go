@@ -26,10 +26,6 @@ var (
 	CheatGiveKeys         = "give all keys"
 	CheatDropItems        = "drop all items"
 	CheatPlayAsBird       = "fly like a bird"
-	CheatPlayAsBoy        = "pinocchio"
-	CheatPlayAsAzuBlue    = "the cell"
-	CheatPlayAsThief      = "play as thief"
-	CheatPlayAsAnvil      = "megaton weight"
 	CheatGodMode          = "god mode"
 	CheatDebugLoadScreen  = "test load screen"
 	CheatUnlockLevels     = "master key"
@@ -39,3 +35,15 @@ var (
 var (
 	CheatEnabledUnlockLevels bool
 )
+
+// Actor replacement cheats
+var CheatActors = map[string]string{
+	"pinocchio":       "boy",
+	"the cell":        "azu-blue",
+	"super azulian":   "azu-red",
+	"hyper azulian":   "azu-white",
+	"fly like a bird": "bird-red",
+	"bluebird":        "bird-blue",
+	"megaton weight":  "anvil",
+	"play as thief":   "thief",
+}

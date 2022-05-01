@@ -20,7 +20,7 @@ type Chunker struct {
 	// Layer is optional for the caller, levels use only 0 and
 	// doodads use them for frames. When chunks are exported to
 	// zipfile the Layer keeps them from overlapping.
-	Layer int
+	Layer int `json:"-"` // internal use only
 	Size  int `json:"size"`
 
 	// A Zipfile reference for new-style levels and doodads which
@@ -311,7 +311,7 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 	// Hit the zipfile for it.
 	if c.Zipfile != nil {
 		if chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, p); err == nil {
-			log.Debug("GetChunk(%s) cache miss, read from zip", p)
+			// log.Debug("GetChunk(%s) cache miss, read from zip", p)
 			c.SetChunk(p, chunk)       // cache it
 			c.logChunkAccess(p, chunk) // for the LRU cache
 			if c.pal != nil {

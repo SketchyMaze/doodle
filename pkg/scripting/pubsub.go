@@ -35,7 +35,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		for {
 			select {
 			case <-vm.stop:
-				log.Info("JavaScript VM %s stopping PubSub goroutine", vm.Name)
+				log.Debug("JavaScript VM %s stopping PubSub goroutine", vm.Name)
 				return
 			case msg := <-vm.Inbound:
 				vm.muSubscribe.Lock()

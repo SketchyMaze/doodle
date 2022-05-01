@@ -132,6 +132,7 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			Label:        "Hide touchscreen control hints during Play Mode",
 			Font:         balance.UIFont,
 			BoolVariable: c.HideTouchHints,
+			OnClick:      onClick,
 		},
 		{
 			Label: "Level & Doodad Editor",
@@ -141,6 +142,7 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			Label:        "Horizontal instead of vertical toolbars",
 			Font:         balance.UIFont,
 			BoolVariable: c.HorizontalToolbars,
+			OnClick:      onClick,
 			Tooltip: ui.Tooltip{
 				Text: "Note: reload your level after changing this option.\n" +
 					"Playtesting and returning will do.",
@@ -151,6 +153,7 @@ func (c Settings) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.F
 			Label:        "Disable auto-save in the Editor",
 			Font:         balance.UIFont,
 			BoolVariable: c.DisableAutosave,
+			OnClick:      onClick,
 		},
 		{
 			Label:        "Draw a crosshair at the mouse cursor.",
@@ -409,109 +412,47 @@ func (c Settings) makeExperimentalTab(tabFrame *ui.TabFrame, Width, Height int) 
 
 	// Common click handler for all settings,
 	// so we can write the updated info to disk.
-	onClick := func(ed ui.EventData) error {
+	onClick := func() {
 		saveGameSettings()
-		return nil
 	}
 
-	rows := []struct {
-		Header       string
-		Text         string
-		Boolean      *bool
-		TextVariable *string
-		PadY         int
-		PadX         int
-		name         string // for special cases
-	}{
+	form := magicform.Form{
+		Supervisor: c.Supervisor,
+		Engine:     c.Engine,
+		Vertical:   true,
+		LabelWidth: 150,
+	}
+	form.Create(tab, []magicform.Field{
 		{
-			Header: "Enable Experimental Features",
+			Label: "Enable Experimental Features",
+			Font:  balance.LabelFont,
 		},
 		{
-			Text: "The setting below can enable experimental features in this\n" +
+			Label: "The setting below can enable experimental features in this\n" +
 				"game. These are features which are still in development and\n" +
 				"may have unstable or buggy behavior.",
-			PadY: 2,
+			Font: balance.UIFont,
 		},
 		{
-			Header: "Viewport window",
+			Label: "Viewport window",
+			Font:  balance.LabelFont,
 		},
 		{
-			Text: "This option in the Level menu opens another view into\n" +
+			Label: "This option in the Level menu opens another view into\n" +
 				"the level. Has glitchy wallpaper problems.",
-			PadY: 2,
+			Font: balance.UIFont,
 		},
 		{
-			Boolean: c.EnableFeatures,
-			Text:    "Enable experimental features",
-			PadX:    4,
+			BoolVariable: c.EnableFeatures,
+			Label:        "Enable experimental features",
+			Font:         balance.UIFont,
+			OnClick:      onClick,
 		},
 		{
-			Text: "Restart the game for changes to take effect.",
-			PadY: 2,
+			Label: "Restart the game for changes to take effect.",
+			Font:  balance.UIFont,
 		},
-	}
-	for _, row := range rows {
-		row := row
-		frame := ui.NewFrame("Frame")
-		tab.Pack(frame, ui.Pack{
-			Side:  ui.N,
-			FillX: true,
-			PadY:  row.PadY,
-		})
-
-		// Headers get their own row to themselves.
-		if row.Header != "" {
-			label := ui.NewLabel(ui.Label{
-				Text: row.Header,
-				Font: balance.LabelFont,
-			})
-			frame.Pack(label, ui.Pack{
-				Side: ui.W,
-				PadX: row.PadX,
-			})
-			continue
-		}
-
-		// Checkboxes get their own row.
-		if row.Boolean != nil {
-			cb := ui.NewCheckbox(row.Text, row.Boolean, ui.NewLabel(ui.Label{
-				Text: row.Text,
-				Font: balance.UIFont,
-			}))
-			cb.Handle(ui.Click, onClick)
-			cb.Supervise(c.Supervisor)
-
-			// Add warning to the toolbars option if the EditMode is currently active.
-			if row.name == "toolbars" && c.SceneName == "Edit" {
-				ui.NewTooltip(cb, ui.Tooltip{
-					Text: "Note: reload your level after changing this option.\n" +
-						"Playtesting and returning will do.",
-					Edge: ui.Top,
-				})
-			}
-
-			frame.Pack(cb, ui.Pack{
-				Side: ui.W,
-				PadX: row.PadX,
-			})
-			continue
-		}
-
-		// Any leftover Text gets packed to the left.
-		if row.Text != "" {
-			tf := ui.NewFrame("TextFrame")
-			label := ui.NewLabel(ui.Label{
-				Text: row.Text,
-				Font: balance.UIFont,
-			})
-			tf.Pack(label, ui.Pack{
-				Side: ui.W,
-			})
-			frame.Pack(tf, ui.Pack{
-				Side: ui.W,
-			})
-		}
-	}
+	})
 
 	return tab
 }
