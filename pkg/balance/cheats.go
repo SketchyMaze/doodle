@@ -24,6 +24,7 @@ var (
 	CheatNoclip           = "ghost mode"
 	CheatShowAllActors    = "show all actors"
 	CheatGiveKeys         = "give all keys"
+	CheatGiveGems         = "give all gems"
 	CheatDropItems        = "drop all items"
 	CheatPlayAsBird       = "fly like a bird"
 	CheatGodMode          = "god mode"
@@ -39,7 +40,7 @@ var (
 // Actor replacement cheats
 var CheatActors = map[string]string{
 	"pinocchio":       "boy",
-	"the cell":        "azu-blue",
+	"the cell":        "azu-blu",
 	"super azulian":   "azu-red",
 	"hyper azulian":   "azu-white",
 	"fly like a bird": "bird-red",

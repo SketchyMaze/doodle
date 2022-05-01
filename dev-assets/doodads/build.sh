@@ -34,6 +34,10 @@ doors() {
 	cd doors/
 	make
 	cd ..
+
+	cd gems/
+	make
+	cd ..
 }
 
 trapdoors() {
@@ -84,6 +88,16 @@ warpdoor() {
 	cd ..
 }
 
+creatures() {
+	cd snake/
+	make
+	cd ..
+
+	cd crusher/
+	make
+	cd ..
+}
+
 boy
 buttons
 switches
@@ -94,6 +108,7 @@ mobs
 objects
 onoff
 warpdoor
+creatures
 doodad edit-doodad -quiet -lock -author "Noah" ../../assets/doodads/*.doodad
 doodad edit-doodad ../../assets/doodads/azu-blu.doodad
 doodad edit-doodad -hide ../../assets/doodads/boy.doodad

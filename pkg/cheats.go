@@ -121,6 +121,18 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to get all colored keys.")
 		}
 
+	case balance.CheatGiveGems:
+		if isPlay {
+			playScene.SetCheated()
+			playScene.Player.AddItem("gem-red.doodad", 1)
+			playScene.Player.AddItem("gem-green.doodad", 1)
+			playScene.Player.AddItem("gem-blue.doodad", 1)
+			playScene.Player.AddItem("gem-yellow.doodad", 1)
+			d.Flash("Given all gemstones to the player character.")
+		} else {
+			d.FlashError("Use this cheat in Play Mode to get all gemstones.")
+		}
+
 	case balance.CheatDropItems:
 		if isPlay {
 			playScene.SetCheated()

@@ -169,39 +169,7 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 			Label:       "Wallpaper:",
 			Font:        balance.UIFont,
 			SelectValue: selectedWallpaper,
-			Options: []magicform.Option{
-				{
-					Label: "Notebook",
-					Value: "notebook.png",
-				},
-				{
-					Label: "Legal Pad",
-					Value: "legal.png",
-				},
-				{
-					Label: "Graph paper",
-					Value: "graph.png",
-				},
-				{
-					Label: "Dotted paper",
-					Value: "dots.png",
-				},
-				{
-					Label: "Blueprint",
-					Value: "blueprint.png",
-				},
-				{
-					Label: "Pure white",
-					Value: "white.png",
-				},
-				{
-					Separator: true,
-				},
-				{
-					Label: "Custom wallpaper...",
-					Value: balance.CustomWallpaperFilename,
-				},
-			},
+			Options:     balance.Wallpapers,
 			OnSelect: func(v interface{}) {
 				if filename, ok := v.(string); ok {
 					// Picking the Custom option?

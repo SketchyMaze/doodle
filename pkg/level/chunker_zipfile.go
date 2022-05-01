@@ -76,6 +76,12 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 					continue
 				}
 
+				// Verify that this chunk file in the old ZIP was not empty.
+				if chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, point); err == nil && chunk.Len() == 0 {
+					log.Debug("Skip chunk %s (old zipfile chunk was empty)", coord)
+					continue
+				}
+
 				log.Info("Copy existing chunk %s", file.Name)
 				if err := zf.Copy(file); err != nil {
 					return err
@@ -94,6 +100,10 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 
 	// Flush in-memory chunks out to zipfile.
 	for coord, chunk := range c.Chunks {
+		if _, ok := erasedChunks[coord]; ok {
+			continue
+		}
+
 		filename := fmt.Sprintf("chunks/%d/%s.json", c.Layer, coord.String())
 		log.Info("Flush in-memory chunks to %s", filename)
 		chunk.ToZipfile(zf, filename)

@@ -1,6 +1,7 @@
 package scripting
 
 import (
+	"git.kirsle.net/apps/doodle/lib/debugging"
 	"git.kirsle.net/apps/doodle/pkg/log"
 	"github.com/dop251/goja"
 )
@@ -28,6 +29,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 			if err := recover(); err != nil {
 				// TODO EXCEPTIONS
 				log.Error("RegisterPublishHooks(%s): %s", vm.Name, err)
+				debugging.PrintCallers()
 			}
 		}()
 
@@ -72,6 +74,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		},
 
 		"Publish": func(name string, v ...goja.Value) {
+			vm.muPublish.Lock()
 			for _, channel := range vm.Outbound {
 				channel <- Message{
 					Name:     name,
@@ -79,6 +82,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 					Args:     v,
 				}
 			}
+			vm.muPublish.Unlock()
 		},
 
 		"Broadcast": func(name string, v ...goja.Value) {

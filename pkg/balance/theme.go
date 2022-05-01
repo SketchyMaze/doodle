@@ -1,6 +1,7 @@
 package balance
 
 import (
+	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"
@@ -214,6 +215,61 @@ var (
 	ButtonLightRed = style.DefaultButton
 
 	DefaultCrosshairColor = render.RGBA(0, 153, 255, 255)
+
+	// Default built-in wallpapers.
+	Wallpapers = []magicform.Option{
+		{
+			Label: "Notebook",
+			Value: "notebook.png",
+		},
+		{
+			Label: "Legal Pad",
+			Value: "legal.png",
+		},
+		{
+			Label: "Graph paper",
+			Value: "graph.png",
+		},
+		{
+			Label: "Dotted paper",
+			Value: "dots.png",
+		},
+		{
+			Label: "Blueprint",
+			Value: "blueprint.png",
+		},
+		{
+			Label: "Red parchment",
+			Value: "red-parchment.png",
+		},
+		{
+			Label: "Green parchment",
+			Value: "green-parchment.png",
+		},
+		{
+			Label: "Blue parchment",
+			Value: "blue-parchment.png",
+		},
+		{
+			Label: "Yellow parchment",
+			Value: "yellow-parchment.png",
+		},
+		{
+			Label: "White parchment",
+			Value: "white-parchment.png",
+		},
+		{
+			Label: "Pure white",
+			Value: "white.png",
+		},
+		{
+			Separator: true,
+		},
+		{
+			Label: "Custom wallpaper...",
+			Value: CustomWallpaperFilename,
+		},
+	}
 )
 
 // Customize the various button styles.

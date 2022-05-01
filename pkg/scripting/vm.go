@@ -28,6 +28,7 @@ type VM struct {
 	stop        chan bool
 	subscribe   map[string][]goja.Value // Subscribed message handlers by name.
 	muSubscribe sync.RWMutex
+	muPublish   sync.Mutex // serialize PubSub publishes
 
 	vm *goja.Runtime
 
@@ -44,7 +45,7 @@ func NewVM(name string) *VM {
 		timers: map[int]*Timer{},
 
 		// Pub/sub structs.
-		Inbound:   make(chan Message),
+		Inbound:   make(chan Message, 100),
 		Outbound:  []chan Message{},
 		stop:      make(chan bool, 1),
 		subscribe: map[string][]goja.Value{},

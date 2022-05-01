@@ -19,7 +19,15 @@ function main() {
             let overlap = e.Overlap;
 
             if (overlap.Y === 0 && !(overlap.X === 0 && overlap.W < 5) && !(overlap.X === size)) {
-                // Standing on top, ignore.
+                // Be sure to position them snug on top.
+                // TODO: this might be a nice general solution in the
+                // collision detector...
+                console.log("new box code");
+                e.Actor.MoveTo(Point(
+                    e.Actor.Position().X,
+                    Self.Position().Y - e.Actor.Hitbox().Y - e.Actor.Hitbox().H - 2,
+                ))
+                e.Actor.SetGrounded(true);
                 return false;
             } else if (overlap.Y === size) {
                 // From the bottom, boop it up.
