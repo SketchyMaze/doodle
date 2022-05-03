@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/pkg/level"
@@ -24,6 +25,11 @@ func init() {
 				Usage:   "limit output (don't show doodad data at the end)",
 			},
 			&cli.StringFlag{
+				Name:    "output",
+				Aliases: []string{"o"},
+				Usage:   "write to a different output file than the input (especially for --resize)",
+			},
+			&cli.StringFlag{
 				Name:  "title",
 				Usage: "set the level title",
 			},
@@ -41,7 +47,11 @@ func init() {
 			},
 			&cli.StringFlag{
 				Name:  "max-size",
-				Usage: "set the page max size (WxH format, like 2550x3300)",
+				Usage: "set the bounded level page max size (WxH format, like 2550x3300)",
+			},
+			&cli.IntFlag{
+				Name:  "resize",
+				Usage: "change the chunk size, and re-encode the whole level into chunks of the new size",
 			},
 			&cli.StringFlag{
 				Name:  "wallpaper",
@@ -93,6 +103,11 @@ func editLevel(c *cli.Context, filename string) error {
 	}
 
 	log.Info("File: %s", filename)
+
+	// Migrating it to a different chunk size?
+	if c.Int("resize") > 0 {
+		return rechunkLevel(c, filename, lvl)
+	}
 
 	/***************************
 	* Update level properties *
@@ -198,4 +213,46 @@ func editLevel(c *cli.Context, filename string) error {
 	}
 
 	return showLevel(c, filename)
+}
+
+// doodad edit-level --resize CHUNK_SIZE
+//
+// Handles the deep operation of re-copying the old level into a new level
+// at the new chunk size.
+func rechunkLevel(c *cli.Context, filename string, lvl *level.Level) error {
+	var chunkSize = c.Int("resize")
+	log.Info("Resizing the level's chunk size.")
+	log.Info("Current chunk size: %d", lvl.Chunker.Size)
+	log.Info("Target chunk size: %d", chunkSize)
+
+	if output := c.String("output"); output != "" {
+		filename = output
+		log.Info("Output file will be: %s", filename)
+	}
+
+	if chunkSize == lvl.Chunker.Size {
+		return errors.New("the level already has the target chunk size")
+	}
+
+	// Keep the level's current Chunker, and set a new one.
+	var oldChunker = lvl.Chunker
+	lvl.Chunker = level.NewChunker(chunkSize)
+
+	// Iterate all the Pixels of the old chunker.
+	log.Info("Copying pixels from old chunker into new chunker (this may take a while)...")
+	for pixel := range oldChunker.IterPixels() {
+		lvl.Chunker.Set(
+			pixel.Point(),
+			pixel.Swatch,
+		)
+	}
+
+	log.Info("Writing new data to filename: %s", filename)
+	if err := lvl.WriteFile(filename); err != nil {
+		log.Error(err.Error())
+	}
+
+	return showLevel(c, filename)
+
+	return nil
 }

@@ -432,9 +432,17 @@ func (c *Chunker) FreeChunk(p render.Point) bool {
 		return false
 	}
 
-	// Don't delete empty chunks, hang on until next zipfile save.
-	if chunk, ok := c.Chunks[p]; ok && chunk.Len() == 0 {
-		return false
+	// If this chunk has been modified since it was last loaded from ZIP, hang onto it
+	// in memory until the next save so we don't lose it.
+	if chunk, ok := c.Chunks[p]; ok {
+		if chunk.IsModified() {
+			return false
+		}
+
+		// Don't delete empty chunks, hang on until next zipfile save.
+		if chunk, ok := c.Chunks[p]; ok && chunk.Len() == 0 {
+			return false
+		}
 	}
 
 	delete(c.Chunks, p)

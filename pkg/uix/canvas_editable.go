@@ -517,15 +517,6 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		var WP = w.WorldIndexAt(cursor)
 
 		for _, actor := range w.actors {
-			// Permanently color the actor if it's the current subject of the
-			// Link Tool (after 1st click, until 2nd click of other actor)
-			if w.linkFirst == actor {
-				actor.Canvas.Configure(ui.Config{
-					Background: render.RGBA(255, 153, 255, 153),
-				})
-				continue
-			}
-
 			// Compute the bounding box on screen where this doodad
 			// visually appears.
 			var scrollBias = render.Point{
@@ -566,6 +557,14 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			} else {
 				actor.Canvas.SetBorderSize(0)
 				actor.Canvas.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO
+			}
+
+			// Permanently color the actor if it's the current subject of the
+			// Link Tool (after 1st click, until 2nd click of other actor)
+			if w.linkFirst == actor {
+				actor.Canvas.Configure(ui.Config{
+					Background: render.RGBA(255, 153, 255, 153),
+				})
 			}
 		}
 	}

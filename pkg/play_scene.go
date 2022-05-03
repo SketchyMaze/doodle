@@ -395,6 +395,14 @@ func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 	}
 
 	s.installPlayerDoodad(playerCharacterFilename, spawn, centerIn)
+
+	// Scroll the level canvas to center on the start point.
+	scroll := render.Point{
+		X: -(spawn.X - (s.d.width / 2)),
+		Y: -(spawn.Y - (s.d.height / 2)),
+	}
+	log.Info("Scrolling level viewport to spawn (%s) location: %s", spawn, scroll)
+	s.drawing.ScrollTo(scroll)
 }
 
 // Load and install the player doodad onto the level.

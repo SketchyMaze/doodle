@@ -35,7 +35,9 @@ type Chunk struct {
 	texture            render.Texturer
 	textureMasked      render.Texturer
 	textureMaskedColor render.Color
-	dirty              bool
+
+	dirty    bool // Chunk is changed and needs textures redrawn
+	modified bool // Chunk is changed and is held in memory til next Zipfile save
 }
 
 // JSONChunk holds a lightweight (interface-free) copy of the Chunk for
@@ -240,15 +242,33 @@ func (c *Chunk) Teardown() int {
 }
 
 // Set proxies to the accessor and flags the texture as dirty.
+//
+// It also marks the chunk as "Modified" so it will be kept in memory until the drawing
+// is next saved to disk and the chunk written out to the zipfile.
 func (c *Chunk) Set(p render.Point, sw *Swatch) error {
 	c.dirty = true
+	c.modified = true
 	return c.Accessor.Set(p, sw)
 }
 
-// Delete proxies to the accessor and flags the texture as dirty.
+// Delete proxies to the accessor and flags the texture as dirty and marks the chunk "Modified".
 func (c *Chunk) Delete(p render.Point) error {
 	c.dirty = true
+	c.modified = true
 	return c.Accessor.Delete(p)
+}
+
+/*
+IsModified returns the chunk's Modified flag. This is most likely to occur in the Editor when
+the user is drawing onto the level. Modified chunks are not unloaded from memory ever, until
+they can be saved back to disk in the Zipfile format. During regular gameplay, chunks are
+loaded and unloaded as needed.
+
+The modified flag is flipped on Set() or Delete() and is never unflipped. On file save,
+the Chunker is reloaded from scratch to hold chunks cached from zipfile members.
+*/
+func (c *Chunk) IsModified() bool {
+	return c.modified
 }
 
 // Rect returns the bounding coordinates that the Chunk has pixels for.

@@ -407,7 +407,6 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 			for _, actor := range actors {
 				u.Scene.Level.Actors.Remove(actor.Actor)
 			}
-			u.Scene.Level.PruneLinks()
 			drawing.InstallActors(u.Scene.Level.Actors)
 		}
 	}

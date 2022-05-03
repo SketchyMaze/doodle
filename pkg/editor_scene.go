@@ -521,25 +521,38 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		log.Error("Error publishing level: %s", err.Error())
 	}
 
+	s.lastAutosaveAt = time.Now()
 	return m.WriteFile(filename)
 }
 
 // AutoSave takes an autosave snapshot of the level or drawing.
 func (s *EditorScene) AutoSave() error {
-	var filename = "_autosave.level"
+	var (
+		filename = "_autosave.level"
+		err      error
+	)
 
-	switch s.DrawingType {
-	case enum.LevelDrawing:
-		s.d.Flash("Automatically saved level to %s", filename)
-		return s.Level.WriteFile(filename)
-	case enum.DoodadDrawing:
-		filename = "_autosave.doodad"
+	s.d.FlashError("Beginning AutoSave() in a background thread")
 
-		s.d.Flash("Automatically saved doodad to %s", filename)
-		return s.Doodad.WriteFile(filename)
-	}
+	// Trigger the auto-save in the background to not block the main thread.
+	go func() {
+		var err error
+		switch s.DrawingType {
+		case enum.LevelDrawing:
+			err = s.Level.WriteFile(filename)
+			s.d.Flash("Automatically saved level to %s", filename)
+		case enum.DoodadDrawing:
+			filename = "_autosave.doodad"
+			err = s.Doodad.WriteFile(filename)
+			s.d.Flash("Automatically saved doodad to %s", filename)
+		}
 
-	return nil
+		if err != nil {
+			s.d.FlashError("Error saving %s: %s", filename, err)
+		}
+	}()
+
+	return err
 }
 
 // LoadDoodad loads a doodad from disk.

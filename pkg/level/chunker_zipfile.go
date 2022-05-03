@@ -204,3 +204,13 @@ func ChunksInZipfile(zf *zip.Reader, layer int) []render.Point {
 
 	return result
 }
+
+// ChunkInZipfile tests whether the chunk exists in the zipfile.
+func ChunkInZipfile(zf *zip.Reader, layer int, coord render.Point) bool {
+	for _, chunk := range ChunksInZipfile(zf, layer) {
+		if chunk == coord {
+			return true
+		}
+	}
+	return false
+}
