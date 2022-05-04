@@ -207,8 +207,6 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// Initialize the drawing canvas.
 	s.drawing = uix.NewCanvas(balance.ChunkSize, false)
 	s.drawing.Name = "play-canvas"
-	s.drawing.MoveTo(render.Origin)
-	s.drawing.Resize(render.NewRect(d.width, d.height))
 	s.drawing.Compute(d.Engine)
 
 	// Handler when an actor touches water or fire.
@@ -294,7 +292,44 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	s.perfectRun = true
 	s.running = true
 
+	// // Cap the canvas size in case the user has an ultra HD monitor that's bigger
+	// // than a bounded level's limits.
+	// s.screen.Compute(d.Engine)
+	// s.PlaceResizeCanvas()
+
 	return nil
+}
+
+// PlaceResizeCanvas updates the Canvas size and placement on the screen,
+// e.g. if an ultra HD monitor plays a Bounded level where the entirety of a
+// level bounds is on-screen, the drawing should be cut there and the
+// canvas centered.
+func (s *PlayScene) PlaceResizeCanvas() {
+	var (
+		width   = s.d.width
+		height  = s.d.height
+		menubar = 0
+	)
+
+	if s.menubar != nil {
+		menubar = s.menubar.Size().H
+		height -= menubar
+	}
+
+	if s.Level != nil && s.Level.PageType >= level.Bounded {
+		if s.Level.MaxWidth < int64(width) {
+			width = int(s.Level.MaxWidth)
+		}
+		if s.Level.MaxHeight < int64(height) {
+			height = int(s.Level.MaxHeight)
+		}
+	}
+
+	s.drawing.Resize(render.NewRect(width, height))
+	s.drawing.MoveTo(render.Point{
+		X: (s.d.width / 2) - (width / 2),
+		Y: menubar,
+	})
 }
 
 // SetPlayerCharacter changes the doodad used for the player, by destroying the
@@ -682,8 +717,8 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	s.supervisor.Loop(ev)
 
 	// Has the window been resized?
-	if ev.WindowResized {
-		s.drawing.Resize(render.NewRect(d.width, d.height))
+	if ev.WindowResized || s.drawing.Point().IsZero() {
+		s.PlaceResizeCanvas()
 		s.screen.Resize(render.NewRect(d.width, d.height))
 		return nil
 	}
@@ -732,9 +767,9 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	}
 
 	// Clear the canvas and fill it with white.
-	d.Engine.Clear(render.White)
+	d.Engine.Clear(balance.WindowBackground)
 
-	// Draw the level.
+	// Draw the canvas widget.
 	s.drawing.Present(d.Engine, s.drawing.Point())
 
 	// Draw out bounding boxes.

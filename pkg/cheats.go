@@ -142,11 +142,6 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.FlashError("Use this cheat in Play Mode to clear your inventory.")
 		}
 
-	case balance.CheatPlayAsBird:
-		balance.PlayerCharacterDoodad = "bird-red.doodad"
-		setPlayerCharacter = true
-		d.Flash("Set default player character to Bird (red)")
-
 	case balance.CheatGodMode:
 		if isPlay {
 			d.Flash("God mode toggled")
@@ -181,6 +176,18 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			d.Flash("All locked Story Mode levels are again locked.")
 		}
 
+	case balance.CheatSkipLevel:
+		if isPlay {
+			playScene.SetCheated()
+			playScene.ShowEndLevelModal(
+				true,
+				"Level Completed",
+				"Great job, you cheated and 'won' the level!",
+			)
+		} else {
+			d.Flash("Use this cheat in Play Mode to instantly win the level.")
+		}
+
 	default:
 		// See if it was an endorsed actor cheat.
 		if filename, ok := balance.CheatActors[strings.ToLower(c.Raw)]; ok {
@@ -195,6 +202,7 @@ func (c Command) cheatCommand(d *Doodle) bool {
 
 	// If we're setting the player character and in Play Mode, do it.
 	if setPlayerCharacter && isPlay {
+		playScene.SetCheated()
 		playScene.SetPlayerCharacter(balance.PlayerCharacterDoodad)
 	}
 

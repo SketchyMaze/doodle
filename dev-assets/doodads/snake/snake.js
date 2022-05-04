@@ -66,15 +66,12 @@ function main() {
         }
 
         if (delta < watchRadius) {
-            console.log("Player is nearby snake! %d", delta);
             nearby = true;
         }
 
         // If we are idle and the player is jumping nearby...
         if (state == states.idle && nearby && Self.Grounded()) {
             if (playerPoint.Y - point.Y+(size.H/2) < 20) {
-                console.warn("Player is jumping near us!")
-
                 // Enter attack state.
                 if (time.Since(jumpCooldownStart) > 500 * time.Millisecond) {
                     state = states.attacking;
@@ -88,7 +85,6 @@ function main() {
 
         // If we are attacking and gravity has claimed us back.
         if (state === states.attacking && Self.Grounded()) {
-            console.log("Landed again after jump!");
             state = states.idle;
             jumpCooldownStart = time.Now();
             Self.StopAnimation();

@@ -194,6 +194,11 @@ func (c *Chunk) ToBitmap(mask render.Color) image.Image {
 	for px := range c.Iter() {
 		var color = px.Swatch.Color
 
+		// Don't draw perfectly white pixels, SDL2 will make them invisible!
+		if color == render.White {
+			color.Blue--
+		}
+
 		// If the swatch has a pattern, mesh it in.
 		if px.Swatch.Pattern != "" {
 			color = pattern.SampleColor(px.Swatch.Pattern, color, px.Point())

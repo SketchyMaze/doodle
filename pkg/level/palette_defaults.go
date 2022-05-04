@@ -10,6 +10,7 @@ var (
 		"Default",
 		"Colored Pencil",
 		"Blueprint",
+		"Neon Bright",
 	}
 
 	DefaultPalettes = map[string]*Palette{
@@ -93,6 +94,43 @@ var (
 				{
 					Name:    "hint",
 					Color:   render.MustHexColor("#F0F"),
+					Pattern: "marker.png",
+				},
+			},
+		},
+
+		"Neon Bright": {
+			Swatches: []*Swatch{
+				{
+					Name:    "ground",
+					Color:   render.MustHexColor("#FFE"),
+					Solid:   true,
+					Pattern: "noise.png",
+				},
+				{
+					Name:    "grass green",
+					Color:   render.Green,
+					Solid:   true,
+					Pattern: "noise.png",
+				},
+				{
+					Name:    "fire",
+					Color:   render.MustHexColor("#F90"),
+					Pattern: "marker.png",
+				},
+				{
+					Name:    "electricity",
+					Color:   render.Yellow,
+					Pattern: "perlin.png",
+				},
+				{
+					Name:    "water",
+					Color:   render.MustHexColor("#09F"),
+					Pattern: "ink.png",
+				},
+				{
+					Name:    "hint",
+					Color:   render.Magenta,
 					Pattern: "marker.png",
 				},
 			},

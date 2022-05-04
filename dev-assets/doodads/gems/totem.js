@@ -35,8 +35,6 @@ function main() {
         }
     }
 
-    console.log("Totem %s is linked to %d neighbors", Self.ID(), Object.keys(totems).length);
-
     // Shimmer animation is just like the gemstones: first 4 frames
     // are the filled socket sprites.
     Self.AddAnimation("shimmer", 100, [0, 1, 2, 3, 0]);
@@ -81,14 +79,10 @@ function tryPower() {
         return;
     }
 
-    console.log("Totem %s (%s) tries power", Self.ID(), Self.Filename);
-
     // Can't if any of our linked totems aren't activated.
     try {
         for (let totemId of Object.keys(totems)) {
-            console.log("Totem %s (%s) sees linked totem %s", Self.ID(), Self.Filename, totemId);
             if (totems[totemId] === false) {
-                console.log("Can't, a linked totem not active!");
                 return;
             }
         }
@@ -98,11 +92,9 @@ function tryPower() {
 
     // Can't if we aren't powered.
     if (activated === false) {
-        console.log("Can't, we are not active!");
         return;
     }
 
     // Emit power!
-    console.log("POWER!");
     Message.Publish("power", true);
 }

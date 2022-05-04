@@ -30,6 +30,7 @@ var (
 	CheatGodMode          = "god mode"
 	CheatDebugLoadScreen  = "test load screen"
 	CheatUnlockLevels     = "master key"
+	CheatSkipLevel        = "warp whistle"
 )
 
 // Global cheat boolean states.

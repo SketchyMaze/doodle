@@ -588,12 +588,47 @@ func (s *MainScene) LoopLazyScroll() {
 			}
 		}
 	} else {
+		var (
+			// Bounded and bordered levels will naturally hit
+			// an edge and stop scrolling
+			bounceY   = currentScroll.Y == lastScrollValue.Y
+			bounceX   = currentScroll.X == lastScrollValue.X
+			worldsize = s.canvas.Chunker().WorldSize()
+			viewport  = s.canvas.Viewport()
+		)
+
+		// In case of unbounded levels, set limits ourself.
+		if !bounceX {
+			if viewport.X < worldsize.X || viewport.X > worldsize.W {
+				bounceX = true
+
+				// Set the trajectory the right direction immediately.
+				if viewport.X < worldsize.X {
+					s.lazyScrollTrajectory.X = 1
+				} else {
+					s.lazyScrollTrajectory.X = -1
+				}
+			}
+		}
+		if !bounceY {
+			if viewport.Y < worldsize.Y || viewport.Y > worldsize.H {
+				bounceY = true
+
+				// Set the trajectory the right direction immediately.
+				if viewport.Y < worldsize.Y {
+					s.lazyScrollTrajectory.Y = 1
+				} else {
+					s.lazyScrollTrajectory.Y = -1
+				}
+			}
+		}
+
 		// Lazy bounce algorithm.
-		if currentScroll.Y == lastScrollValue.Y {
+		if bounceY {
 			log.Debug("LoopLazyScroll: Hit a floor/ceiling")
 			s.lazyScrollTrajectory.Y = -s.lazyScrollTrajectory.Y
 		}
-		if currentScroll.X == lastScrollValue.X {
+		if bounceX {
 			log.Debug("LoopLazyScroll: Hit the side of the map!")
 			s.lazyScrollTrajectory.X = -s.lazyScrollTrajectory.X
 		}

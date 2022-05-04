@@ -458,8 +458,6 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		// See if any of the actors are below the mouse cursor.
 		var WP = w.WorldIndexAt(cursor)
 
-		// log.Debug("ActorTool, cursor=%s WP=%s zoom=%d P=%s", cursor, WP, w.Zoom, ui.AbsolutePosition(w))
-
 		var deleteActors = []*Actor{}
 		for _, actor := range w.actors {
 

@@ -235,6 +235,10 @@ var (
 			Value: "dots.png",
 		},
 		{
+			Label: "Dotted paper (dark)",
+			Value: "dots-dark.png",
+		},
+		{
 			Label: "Blueprint",
 			Value: "blueprint.png",
 		},

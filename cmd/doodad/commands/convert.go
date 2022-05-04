@@ -32,8 +32,8 @@ func init() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "key",
-				Usage: "chroma key color for transparency on input image files",
-				Value: "#ffffff",
+				Usage: "chroma key color for transparency on input image files, e.g. #ffffff",
+				Value: "",
 			},
 			&cli.StringFlag{
 				Name:    "title",
@@ -57,12 +57,16 @@ func init() {
 			}
 
 			// Parse the chroma key.
-			chroma, err := render.HexColor(c.String("key"))
-			if err != nil {
-				return cli.Exit(
-					"Chrome key not a valid color: "+err.Error(),
-					1,
-				)
+			var chroma = render.Invisible
+			if key := c.String("key"); key != "" {
+				color, err := render.HexColor(c.String("key"))
+				if err != nil {
+					return cli.Exit(
+						"Chrome key not a valid color: "+err.Error(),
+						1,
+					)
+				}
+				chroma = color
 			}
 
 			args := c.Args().Slice()
