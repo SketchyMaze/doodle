@@ -395,6 +395,7 @@ func (u *EditorUI) SetupWorkspace(d *Doodle) *ui.Frame {
 func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	drawing := uix.NewCanvas(balance.ChunkSize, true)
 	drawing.Name = "edit-canvas"
+	drawing.FancyCursors = true
 	drawing.Palette = level.DefaultPalette()
 	drawing.SetBackground(render.White)
 	if len(drawing.Palette.Swatches) > 0 {
@@ -517,7 +518,22 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 // _wanted_ to be smaller, as in Doodad Editing Mode.
 func (u *EditorUI) ExpandCanvas(e render.Engine) {
 	if u.Scene.DrawingType == enum.LevelDrawing {
-		u.Canvas.Resize(u.Workspace.Size())
+		var (
+			workspaceSize = u.Workspace.Size()
+			maxSize       = workspaceSize
+		)
+
+		// If the level is bounded make that the max canvas size.
+		if u.Scene.Level != nil && u.Scene.Level.PageType >= level.Bounded {
+			if u.Scene.Level.MaxWidth < int64(maxSize.W) {
+				maxSize.W = int(u.Scene.Level.MaxWidth)
+			}
+			if u.Scene.Level.MaxHeight < int64(maxSize.H) {
+				maxSize.H = int(u.Scene.Level.MaxHeight)
+			}
+		}
+
+		u.Canvas.Resize(maxSize)
 	} else {
 		// Size is managed externally.
 	}

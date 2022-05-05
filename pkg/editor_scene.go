@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/cursor"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/enum"
@@ -608,6 +609,9 @@ func (s *EditorScene) Destroy() error {
 	// Free SDL2 textures. Note: if they are switching to the Editor, the chunks still have
 	// their bitmaps cached and will regen the textures as needed.
 	s.UI.Teardown()
+
+	// Reset the cursor to default.
+	cursor.Current = cursor.NewPointer(s.d.Engine)
 
 	return nil
 }

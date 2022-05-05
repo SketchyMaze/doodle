@@ -1,6 +1,8 @@
 package uix
 
 import (
+	"git.kirsle.net/apps/doodle/pkg/cursor"
+	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -27,24 +29,49 @@ func (w *Canvas) IsCursorOver() bool {
 // brush size, and draws a "preview rect" under the cursor of how big a click
 // will be at that size.
 func (w *Canvas) presentCursor(e render.Engine) {
+	// Are we to show a custom mouse cursor?
+	if w.FancyCursors {
+		switch w.Tool {
+		case drawtool.PencilTool:
+			w.cursor = cursor.NewPencil(e)
+		case drawtool.FloodTool:
+			w.cursor = cursor.NewFlood(e)
+		default:
+			w.cursor = nil
+		}
+
+		if w.IsCursorOver() && w.cursor != nil {
+			cursor.Current = w.cursor
+		} else {
+			cursor.Current = cursor.NewPointer(e)
+		}
+	}
+
 	if !w.IsCursorOver() {
 		return
 	}
 
 	// Are we editing with a thick brush?
-	if w.BrushSize > 0 {
-		var r = w.BrushSize
-		rect := render.Rect{
-			X: shmem.Cursor.X - r,
-			Y: shmem.Cursor.Y - r,
-			W: r * 2,
-			H: r * 2,
+	if w.Tool == drawtool.LineTool || w.Tool == drawtool.RectTool ||
+		w.Tool == drawtool.PencilTool || w.Tool == drawtool.EllipseTool ||
+		w.Tool == drawtool.EraserTool {
+
+		// Draw a box where the brush size is.
+		if w.BrushSize > 0 {
+			var r = w.BrushSize
+			rect := render.Rect{
+				X: shmem.Cursor.X - r,
+				Y: shmem.Cursor.Y - r,
+				W: r * 2,
+				H: r * 2,
+			}
+			e.DrawRect(render.Black, rect)
+			rect.X++
+			rect.Y++
+			rect.W -= 2
+			rect.H -= 2
+			e.DrawRect(render.RGBA(153, 153, 153, 153), rect)
 		}
-		e.DrawRect(render.Black, rect)
-		rect.X++
-		rect.Y++
-		rect.W -= 2
-		rect.H -= 2
-		e.DrawRect(render.RGBA(153, 153, 153, 153), rect)
 	}
+
 }

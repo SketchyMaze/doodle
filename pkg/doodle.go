@@ -9,6 +9,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/apps/doodle/pkg/cursor"
 	"git.kirsle.net/apps/doodle/pkg/enum"
 	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
@@ -209,8 +210,8 @@ func (d *Doodle) Run() error {
 		// Draw the debug overlay over all scenes.
 		d.DrawDebugOverlay()
 
-		// Let the gamepad controller draw in case of MouseMode to show the cursor.
-		gamepad.Draw(d.Engine)
+		// Draw our custom mouse cursor to the screen.
+		cursor.Draw(d.Engine)
 
 		// Render the pixels to the screen.
 		err = d.Engine.Present()

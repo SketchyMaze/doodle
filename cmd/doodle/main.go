@@ -199,6 +199,10 @@ func main() {
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
 
+		// Hide the mouse cursor over the window, we draw our own
+		// sprite image for it.
+		engine.ShowCursor(false)
+
 		// Set the app window icon.
 		if engine, ok := game.Engine.(*sdl.Renderer); ok {
 			if icon, err := sprites.LoadImage(game.Engine, balance.WindowIcon); err == nil {

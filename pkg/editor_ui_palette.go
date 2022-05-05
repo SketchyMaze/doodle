@@ -4,8 +4,11 @@ import (
 	"fmt"
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/level"
 	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
 
@@ -94,12 +97,15 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 				frame.Pack(row, packConfig)
 			}
 
-			colorbox := ui.NewFrame(swatch.Name)
-			colorbox.Configure(ui.Config{
-				Width:      width,
-				Height:     width,
-				Background: swatch.Color,
-			})
+			// Fancy colorbox: show the color AND the texture of each swatch.
+			var (
+				colorbox = uix.NewCanvas(width, false)
+				chunker  = level.NewChunker(width)
+				size     = render.NewRect(width, width)
+			)
+			chunker.SetRect(size, swatch)
+			colorbox.Resize(size)
+			colorbox.Load(u.Canvas.Palette, chunker)
 
 			btn := ui.NewRadioButton("palette", &u.selectedSwatch, swatch.Name, colorbox)
 			btn.Configure(ui.Config{

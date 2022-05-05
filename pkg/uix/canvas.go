@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
+	"git.kirsle.net/apps/doodle/pkg/cursor"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/drawtool"
 	"git.kirsle.net/apps/doodle/pkg/filesystem"
@@ -55,6 +56,10 @@ type Canvas struct {
 	// Debug tools
 	// NoLimitScroll suppresses the scroll limit for bounded levels.
 	NoLimitScroll bool
+
+	// Show custom mouse cursors over this canvas (eg. editor tools)
+	FancyCursors bool
+	cursor       *cursor.Cursor
 
 	// Underlying chunk data for the drawing.
 	level    *level.Level

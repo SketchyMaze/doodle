@@ -14,7 +14,11 @@ var (
 	GoldCoin   = "assets/sprites/gold.png"
 	SilverCoin = "assets/sprites/silver.png"
 	LockIcon   = "assets/sprites/padlock.png"
-	CursorIcon = "assets/sprites/pointer.png"
+
+	// Cursors
+	CursorIcon  = "assets/sprites/pointer.png"
+	PencilIcon  = "assets/sprites/pencil.png"
+	FloodCursor = "assets/sprites/flood-cursor.png"
 
 	// Title Screen Font
 	TitleScreenFont = render.Text{
