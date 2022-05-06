@@ -42,6 +42,10 @@ var Builtins = []Pattern{
 	},
 	{
 		Name:     "Bubbles",
+		Filename: "bubbles.png",
+	},
+	{
+		Name:     "Circles",
 		Filename: "circles.png",
 	},
 	{

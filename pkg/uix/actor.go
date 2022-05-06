@@ -36,6 +36,7 @@ type Actor struct {
 	// Actor runtime variables.
 	hasGravity   bool
 	hasInventory bool
+	wet          bool
 	isMobile     bool // Mobile character, such as the player or an enemy
 	noclip       bool // Disable collision detection
 	hidden       bool // invisible, via Hide() and Show()
@@ -150,6 +151,16 @@ func (a *Actor) Invulnerable() bool {
 // SetInvulnerable sets the actor's immortal flag.
 func (a *Actor) SetInvulnerable(v bool) {
 	a.immortal = v
+}
+
+// Wet returns whether the actor is in contact with water pixels in a level.
+func (a *Actor) IsWet() bool {
+	return a.wet
+}
+
+// SetWet updates the state of the actor's wet-ness.
+func (a *Actor) SetWet(v bool) {
+	a.wet = v
 }
 
 // Size returns the size of the actor, from the underlying doodads.Drawing.

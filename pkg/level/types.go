@@ -57,6 +57,9 @@ type Level struct {
 	MaxHeight int64    `json:"boundedHeight"`
 	Wallpaper string   `json:"wallpaper"`
 
+	// The last scrolled position in the editor.
+	ScrollPosition render.Point `json:"scroll"`
+
 	// Actors keep a list of the doodad instances in this map.
 	Actors ActorMap `json:"actors"`
 

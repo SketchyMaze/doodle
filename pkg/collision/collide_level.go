@@ -35,6 +35,7 @@ func (c *Collide) Reset() {
 	c.Left = false
 	c.Right = false
 	c.Bottom = false
+	c.InWater = false
 }
 
 // Side of the collision box (top, bottom, left, right)
@@ -85,8 +86,6 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		if result.Bottom {
 			if !d.Grounded() {
 				d.SetGrounded(true)
-			} else {
-				// result.Bottom = false
 			}
 		} else {
 			d.SetGrounded(false)
@@ -250,10 +249,10 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 		side Side
 	}
 	jobs := []jobSide{ // We'll scan each side of the bounding box in parallel
-		jobSide{col.Top[0], col.Top[1], Top},
-		jobSide{col.Bottom[0], col.Bottom[1], Bottom},
-		jobSide{col.Left[0], col.Left[1], Left},
-		jobSide{col.Right[0], col.Right[1], Right},
+		{col.Top[0], col.Top[1], Top},
+		{col.Bottom[0], col.Bottom[1], Bottom},
+		{col.Left[0], col.Left[1], Left},
+		{col.Right[0], col.Right[1], Right},
 	}
 
 	var wg sync.WaitGroup

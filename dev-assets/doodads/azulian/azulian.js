@@ -2,9 +2,11 @@
 
 const color = Self.GetTag("color");
 var playerSpeed = color === 'blue' ? 2 : 4,
+	swimSpeed = playerSpeed * 0.4,
 	aggroX = 250,  // X/Y distance sensitivity from player
 	aggroY = color === 'blue' ? 100 : 200,
 	jumpSpeed = color === 'blue' ? 14 : 18,
+	swimJumpSpeed = jumpSpeed * 0.4,
 	animating = false,
 	direction = "right",
 	lastDirection = "right";
@@ -14,7 +16,9 @@ if (color === 'white') {
 	aggroX = 1000;
 	aggroY = 400;
 	playerSpeed = 8;
+	swimSpeed = playerSpeed * 0.4;
 	jumpSpeed = 20;
+	swimJumpSpeed = jumpSpeed * 0.4;
 }
 
 function setupAnimations(color) {
@@ -29,6 +33,9 @@ function setupAnimations(color) {
 
 function main() {
 	playerSpeed = color === 'blue' ? 2 : 4;
+
+	let swimJumpCooldownTick = 0, // minimum Game Tick before we can jump while swimming
+		swimJumpCooldown = 10;    // CONFIG: delta of ticks between jumps while swimming
 
 	Self.SetMobile(true);
 	Self.SetGravity(true);
@@ -95,8 +102,25 @@ function main() {
 			sampleTick++;
 		}
 
-		let Vx = parseFloat(playerSpeed * (direction === "left" ? -1 : 1)),
-			Vy = jump && Self.Grounded() ? parseFloat(-jumpSpeed) : Self.GetVelocity().Y;
+		// Handle being underwater.
+		let canJump = Self.Grounded();
+		if (Self.IsWet()) {
+			let tick = GetTick();
+			if (tick > swimJumpCooldownTick) {
+				canJump = true;
+				swimJumpCooldownTick = tick + swimJumpCooldown;
+			}
+		}
+
+		// How speedy would our movement and jump be?
+		let xspeed = playerSpeed, yspeed = jumpSpeed;
+		if (Self.IsWet()) {
+			xspeed = swimSpeed;
+			yspeed = swimJumpSpeed;
+		}
+
+		let Vx = parseFloat(xspeed * (direction === "left" ? -1 : 1)),
+			Vy = jump && canJump ? parseFloat(-yspeed) : Self.GetVelocity().Y;
 		Self.SetVelocity(Vector(Vx, Vy));
 
 		// If we changed directions, stop animating now so we can

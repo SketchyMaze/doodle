@@ -122,6 +122,7 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Destroy":         actor.Destroy,
 		"Freeze":          actor.Freeze,
 		"Unfreeze":        actor.Unfreeze,
+		"IsWet":           actor.IsWet,
 		"Hide":            actor.Hide,
 		"Show":            actor.Show,
 		"GetLinks": func() []map[string]interface{} {

@@ -37,7 +37,7 @@ var (
 					Name:    "water",
 					Color:   render.MustHexColor("#09F"),
 					Water:   true,
-					Pattern: "ink.png",
+					Pattern: "bubbles.png",
 				},
 				{
 					Name:    "hint",
@@ -89,7 +89,7 @@ var (
 					Name:    "water",
 					Color:   render.RGBA(0, 153, 255, 255),
 					Water:   true,
-					Pattern: "ink.png",
+					Pattern: "bubbles.png",
 				},
 				{
 					Name:    "hint",
@@ -126,7 +126,7 @@ var (
 				{
 					Name:    "water",
 					Color:   render.MustHexColor("#09F"),
-					Pattern: "ink.png",
+					Pattern: "bubbles.png",
 				},
 				{
 					Name:    "hint",
@@ -159,7 +159,7 @@ var (
 					Name:    "water",
 					Color:   render.RGBA(0, 153, 255, 255),
 					Water:   true,
-					Pattern: "ink.png",
+					Pattern: "bubbles.png",
 				},
 				{
 					Name:    "electric",

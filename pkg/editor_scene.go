@@ -225,7 +225,11 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 	// Scroll the level to the remembered position from when we went
 	// to Play Mode and back. If no remembered position, this is zero
 	// anyway.
-	s.UI.Canvas.ScrollTo(s.RememberScrollPosition)
+	if s.RememberScrollPosition.IsZero() && s.Level != nil {
+		s.UI.Canvas.ScrollTo(s.Level.ScrollPosition)
+	} else {
+		s.UI.Canvas.ScrollTo(s.RememberScrollPosition)
+	}
 
 	d.Flash("Editor Mode.")
 	if s.DrawingType == enum.LevelDrawing {
@@ -513,6 +517,9 @@ func (s *EditorScene) SaveLevel(filename string) error {
 
 	m.Palette = s.UI.Canvas.Palette
 	m.Chunker = s.UI.Canvas.Chunker()
+
+	// Store the scroll position.
+	m.ScrollPosition = s.UI.Canvas.Scroll
 
 	// Clear the modified flag on the level.
 	s.UI.Canvas.SetModified(false)

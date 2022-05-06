@@ -73,9 +73,13 @@ func (w *Canvas) loopActorCollision() error {
 			// Apply gravity to the actor's velocity.
 			if a.hasGravity && !a.Grounded() { //v.Y >= 0 {
 				if !a.Grounded() {
+					var gravity = balance.Gravity
+					if a.IsWet() {
+						gravity = balance.SwimGravity
+					}
 					v.Y = physics.Lerp(
-						v.Y,             // current speed
-						balance.Gravity, // target max gravity falling downwards
+						v.Y,     // current speed
+						gravity, // target max gravity falling downwards
 						balance.GravityAcceleration,
 					)
 				} else {
@@ -98,12 +102,11 @@ func (w *Canvas) loopActorCollision() error {
 
 			// Check collision with level geometry.
 			chkPoint := delta.ToPoint()
-			info, ok := collision.CollidesWithGrid(a, w.chunks, chkPoint)
-			if ok {
-				// Collision happened with world.
-				if w.OnLevelCollision != nil {
-					w.OnLevelCollision(a, info)
-				}
+			info, _ := collision.CollidesWithGrid(a, w.chunks, chkPoint)
+
+			// Inform the caller about the collision state every tick
+			if w.OnLevelCollision != nil {
+				w.OnLevelCollision(a, info)
 			}
 
 			// Move us back where the collision check put us
