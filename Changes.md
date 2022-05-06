@@ -1,5 +1,117 @@
 # Changes
 
+## v0.13.0 (TBD)
+
+This is a major update that brings deep architectural changes and a lot
+of new content to the game.
+
+Swimming physics have been added:
+
+* The **water** pixels finally do something besides turn the character
+  blue: swimming physics have finally been hooked up!
+* While the player is touching water pixels (and is colored blue),
+  your gravity and jump speed are reduced, but you can "jump"
+  infinite times in order to swim higher in the water. Hold the jump
+  button to climb slowly, spam it to climb quickly.
+* The **Azulians** understand how to swim, too, though left to their
+  own devices they will sink to the bottom of a body of water. They'll
+  swim (jump) up if you're detected and above them. The Blue Azulian
+  has the shortest vertical aggro radius, so it's not a very good swimmer
+  but the White Azulian can traverse water with ease and track you
+  from a greater distance.
+
+New levels:
+
+* **The Jungle** (First Quest) - a direct sequel to the Boat level, it's
+  a jungle and Mayan themed platformer featuring many of the new doodads
+  such as snakes, gemstones, and crushers.
+* **Gems & Totems** (Tutorial, Lesson 4) - a tutorial level about the
+  new Gem and Totem doodads.
+* **Swimming** (Tutorial, Lesson 5) - a tutorial level to learn how
+  "water pixels" work with some moderately safe platforming puzzles
+  included.
+* Some of the existing levels have had minor updates to take advantage
+  of newer game features, such as the water being re-done for the Castle
+  level.
+
+New doodads:
+
+* **Blue Bird:** a blue version of the Bird which flies in a sine wave
+  pattern about its original altitude, and has a larger search range to
+  dive at the player character.
+* **Snake:** a green snake that sits coiled up and always faces the
+  player. If you get nearby and try and jump over, the Snake will jump
+  up and hope to catch you.
+* **Crusher:** a block-headed enemy with an iron helmet which tries to
+  drop on you from above. Its helmet makes a safe platform to ride
+  back up like an elevator.
+* **Gems and Totems:** four collectible gems (in different colors and
+  shapes) that slot into Totems of a matching shape. Totems can link
+  together to require multiple gemstones before they'll emit a power
+  signal to other linked doodads.
+
+New **File Formats**:
+
+* Levels and Doodads have a new file format based on ZIP files,
+  like levelpacks.
+* It massively improves loading screen times and helps the
+  game keep a substantially lighter memory footprint (up to 85%
+  less memory used, like 1.5 GB -> 200 MB on _Azulian Tag - Forest_).
+* **Your old levels and doodads still work**! The next time you save
+  them, they will be converted to the new file format automatically.
+* The `doodad` tool can also upgrade your levels by running:
+  `doodad edit-level --touch <filename>.level`
+
+Other new content to use in your levels:
+
+* New wallpapers: Dotted paper (dark), Parchment paper (red, blue,
+  green, and yellow).
+* New palette: Neon Bright, all bright colors to pair with a dark level
+  wallpaper.
+* New brush pattern: Bubbles. The default "water" color of all the game's
+  palettes will now use the Bubbles pattern by default.
+
+New cheat codes:
+
+* `super azulian`: play as the Red Azulian.
+* `hyper azulian`: play as the White Azulian.
+* `bluebird`: play as the Blue Bird.
+* `warp whistle`: automatically win the current level, with a snarky
+  cheater message in the victory dialog. It will mark the level as
+  Completed but not reward a high score.
+* `$ d.SetPlayerCharacter("anything.doodad")` - set your character to any
+  doodad you want, besides the ones that have dedicated cheat codes. The
+  ".doodad" suffix is optional. Some to try out are "key-blue", "anvil",
+  or "box". If you are playing as a key, a mob might be able to collect
+  you! This will softlock the level, but another call to
+  `d.SetPlayerCharacter()` will fix it! Use the `pinocchio` cheat or
+  restart the game to return to the default character (boy.doodad)
+
+Updates to the JavaScript API for doodads:
+
+* `Self.IsWet() bool` can test if your actor is currently in water.
+
+Other changes this release:
+
+* Editor: fancy **mouse cursors** gives some visual feedback about what
+  tool is active in the editor, with a Pencil and a Flood Fill
+  cursor when those tools are selected.
+* Editor: your **Palette** buttons will now show their pattern with their
+  color as the button face, rather than just the color.
+* Editor: Auto-save is run on a background thread so that, for large
+  levels, it doesn't momentarily freeze the editor on save when it runs.
+* Editor: Fix the Link Tool forgetting connections when you pick up and
+  drop one of the linked doodads.
+* Link Tool: if you click a doodad and don't want to link it to another,
+  click the first doodad again to de-select it (or change tools).
+* Editor: your last scroll position on a level is saved with it, so the
+  editor will be where you left it when you reopen your drawing.
+* Doodad tool: `doodad edit-level --resize <int>` can re-encode a level
+  file using a different chunk size (the default has been 128).
+  Experimental! Very large or small chunk sizes can lead to different
+  performance characteristics in game!
+* Fixed the bug where characters' white eyes were showing as transparent.
+
 ## v0.12.1 (April 16 2022)
 
 This update focuses on memory and performance improvements for the game.

@@ -25,3 +25,6 @@ require (
 	golang.org/x/sys v0.0.0-20220408201424-a24fb2fb8a0f // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 )
+
+replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
+replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
