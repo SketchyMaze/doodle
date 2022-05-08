@@ -38,7 +38,7 @@ func init() {
 				Name:  "hitbox",
 				Usage: "set the doodad hitbox (X,Y,W,H or W,H format)",
 			},
-			&cli.StringSliceFlag{
+			&cli.StringFlag{
 				Name:    "tag",
 				Aliases: []string{"t"},
 				Usage:   "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
@@ -144,29 +144,27 @@ func editDoodad(c *cli.Context, filename string) error {
 	}
 
 	// Tags.
-	tags := c.StringSlice("tag")
-	if len(tags) > 0 {
-		for _, tag := range tags {
-			parts := strings.SplitN(tag, "=", 2)
-			if len(parts) != 2 {
-				log.Error("--tag: must be in format `key=value`. Value may be blank to delete a tag. len=%d", len(parts))
-				os.Exit(1)
-			}
-
-			var (
-				key   = parts[0]
-				value = parts[1]
-			)
-			if value == "" {
-				log.Debug("Delete tag '%s'", key)
-				delete(dd.Tags, key)
-			} else {
-				log.Debug("Set tag '%s' to '%s'", key, value)
-				dd.Tags[key] = value
-			}
-
-			modified = true
+	tag := c.String("tag")
+	if len(tag) > 0 {
+		parts := strings.SplitN(tag, "=", 3)
+		if len(parts) != 2 {
+			log.Error("--tag: must be in format `key=value`. Value may be blank to delete a tag. len=%d tag=%s got=%+v", len(parts), tag, parts)
+			os.Exit(1)
 		}
+
+		var (
+			key   = parts[0]
+			value = parts[1]
+		)
+		if value == "" {
+			log.Debug("Delete tag '%s'", key)
+			delete(dd.Tags, key)
+		} else {
+			log.Debug("Set tag '%s' to '%s'", key, value)
+			dd.Tags[key] = value
+		}
+
+		modified = true
 	}
 
 	if c.Bool("hide") {
