@@ -120,10 +120,10 @@ appimage:
 # `make mingw-release` runs a FULL end-to-end release of Linux and Windows
 # binaries of the game, zipped and tagged and ready to go.
 .PHONY: mingw-release
-mingw-release: doodads build mingw __dist-common appimage release
+mingw-release: doodads build mingw __dist-common release
 
 .PHONY: mingw32-release
-mingw32-release: doodads build mingw32 __dist-common appimage release32
+mingw32-release: doodads build mingw32 __dist-common release32
 
 # `make osx` to cross-compile a Mac OS binary with osxcross.
 # .PHONY: osx

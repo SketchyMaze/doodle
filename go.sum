@@ -41,6 +41,11 @@ git.kirsle.net/go/audio v0.0.0-20201121073642-65068820cbc0 h1:cTJeG7Rf51Uc1LGEc8
 git.kirsle.net/go/audio v0.0.0-20201121073642-65068820cbc0/go.mod h1:RD2Kyiy2lgayzQYmrh0S0/HLiq4XgAldt7MISCvtX5Y=
 git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b h1:TDxEEWOJqMzsu9JW8/QgmT1lgQ9WD2KWlb2lKN/Ql2o=
 git.kirsle.net/go/log v0.0.0-20200902035305-70ac2848949b/go.mod h1:jl+Qr58W3Op7OCxIYIT+b42jq8xFncJXzPufhrvza7Y=
+git.kirsle.net/go/render v0.0.0-20211231003948-9e640ab5c3da/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
+git.kirsle.net/go/render v0.0.0-20220505053906-129a24300dfa h1:Oa99SXkmFGnUNy+toPMQyW/eYotN1nZ9BWAThQ/huiM=
+git.kirsle.net/go/render v0.0.0-20220505053906-129a24300dfa/go.mod h1:ss7pvZbGWrMaDuZwyUTjV9+T0AJwAkxZZHwMFsvHrkk=
+git.kirsle.net/go/ui v0.0.0-20220409211920-3b653e503c5a h1:7pmqBcIfxOxCMCvnCS0XWM9NeXbzKTSQfiJc2IKJW+k=
+git.kirsle.net/go/ui v0.0.0-20220409211920-3b653e503c5a/go.mod h1:cWD/tl2OUj0jWUQxW7BcapxiOFmnCPkrfzJt2tOiD1E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
