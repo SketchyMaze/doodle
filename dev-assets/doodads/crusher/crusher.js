@@ -24,9 +24,10 @@ let direction = "left",
 const states = {
     idle: 0,
     peeking: 1,
-    falling: 2,
-    hit: 3,
-    rising: 4,
+    drop: 2,
+    falling: 3,
+    hit: 4,
+    rising: 5,
 };
 let state = states.idle;
 
@@ -124,7 +125,7 @@ function main() {
                 }
 
                 if (below) {
-                    state = states.falling;
+                    state = states.drop;
                 } else if (nearby) {
                     state = states.peeking;
                 }
@@ -139,10 +140,16 @@ function main() {
                 }
 
                 if (below) {
-                    state = states.falling;
+                    state = states.drop;
                 }
 
                 break;
+            case states.drop:
+                // Begin the fall.
+                Self.ShowLayerNamed("angry");
+                Self.SetVelocity(Vector(0.0, dropSpeed));
+                lastAltitude = -point.Y;
+                state = states.falling;
             case states.falling:
                 Self.ShowLayerNamed("angry");
                 Self.SetVelocity(Vector(0.0, dropSpeed));
