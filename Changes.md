@@ -1,6 +1,6 @@
 # Changes
 
-## v0.13.0 (TBD)
+## v0.13.0 (May 7 2022)
 
 This is a major update that brings deep architectural changes and a lot
 of new content to the game.
