@@ -27,6 +27,3 @@ require (
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 // indirect
 )
 
-replace git.kirsle.net/go/render => /home/kirsle/SketchyMaze/deps/render
-
-replace git.kirsle.net/go/ui => /home/kirsle/SketchyMaze/deps/ui
