@@ -18,11 +18,13 @@ type ConfigEndLevel struct {
 	Success bool // false = failure condition
 
 	// Handler functions - what you don't define will not
-	// show as buttons in the modal.
+	// show as buttons in the modal. Buttons display priority
+	// is as follows these docs in the source code.
+	OnNextLevel       func() // Next Level (victory window)
+	OnRetryCheckpoint func() // Retry from Checkpoint (failed)
+	OnPityNextLevel   func() // Pity "Next Level" (Azulian Tag)
 	OnRestartLevel    func() // Restart Level
-	OnRetryCheckpoint func() // Continue from checkpoint
-	OnEditLevel       func()
-	OnNextLevel       func() // Next Level
+	OnEditLevel       func() // Edit Level (if came from editor)
 	OnExitToMenu      func() // Exit to Menu
 
 	// Set these values to show the "New Record!" part of the modal.
@@ -151,6 +153,10 @@ func makeEndLevel(m *Modal, cfg ConfigEndLevel) *ui.Window {
 		{
 			Label: "Restart Level",
 			F:     cfg.OnRestartLevel,
+		},
+		{
+			Label: "Next Level",
+			F:     cfg.OnPityNextLevel,
 		},
 		{
 			Label: "Edit Level",

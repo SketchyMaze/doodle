@@ -561,8 +561,8 @@ func (s *PlayScene) FailLevel(message string) {
 
 	if s.Level.GameRule.Survival {
 		s.ShowEndLevelModal(
-			true,
-			"Level Completed",
+			false,
+			"You've died!",
 			fmt.Sprintf(
 				"%s\nCongrats on surviving for %s!",
 				message,
@@ -639,6 +639,15 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 		config.OnEditLevel = s.EditLevel
 	}
 
+	// Survival Mode failure? The level is considered completed even if you
+	// die (silver high score) but the default button should be Retry rather
+	// than Next Level.
+	var survivalFailure bool
+	if !success && s.Level.GameRule.Survival {
+		survivalFailure = true
+		success = true // level is completed
+	}
+
 	// Beaten the level?
 	if success {
 		config.OnRetryCheckpoint = nil
@@ -686,6 +695,14 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 				}
 			}
 		}
+	}
+
+	// Survival Mode failures: the Retry buttons should be higher
+	// priority than Next Level but they still get the (pity)
+	// Next Level button.
+	if survivalFailure {
+		config.OnPityNextLevel = config.OnNextLevel
+		config.OnNextLevel = nil
 	}
 
 	// Show the modal.

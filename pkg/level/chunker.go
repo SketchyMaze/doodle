@@ -43,6 +43,7 @@ type Chunker struct {
 	requestsN1            map[render.Point]interface{} // chunks accessed last tick
 	requestsN2            map[render.Point]interface{} // 2 ticks ago (to free soon)
 	chunksToFree          map[render.Point]uint64      // chopping block (free after X ticks)
+	ctfMu                 sync.Mutex                   // lock for chunksToFree
 	requestMu             sync.Mutex
 
 	// The palette reference from first call to Inflate()
@@ -299,6 +300,11 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 	chunk, ok := c.Chunks[p]
 	c.chunkMu.RUnlock()
 
+	// Was it on the chopping block for garbage collection?
+	c.ctfMu.Lock()
+	delete(c.chunksToFree, p)
+	c.ctfMu.Unlock()
+
 	if ok {
 		// An empty chunk? We hang onto these until save time to commit
 		// the empty chunk to ZIP.
@@ -392,6 +398,7 @@ func (c *Chunker) FreeCaches() int {
 
 		// Chunks requested 2 ticks ago but not this tick, put on the chopping
 		// block to free them later.
+		c.ctfMu.Lock()
 		for coord := range requestsN2 {
 			// Old point not requested recently?
 			if _, ok := requestsThisTick[coord]; !ok {
@@ -411,6 +418,7 @@ func (c *Chunker) FreeCaches() int {
 			delete(c.chunksToFree, coord)
 			c.FreeChunk(coord)
 		}
+		c.ctfMu.Unlock()
 
 		// Rotate the cached ticks and clean the slate.
 		c.requestsN2 = c.requestsN1
