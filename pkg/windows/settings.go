@@ -497,11 +497,12 @@ func (c Settings) makeControllerTab(tabFrame *ui.TabFrame, Width, Height int) *u
 					Value: int(gamepad.NStyle),
 				},
 			},
-			SelectValue: *c.ControllerStyle,
+			SelectValue: &c.ControllerStyle,
 			OnSelect: func(v interface{}) {
 				style, _ := v.(int)
 				log.Error("style: %d", style)
 				gamepad.SetStyle(gamepad.Style(style))
+				*c.ControllerStyle = style
 				saveGameSettings()
 			},
 		},

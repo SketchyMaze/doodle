@@ -54,7 +54,7 @@ func (w *Canvas) presentCursor(e render.Engine) {
 	// Are we editing with a thick brush?
 	if w.Tool == drawtool.LineTool || w.Tool == drawtool.RectTool ||
 		w.Tool == drawtool.PencilTool || w.Tool == drawtool.EllipseTool ||
-		w.Tool == drawtool.EraserTool {
+		w.Tool == drawtool.EraserTool && w.Editable {
 
 		// Draw a box where the brush size is.
 		if w.BrushSize > 0 {

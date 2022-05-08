@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/apps/doodle/pkg/balance"
 	"git.kirsle.net/apps/doodle/pkg/collision"
+	"git.kirsle.net/apps/doodle/pkg/cursor"
 	"git.kirsle.net/apps/doodle/pkg/doodads"
 	"git.kirsle.net/apps/doodle/pkg/gamepad"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
@@ -17,6 +18,7 @@ import (
 	"git.kirsle.net/apps/doodle/pkg/physics"
 	"git.kirsle.net/apps/doodle/pkg/savegame"
 	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/apps/doodle/pkg/shmem"
 	"git.kirsle.net/apps/doodle/pkg/sprites"
 	"git.kirsle.net/apps/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
@@ -43,7 +45,8 @@ type PlayScene struct {
 	drawing      *uix.Canvas
 	scripting    *scripting.Supervisor
 	running      bool
-	deathBarrier int // Y position of death barrier in case of falling OOB.
+	deathBarrier int          // Y position of death barrier in case of falling OOB.
+	lastCursor   render.Point // position of cursor X,Y last tick
 
 	// Score variables.
 	startTime  time.Time // wallclock time when level begins
@@ -282,6 +285,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// images which later get fed directly into SDL2 saving speed at
 	// runtime, + the bitmap generation is pretty wicked fast anyway.
 	loadscreen.PreloadAllChunkBitmaps(s.Level.Chunker)
+	s.drawing.LoadUnloadChunks(true)
 
 	// Gamepad: put into GameplayMode.
 	gamepad.SetMode(gamepad.GameplayMode)
@@ -624,6 +628,9 @@ func (s *PlayScene) GetCheated() bool {
 // This is the common handler function between easy methods such as
 // BeatLevel, FailLevel, and DieByFire.
 func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
+	// Always restore the cursor.
+	cursor.Current = cursor.NewPointer(s.d.Engine)
+
 	config := modal.ConfigEndLevel{
 		Engine:            s.d.Engine,
 		Success:           success,
@@ -757,6 +764,15 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 
 		// Touch regions.
 		s.LoopTouchable(ev)
+
+		// Hide the mouse cursor if a gameplay input was received.
+		if keybind.Right(ev) || keybind.Left(ev) || keybind.Up(ev) || keybind.Down(ev) ||
+			keybind.Use(ev) {
+			cursor.Current = cursor.NoCursor
+		} else if s.lastCursor != shmem.Cursor {
+			cursor.Current = cursor.NewPointer(s.d.Engine)
+		}
+		s.lastCursor = shmem.Cursor
 
 		s.movePlayer(ev)
 		if err := s.drawing.Loop(ev); err != nil {

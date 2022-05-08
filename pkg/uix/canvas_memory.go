@@ -17,9 +17,11 @@ import (
 LoadUnloadChunks optimizes memory for (level) canvases by warming up chunk images
 that fall within the LoadingViewport and freeing chunks that are outside of it.
 */
-func (w *Canvas) LoadUnloadChunks() {
-	if w.level == nil || shmem.Tick%balance.CanvasLoadUnloadModuloTicks != 0 || !balance.Feature.LoadUnloadChunk {
-		return
+func (w *Canvas) LoadUnloadChunks(force ...bool) {
+	if !(len(force) > 0 && force[0]) {
+		if w.level == nil || shmem.Tick%balance.CanvasLoadUnloadModuloTicks != 0 || !balance.Feature.LoadUnloadChunk || (len(force) > 0 && force[0]) {
+			return
+		}
 	}
 
 	var (

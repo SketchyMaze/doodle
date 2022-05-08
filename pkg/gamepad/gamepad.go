@@ -147,8 +147,10 @@ func Loop(ev *event.State) {
 			if SceneName == "Play" {
 				// Toggle between GameplayMode and MouseMode.
 				if p1mode == GameplayMode {
+					shmem.FlashError("Mouse Mode: Left stick moves the cursor.")
 					p1mode = MouseMode
 				} else {
+					shmem.FlashError("Game Mode: Left stick moves the player.")
 					p1mode = GameplayMode
 				}
 
