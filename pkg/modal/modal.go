@@ -3,6 +3,7 @@ package modal
 
 import (
 	"git.kirsle.net/apps/doodle/pkg/balance"
+	"git.kirsle.net/apps/doodle/pkg/cursor"
 	"git.kirsle.net/apps/doodle/pkg/keybind"
 	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/apps/doodle/pkg/shmem"
@@ -91,6 +92,7 @@ func Handled(ev *event.State) bool {
 // Draw the modal UI to the screen.
 func Draw() {
 	if ready && current != nil {
+		cursor.Current = cursor.NewPointer(engine)
 		screen.Present(engine, render.Origin)
 		supervisor.Present(engine)
 	}

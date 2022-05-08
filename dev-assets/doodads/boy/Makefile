@@ -5,6 +5,8 @@ build:
 	doodad convert -t "Boy" stand-right.png stand-left.png \
 		walk-right-1.png walk-right-2.png walk-right-3.png \
 		walk-left-1.png walk-left-2.png walk-left-3.png \
+		idle-right-1.png idle-right-2.png idle-right-3.png \
+		idle-left-1.png idle-left-2.png idle-left-3.png \
 		boy.doodad
 	doodad install-script boy.js boy.doodad
 
