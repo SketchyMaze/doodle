@@ -711,7 +711,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	*s.debViewport = s.drawing.Viewport().String()
 	*s.debScroll = s.drawing.Scroll.String()
 	inside, outside := s.drawing.LoadUnloadMetrics()
-	*s.debLoadUnload = fmt.Sprintf("%d in %d out %d cached", inside, outside, s.drawing.Chunker().CacheSize())
+	*s.debLoadUnload = fmt.Sprintf("%d in %d out %d cached %d gc", inside, outside, s.drawing.Chunker().CacheSize(), s.drawing.Chunker().GCSize())
 
 	// Update the timer.
 	s.timerLabel.Text = savegame.FormatDuration(time.Since(s.startTime))

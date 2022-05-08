@@ -30,6 +30,8 @@ New levels:
 * **Swimming** (Tutorial, Lesson 5) - a tutorial level to learn how
   "water pixels" work with some moderately safe platforming puzzles
   included.
+* **Night Sky** (Azulian Tag) - a moderately difficult Azulian Tag level
+  with relatively few enemies but plenty of tricky platforming.
 * Some of the existing levels have had minor updates to take advantage
   of newer game features, such as the water being re-done for the Castle
   level.

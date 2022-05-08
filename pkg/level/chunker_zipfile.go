@@ -82,7 +82,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 					continue
 				}
 
-				log.Info("Copy existing chunk %s", file.Name)
+				log.Debug("Copy existing chunk %s", file.Name)
 				if err := zf.Copy(file); err != nil {
 					return err
 				}
@@ -105,7 +105,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 		}
 
 		filename := fmt.Sprintf("chunks/%d/%s.json", c.Layer, coord.String())
-		log.Info("Flush in-memory chunks to %s", filename)
+		log.Debug("Flush in-memory chunks to %s", filename)
 		chunk.ToZipfile(zf, filename)
 	}
 
@@ -128,6 +128,11 @@ func (c *Chunker) ClearChunkCache() {
 // CacheSize returns the number of chunks in memory.
 func (c *Chunker) CacheSize() int {
 	return len(c.Chunks)
+}
+
+// GCSize returns the number of chunks pending free (not accessed in 2+ ticks)
+func (c *Chunker) GCSize() int {
+	return len(c.chunksToFree)
 }
 
 // ToZipfile writes just a chunk's data into a zipfile.

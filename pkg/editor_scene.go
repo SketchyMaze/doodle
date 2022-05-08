@@ -294,7 +294,7 @@ func (s *EditorScene) Loop(d *Doodle, ev *event.State) error {
 	}
 	if s.UI.Canvas != nil {
 		inside, outside := s.UI.Canvas.LoadUnloadMetrics()
-		*s.debLoadingViewport = fmt.Sprintf("%d in %d out %d cached", inside, outside, s.UI.Canvas.Chunker().CacheSize())
+		*s.debLoadingViewport = fmt.Sprintf("%d in %d out %d cached %d gc", inside, outside, s.UI.Canvas.Chunker().CacheSize(), s.UI.Canvas.Chunker().GCSize())
 	}
 
 	// Has the window been resized?

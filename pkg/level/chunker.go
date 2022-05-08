@@ -40,8 +40,9 @@ type Chunker struct {
 	// are actively wanted by the game.
 	lastTick              uint64 // NOTE: tracks from shmem.Tick
 	chunkRequestsThisTick map[render.Point]interface{}
-	requestsN1            map[render.Point]interface{}
-	requestsN2            map[render.Point]interface{}
+	requestsN1            map[render.Point]interface{} // chunks accessed last tick
+	requestsN2            map[render.Point]interface{} // 2 ticks ago (to free soon)
+	chunksToFree          map[render.Point]uint64      // chopping block (free after X ticks)
 	requestMu             sync.Mutex
 
 	// The palette reference from first call to Inflate()
@@ -57,6 +58,7 @@ func NewChunker(size int) *Chunker {
 		chunkRequestsThisTick: map[render.Point]interface{}{},
 		requestsN1:            map[render.Point]interface{}{},
 		requestsN2:            map[render.Point]interface{}{},
+		chunksToFree:          map[render.Point]uint64{},
 	}
 }
 
@@ -388,15 +390,25 @@ func (c *Chunker) FreeCaches() int {
 			delete_coords    = []render.Point{}
 		)
 
-		// Chunks not requested this last tick, unload from the cache.
+		// Chunks requested 2 ticks ago but not this tick, put on the chopping
+		// block to free them later.
 		for coord := range requestsN2 {
 			// Old point not requested recently?
 			if _, ok := requestsThisTick[coord]; !ok {
+				c.chunksToFree[coord] = shmem.Tick + balance.CanvasChunkFreeChoppingBlockTicks
+			}
+		}
+
+		// From the chopping block, see if scheduled chunks to free are ready.
+		for coord, expireAt := range c.chunksToFree {
+			if shmem.Tick > expireAt {
 				delete_coords = append(delete_coords, coord)
 			}
 		}
 
+		// Free any eligible chunks NOW.
 		for _, coord := range delete_coords {
+			delete(c.chunksToFree, coord)
 			c.FreeChunk(coord)
 		}
 
