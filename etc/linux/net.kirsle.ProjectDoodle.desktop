@@ -11,3 +11,4 @@ Icon=project-doodle
 StartupNotify=true
 Keywords=game;maze;
 Categories=Game;
+X-Purism-FormFactor=Workstation;Mobile;
