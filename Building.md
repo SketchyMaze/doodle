@@ -63,7 +63,7 @@ MP3 support issues? [See here](https://github.com/veandco/go-sdl2/issues/299#iss
 also mirrored on GitHub. Other supporting repos need mirroring too, or
 otherwise, full source tarballs (the result of bootstrap.py) will be
 built and archived somewhere safe for posterity in case git.kirsle.net
-ever goes away. The doodle mirror is at <https://github.com/kirsle/doodle>
+ever goes away. The doodle mirror is at <https://github.com/SketchyMaze/doodle>
 (private repository) and the others are there too (go/render, go/ui, etc.)
 
 # Detailed Instructions

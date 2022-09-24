@@ -23,7 +23,7 @@ import pathlib
 # Git repositories.
 repos = {
     "git@git.kirsle.net:SketchyMaze/doodads": "doodads",
-    "git@git.kirsle.net:SketchyMaze/masters": "masters",
+    "git@git.kirsle.net:SketchyMaze/assets": "assets",
     "git@git.kirsle.net:SketchyMaze/vendor": "vendor",
     "git@git.kirsle.net:SketchyMaze/rtp": "rtp",
     "git@git.kirsle.net:go/render": "render",
@@ -51,12 +51,12 @@ ROOT = pathlib.Path().absolute()
 
 def main():
     print(
-        "Project: Doodle Full Installer\n"
-        "Current working directory: {root}\n"
+        "Project: Doodle Full Installer\n\n"
+        "Current working directory: {root}\n\n"
         "Ensure your SSH keys are set up on git.kirsle.net to easily clone repos.\n"
         "Also check your $GOPATH is set and your $PATH will run binaries installed,\n"
         "for e.g. GOPATH=$HOME/go and PATH includes $HOME/go/bin; otherwise the\n"
-        "'make doodads' command won't function later."
+        "'make doodads' command won't function later.\n"
         .format(root=ROOT)
     )
     input("Press Enter to begin.")
@@ -121,7 +121,7 @@ def copy_assets():
     if not os.path.isdir("assets/fonts"):
         shell("cp -rv deps/vendor/fonts assets/fonts")
     if not os.path.isdir("assets/levelpacks"):
-        shell("cp -rv deps/masters/levelpacks/levelpacks assets/levelpacks")
+        shell("cp -rv deps/assets/levelpacks/levelpacks assets/levelpacks")
     if not os.path.isdir("rtp"):
         shell("mkdir -p rtp && cp -rv deps/rtp/* rtp/")
 
@@ -148,4 +148,10 @@ def must_shell(cmd):
 
 
 if __name__ == "__main__":
+    if not input("Use ssh to git clone these repos? [yN] ").lower().startswith("y"):
+        keys = list(repos.keys())
+        for k in keys:
+            https = k.replace("git@git.kirsle.net:", "https://git.kirsle.net/")
+            repos[https] = repos[k]
+            del repos[k]
     main()

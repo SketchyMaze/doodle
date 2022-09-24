@@ -332,4 +332,24 @@ Supported variables include:
 
 # Author
 
-Copyright (C) 2021 Noah Petherbridge. All rights reserved.
+The doodle engine for _Sketchy Maze_ is released as open source software under
+the terms of the GNU General Public License. The assets to the game, including
+its default doodads and levels, are licensed separately from the doodle engine.
+Any third party fork of the doodle engine MUST NOT include any official artwork
+from Sketchy Maze.
+
+    Doodle Engine for Sketchy Maze
+    Copyright (C) 2022  Noah Petherbridge
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
