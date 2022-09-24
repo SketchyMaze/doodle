@@ -64,10 +64,10 @@ wasm-serve: wasm
 install:
 	go install git.kirsle.net/SketchyMaze/doodle/cmd/...
 
-# `make doodads` to build the doodads from the dev-assets folder.
+# `make doodads` to build the doodads from the deps/doodads folder.
 .PHONY: doodads
 doodads:
-	cd dev-assets/doodads && ./build.sh > /dev/null
+	cd deps/doodads && ./build.sh > /dev/null
 
 # `make mingw` to cross-compile a Windows binary with mingw.
 .PHONY: mingw

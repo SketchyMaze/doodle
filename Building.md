@@ -153,7 +153,7 @@ The doodle-vendor repo has copies of these fonts.
 Makefile commands for Unix-likes:
 
 * `make setup`: install Go dependencies and set up the build environment
-* `make doodads`: build the default Doodads from sources in `dev-assets/`
+* `make doodads`: build the default Doodads from sources in `deps/doodads/`
 * `make build`: build the Doodle and Doodad binaries to the `bin/` folder.
 * `make buildall`: runs all build steps: doodads, build.
 * `make build-free`: build the shareware binaries to the `bin/` folder. See

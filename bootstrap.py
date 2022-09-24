@@ -22,6 +22,7 @@ import pathlib
 
 # Git repositories.
 repos = {
+    "git@git.kirsle.net:SketchyMaze/doodads": "doodads",
     "git@git.kirsle.net:SketchyMaze/masters": "masters",
     "git@git.kirsle.net:SketchyMaze/vendor": "vendor",
     "git@git.kirsle.net:SketchyMaze/rtp": "rtp",
