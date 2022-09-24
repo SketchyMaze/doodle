@@ -3,13 +3,13 @@ package windows
 import (
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/gamepad"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/native"
-	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

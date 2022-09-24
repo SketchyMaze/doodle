@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/sprites"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

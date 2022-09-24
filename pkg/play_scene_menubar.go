@@ -1,10 +1,10 @@
 package doodle
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/levelpack"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
-	"git.kirsle.net/apps/doodle/pkg/windows"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

@@ -1,7 +1,7 @@
 package drawtool
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

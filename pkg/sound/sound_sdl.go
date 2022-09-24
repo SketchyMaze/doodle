@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/audio"
 	"git.kirsle.net/go/audio/sdl"
 	"github.com/veandco/go-sdl2/mix"

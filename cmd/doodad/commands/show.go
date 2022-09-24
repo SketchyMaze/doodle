@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/enum"
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/urfave/cli/v2"
 )
 

@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 )
 
 // VersionInfo holds the version.json data for self-update check.

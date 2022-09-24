@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"sort"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/filesystem"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 )
 
 // List returns the list of available campaign JSONs.

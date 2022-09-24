@@ -1,6 +1,6 @@
 package level
 
-import "git.kirsle.net/apps/doodle/pkg/log"
+import "git.kirsle.net/SketchyMaze/doodle/pkg/log"
 
 // Maintenance functions for the file format on disk.
 

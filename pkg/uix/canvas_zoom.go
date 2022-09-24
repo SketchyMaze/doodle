@@ -1,7 +1,7 @@
 package uix
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/drawtool"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/go/render"
 )
 

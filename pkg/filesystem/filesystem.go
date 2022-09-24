@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/enum"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 )
 
 // Binary file format headers for Levels and Doodads.

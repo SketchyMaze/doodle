@@ -1,7 +1,7 @@
 package balance
 
 import (
-	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
+	magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"

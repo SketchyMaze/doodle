@@ -17,8 +17,8 @@ RUN useradd builder -u 1000 -m -G users
 RUN git clone https://git.kirsle.net/go/log /home/builder/go/src/git.kirsle.net/go/log
 
 # Add the project to the GOPATH
-ADD . /home/builder/go/src/git.kirsle.net/apps/doodle
-WORKDIR /home/builder/go/src/git.kirsle.net/apps/doodle
+ADD . /home/builder/go/src/git.kirsle.net/SketchyMaze/doodle
+WORKDIR /home/builder/go/src/git.kirsle.net/SketchyMaze/doodle
 RUN chown -R builder:builder /home/builder/go
 
 # Build the app as the `builder` user

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 )
 
 // IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has

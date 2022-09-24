@@ -8,8 +8,8 @@ import (
 	"sort"
 	"time"
 
-	"git.kirsle.net/apps/doodle/cmd/doodle-admin/command"
-	"git.kirsle.net/apps/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/cmd/doodle-admin/command"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"github.com/urfave/cli/v2"
 )
 

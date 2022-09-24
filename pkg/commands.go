@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/chatbot"
-	"git.kirsle.net/apps/doodle/pkg/enum"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/modal"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/chatbot"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"github.com/dop251/goja"
 )
 

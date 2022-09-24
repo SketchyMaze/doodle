@@ -3,7 +3,7 @@ package modal_test
 import (
 	"fmt"
 
-	modal "git.kirsle.net/apps/doodle/pkg/modal"
+	modal "git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 )
 
 func ExampleAlert() {

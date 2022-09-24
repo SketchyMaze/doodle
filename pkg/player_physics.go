@@ -3,10 +3,10 @@ package doodle
 // Subset of the PlayScene that is responsible for movement of the player character.
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/keybind"
-	"git.kirsle.net/apps/doodle/pkg/physics"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render/event"
 )
 

@@ -22,9 +22,9 @@ import pathlib
 
 # Git repositories.
 repos = {
-    "git@git.kirsle.net:apps/doodle-masters": "masters",
-    "git@git.kirsle.net:apps/doodle-vendor": "vendor",
-    "git@git.kirsle.net:apps/doodle-rtp": "rtp",
+    "git@git.kirsle.net:SketchyMaze/masters": "masters",
+    "git@git.kirsle.net:SketchyMaze/vendor": "vendor",
+    "git@git.kirsle.net:SketchyMaze/rtp": "rtp",
     "git@git.kirsle.net:go/render": "render",
     "git@git.kirsle.net:go/ui": "ui",
     "git@git.kirsle.net:go/audio": "audio",
@@ -127,7 +127,7 @@ def copy_assets():
 
 def install_doodad():
     """Install the doodad CLI tool from the doodle repo."""
-    must_shell("go install git.kirsle.net/apps/doodle/cmd/doodad")
+    must_shell("go install git.kirsle.net/SketchyMaze/doodle/cmd/doodad")
 
 
 def build():

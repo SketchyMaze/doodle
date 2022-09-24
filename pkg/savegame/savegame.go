@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 )
 
 // SaveGame holds the user's progress thru level packs.

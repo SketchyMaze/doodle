@@ -12,8 +12,8 @@
 For the quickest ways to fully end-to-end build Sketchy Maze for various
 platforms to produce public release artifacts, see the following repos:
 
-* [doodle-docker](https://git.kirsle.net/doodle-docker) provides a Dockerfile that
-  fully end-to-end releases the latest version of the game for Linux and Windows:
+* [SketchyMaze/docker](https://git.kirsle.net/SketchyMaze/docker) provides a Dockerfile
+  that fully end-to-end releases the latest version of the game for Linux and Windows:
   * Windows: .zip file
   * Linux: .tar.gz, .rpm, .deb
 * [flatpak](https://code.sketchymaze.com/game/flatpak) is a Flatpak manifest for
@@ -71,23 +71,23 @@ ever goes away. The doodle mirror is at <https://github.com/kirsle/doodle>
 For building the app the hard way, and in-depth instructions, read
 this section. You'll need the following git repositories:
 
-* `git.kirsle.net/apps/doodle` - the game engine.
-* `git.kirsle.net/apps/doodle-masters` - where built-in level files are kept,
+* `git.kirsle.net/SketchyMaze/doodle` - the game engine.
+* `git.kirsle.net/apps/SketchyMaze/masters` - where built-in level files are kept,
   as well as master GIMP drawings for sprites and such but only the levels
   are necessary to build the app properly. Tho even then the app would
   work fine with no levels built in!
-* `git.kirsle.net/apps/doodle-vendor` - vendored libraries for Windows (SDL2.dll etc.)
-* `git.kirsle.net/apps/doodle-rtp` - runtime package (sounds and music mostly)
+* `git.kirsle.net/apps/SketchyMaze/vendor` - vendored libraries for Windows (SDL2.dll etc.)
+* `git.kirsle.net/apps/SketchyMaze/rtp` - runtime package (sounds and music mostly)
 
-The [doodle-docker](https://git.kirsle.net/apps/doodle-docker) repo will
+The [docker](https://git.kirsle.net/SketchyMaze/docker) repo will
 be more up-to-date than the instructions below, as that repo actually has
 runnable code in the Dockerfile!
 
 ```bash
 # Clone all the repos down to your project folder
-git clone git@git.kirsle.net:apps/doodle-rtp rtp
-git clone git@git.kirsle.net:apps/doodle-vendor vendor
-git clone git@git.kirsle.net:apps/doodle-masters masters
+git clone git@git.kirsle.net:apps/SketchyMaze/rtp rtp
+git clone git@git.kirsle.net:apps/SketchyMaze/vendor vendor
+git clone git@git.kirsle.net:apps/SketchyMaze/masters masters
 git clone git@git.kirsle.net:apps/doodle doodle
 
 # Enter doodle/ project
@@ -103,7 +103,7 @@ make setup  # -or-
 go get ./...      # install dependencies etc.
 
 # The app should build now. Build and install the doodad tool.
-go install git.kirsle.net/apps/doodle/cmd/doodad
+go install git.kirsle.net/SketchyMaze/doodle/cmd/doodad
 doodad --version
 # "doodad version 0.3.0-alpha build ..."
 

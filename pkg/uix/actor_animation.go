@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/dop251/goja"
 )
 

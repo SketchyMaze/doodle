@@ -14,11 +14,11 @@ import (
 	"sort"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/license"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 )
 
 /*

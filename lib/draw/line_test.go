@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/apps/doodle/lib/draw"
+	"git.kirsle.net/SketchyMaze/doodle/lib/draw"
 	"git.kirsle.net/go/render"
 )
 

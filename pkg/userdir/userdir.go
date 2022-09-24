@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/wasm"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/wasm"
 	"github.com/kirsle/configdir"
 )
 

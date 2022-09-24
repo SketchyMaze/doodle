@@ -4,8 +4,8 @@ import (
 	"errors"
 	"sort"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 )
 
 // LinkAdd adds an actor to be linked in the Link tool.

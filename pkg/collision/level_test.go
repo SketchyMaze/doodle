@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/apps/doodle/pkg/collision"
-	"git.kirsle.net/apps/doodle/pkg/doodads/dummy"
-	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads/dummy"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/go/render"
 )
 

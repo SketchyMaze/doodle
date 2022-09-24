@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"git.kirsle.net/apps/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/go/render"
 )
 

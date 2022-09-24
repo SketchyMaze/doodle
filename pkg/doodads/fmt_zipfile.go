@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 )
 
 // ToZipfile serializes the doodad into zipfile format.

@@ -1,11 +1,11 @@
 package doodle
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/enum"
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/uix"
-	"git.kirsle.net/apps/doodle/pkg/windows"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"

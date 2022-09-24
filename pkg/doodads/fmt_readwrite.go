@@ -8,15 +8,15 @@ import (
 	"sort"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/enum"
-	"git.kirsle.net/apps/doodle/pkg/filesystem"
-	"git.kirsle.net/apps/doodle/pkg/license"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
-	"git.kirsle.net/apps/doodle/pkg/wasm"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/wasm"
 )
 
 // Errors.

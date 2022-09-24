@@ -1,8 +1,8 @@
 package uix
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/wallpaper"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
 )
 

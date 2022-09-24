@@ -62,7 +62,7 @@ wasm-serve: wasm
 # `make install` to install the Go binaries to your GOPATH.
 .PHONY: install
 install:
-	go install git.kirsle.net/apps/doodle/cmd/...
+	go install git.kirsle.net/SketchyMaze/doodle/cmd/...
 
 # `make doodads` to build the doodads from the dev-assets folder.
 .PHONY: doodads

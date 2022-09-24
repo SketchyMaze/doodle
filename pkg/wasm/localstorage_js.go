@@ -6,7 +6,7 @@ import (
 	"strings"
 	"syscall/js"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 )
 
 // StorageKeys returns the list of localStorage keys matching a prefix.

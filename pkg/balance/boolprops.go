@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 )
 
 /*

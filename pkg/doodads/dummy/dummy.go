@@ -2,7 +2,7 @@
 package dummy
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/go/render"
 )
 

@@ -1,4 +1,4 @@
-module git.kirsle.net/apps/doodle
+module git.kirsle.net/SketchyMaze/doodle
 
 go 1.16
 

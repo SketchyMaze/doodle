@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/license"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/urfave/cli/v2"
 )
 

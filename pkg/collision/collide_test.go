@@ -3,7 +3,7 @@ package collision_test
 import (
 	"testing"
 
-	"git.kirsle.net/apps/doodle/pkg/collision"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
 	"git.kirsle.net/go/render"
 )
 

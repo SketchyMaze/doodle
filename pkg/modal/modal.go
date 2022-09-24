@@ -2,11 +2,11 @@
 package modal
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/cursor"
-	"git.kirsle.net/apps/doodle/pkg/keybind"
-	"git.kirsle.net/apps/doodle/pkg/modal/loadscreen"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/cursor"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"

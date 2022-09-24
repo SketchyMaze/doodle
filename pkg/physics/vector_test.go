@@ -3,7 +3,7 @@ package physics_test
 import (
 	"testing"
 
-	"git.kirsle.net/apps/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
 	"git.kirsle.net/go/render"
 )
 

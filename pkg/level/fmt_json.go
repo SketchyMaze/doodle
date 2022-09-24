@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 )
 
 // FromJSON loads a level from JSON string (gzip supported).

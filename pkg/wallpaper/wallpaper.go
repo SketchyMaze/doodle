@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/filesystem"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 

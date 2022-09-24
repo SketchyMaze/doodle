@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 )
 
 // OpenURL opens a web browser to the given URL.

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 

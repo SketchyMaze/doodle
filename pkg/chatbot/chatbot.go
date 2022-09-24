@@ -4,8 +4,8 @@ package chatbot
 import (
 	"errors"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/aichaos/rivescript-go"
 )
 

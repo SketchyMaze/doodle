@@ -1,8 +1,8 @@
 package scripting
 
 import (
-	"git.kirsle.net/apps/doodle/lib/debugging"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/lib/debugging"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/dop251/goja"
 )
 

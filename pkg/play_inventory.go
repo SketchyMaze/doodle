@@ -3,9 +3,9 @@ package doodle
 import (
 	"fmt"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/uix"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

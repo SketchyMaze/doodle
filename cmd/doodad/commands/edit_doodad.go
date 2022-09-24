@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"github.com/urfave/cli/v2"
 )

@@ -7,10 +7,10 @@ import (
 
 	"syscall/js"
 
-	doodle "git.kirsle.net/apps/doodle/pkg"
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	doodle "git.kirsle.net/SketchyMaze/doodle/pkg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/canvas"
 )

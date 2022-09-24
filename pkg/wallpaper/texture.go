@@ -6,8 +6,8 @@ import (
 	"errors"
 	"image"
 
-	"git.kirsle.net/apps/doodle/pkg/shmem"
-	"git.kirsle.net/apps/doodle/pkg/userdir"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 )
 

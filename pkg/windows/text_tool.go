@@ -3,11 +3,11 @@ package windows
 import (
 	"strconv"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/branding"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
-	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
+	magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

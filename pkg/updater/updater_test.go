@@ -3,7 +3,7 @@ package updater_test
 import (
 	"testing"
 
-	"git.kirsle.net/apps/doodle/pkg/updater"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/updater"
 )
 
 // Test the semver logic.

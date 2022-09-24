@@ -3,7 +3,7 @@
 package native
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 )
 
 func init() {

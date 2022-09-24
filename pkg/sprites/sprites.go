@@ -14,9 +14,9 @@ import (
 	"os"
 	"runtime"
 
-	"git.kirsle.net/apps/doodle/assets"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/wasm"
+	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/wasm"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

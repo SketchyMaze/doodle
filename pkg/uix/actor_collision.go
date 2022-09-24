@@ -4,11 +4,11 @@ import (
 	"errors"
 	"time"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/collision"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	"git.kirsle.net/apps/doodle/pkg/physics"
-	"git.kirsle.net/apps/doodle/pkg/scripting"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/go/render"
 	"github.com/dop251/goja"
 )

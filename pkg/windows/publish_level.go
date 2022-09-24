@@ -5,11 +5,11 @@ import (
 	"math"
 	"strings"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/level"
-	"git.kirsle.net/apps/doodle/pkg/level/publishing"
-	"git.kirsle.net/apps/doodle/pkg/log"
-	magicform "git.kirsle.net/apps/doodle/pkg/uix/magic-form"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level/publishing"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

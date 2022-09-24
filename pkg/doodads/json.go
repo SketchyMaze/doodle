@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"git.kirsle.net/apps/doodle/pkg/balance"
-	"git.kirsle.net/apps/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 )
 
 // ToJSON serializes the doodad as JSON (gzip supported).

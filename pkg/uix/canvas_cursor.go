@@ -1,9 +1,9 @@
 package uix
 
 import (
-	"git.kirsle.net/apps/doodle/pkg/cursor"
-	"git.kirsle.net/apps/doodle/pkg/drawtool"
-	"git.kirsle.net/apps/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/cursor"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )

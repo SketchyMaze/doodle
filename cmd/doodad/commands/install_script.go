@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"git.kirsle.net/apps/doodle/pkg/doodads"
-	"git.kirsle.net/apps/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/urfave/cli/v2"
 )
 
