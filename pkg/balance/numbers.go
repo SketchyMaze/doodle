@@ -46,6 +46,11 @@ var (
 	SwimJumpCooldown    uint64  = 24 // number of frames of cooldown between swim-jumps
 	SlopeMaxHeight              = 8  // max pixel height for player to walk up a slope
 
+	// Number of game ticks to insist the canvas follows the player at the start
+	// of a level - to overcome Anvils settling into their starting positions so
+	// they don't steal the camera focus straight away.
+	FollowPlayerFirstTicks uint64 = 60
+
 	// Default chunk size for canvases.
 	ChunkSize = 128
 

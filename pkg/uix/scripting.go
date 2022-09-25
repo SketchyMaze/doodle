@@ -132,5 +132,11 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 			}
 			return result
 		},
+
+		// Attract the camera's attention.
+		"CameraFollowMe": func() {
+			// Update the doodad that the camera should focus on.
+			w.FollowActor = actor.ID()
+		},
 	}
 }

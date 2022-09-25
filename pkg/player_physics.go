@@ -115,5 +115,18 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 	// If the "Use" key is pressed, set an actor flag on the player.
 	s.Player.SetUsing(keybind.Use(ev))
 
+	// Camera behaviors: Anvils can take the camera's focus while they're falling
+	// but player inputs will take control back to the player. Most anvils will fall
+	// a couple pixels upon level load - prevent them taking the camera's focus for
+	// the first few frames of gameplay.
+	if s.mustFollowPlayerUntil == 0 {
+		s.mustFollowPlayerUntil = shmem.Tick + balance.FollowPlayerFirstTicks
+	}
+
+	// If we insist that the canvas follow the player doodad.
+	if shmem.Tick < s.mustFollowPlayerUntil || keybind.Up(ev) || keybind.Left(ev) || keybind.Right(ev) || keybind.Use(ev) {
+		s.drawing.FollowActor = s.Player.ID()
+	}
+
 	s.scripting.To(s.Player.ID()).Events.RunKeypress(keybind.FromEvent(ev))
 }

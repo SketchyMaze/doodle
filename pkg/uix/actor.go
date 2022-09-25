@@ -413,7 +413,9 @@ func (a *Actor) ShowLayerNamed(name string) error {
 		a.Actor.Filename,
 		name,
 	)
-	return fmt.Errorf("the layer named %s was not found", name)
+
+	// XX: returning an error raises a JavaScript exception in doodads. :/ Warning log is enough.
+	return nil
 }
 
 // Destroy deletes the actor from the running level.

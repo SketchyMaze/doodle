@@ -246,6 +246,18 @@ func (w *Canvas) loopFollowActor(ev *event.State) error {
 			scrollBy.Y = delta
 		}
 
+		// If we are VERY FAR away, allow greater leaps.
+		if scrollBy.X > balance.FollowActorMaxScrollSpeed*4 {
+			scrollBy.X = balance.FollowActorMaxScrollSpeed * 4
+		} else if scrollBy.X < -balance.FollowActorMaxScrollSpeed*4 {
+			scrollBy.X = -balance.FollowActorMaxScrollSpeed * 4
+		}
+		if scrollBy.Y > balance.FollowActorMaxScrollSpeed*4 {
+			scrollBy.Y = balance.FollowActorMaxScrollSpeed * 4
+		} else if scrollBy.Y < -balance.FollowActorMaxScrollSpeed*4 {
+			scrollBy.Y = -balance.FollowActorMaxScrollSpeed * 4
+		}
+
 		// Constrain the maximum scroll speed.
 		if scrollBy.X > balance.FollowActorMaxScrollSpeed {
 			scrollBy.X = balance.FollowActorMaxScrollSpeed

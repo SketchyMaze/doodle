@@ -68,16 +68,17 @@ type PlayScene struct {
 	debLoadUnload *string
 
 	// Player character
-	Player              *uix.Actor
-	playerPhysics       *physics.Mover
-	lastCheckpoint      render.Point
-	playerLastDirection float64   // player's heading last tick
-	antigravity         bool      // Cheat: disable player gravity
-	noclip              bool      // Cheat: disable player clipping
-	godMode             bool      // Cheat: player can't die
-	godModeUntil        time.Time // Invulnerability timer at respawn.
-	playerJumpCounter   int       // limit jump length
-	jumpCooldownUntil   uint64    // future game tick for jump cooldown (swimming esp.)
+	Player                *uix.Actor
+	playerPhysics         *physics.Mover
+	lastCheckpoint        render.Point
+	playerLastDirection   float64   // player's heading last tick
+	antigravity           bool      // Cheat: disable player gravity
+	noclip                bool      // Cheat: disable player clipping
+	godMode               bool      // Cheat: player can't die
+	godModeUntil          time.Time // Invulnerability timer at respawn.
+	playerJumpCounter     int       // limit jump length
+	jumpCooldownUntil     uint64    // future game tick for jump cooldown (swimming esp.)
+	mustFollowPlayerUntil uint64    // first frames where anvils don't take focus from player
 
 	// Inventory HUD. Impl. in play_inventory.go
 	invenFrame   *ui.Frame
