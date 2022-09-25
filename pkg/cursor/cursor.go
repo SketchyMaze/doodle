@@ -4,6 +4,7 @@ package cursor
 import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
@@ -22,8 +23,12 @@ var Current *Cursor
 // NoCursor hides the cursor entirely.
 var NoCursor = &Cursor{}
 
-// Draw the cursor on screen.
+// Draw the cursor on screen. NOTE: Does not draw on touchscreen devices.
 func Draw(e render.Engine) {
+	if native.HasTouchscreen(e) {
+		return
+	}
+
 	if Current == nil {
 		Current = NewPointer(e)
 	}

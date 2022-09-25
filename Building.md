@@ -1,6 +1,7 @@
 # Building Doodle
 
-* [Quickstart](#quickstart-with-bootstrap-py)
+* [Automated Release Scripts](#automated-release-scripts)
+* [Quickstart with bootstrap.py](#quickstart-with-bootstrap-py)
 * [Detailed Instructions](#detailed-instructions)
 * [Linux](#linux)
 * [Flatpak for Linux](#flatpak-for-linux)
@@ -72,12 +73,10 @@ For building the app the hard way, and in-depth instructions, read
 this section. You'll need the following git repositories:
 
 * `git.kirsle.net/SketchyMaze/doodle` - the game engine.
-* `git.kirsle.net/apps/SketchyMaze/masters` - where built-in level files are kept,
-  as well as master GIMP drawings for sprites and such but only the levels
-  are necessary to build the app properly. Tho even then the app would
-  work fine with no levels built in!
-* `git.kirsle.net/apps/SketchyMaze/vendor` - vendored libraries for Windows (SDL2.dll etc.)
-* `git.kirsle.net/apps/SketchyMaze/rtp` - runtime package (sounds and music mostly)
+* `git.kirsle.net/SketchyMaze/assets` - where built-in level files are kept (optional)
+* `git.kirsle.net/SketchyMaze/vendor` - vendored libraries for Windows (SDL2.dll etc.)
+* `git.kirsle.net/SketchyMaze/rtp` - runtime package (sounds and music mostly)
+* `git.kirsle.net/SketchyMaze/doodads` - sources to compile the built-in doodads.
 
 The [docker](https://git.kirsle.net/SketchyMaze/docker) repo will
 be more up-to-date than the instructions below, as that repo actually has
@@ -85,16 +84,17 @@ runnable code in the Dockerfile!
 
 ```bash
 # Clone all the repos down to your project folder
-git clone git@git.kirsle.net:apps/SketchyMaze/rtp rtp
-git clone git@git.kirsle.net:apps/SketchyMaze/vendor vendor
-git clone git@git.kirsle.net:apps/SketchyMaze/masters masters
-git clone git@git.kirsle.net:apps/doodle doodle
+git clone https://git.kirsle.net/SketchyMaze/rtp rtp
+git clone https://git.kirsle.net/SketchyMaze/vendor vendor
+git clone https://git.kirsle.net/SketchyMaze/masters masters
+git clone https://git.kirsle.net/SketchyMaze/doodle doodle
+git clone https://git.kirsle.net/SketchyMaze/doodads doodle/deps/doodads
 
 # Enter doodle/ project
 cd doodle/
 
 # Copy fonts and levels in
-cp ../masters/levels assets/levels
+cp ../assets/levelpacks assets/levelpacks
 cp ../vendor/fonts assets/fonts
 mkdir rtp && cp -r ../rtp/* rtp/
 
@@ -121,13 +121,27 @@ make mingw
 make release
 ```
 
-The `make setup` command tries to do the above.
-
 `make build` produces a local binary in the bin/ folder and `make dist`
 will build an app for distribution in the dist/ folder.
 
-Levels should be copied in from the doodle-masters repo into the
-assets/levels/ folder before building the game.
+The bootstrap.py script does all of the above up to `make dist` so if you need
+fully release the game by hand (e.g. on a macOS host) you can basically get away
+with:
+
+1. Clone the doodle repo and cd into it
+2. Run `bootstrap.py` to fully set up your OS with dependencies and build a
+   release quality version of the game with all latest assets (the script finishes
+   with a `make dist`).
+3. Run `make release` to package the dist/ artifact into platform specific
+   release artifacts (.rpm/.deb/.tar.gz bundles for Linux, .zip for Windows,
+   .dmg if running on macOS) which output into the dist/release/ folder.
+
+Before step 3 you may want to download the latest Guidebook to bundle with
+the game (optional). Grab and extract the tarball and run `make dist && make release`:
+
+```bash
+wget -O - https://download.sketchymaze.com/guidebook.tar.gz | tar -xzvf -
+```
 
 ## Fonts
 
@@ -195,7 +209,7 @@ brew install golang sdl2 sdl2_ttf sdl2_mixer pkg-config
 
 ## Flatpak for Linux
 
-The repo for this is at <https://code.sketchymaze.com/game/flatpak>.
+The repo for this is at <https://git.kirsle.net/SketchyMaze/flatpak>.
 
 ## Windows Cross-Compile from Linux
 

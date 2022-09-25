@@ -20,6 +20,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
@@ -199,9 +200,10 @@ func main() {
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
 
-		// Hide the mouse cursor over the window, we draw our own
-		// sprite image for it.
-		engine.ShowCursor(false)
+		// Hide the mouse cursor over the window, we draw our own sprite image for it.
+		if !native.HasTouchscreen(engine) {
+			engine.ShowCursor(false)
+		}
 
 		// Set the app window icon.
 		if engine, ok := game.Engine.(*sdl.Renderer); ok {
@@ -234,6 +236,10 @@ func main() {
 
 		// Initialize the developer shell chatbot easter egg.
 		chatbot.Setup()
+
+		// Log some basic environment details.
+		w, h := engine.WindowSize()
+		log.Info("Has touchscreen? %+v  Window size: %dx%d", native.HasTouchscreen(engine), w, h)
 
 		game.Run()
 		return nil

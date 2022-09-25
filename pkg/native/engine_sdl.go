@@ -1,3 +1,4 @@
+//go:build !js
 // +build !js
 
 package native
@@ -13,6 +14,14 @@ import (
 
 // Native render engine functions (SDL2 edition),
 // not for JavaScript/WASM yet.
+
+// HasTouchscreen checks if the device has at least one SDL_GetNumTouchDevices.
+func HasTouchscreen(e render.Engine) bool {
+	if _, ok := e.(*sdl.Renderer); ok {
+		return sdl2.GetNumTouchDevices() > 0
+	}
+	return false
+}
 
 /*
 TextToImage takes an SDL2_TTF texture and makes it into a Go image.

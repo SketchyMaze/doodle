@@ -89,7 +89,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 			}
 		}
 	} else {
-		log.Warn("Chunker.MigrateZipfile: the drawing did not give me a zipfile!")
+		log.Debug("Chunker.MigrateZipfile: the drawing did not give me a zipfile!")
 	}
 
 	if len(c.Chunks) == 0 {
