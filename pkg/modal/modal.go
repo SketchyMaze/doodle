@@ -66,13 +66,13 @@ func Handled(ev *event.State) bool {
 	}
 
 	// Enter key submits the default button.
-	if keybind.Enter(ev) {
+	if keybind.Enter(ev) && !current.force {
 		current.Dismiss(true)
 		return true
 	}
 
 	// Escape key cancels the modal.
-	if keybind.Shutdown(ev) && current.cancelable {
+	if keybind.Shutdown(ev) && current.cancelable && !current.force {
 		current.Dismiss(false)
 		return true
 	}
@@ -123,7 +123,9 @@ type Modal struct {
 	message    string
 	window     *ui.Window
 	callback   func()
-	cancelable bool // Escape key can cancel the modal
+	cancelable bool   // Escape key can cancel the modal
+	force      bool   // Enter key can not close the modal (e.g. Wait)
+	teardown   func() // Optional teardown logic a modal can attach.
 }
 
 // WithTitle sets the title of the modal.
@@ -143,5 +145,9 @@ func (m *Modal) Dismiss(call bool) {
 	Reset()
 	if call && m.callback != nil {
 		m.callback()
+	}
+
+	if m.teardown != nil {
+		m.teardown()
 	}
 }

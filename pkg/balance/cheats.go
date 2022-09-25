@@ -29,6 +29,7 @@ var (
 	CheatPlayAsBird       = "fly like a bird"
 	CheatGodMode          = "god mode"
 	CheatDebugLoadScreen  = "test load screen"
+	CheatDebugWaitScreen  = "test wait screen"
 	CheatUnlockLevels     = "master key"
 	CheatSkipLevel        = "warp whistle"
 )

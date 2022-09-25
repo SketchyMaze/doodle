@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 )
 
@@ -166,6 +167,15 @@ func (c Command) cheatCommand(d *Doodle) bool {
 				loadscreen.SetProgress(i / 100)
 			}
 			loadscreen.Hide()
+		}()
+
+	case balance.CheatDebugWaitScreen:
+		m := modal.Wait("Crunching some numbers...").WithTitle("Please hold").Then(func() {
+			d.Flash("Wait modal dismissed.")
+		})
+		go func() {
+			time.Sleep(10 * time.Second)
+			m.Dismiss(true)
 		}()
 
 	case balance.CheatUnlockLevels:
