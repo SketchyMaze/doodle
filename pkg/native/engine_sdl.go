@@ -4,8 +4,10 @@
 package native
 
 import (
+	"errors"
 	"image"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
 	sdl2 "github.com/veandco/go-sdl2/sdl"
@@ -21,6 +23,14 @@ func HasTouchscreen(e render.Engine) bool {
 		return sdl2.GetNumTouchDevices() > 0
 	}
 	return false
+}
+
+// CopyToClipboard puts some text on your clipboard.
+func CopyToClipboard(text string) error {
+	if _, ok := shmem.CurrentRenderEngine.(*sdl.Renderer); ok {
+		return sdl2.SetClipboardText(text)
+	}
+	return errors.New("not supported")
 }
 
 /*

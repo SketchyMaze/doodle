@@ -471,7 +471,7 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 		spawn = s.SpawnPoint
 	}
 
-	s.Player = uix.NewActor("PLAYER", &level.Actor{}, player)
+	s.Player = uix.NewActor("PLAYER", &level.Actor{Filename: filename}, player)
 	s.Player.SetInventory(true) // player always can pick up items
 	s.Player.MoveTo(spawn)
 	s.drawing.AddActor(s.Player)

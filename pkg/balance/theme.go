@@ -174,6 +174,14 @@ var (
 		Color:        render.Magenta,
 	}
 
+	// ExceptionFont for showing JavaScript errors to the user.
+	ExceptionFont = render.Text{
+		Size:         12,
+		PadX:         3,
+		FontFilename: MonospaceFont,
+		Color:        render.Black,
+	}
+
 	// Small font
 	SmallFont = render.Text{
 		Size:    10,

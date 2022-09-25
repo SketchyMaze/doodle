@@ -7,6 +7,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"github.com/dop251/goja"
 )
 
@@ -28,15 +29,17 @@ var (
 
 // Events API for Doodad scripts.
 type Events struct {
-	runtime  *goja.Runtime
+	vm       *VM           // pointer to parent VM
+	runtime  *goja.Runtime // direct pointer to goja (VM.vm)
 	registry map[string][]goja.Value
 	lock     sync.RWMutex
 }
 
 // NewEvents initializes the Events API.
-func NewEvents(runtime *goja.Runtime) *Events {
+func NewEvents(vm *VM) *Events {
 	return &Events{
-		runtime:  runtime,
+		vm:       vm,
+		runtime:  vm.vm,
 		registry: map[string][]goja.Value{},
 	}
 }
@@ -105,7 +108,7 @@ func (e *Events) run(name string, args ...interface{}) error {
 			// TODO EXCEPTIONS: I once saw a "runtime error: index out of range [-1]"
 			// from an OnCollide handler between azu-white and thief that was crashing
 			// the app, report this upstream nicely to the user.
-			log.Error("PANIC: JS %s handler: %s", name, err)
+			exceptions.Catch("PANIC: JS %s handler: %s", name, err)
 		}
 	}()
 
@@ -129,6 +132,12 @@ func (e *Events) run(name string, args ...interface{}) error {
 			// TODO EXCEPTIONS: this err is useful like
 			// `ReferenceError: playerSpeed is not defined at <eval>:173:9(93)`
 			// but wherever we're returning the err to isn't handling it!
+			exceptions.Catch(
+				"Scripting error in %s for %s:\n\n%s",
+				name,
+				e.vm.Name,
+				err,
+			)
 			log.Error("Scripting error on %s: %s", name, err)
 			return err
 		}

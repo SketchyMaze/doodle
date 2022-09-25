@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"git.kirsle.net/go/render"
 )
 
@@ -102,7 +103,14 @@ func (w *Canvas) InstallScripts() error {
 
 		// Call the main() function.
 		if err := vm.Main(); err != nil {
-			log.Error("main() for actor %s errored: %s", actor.ID(), err)
+			exceptions.Catch(
+				"Error in main() for actor %s:\n\n%s\n\nActor ID: %s\nFilename: %s\nPosition: %s",
+				actor.Actor.Filename,
+				err,
+				actor.ID(),
+				actor.Actor.Filename,
+				actor.Position(),
+			)
 		}
 	}
 

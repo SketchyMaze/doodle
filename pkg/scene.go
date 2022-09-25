@@ -3,6 +3,7 @@ package doodle
 import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"git.kirsle.net/go/render/event"
 )
 
@@ -34,6 +35,9 @@ func (d *Doodle) Goto(scene Scene) error {
 	if d.Scene != nil {
 		d.Scene.Destroy()
 	}
+
+	// Teardown exceptions modal (singleton windows so it can clean up).
+	exceptions.Teardown()
 
 	log.Info("Goto Scene: %s", scene.Name())
 	d.Scene = scene

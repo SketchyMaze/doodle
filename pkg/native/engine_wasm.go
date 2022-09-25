@@ -1,3 +1,4 @@
+//go:build js && wasm
 // +build js,wasm
 
 package native
@@ -14,4 +15,8 @@ func HasTouchscreen(e render.Engine) bool {
 
 func TextToImage(e render.Engine, text render.Text) (image.Image, error) {
 	return nil, errors.New("not supported on WASM")
+}
+
+func CopyToClipboard(text string) error {
+	return errors.New("not supported on WASM")
 }

@@ -14,6 +14,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"github.com/dop251/goja"
 )
 
@@ -88,6 +89,29 @@ func (c Command) Run(d *Doodle) error {
 	case "extract-bindata":
 		// Undocumented command to extract the binary of its assets.
 		return c.ExtractBindata(d, c.ArgsLiteral)
+	case "throw":
+		// Test exception catcher with custom message.
+		exceptions.Catch(strings.ReplaceAll(c.ArgsLiteral, "\\n", "\n"))
+		return nil
+	case "throw2":
+		// Stress test exception catcher.
+		exceptions.Catch(
+			"This is a test of the Exception Catcher modal.\n\nIt should be able to display a decent amount " +
+				"of text with character wrapping. Multiple lines, too.\n\nIt might not show the full message, so " +
+				"click the  'Copy' button to copy to clipboard and read the whole message. There is more text " +
+				"than is shown on screen.\n\nThis text for example was not on screen, but copied to your " +
+				"clipboard anyway. :)",
+		)
+		return nil
+	case "throw3":
+		// Realistic exception.
+		exceptions.Catch(
+			"Error in main() for actor trapdoor-down.doodad:\n\n" +
+				"TypeError: Cannot read property 'zz' of undefined at main (<eval>:25:14(77))\n\n" +
+				"Actor ID: c3aa346b-be51-4bc4-94bb-f3adf5643830\n" +
+				"Filename: trapdoor-down.doodad\n" +
+				"Position: 643,266",
+		)
 	default:
 		return c.Default(d)
 	}

@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/pattern"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
@@ -170,7 +171,7 @@ func (d *Doodle) Run() error {
 
 			// Make sure no UI modals (alerts, confirms)
 			// or loadscreen are currently visible.
-			if !modal.Handled(ev) {
+			if !modal.Handled(ev) && !exceptions.Handled(ev) {
 				// Global event handlers.
 				if keybind.Shutdown(ev) {
 					if d.Debug { // fast exit in -debug mode.
@@ -197,6 +198,7 @@ func (d *Doodle) Run() error {
 		loadscreen.Loop(render.NewRect(d.width, d.height), d.Engine)
 
 		// Draw modals on top of the game UI.
+		exceptions.Draw(d.Engine)
 		modal.Draw()
 
 		// Draw the shell, always on top of UI and modals.

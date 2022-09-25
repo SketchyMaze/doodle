@@ -1,6 +1,7 @@
 package scripting
 
 import (
+	"fmt"
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
@@ -17,15 +18,24 @@ import (
 // without exposing unintended API surface area in the process.
 type JSProxy map[string]interface{}
 
+// ProxyLog wraps a console.log function to inject the script's name.
+func ProxyLog(vm *VM, fn func(string, ...interface{})) func(string, ...interface{}) {
+	var prefix = fmt.Sprintf("[%s] ", vm.Name)
+	return func(msg string, v ...interface{}) {
+		fn(prefix+msg, v...)
+	}
+}
+
 // NewJSProxy initializes the API structure for JavaScript binding.
 func NewJSProxy(vm *VM) JSProxy {
+
 	return JSProxy{
 		// Console logging.
 		"console": map[string]interface{}{
-			"log":   log.Info,
-			"debug": log.Debug,
-			"warn":  log.Warn,
-			"error": log.Error,
+			"log":   ProxyLog(vm, log.Info),
+			"debug": ProxyLog(vm, log.Debug),
+			"warn":  ProxyLog(vm, log.Warn),
+			"error": ProxyLog(vm, log.Error),
 		},
 
 		// Audio API.

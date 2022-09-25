@@ -3,6 +3,7 @@ package scripting
 import (
 	"git.kirsle.net/SketchyMaze/doodle/lib/debugging"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"github.com/dop251/goja"
 )
 
@@ -28,7 +29,7 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		defer func() {
 			if err := recover(); err != nil {
 				// TODO EXCEPTIONS
-				log.Error("RegisterPublishHooks(%s): %s", vm.Name, err)
+				exceptions.Catch("RegisterPublishHooks(%s): %s", vm.Name, err)
 				debugging.PrintCallers()
 			}
 		}()

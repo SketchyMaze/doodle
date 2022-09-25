@@ -50,7 +50,7 @@ func NewVM(name string) *VM {
 		stop:      make(chan bool, 1),
 		subscribe: map[string][]goja.Value{},
 	}
-	vm.Events = NewEvents(vm.vm)
+	vm.Events = NewEvents(vm)
 	return vm
 }
 
