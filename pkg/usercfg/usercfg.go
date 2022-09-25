@@ -100,6 +100,7 @@ func Load() error {
 		settings = Defaults()
 	)
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		Current = settings
 		return nil // no file, no problem
 	}
 

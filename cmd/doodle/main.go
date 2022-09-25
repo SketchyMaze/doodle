@@ -200,6 +200,11 @@ func main() {
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
 
+		// Reload usercfg - if their settings.json doesn't exist, we try and pick a
+		// default "hide touch hints" based on touch device presence - which is only
+		// known after SetupEngine.
+		usercfg.Load()
+
 		// Hide the mouse cursor over the window, we draw our own sprite image for it.
 		if !native.HasTouchscreen(engine) {
 			engine.ShowCursor(false)
