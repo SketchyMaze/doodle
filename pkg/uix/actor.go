@@ -200,9 +200,9 @@ func (a *Actor) Grounded() bool {
 // SetGrounded sets the actor's grounded value. If true, also sets their Y velocity to zero.
 func (a *Actor) SetGrounded(v bool) {
 	a.grounded = v
-	if v {
-		a.velocity.Y = 0
-	}
+	// if v && a.velocity.Y > 0 {
+	// 	a.velocity.Y = 0
+	// }
 }
 
 // Hide makes the actor invisible.

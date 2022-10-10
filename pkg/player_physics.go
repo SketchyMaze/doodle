@@ -17,8 +17,13 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 		velocity    = s.Player.Velocity()
 		direction   float64
 		jumping     bool
+		phys        = s.playerPhysics
 		// holdingJump bool // holding down the jump button vs. tapping it
 	)
+
+	if s.slippery {
+		phys = s.slipperyPhysics
+	}
 
 	// Antigravity: player can move anywhere with arrow keys.
 	if s.antigravity || !s.Player.HasGravity() {
@@ -77,15 +82,15 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 			// slip and slide while their velocity updates.
 			velocity.X = physics.Lerp(
 				velocity.X,
-				direction*s.playerPhysics.MaxSpeed.X,
-				s.playerPhysics.Acceleration,
+				direction*phys.MaxSpeed.X,
+				phys.Acceleration,
 			)
 		} else {
 			// Slow them back to zero using friction.
 			velocity.X = physics.Lerp(
 				velocity.X,
 				0,
-				s.playerPhysics.Friction,
+				phys.Friction,
 			)
 		}
 

@@ -9,9 +9,9 @@ import (
 
 // Option for runtime, user configurable overrides of Doodad Options.
 type Option struct {
-	Type  string // bool, str, int
-	Name  string
-	Value interface{}
+	Type  string      `json:"type"` // bool, str, int
+	Name  string      `json:"name"`
+	Value interface{} `json:"value"`
 }
 
 // SetOption sets an actor option, safely.

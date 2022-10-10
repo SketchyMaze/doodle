@@ -1,5 +1,130 @@
 # Changes
 
+## v0.13.1 (Oct 10 2022)
+
+This release brings a handful of minor new features to the game.
+
+First, there are a couple of new Pixel Attributes available in the level editor:
+
+* Semi-Solid: pixels with this attribute only behave as "solid" when walked on
+  from above. The player can jump through the bottom of a Semi-Solid and land
+  on top, and gradual slopes can be walked up and down as well, but a steep
+  slope or a wall can be simply passed through as though it were just decoration.
+* Slippery: the player's acceleration and friction are reduced when walking on
+  a slippery floor. In the future, players and other mobile doodads may slide
+  down slippery slopes automatically as well (not yet implemented).
+* These attributes are available in the Level Editor by clicking the "Edit"
+  button on your Palette (or the "Tools -> Edit Palette" menu). The Palette
+  Editor now has small icon images for the various attributes to make room for
+  the expanded arsenal of options.
+
+Doodad/Actor Runtime Options have been added:
+
+* In the Doodad Editor's "Doodad Properties" window, see the new "Options" tab.
+* Doodad Options allow a map creator to customize certain properties about your
+  doodad, on a per-instance basis (instances of doodads are called "actors" when
+  placed in your level).
+* In the Level Editor when the Actor Tool is selected, mousing over a doodad on
+  your level will show a new gear icon in the corner. Clicking the icon will open
+  the Actor Properties window, where you may toggle some of the doodad options
+  (if a doodad has any options available).
+* Options can be of type boolean, string, or integer and have a custom name and a
+  default value at the doodad level. In the Level Editor, the map creator can
+  set values for the available options which the doodad script can read using the
+  `Self.GetOption()` method.
+* Several of the game's built-in doodads have options you can play with, which are
+  documented below.
+
+New and updated doodads:
+
+* "Look At Me" is a new Technical doodad that will draw the camera's attention
+  to it when it receives a power signal from a linked button. For example, if
+  a button would open an Electric Door far across the level, you can also place
+  a "Look At Me" near the door and link the button to both doodads. When the
+  button is pressed, the camera will scroll to the "Look At Me" and the player
+  can see that the door has opened.
+* Anvils will now attract the camera's attention while they are falling.
+
+Several of the game's built-in doodads have new Actor Runtime Options you can
+configure in your custom levels:
+
+* Warp Doors: "locked (exit only)" will make it so the player can not enter the
+  warp door - they will get a message on-screen that it is locked, similar to
+  how warp doors behave when they aren't linked to another door. If it is linked
+  to another door, the player may still exit from the 'locked' door -
+  essentially creating a one-way warp, without needing to rely on the
+  orange/blue state doors. The "Invisible Warp Door" technical doodad also
+  supports this option.
+* Electric Door & Electric Trapdoor: check the "opened" option and these doors
+  will be opened by default when the level gameplay begins. A switch may still
+  toggle the doors closed, or if the doors receive and then lose a power signal
+  they will close as normal.
+* Colored Doors & Small Key Door: you may mark the doors as "unlocked" at the
+  start of your level, and they won't require a key to open.
+* Colored Keys & Small Key: you may mark the keys as "has gravity" and they
+  will be subject to the force of gravity and be considered a "mobile" doodad
+  that may activate buttons or trapdoors that they fall onto.
+* Gemstones: these items already had gravity by default, and now they have a
+  "has gravity" option you may disable if you'd prefer gemstones not to be
+  subject to gravity (and make them behave the way keys used to).
+* Gemstome Totems: for cosmetic purposes you may toggle the "has gemstone"
+  option and the totem will already have its stone inserted at level start.
+  These gemstones will NOT emit a power signal or interact normally with
+  linked totems - they should be configured this way only for the cosmetic
+  appearance, e.g., to have one totem filled and some others empty; only the
+  empty totems should be linked together and to a door that would open when
+  they are all filled.
+* Fire Region: you may pick a custom "name" for this doodad (default is "fire")
+  to make it better behave as normal fire pixels do: "Watch out for (name)!"
+
+Improvements in support of custom content:
+
+* Add a JavaScript "Exception Catcher" window in-game. If your doodad scripts
+  encounter a scripting error, a red window will pop up showing the text of
+  the exception with buttons to copy the full text to your clipboard (in case
+  it doesn't all fit on-screen) and to suppress any further exceptions for
+  the rest of your game session (in case a broken doodad is spamming you with
+  error messages). Cheat codes can invoke the Exception Catcher for testing:
+  `throw <message>` to show custom text, `throw2` to test a "long" message
+  and `throw3` to throw a realistic message.
+* Calling `console.log()` and similar from doodad scripts will now prefix the
+  log message with the doodad's filename and level ID.
+
+There are new JavaScript API methods available to doodad scripts:
+
+* `Self.CameraFollowMe()` will attract the game's camera viewport to center
+  on your doodad, taking the camera's focus away from the player character.
+  The camera will return to the player if they enter a directional input.
+* `Self.Options()` returns a string array of all of the options available on
+  the current doodad.
+* `Self.GetOption(name)` returns the configured value for a given option.
+
+Some improvements to the `doodad` command-line tool:
+
+* `doodad show` will print the Options on a .doodad file and, when showing
+  a .level file with the `--actors` option, will list any Options configured
+  on a level's actors where they differ from the doodad's defaults.
+* `doodad edit-doodad` adds a `--option` parameter to define an option on a
+  doodad programmatically. The syntax is like `--option name=type=default`
+  for example `--option unlocked=bool=true` or `--option unlocked=bool`; the
+  default value is optional if you want it to be the "zero value" (false,
+  zero, or empty string).
+
+Minor fixes and improvements:
+
+* Add a "Wait" modal with a progress bar. Not used yet but may be useful
+  for long operations like Giant Screenshot or level saving to block input
+  to the game while it's busy doing something. Can be tested using the
+  cheat code "test wait screen"
+* Detect the presence of a touchscreen device and automatically disable
+  on-screen touch hints during gameplay if not on a touch screen.
+* Mobile Linux: mark the Sketchy Maze launcher as supporting the mobile
+  form-factor for the Phosh desktop shell especially.
+* Fix the Crusher doodad sometimes not falling until it hits the ground
+  and stopping early on slower computers.
+* Small tweaks to player physics - acceleration increased from 0.025 to
+  0.04 pixels per tick.
+
 ## v0.13.0 (May 7 2022)
 
 This is a major update that brings deep architectural changes and a lot

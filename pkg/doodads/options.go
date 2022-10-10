@@ -9,9 +9,9 @@ import (
 
 // Options for runtime, user configurable.
 type Option struct {
-	Type    string // bool, str, int
-	Name    string
-	Default interface{}
+	Type    string      `json:"type"` // bool, str, int
+	Name    string      `json:"name"`
+	Default interface{} `json:"default"`
 }
 
 // SetOption sets an actor option, safely.

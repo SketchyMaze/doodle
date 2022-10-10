@@ -36,11 +36,11 @@ func (m ActorMap) Remove(a *Actor) bool {
 
 // Actor is an instance of a Doodad in the level.
 type Actor struct {
-	id       string       // NOTE: read only, use ID() to access.
-	Filename string       `json:"filename"` // like "exit.doodad"
-	Point    render.Point `json:"point"`
-	Links    []string     `json:"links,omitempty"` // IDs of linked actors
-	Options  map[string]*Option
+	id       string             // NOTE: read only, use ID() to access.
+	Filename string             `json:"filename"` // like "exit.doodad"
+	Point    render.Point       `json:"point"`
+	Links    []string           `json:"links,omitempty"` // IDs of linked actors
+	Options  map[string]*Option `json:"options,omitempty"`
 }
 
 // NewActor initializes a level.Actor.

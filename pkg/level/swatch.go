@@ -57,6 +57,9 @@ func (s *Swatch) Attributes() string {
 	if s.Solid {
 		result += "solid,"
 	}
+	if s.SemiSolid {
+		result += "semi-solid,"
+	}
 	if s.Fire {
 		result += "fire,"
 	}
@@ -65,6 +68,9 @@ func (s *Swatch) Attributes() string {
 	}
 	if s.isSparse {
 		result += "sparse,"
+	}
+	if s.Slippery {
+		result += "slippery,"
 	}
 
 	if result == "" {

@@ -70,8 +70,10 @@ type PlayScene struct {
 	// Player character
 	Player                *uix.Actor
 	playerPhysics         *physics.Mover
+	slipperyPhysics       *physics.Mover
 	lastCheckpoint        render.Point
 	playerLastDirection   float64   // player's heading last tick
+	slippery              bool      // player is on a slippery surface
 	antigravity           bool      // Cheat: disable player gravity
 	noclip                bool      // Cheat: disable player clipping
 	godMode               bool      // Cheat: player can't die
@@ -228,6 +230,9 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		} else {
 			a.Canvas.MaskColor = render.Invisible
 		}
+
+		// Slippery floor?
+		s.slippery = col.IsSlippery
 	}
 
 	// Handle a doodad changing the player character.
@@ -481,8 +486,13 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 	// Set up the movement physics for the player.
 	s.playerPhysics = &physics.Mover{
 		MaxSpeed:     physics.NewVector(balance.PlayerMaxVelocity, balance.PlayerMaxVelocity),
-		Acceleration: 0.025,
-		Friction:     0.1,
+		Acceleration: balance.PlayerAcceleration,
+		Friction:     balance.PlayerFriction,
+	}
+	s.slipperyPhysics = &physics.Mover{
+		MaxSpeed:     s.playerPhysics.MaxSpeed,
+		Acceleration: balance.SlipperyAcceleration,
+		Friction:     balance.SlipperyFriction,
 	}
 
 	// Set up the player character's script in the VM.

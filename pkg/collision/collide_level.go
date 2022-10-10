@@ -25,8 +25,9 @@ type Collide struct {
 	MoveTo      render.Point
 
 	// Swatch attributes affecting the collision at this time.
-	InFire  string // the name of the swatch, Fire = general ouchy color.
-	InWater bool
+	InFire     string // the name of the swatch, Fire = general ouchy color.
+	InWater    bool
+	IsSlippery bool
 }
 
 // Reset a Collide struct flipping all the bools off, but keeping MoveTo.
@@ -294,6 +295,11 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 			}
 			if swatch.Water {
 				c.InWater = true
+			}
+
+			// Slippery floor?
+			if side == Bottom && swatch.Slippery {
+				c.IsSlippery = true
 			}
 
 			// Non-solid swatches don't collide so don't pay them attention.
