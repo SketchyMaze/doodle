@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
@@ -143,6 +144,19 @@ func showLevel(c *cli.Context, filename string) error {
 			fmt.Printf("  -  Name: %s\n", actor.Filename)
 			fmt.Printf("     UUID: %s\n", id)
 			fmt.Printf("       At: %s\n", actor.Point)
+			if len(actor.Options) > 0 {
+				var ordered = []string{}
+				for name := range actor.Options {
+					ordered = append(ordered, name)
+				}
+				sort.Strings(ordered)
+
+				fmt.Println("     Options:")
+				for _, name := range ordered {
+					val := actor.Options[name]
+					fmt.Printf("         %s %s = %v\n", val.Type, val.Name, val.Value)
+				}
+			}
 			if c.Bool("links") {
 				for _, link := range actor.Links {
 					if other, ok := lvl.Actors[link]; ok {
@@ -201,6 +215,21 @@ func showDoodad(c *cli.Context, filename string) error {
 		fmt.Println("Tags:")
 		for k, v := range dd.Tags {
 			fmt.Printf("  %s: %s\n", k, v)
+		}
+		fmt.Println("")
+	}
+
+	if len(dd.Options) > 0 {
+		var ordered = []string{}
+		for name := range dd.Options {
+			ordered = append(ordered, name)
+		}
+		sort.Strings(ordered)
+
+		fmt.Println("Options:")
+		for _, name := range ordered {
+			opt := dd.Options[name]
+			fmt.Printf("   %s %s = %v\n", opt.Type, opt.Name, opt.Default)
 		}
 		fmt.Println("")
 	}

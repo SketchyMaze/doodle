@@ -40,6 +40,17 @@ type Actor struct {
 	Filename string       `json:"filename"` // like "exit.doodad"
 	Point    render.Point `json:"point"`
 	Links    []string     `json:"links,omitempty"` // IDs of linked actors
+	Options  map[string]*Option
+}
+
+// NewActor initializes a level.Actor.
+func NewActor(a Actor) *Actor {
+	return &Actor{
+		Filename: a.Filename,
+		Point:    a.Point,
+		Links:    []string{},
+		Options:  map[string]*Option{},
+	}
 }
 
 // ID returns the actor's ID.

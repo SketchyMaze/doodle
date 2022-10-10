@@ -478,6 +478,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 				H: actor.Canvas.Size().H,
 			}
 
+			// Mouse hover?
 			if WP.Inside(box) {
 				actor.Canvas.Configure(ui.Config{
 					BorderSize:  1,
@@ -486,9 +487,23 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 					Background:  render.White, // TODO: cuz the border draws a bgcolor
 				})
 
+				// Show doodad buttons.
+				actor.Canvas.ShowDoodadButtons = true
+
 				// Check for a mouse down event to begin dragging this
 				// canvas around.
 				if keybind.LeftClick(ev) {
+					// Did they click onto the doodad buttons?
+					if shmem.Cursor.Inside(actor.Canvas.doodadButtonRect()) {
+						keybind.ClearLeftClick(ev)
+						if w.OnDoodadConfig != nil {
+							w.OnDoodadConfig(actor)
+						} else {
+							log.Error("OnDoodadConfig: handler not defined for parent canvas")
+						}
+						return nil
+					}
+
 					// Pop this canvas out for the drag/drop.
 					if w.OnDragStart != nil {
 						deleteActors = append(deleteActors, actor)
@@ -502,6 +517,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			} else {
 				actor.Canvas.SetBorderSize(0)
 				actor.Canvas.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO
+				actor.Canvas.ShowDoodadButtons = false
 			}
 		}
 

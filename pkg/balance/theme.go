@@ -14,6 +14,7 @@ var (
 	GoldCoin   = "assets/sprites/gold.png"
 	SilverCoin = "assets/sprites/silver.png"
 	LockIcon   = "assets/sprites/padlock.png"
+	GearIcon   = "assets/sprites/gear.png"
 
 	// Cursors
 	CursorIcon  = "assets/sprites/pointer.png"

@@ -43,6 +43,11 @@ func init() {
 				Aliases: []string{"t"},
 				Usage:   "set a key/value tag on the doodad, in key=value format. Empty value deletes the tag.",
 			},
+			&cli.StringFlag{
+				Name:    "option",
+				Aliases: []string{"o"},
+				Usage:   "set an option on the doodad, in key=type=default format, e.g. active=bool=true, speed=int=10, name=str. Value types are bool, str, int.",
+			},
 			&cli.BoolFlag{
 				Name:  "hide",
 				Usage: "Hide the doodad from the palette",
@@ -163,6 +168,36 @@ func editDoodad(c *cli.Context, filename string) error {
 			log.Debug("Set tag '%s' to '%s'", key, value)
 			dd.Tags[key] = value
 		}
+
+		modified = true
+	}
+
+	// Options.
+	opt := c.String("option")
+	if len(opt) > 0 {
+		parts := strings.SplitN(opt, "=", 3)
+		if len(parts) < 2 {
+			log.Error("--option: must be in format `name=type` or `name=type=value`")
+			os.Exit(1)
+		}
+
+		var (
+			name     = parts[0]
+			dataType = parts[1]
+			value    string
+		)
+		if len(parts) == 3 {
+			value = parts[2]
+		}
+
+		// Validate the data types.
+		if dataType != "bool" && dataType != "str" && dataType != "int" {
+			log.Error("--option: invalid type, should be a bool, str or int")
+			os.Exit(1)
+		}
+
+		value = dd.SetOption(name, dataType, value)
+		log.Info("Set option %s (%s) = %s", name, dataType, value)
 
 		modified = true
 	}

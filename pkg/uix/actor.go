@@ -43,8 +43,7 @@ type Actor struct {
 	frozen       bool // Frozen, via Freeze() and Unfreeze()
 	immortal     bool // Invulnerable to damage
 	hitbox       render.Rect
-	inventory    map[string]int    // item inventory. doodad name -> quantity, 0 for key item.
-	data         map[string]string // arbitrary key/value store. DEPRECATED ??
+	inventory    map[string]int // item inventory. doodad name -> quantity, 0 for key item.
 
 	// Movement data.
 	position render.Point
@@ -357,30 +356,34 @@ func (a *Actor) Hitbox() render.Rect {
 	return a.hitbox
 }
 
-// SetData sets an arbitrary field in the actor's K/V storage.
-func (a *Actor) SetData(key, value string) {
-	if a.data == nil {
-		a.data = map[string]string{}
+// Options returns the list of all available Doodad options, sorted.
+func (a *Actor) Options() []string {
+	var result = []string{}
+	for option := range a.Doodad().Options {
+		result = append(result, option)
 	}
-
-	a.muData.Lock()
-	a.data[key] = value
-	a.muData.Unlock()
+	sort.Strings(result)
+	return result
 }
 
-// GetData gets an arbitrary field from the actor's K/V storage.
-// Missing keys just return a blank string (friendly to the JavaScript
-// environment).
-func (a *Actor) GetData(key string) string {
-	if a.data == nil {
-		return ""
+// Get an option value from the actor. If the option is not configured,
+// returns the default Doodad option, or nil if not there either.
+func (a *Actor) GetOption(name string) *level.Option {
+	// Actor configured option?
+	if opt, ok := a.Actor.Options[name]; ok {
+		return opt
 	}
 
-	a.muData.RLock()
-	v, _ := a.data[key]
-	a.muData.RUnlock()
+	// Doodad default option?
+	if opt, ok := a.Doodad().Options[name]; ok {
+		return &level.Option{
+			Name:  opt.Name,
+			Type:  opt.Type,
+			Value: opt.Default,
+		}
+	}
 
-	return v
+	return nil
 }
 
 // LayerCount returns the number of layers in this actor's drawing.

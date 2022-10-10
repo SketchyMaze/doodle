@@ -90,7 +90,15 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 			var size = actor.Doodad().ChunkSize()
 			return render.NewRect(size, size)
 		},
-		"GetTag":   actor.Doodad().Tag,
+		"GetTag":  actor.Doodad().Tag,
+		"Options": actor.Options,
+		"GetOption": func(name string) interface{} {
+			opt := actor.GetOption(name)
+			if opt == nil {
+				return nil
+			}
+			return opt.Value
+		},
 		"Position": actor.Position,
 		"MoveTo": func(p render.Point) {
 			actor.MoveTo(p)

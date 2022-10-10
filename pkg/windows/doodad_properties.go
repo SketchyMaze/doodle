@@ -79,7 +79,10 @@ type DoodadProperties struct {
 }
 
 // HACKY GLOBAL VARIABLE
-var showTagsOnRefreshDoodadPropertiesWindow bool
+var (
+	showTagsOnRefreshDoodadPropertiesWindow bool
+	showOptsOnRefreshDoodadPropertiesWindow bool
+)
 
 // NewSettingsWindow initializes the window.
 func NewDoodadPropertiesWindow(cfg *DoodadProperties) *ui.Window {
@@ -109,10 +112,14 @@ func NewDoodadPropertiesWindow(cfg *DoodadProperties) *ui.Window {
 	// Make the tabs.
 	cfg.makeMetaTab(tabFrame, Width, Height)
 	cfg.makeTagsTab(tabFrame, Width, Height)
+	cfg.makeOptionsTab(tabFrame, Width, Height)
 
 	if showTagsOnRefreshDoodadPropertiesWindow {
 		tabFrame.SetTab("Tags")
 		showTagsOnRefreshDoodadPropertiesWindow = false
+	} else if showOptsOnRefreshDoodadPropertiesWindow {
+		tabFrame.SetTab("Options")
+		showOptsOnRefreshDoodadPropertiesWindow = false
 	}
 
 	tabFrame.Supervise(cfg.Supervisor)
@@ -659,6 +666,215 @@ func (c DoodadProperties) makeTagsTab(tabFrame *ui.TabFrame, Width, Height int) 
 		})
 		return nil
 	})
+	c.Supervisor.Add(btnAdd)
+	row.Pack(btnAdd, ui.Pack{
+		Side: ui.E,
+	})
+
+	return tab
+}
+
+// DoodadProperties Window "Options" Tab
+func (c DoodadProperties) makeOptionsTab(tabFrame *ui.TabFrame, Width, Height int) *ui.Frame {
+	tab := tabFrame.AddTab("Options", ui.NewLabel(ui.Label{
+		Text: "Options",
+		Font: balance.TabFont,
+	}))
+	tab.Resize(render.NewRect(Width-4, Height-tab.Size().H-46))
+
+	if c.EditDoodad == nil {
+		return tab
+	}
+
+	// Draw a table view of the current tags on this doodad.
+	var (
+		headers = []string{"Type", "Name", "Default", "Del."}
+		columns = []int{40, 130, 130, 80} // TODO, Width=400
+		height  = 24
+		row     = ui.NewFrame("HeaderRow")
+	)
+	tab.Pack(row, ui.Pack{
+		Side:  ui.N,
+		FillX: true,
+	})
+	for i, value := range headers {
+		cell := ui.NewLabel(ui.Label{
+			Text: value,
+			Font: balance.MenuFontBold,
+		})
+		cell.Resize(render.NewRect(columns[i], height))
+		row.Pack(cell, ui.Pack{
+			Side: ui.W,
+		})
+	}
+
+	// No tags?
+	if len(c.EditDoodad.Options) == 0 {
+		label := ui.NewLabel(ui.Label{
+			Text: "There are no options on this doodad.",
+			Font: balance.MenuFont,
+		})
+		tab.Pack(label, ui.Pack{
+			Side:  ui.N,
+			FillX: true,
+		})
+	} else {
+		// Draw the rows for each tag.
+		var sortedOpts []string
+		for name := range c.EditDoodad.Options {
+			sortedOpts = append(sortedOpts, name)
+		}
+		sort.Strings(sortedOpts)
+
+		for _, optName := range sortedOpts {
+			var (
+				name  = optName
+				value = c.EditDoodad.Options[name]
+			)
+
+			row = ui.NewFrame("Option Row")
+			tab.Pack(row, ui.Pack{
+				Side:  ui.N,
+				FillX: true,
+				PadY:  2,
+			})
+
+			lblType := ui.NewLabel(ui.Label{
+				Text: value.Type,
+				Font: balance.MenuFont,
+			})
+			lblType.Resize(render.NewRect(columns[0], height))
+
+			lblName := ui.NewLabel(ui.Label{
+				Text: name,
+				Font: balance.MenuFont,
+			})
+			lblName.Resize(render.NewRect(columns[1], height))
+
+			// Value button: show a checkbox for booleans or a clickable
+			// button for other types (prompts user for value)
+			var btnValue ui.Widget
+			if value.Type == "bool" {
+				var cbValue = value.Default.(bool)
+				checkbox := ui.NewCheckbox("Bool Box", &cbValue, ui.NewLabel(ui.Label{
+					Text: fmt.Sprintf("%v", cbValue),
+					Font: balance.MenuFont,
+				}))
+				checkbox.Resize(render.NewRect(columns[2], height))
+				checkbox.Handle(ui.Click, func(ed ui.EventData) error {
+					var label string
+					if cbValue {
+						label = "true"
+					} else {
+						label = "false"
+					}
+					c.EditDoodad.Options[name].Set(label)
+					checkbox.SetText(label)
+					return nil
+				})
+				checkbox.Supervise(c.Supervisor)
+				btnValue = checkbox
+			} else {
+				button := ui.NewButton("Tag Button", ui.NewLabel(ui.Label{
+					Text: fmt.Sprintf("%v", value.Default),
+					Font: balance.MenuFont,
+				}))
+				button.Resize(render.NewRect(columns[2], height))
+				button.Handle(ui.Click, func(ed ui.EventData) error {
+					shmem.Prompt("Enter new value: ", func(answer string) {
+						if answer == "" {
+							return
+						}
+						answer = c.EditDoodad.Options[name].Set(answer)
+						button.SetText(answer)
+					})
+					return nil
+				})
+				c.Supervisor.Add(button)
+				btnValue = button
+			}
+
+			btnDelete := ui.NewButton("Delete Button", ui.NewLabel(ui.Label{
+				Text: "Del",
+				Font: balance.MenuFont,
+			}))
+			btnDelete.Resize(render.NewRect(columns[3], height))
+			btnDelete.SetStyle(&balance.ButtonDanger)
+			btnDelete.Handle(ui.Click, func(ed ui.EventData) error {
+				modal.Confirm("Delete option %s?", name).Then(func() {
+					log.Info("Delete option: %s", name)
+					delete(c.EditDoodad.Options, name)
+
+					// Trigger a refresh.
+					if c.OnRefresh != nil {
+						showOptsOnRefreshDoodadPropertiesWindow = true
+						c.OnRefresh()
+					}
+				})
+				return nil
+			})
+			c.Supervisor.Add(btnDelete)
+
+			// Pack the widgets.
+			row.Pack(lblType, ui.Pack{
+				Side: ui.W,
+			})
+			row.Pack(lblName, ui.Pack{
+				Side: ui.W,
+			})
+			row.Pack(btnValue, ui.Pack{
+				Side: ui.W,
+				PadX: 4,
+			})
+			row.Pack(btnDelete, ui.Pack{
+				Side: ui.W,
+			})
+		}
+	}
+
+	// Add Option menu button.
+	row = ui.NewFrame("Button Frame")
+	tab.Pack(row, ui.Pack{
+		Side:  ui.N,
+		FillX: true,
+	})
+	btnAdd := ui.NewMenuButton("New Option", ui.NewLabel(ui.Label{
+		Text: "Add Option",
+		Font: balance.MenuFont,
+	}))
+	btnAdd.SetStyle(&balance.ButtonPrimary)
+
+	// Types of options
+	for _, item := range []struct {
+		label  string
+		typing string
+		value  interface{}
+	}{
+		{"Boolean", "bool", false},
+		{"String", "str", ""},
+		{"Integer", "int", 0},
+	} {
+		item := item
+		btnAdd.AddItem(item.label, func() {
+			shmem.Prompt("Enter name of the new boolean: ", func(answer string) {
+				if answer == "" {
+					return
+				}
+
+				c.EditDoodad.Options[answer] = &doodads.Option{
+					Name:    answer,
+					Type:    item.typing,
+					Default: item.value,
+				}
+				if c.OnRefresh != nil {
+					showOptsOnRefreshDoodadPropertiesWindow = true
+					c.OnRefresh()
+				}
+			})
+		})
+	}
+
+	btnAdd.Supervise(c.Supervisor)
 	c.Supervisor.Add(btnAdd)
 	row.Pack(btnAdd, ui.Pack{
 		Side: ui.E,

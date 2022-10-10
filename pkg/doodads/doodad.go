@@ -11,13 +11,14 @@ import (
 // Doodad is a reusable component for Levels that have scripts and graphics.
 type Doodad struct {
 	level.Base
-	Filename string            `json:"-"` // used internally, not saved in json
-	Hidden   bool              `json:"hidden,omitempty"`
-	Palette  *level.Palette    `json:"palette"`
-	Script   string            `json:"script"`
-	Hitbox   render.Rect       `json:"hitbox"`
-	Layers   []Layer           `json:"layers"`
-	Tags     map[string]string `json:"data"` // arbitrary key/value data storage
+	Filename string             `json:"-"` // used internally, not saved in json
+	Hidden   bool               `json:"hidden,omitempty"`
+	Palette  *level.Palette     `json:"palette"`
+	Script   string             `json:"script"`
+	Hitbox   render.Rect        `json:"hitbox"`
+	Layers   []Layer            `json:"layers"`
+	Tags     map[string]string  `json:"data"`    // arbitrary key/value data storage
+	Options  map[string]*Option `json:"options"` // runtime options for a doodad
 
 	// Undo history, temporary live data not persisted to the level file.
 	UndoHistory *drawtool.History `json:"-"`
@@ -48,6 +49,7 @@ func New(size int) *Doodad {
 			},
 		},
 		Tags:        map[string]string{},
+		Options:     map[string]*Option{},
 		UndoHistory: drawtool.NewHistory(balance.UndoHistory),
 	}
 }

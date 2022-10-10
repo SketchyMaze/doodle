@@ -97,6 +97,11 @@ func (w *Canvas) InstallScripts() error {
 		w.MakeScriptAPI(vm)
 		vm.Set("Self", vm.Self)
 
+		// If there is no script attached, do not try and load or call the main() function.
+		if actor.Doodad().Script == "" {
+			continue
+		}
+
 		if _, err := vm.Run(actor.Doodad().Script); err != nil {
 			log.Error("Run script for actor %s failed: %s", actor.ID(), err)
 		}

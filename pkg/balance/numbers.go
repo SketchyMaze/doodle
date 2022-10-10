@@ -148,4 +148,12 @@ var (
 var (
 	// Number of Doodads per row in the palette.
 	UIDoodadsPerRow = 2
+
+	// Size of the DoodadButtons on actor canvas mouseover.
+	UICanvasDoodadButtonSize = 16
+
+	// Threshold for "very small doodad" where the buttons take up too big a proportion
+	// and the doodad can't drag/drop easily.. tiny doodads will show the DoodadButtons
+	// 50% off the top/right edge.
+	UICanvasDoodadButtonSpaceNeeded = 20
 )

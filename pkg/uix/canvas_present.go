@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 )
@@ -207,6 +208,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 
 	w.drawActors(e, p)
 	w.presentStrokes(e)
+	w.presentDoodadButtons(e)
 	w.presentCursor(e)
 
 	// Custom label in the canvas corner? (e.g. for Inventory item counts)
@@ -268,5 +270,72 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			X: p.X + S.W - label.Size().W - w.BoxThickness(1),
 			Y: p.Y + w.BoxThickness(1),
 		})
+	}
+}
+
+// Draw doodad buttons on mouseover in the level editor.
+func (w *Canvas) presentDoodadButtons(e render.Engine) {
+	if !w.ShowDoodadButtons || w.parent == nil {
+		return
+	}
+
+	// Initialize the buttons the first time?
+	if w.doodadButtonFrame == nil {
+		var (
+			img ui.Widget
+			err error
+		)
+
+		img, err = sprites.LoadImage(e, balance.GearIcon)
+		if err != nil {
+			// Error loading sprite, make a fallback frame.
+			frame := ui.NewFrame("Buttons")
+			frame.Configure(ui.Config{
+				Width:      balance.UICanvasDoodadButtonSize,
+				Height:     balance.UICanvasDoodadButtonSize,
+				Background: render.Green,
+			})
+			w.doodadButtonFrame = frame
+		} else {
+			w.doodadButtonFrame = img
+		}
+
+		w.doodadButtonFrame.Compute(e)
+	}
+
+	// log.Error("presentDoodadButtons: parentP=%s w at %s (abs %s) actor at %s draw at %s", parentP, w.Point(), P, actorPoint, drawAt)
+	w.doodadButtonFrame.Present(e, w.doodadButtonRect().Point())
+}
+
+// Return the screen rectangle where the doodad buttons would draw.
+// screenCords: pass true to get on-screen coords (ignores scroll offset)
+func (w *Canvas) doodadButtonRect() render.Rect {
+	if !w.ShowDoodadButtons || w.parent == nil {
+		return render.Rect{}
+	}
+
+	var (
+		parentP    = ui.AbsolutePosition(w.parent)
+		scroll     = w.parent.Scroll
+		actorPoint = w.actor.Position()
+		actorSize  = w.Size()
+		drawAt     = render.Point{
+			X: parentP.X + scroll.X + actorPoint.X + actorSize.W - balance.UICanvasDoodadButtonSize - w.BoxThickness(1),
+			Y: parentP.Y + scroll.Y + actorPoint.Y + w.BoxThickness(1),
+		}
+	)
+
+	// If the doodad is Very Small so that its buttons take up a disproportionate
+	// amount of its space, draw the buttons further to the right.
+	if actorSize.W <= balance.UICanvasDoodadButtonSpaceNeeded {
+		drawAt.X += balance.UICanvasDoodadButtonSize / 2
+		drawAt.Y -= balance.UICanvasDoodadButtonSize / 2
+	}
+
+	return render.Rect{
+		X: drawAt.X,
+		Y: drawAt.Y,
+		W: drawAt.X + balance.UICanvasDoodadButtonSize,
+		H: drawAt.Y + balance.UICanvasDoodadButtonSize,
 	}
 }

@@ -18,6 +18,7 @@ const (
 	Text        // free, wide Label row
 	Frame       // custom frame from the caller
 	Button      // Single button with a label
+	Value       // a Label & Value row (value not editable)
 	Textbox
 	Checkbox
 	Radiobox
@@ -69,6 +70,7 @@ type Field struct {
 	Options      []Option      // Selectbox
 	SelectValue  interface{}   // Selectbox default choice
 	Color        *render.Color // Color
+	Readonly     bool          // draw the value as a flat label
 
 	// For text-type fields, opt-in to let magicform prompt the
 	// user using the game's developer shell.
@@ -189,6 +191,28 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 			})
 		}
 
+		// Simple "Value" row with a Label to its left.
+		if row.Type == Value {
+			lbl := ui.NewLabel(ui.Label{
+				Text:         row.Label,
+				Font:         row.Font,
+				TextVariable: row.TextVariable,
+				IntVariable:  row.IntVariable,
+			})
+
+			frame.Pack(lbl, ui.Pack{
+				Side:   ui.W,
+				FillX:  true,
+				Expand: true,
+			})
+
+			// Tooltip? TODO - make nicer.
+			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
+				tt := ui.NewTooltip(lbl, row.Tooltip)
+				tt.Supervise(form.Supervisor)
+			}
+		}
+
 		// Color picker button.
 		if row.Type == Color && row.Color != nil {
 			btn := ui.NewButton("ColorPicker", ui.NewLabel(ui.Label{
@@ -268,12 +292,17 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				TextVariable: row.TextVariable,
 				IntVariable:  row.IntVariable,
 			}))
-			form.Supervisor.Add(btn)
+
 			frame.Pack(btn, ui.Pack{
 				Side:   ui.W,
 				FillX:  true,
 				Expand: true,
 			})
+
+			// Not clickable if Readonly.
+			if !row.Readonly {
+				form.Supervisor.Add(btn)
+			}
 
 			// Tooltip? TODO - make nicer.
 			if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {

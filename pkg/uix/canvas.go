@@ -36,6 +36,12 @@ type Canvas struct {
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 	Zoom       int  // Zoom level on the canvas.
 
+	// Toogle for doodad canvases in the Level Editor to show their buttons.
+	ShowDoodadButtons         bool
+	doodadButtonFrame         ui.Widget // lazy init
+	doodadButtonFrameHovering bool
+	OnDoodadConfig            func(*Actor)
+
 	// Custom label to place in the lower-right corner of the canvas.
 	// Used for e.g. the quantity badge on Inventory items.
 	CornerLabel string

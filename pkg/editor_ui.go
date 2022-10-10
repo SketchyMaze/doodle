@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
@@ -56,6 +57,7 @@ type EditorUI struct {
 	filesystemWindow       *ui.Window
 	licenseWindow          *ui.Window
 	settingsWindow         *ui.Window // lazy loaded
+	doodadConfigWindows    map[string]*ui.Window
 
 	// Palette window.
 	Palette    *ui.Window
@@ -72,13 +74,14 @@ type EditorUI struct {
 // NewEditorUI initializes the Editor UI.
 func NewEditorUI(d *Doodle, s *EditorScene) *EditorUI {
 	u := &EditorUI{
-		d:                  d,
-		Scene:              s,
-		Supervisor:         ui.NewSupervisor(),
-		StatusMouseText:    "Cursor: (waiting)",
-		StatusPaletteText:  "Swatch: <none>",
-		StatusFilenameText: "Filename: <none>",
-		StatusScrollText:   "Hello world",
+		d:                   d,
+		Scene:               s,
+		Supervisor:          ui.NewSupervisor(),
+		StatusMouseText:     "Cursor: (waiting)",
+		StatusPaletteText:   "Swatch: <none>",
+		StatusFilenameText:  "Filename: <none>",
+		StatusScrollText:    "Hello world",
+		doodadConfigWindows: map[string]*ui.Window{},
 	}
 
 	// The screen is a full-window-sized frame for laying out the UI.
@@ -439,6 +442,24 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 		d.Flash("Linked '%s' and '%s' together", a.Doodad().Title, b.Doodad().Title)
 	}
 
+	drawing.OnDoodadConfig = func(a *uix.Actor) {
+		if win, ok := u.doodadConfigWindows[a.ID()]; ok {
+			win.Show()
+		} else {
+			win = windows.NewDoodadConfigWindow(&windows.DoodadConfig{
+				Supervisor: u.Supervisor,
+				Engine:     d.Engine,
+				EditActor:  a,
+				OnRefresh: func() {
+
+				},
+			})
+			u.ConfigureWindow(d, win)
+			win.Show()
+			u.doodadConfigWindows[a.ID()] = win
+		}
+	}
+
 	// Set up the drop handler for draggable doodads.
 	// NOTE: The drag event begins at editor_ui_doodad.go when configuring the
 	// Doodad Palette buttons.
@@ -494,10 +515,10 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 				actor.actor.Point = position
 				u.Scene.Level.Actors.Add(actor.actor)
 			} else {
-				u.Scene.Level.Actors.Add(&level.Actor{
+				u.Scene.Level.Actors.Add(level.NewActor(level.Actor{
 					Point:    position,
 					Filename: actor.doodad.Filename,
-				})
+				}))
 			}
 
 			err := drawing.InstallActors(u.Scene.Level.Actors)
