@@ -10,7 +10,7 @@ require (
 	github.com/aichaos/rivescript-go v0.3.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/dop251/goja v0.0.0-20221003171542-5ea1285e6c91
+	github.com/dop251/goja v0.0.0-20220501172647-e1eca0b61fa9
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gen2brain/dlgs v0.0.0-20220603100644-40c77870fa8d
 	github.com/google/uuid v1.3.0
