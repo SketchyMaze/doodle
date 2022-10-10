@@ -21,6 +21,13 @@ var (
 	PencilIcon  = "assets/sprites/pencil.png"
 	FloodCursor = "assets/sprites/flood-cursor.png"
 
+	// Pixel attributes
+	AttrSolid     = "assets/sprites/attr-solid.png"
+	AttrFire      = "assets/sprites/attr-fire.png"
+	AttrWater     = "assets/sprites/attr-water.png"
+	AttrSemiSolid = "assets/sprites/attr-semisolid.png"
+	AttrSlippery  = "assets/sprites/attr-slippery.png"
+
 	// Title Screen Font
 	TitleScreenFont = render.Text{
 		Size:   46,

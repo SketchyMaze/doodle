@@ -14,9 +14,11 @@ type Swatch struct {
 	Pattern string       `json:"pattern"` // like "noise.png"
 
 	// Optional attributes.
-	Solid bool `json:"solid,omitempty"`
-	Fire  bool `json:"fire,omitempty"`
-	Water bool `json:"water,omitempty"`
+	Solid     bool `json:"solid,omitempty"`
+	SemiSolid bool `json:"semisolid,omitempty"`
+	Fire      bool `json:"fire,omitempty"`
+	Water     bool `json:"water,omitempty"`
+	Slippery  bool `json:"slippery,omitempty"`
 
 	// Private runtime attributes.
 	index int // position in the Palette, for reverse of `Palette.byName`

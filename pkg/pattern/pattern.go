@@ -4,6 +4,7 @@ package pattern
 import (
 	"errors"
 	"fmt"
+	"image"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
@@ -63,10 +64,14 @@ var Builtins = []Pattern{
 // after LoadBuiltins had been called.
 var images map[string]*ui.Image
 
+// Cache of cropped images (e.g. 24x24 icons for palette editor)
+var croppedImages map[string]map[render.Rect]*ui.Image
+
 // LoadBuiltins loads all of the PNG textures of built-in patterns
 // into ui.Image widgets.
 func LoadBuiltins(e render.Engine) {
 	images = map[string]*ui.Image{}
+	croppedImages = map[string]map[render.Rect]*ui.Image{}
 
 	for _, pat := range Builtins {
 		if pat.Filename == "" {
@@ -91,6 +96,34 @@ func GetImage(filename string) (*ui.Image, error) {
 		return im, nil
 	}
 	return nil, fmt.Errorf("pattern.GetImage: filename %s not found", filename)
+}
+
+// GetImageCropped gets a cropped ui.Image for a builtin pattern.
+func GetImageCropped(filename string, crop render.Rect) (*ui.Image, error) {
+	// Have it cached already?
+	if sizes, ok := croppedImages[filename]; ok {
+		if cached, ok := sizes[crop]; ok {
+			return cached, nil
+		}
+	}
+
+	uiImage, err := GetImage(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	cropped, err := CropImage(uiImage.Image, image.Rect(0, 0, crop.W, crop.H))
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache it for the future so we don't leak textures every time the palette editor asks.
+	if _, ok := croppedImages[filename]; !ok {
+		croppedImages[filename] = map[render.Rect]*ui.Image{}
+	}
+	croppedImages[filename][crop] = cropped
+
+	return cropped, nil
 }
 
 // SampleColor samples a color with the pattern for a given coordinate in infinite space.
@@ -235,4 +268,18 @@ func OverlayFilter(a, b render.Color) render.Color {
 	)
 
 	return render.RGBA(deltaR, deltaG, deltaB, a.Alpha)
+}
+
+// CropImage crops an image to a smaller size (such as the 24x24 selectbox button in the Palette Editor UI)
+func CropImage(img image.Image, crop image.Rectangle) (*ui.Image, error) {
+	type subImager interface {
+		SubImage(r image.Rectangle) image.Image
+	}
+
+	simg, ok := img.(subImager)
+	if !ok {
+		return nil, fmt.Errorf("image does not support cropping")
+	}
+
+	return ui.ImageFromImage(simg.SubImage(crop))
 }

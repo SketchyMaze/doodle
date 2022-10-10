@@ -94,10 +94,10 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 			ceiling = true
 			P.Y++
 		}
-		if result.Left {
+		if result.Left && !result.LeftPixel.SemiSolid {
 			P.X++
 		}
-		if result.Right {
+		if result.Right && !result.RightPixel.SemiSolid {
 			P.X--
 		}
 	}
@@ -134,7 +134,11 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 				target.X++ // push along to the right
 			}
 		} else {
-			target.X = P.X
+			// Not a slope.. may be a solid wall. If the wall is a SemiSolid though,
+			// do not cap our direction just yet.
+			if !(result.Left && result.LeftPixel.SemiSolid) && !(result.Right && result.RightPixel.SemiSolid) {
+				target.X = P.X
+			}
 		}
 	}
 
@@ -188,18 +192,16 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 				// Similar to the "+ 1" on the left side, below.
 			}
 
-			if result.Left && !hitLeft {
+			// TODO: this block of code is interesting. For SemiSolid slopes, the character
+			// walks up the slopes FAST (full speed) which is nice; would like to do this
+			// for regular solid slopes too. But if this block of code is dummied out for
+			// solid walls, the player is able to clip thru thin walls (couple px thick); the
+			// capLeft/capRight behavior is good at stopping the player here.
+			if result.Left && !hitLeft && !result.LeftPixel.SemiSolid {
 				hitLeft = true
-				capLeft = result.LeftPoint.X // + 1
-
-				// TODO: there was a clipping bug where the player could clip
-				// thru a left wall if they jumped slightly while pressing into
-				// it. (90 degree angle between floor and left wall). The bug
-				// does NOT repro on right walls, only left. The "+ 1" added to
-				// capLeft works around it, BUT breaks walking up leftward slopes
-				// (walking up rightward slopes still works).
+				capLeft = result.LeftPoint.X
 			}
-			if result.Right && !hitRight {
+			if result.Right && !hitRight && !result.RightPixel.SemiSolid {
 				hitRight = true
 				capRight = result.RightPoint.X - S.W
 			}
@@ -219,11 +221,11 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 		result.Bottom = true
 		result.MoveTo.Y = capFloor
 	}
-	if hitLeft {
+	if hitLeft && !result.LeftPixel.SemiSolid {
 		result.Left = true
 		result.MoveTo.X = capLeft
 	}
-	if hitRight {
+	if hitRight && !result.RightPixel.SemiSolid {
 		result.Right = true
 		result.MoveTo.X = capRight
 	}
@@ -233,7 +235,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 
 // IsColliding returns whether any sort of collision has occurred.
 func (c *Collide) IsColliding() bool {
-	return c.Top || c.Bottom || c.Left || c.Right ||
+	return c.Top || c.Bottom || (c.Left && !c.LeftPixel.SemiSolid) || (c.Right && !c.RightPixel.SemiSolid) ||
 		c.InFire != "" || c.InWater
 }
 
@@ -295,7 +297,13 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 			}
 
 			// Non-solid swatches don't collide so don't pay them attention.
-			if !swatch.Solid {
+			if !swatch.Solid && !swatch.SemiSolid {
+				continue
+			}
+
+			// A semisolid only has collision on the bottom (and a little on the
+			// sides, for slope walking only)
+			if swatch.SemiSolid && side == Top {
 				continue
 			}
 

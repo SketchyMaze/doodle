@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/pattern"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -119,10 +120,12 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 	// Draw the main table of Palette rows.
 	if pal := config.EditPalette; pal != nil {
 		for i, swatch := range pal.Swatches {
-			i := i
+			var (
+				i      = i
+				swatch = swatch
+			)
 
 			var idStr = fmt.Sprintf("%d", i)
-			swatch := swatch
 
 			row := ui.NewFrame("Swatch " + idStr)
 			rows = append(rows, row)
@@ -269,20 +272,34 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 				Height: 24,
 			})
 			attributes := []struct {
-				Label string
-				Var   *bool
+				Label  string
+				Sprite string
+				Var    *bool
 			}{
 				{
-					Label: "Solid",
-					Var:   &swatch.Solid,
+					Label:  "Solid",
+					Sprite: balance.AttrSolid,
+					Var:    &swatch.Solid,
 				},
 				{
-					Label: "Fire",
-					Var:   &swatch.Fire,
+					Label:  "Semi-Solid",
+					Sprite: balance.AttrSemiSolid,
+					Var:    &swatch.SemiSolid,
 				},
 				{
-					Label: "Water",
-					Var:   &swatch.Water,
+					Label:  "Fire",
+					Sprite: balance.AttrFire,
+					Var:    &swatch.Fire,
+				},
+				{
+					Label:  "Water",
+					Sprite: balance.AttrWater,
+					Var:    &swatch.Water,
+				},
+				{
+					Label:  "Slippery",
+					Sprite: balance.AttrSlippery,
+					Var:    &swatch.Slippery,
 				},
 			}
 
@@ -290,10 +307,20 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 			if !config.IsDoodad {
 				for _, attr := range attributes {
 					attr := attr
-					btn := ui.NewCheckButton(attr.Label, attr.Var, ui.NewLabel(ui.Label{
-						Text: attr.Label,
-						Font: balance.MenuFont,
-					}))
+					var child ui.Widget
+
+					icon, err := sprites.LoadImage(config.Engine, attr.Sprite)
+					if err != nil {
+						log.Error("Sprite loading error: %s", err)
+						child = ui.NewLabel(ui.Label{
+							Text: attr.Label,
+							Font: balance.MenuFont,
+						})
+					} else {
+						child = icon
+					}
+
+					btn := ui.NewCheckButton(attr.Label, attr.Var, child)
 					btn.Handle(ui.Click, func(ed ui.EventData) error {
 						if config.OnChange != nil {
 							config.OnChange()
@@ -301,8 +328,16 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 						return nil
 					})
 					config.Supervisor.Add(btn)
+
+					tt := ui.NewTooltip(btn, ui.Tooltip{
+						Text: attr.Label,
+						Edge: ui.Bottom,
+					})
+					tt.Supervise(config.Supervisor)
+
 					attrFrame.Pack(btn, ui.Pack{
 						Side: ui.W,
+						PadX: 1,
 					})
 				}
 			}
@@ -440,8 +475,8 @@ func NewPaletteEditor(config PaletteEditor) *ui.Window {
 // show the image by its filename... for both onChange and
 // initial render needs.
 func setImageOnSelect(sel *ui.SelectBox, filename string) {
-	if image, err := pattern.GetImage(filename); err == nil {
-		sel.SetImage(image)
+	if img, err := pattern.GetImageCropped(filename, render.NewRect(24, 24)); err == nil {
+		sel.SetImage(img)
 	} else {
 		sel.SetImage(nil)
 	}
