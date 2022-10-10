@@ -40,6 +40,12 @@ var (
 					Pattern: "bubbles.png",
 				},
 				{
+					Name:      "semisolid",
+					Color:     render.MustHexColor("#AAA"),
+					SemiSolid: true,
+					Pattern:   "ink.png",
+				},
+				{
 					Name:    "hint",
 					Color:   render.MustHexColor("#F0F"),
 					Pattern: "marker.png",
@@ -80,6 +86,12 @@ var (
 					Pattern: "perlin-noise.png",
 				},
 				{
+					Name:      "planks",
+					Color:     render.MustHexColor("#B80"),
+					SemiSolid: true,
+					Pattern:   "marker.png",
+				},
+				{
 					Name:    "fire",
 					Color:   render.Red,
 					Fire:    true,
@@ -90,6 +102,13 @@ var (
 					Color:   render.RGBA(0, 153, 255, 255),
 					Water:   true,
 					Pattern: "bubbles.png",
+				},
+				{
+					Name:     "ice",
+					Color:    render.MustHexColor("#099"),
+					Solid:    true,
+					Slippery: true,
+					Pattern:  "marker.png",
 				},
 				{
 					Name:    "hint",
@@ -119,14 +138,22 @@ var (
 					Pattern: "marker.png",
 				},
 				{
-					Name:    "electricity",
-					Color:   render.Yellow,
-					Pattern: "perlin.png",
+					Name:      "electricity",
+					Color:     render.Yellow,
+					SemiSolid: true,
+					Pattern:   "perlin.png",
 				},
 				{
 					Name:    "water",
 					Color:   render.MustHexColor("#09F"),
 					Pattern: "bubbles.png",
+				},
+				{
+					Name:     "ice blue",
+					Color:    render.MustHexColor("#0FF"),
+					Solid:    true,
+					Slippery: true,
+					Pattern:  "marker.png",
 				},
 				{
 					Name:    "hint",
@@ -153,7 +180,7 @@ var (
 					Name:    "fire",
 					Color:   render.RGBA(255, 80, 0, 255),
 					Fire:    true,
-					Pattern: "marker.png",
+					Pattern: "bubbles.png",
 				},
 				{
 					Name:    "water",
@@ -162,10 +189,17 @@ var (
 					Pattern: "bubbles.png",
 				},
 				{
-					Name:    "electric",
-					Color:   render.RGBA(255, 255, 0, 255),
-					Solid:   true,
-					Pattern: "marker.png",
+					Name:     "ice",
+					Color:    render.MustHexColor("#FAF"),
+					Solid:    true,
+					Slippery: true,
+					Pattern:  "marker.png",
+				},
+				{
+					Name:      "electric",
+					Color:     render.RGBA(255, 255, 0, 255),
+					SemiSolid: true,
+					Pattern:   "marker.png",
 				},
 				{
 					Name:    "hint",
