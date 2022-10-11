@@ -2,7 +2,6 @@ package scripting
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
@@ -31,7 +30,7 @@ var (
 type Events struct {
 	vm       *VM           // pointer to parent VM
 	runtime  *goja.Runtime // direct pointer to goja (VM.vm)
-	registry map[string][]goja.Value
+	registry map[string][]goja.Callable
 	lock     sync.RWMutex
 }
 
@@ -40,13 +39,13 @@ func NewEvents(vm *VM) *Events {
 	return &Events{
 		vm:       vm,
 		runtime:  vm.vm,
-		registry: map[string][]goja.Value{},
+		registry: map[string][]goja.Callable{},
 	}
 }
 
 // OnCollide fires when another actor collides with yours.
-func (e *Events) OnCollide(call goja.FunctionCall) goja.Value {
-	return e.register(CollideEvent, call.Argument(0))
+func (e *Events) OnCollide(call goja.Callable) goja.Value {
+	return e.register(CollideEvent, call)
 }
 
 // RunCollide invokes the OnCollide handler function.
@@ -55,8 +54,8 @@ func (e *Events) RunCollide(v interface{}) error {
 }
 
 // OnUse fires when another actor collides with yours.
-func (e *Events) OnUse(call goja.FunctionCall) goja.Value {
-	return e.register(UseEvent, call.Argument(0))
+func (e *Events) OnUse(call goja.Callable) goja.Value {
+	return e.register(UseEvent, call)
 }
 
 // RunUse invokes the OnUse handler function.
@@ -65,8 +64,8 @@ func (e *Events) RunUse(v interface{}) error {
 }
 
 // OnLeave fires when another actor stops colliding with yours.
-func (e *Events) OnLeave(call goja.FunctionCall) goja.Value {
-	return e.register(LeaveEvent, call.Argument(0))
+func (e *Events) OnLeave(call goja.Callable) goja.Value {
+	return e.register(LeaveEvent, call)
 }
 
 // RunLeave invokes the OnLeave handler function.
@@ -75,8 +74,8 @@ func (e *Events) RunLeave(v interface{}) error {
 }
 
 // OnKeypress fires when another actor collides with yours.
-func (e *Events) OnKeypress(call goja.FunctionCall) goja.Value {
-	return e.register(KeypressEvent, call.Argument(0))
+func (e *Events) OnKeypress(call goja.Callable) goja.Value {
+	return e.register(KeypressEvent, call)
 }
 
 // RunKeypress invokes the OnCollide handler function.
@@ -85,12 +84,12 @@ func (e *Events) RunKeypress(ev keybind.State) error {
 }
 
 // register a named event.
-func (e *Events) register(name string, callback goja.Value) goja.Value {
+func (e *Events) register(name string, callback goja.Callable) goja.Value {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
 	if _, ok := e.registry[name]; !ok {
-		e.registry[name] = []goja.Value{}
+		e.registry[name] = []goja.Callable{}
 	}
 
 	e.registry[name] = append(e.registry[name], callback)
@@ -121,12 +120,7 @@ func (e *Events) run(name string, args ...interface{}) error {
 		params[i] = e.runtime.ToValue(v)
 	}
 
-	for _, callback := range e.registry[name] {
-		function, ok := goja.AssertFunction(callback)
-		if !ok {
-			return fmt.Errorf("failed to callback %s: %s", name, callback)
-		}
-
+	for _, function := range e.registry[name] {
 		value, err := function(goja.Undefined(), params...)
 		if err != nil {
 			// TODO EXCEPTIONS: this err is useful like
