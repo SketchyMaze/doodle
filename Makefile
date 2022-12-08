@@ -71,7 +71,7 @@ doodads:
 
 # `make mingw` to cross-compile a Windows binary with mingw.
 .PHONY: mingw
-mingw: doodads
+mingw:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
@@ -81,7 +81,7 @@ mingw: doodads
 
 # `make mingw32` to cross-compile a Windows binary with mingw (32-bit).
 .PHONY: mingw32
-mingw32: doodads
+mingw32:
 	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
@@ -91,7 +91,7 @@ mingw32: doodads
 
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
-mingw-free: doodads
+mingw-free:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
 		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/sketchymaze.exe cmd/doodle/main.go
@@ -125,6 +125,17 @@ mingw-release: doodads build mingw __dist-common release
 .PHONY: mingw32-release
 mingw32-release: doodads build mingw32 __dist-common release32
 
+# `make from-docker64` is an internal command run by the Dockerfile to build the
+# game - assumes doodads and assets are in the right spot already.
+.PHONY: from-docker64
+.PHONY: from-docker32
+from-docker64: build mingw __dist-common
+	ARCH=x86_64 make appimage
+	make release
+from-docker32: build mingw32 __dist-common
+	ARCH=i686 make appimage
+	make release32
+
 # `make osx` to cross-compile a Mac OS binary with osxcross.
 # .PHONY: osx
 # osx: doodads
@@ -155,6 +166,14 @@ test:
 .PHONY: dist
 dist: doodads build __dist-common
 
+# `make docker` runs the Dockerfile to do a full release for 64-bit and 32-bit Linux
+# and Windows apps.
+.PHONY: docker
+docker:
+	mkdir -p docker-artifacts
+	podman build -t doodle_docker .
+	podman run --rm --mount type=bind,src=$(shell pwd)/docker-artifacts,dst=/mnt/export doodle_docker
+
 # `make dist-free` builds and tars up a release in shareware mode.
 .PHONY: dist-free
 dist-free: doodads build-free __dist-common
@@ -170,21 +189,6 @@ __dist-common:
 	ln -sf sketchymaze-$(VERSION) dist/sketchymaze-latest
 	cd dist && tar -czvf sketchymaze-$(VERSION).tar.gz sketchymaze-$(VERSION)
 	cd dist && zip -r sketchymaze-$(VERSION).zip sketchymaze-$(VERSION)
-
-# `make docker` to run the Docker builds
-.PHONY: docker docker.ubuntu docker.debian docker.fedora __docker.dist
-docker.ubuntu:
-	mkdir -p docker/ubuntu
-	./docker/dist-ubuntu.sh
-docker.debian:
-	mkdir -p docker/debian
-	./docker/dist-debian.sh
-docker.fedora:
-	mkdir -p docker/fedora
-	./docker/dist-fedora.sh
-docker: docker.ubuntu docker.debian docker.fedora
-__docker.dist: dist
-	cp dist/*.tar.gz dist/*.zip /mnt/export/
 
 # `make clean` cleans everything up.
 .PHONY: clean

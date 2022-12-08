@@ -8,13 +8,33 @@
 * [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
 * [Old Docs](#old-docs)
 
+# Dockerfile
+
+The Dockerfile in this git repo may be the quickest way to fully
+release the game for as many platforms as possible. Run it from a
+64-bit host Linux system and it will generate Linux and Windows
+releases for 64-bit and 32-bit Intel CPUs.
+
+It depends on your git clone of doodle to be fully initialized
+(e.g., you have run the bootstrap.py script and a `make dist`
+would build a release for your current system, with doodads and
+runtime assets all in the right places).
+
+Run `make docker` and the results will be in the
+`artifacts/release` folder in your current working directory.
+
+**Fedora notes (SELinux):** if you run this from a Fedora host
+you will need to `sudo setenforce permissive` to allow the
+Dockerfile to mount the artifacts/release folder to export its
+results.
+
 # Automated Release Scripts
 
-For the quickest ways to fully end-to-end build Sketchy Maze for various
-platforms to produce public release artifacts, see the following repos:
+Other Dockerfiles and scripts used to release the game:
 
 * [SketchyMaze/docker](https://git.kirsle.net/SketchyMaze/docker) provides a Dockerfile
-  that fully end-to-end releases the latest version of the game for Linux and Windows:
+  that fully end-to-end releases the latest version of the game for Linux and Windows. 64bit and 32bit versions that freshly clone the
+  game from git and output their respective CPU release artifacts:
   * Windows: .zip file
   * Linux: .tar.gz, .rpm, .deb
 * [flatpak](https://code.sketchymaze.com/game/flatpak) is a Flatpak manifest for

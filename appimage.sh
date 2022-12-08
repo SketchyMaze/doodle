@@ -1,17 +1,16 @@
 #!/bin/bash
 
 # Script to build an AppImage.
-#
-# Dependencies:
-# * appimage-builder: a Python module, so pip install -r requirements.txt
-
-if ! command -v appimage-builder &> /dev/null;then
-    echo "appimage-builder not found; run pip install -r requirements.txt"
-    exit 1
-fi
+# Run it like `ARCH=x86_64 make appimage`
+# It will fetch your appimagetool-x86_64.AppImage program to build the appimage.
 
 if [[ ! -d "./dist/sketchymaze-latest" ]]; then
     echo "error: run make dist before make appimage"
+    exit 1
+fi
+
+if [[ "$ARCH" == "" ]]; then
+    echo "You should set ARCH=x86_64 (or your platform for AppImage output)"
     exit 1
 fi
 
@@ -23,6 +22,13 @@ ICON_VECTOR="./etc/icons/orange-128.svg"
 
 APP_RUN="$APPDIR/AppRun"
 DIR_ICON="$APPDIR/sketchymaze.svg"
+
+APPIMAGETOOL="appimagetool-$ARCH.AppImage"
+if [[ ! -f "./$APPIMAGETOOL" ]]; then
+    echo "Downloading appimagetool"
+    wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$ARCH.AppImage"
+    chmod a+x $APPIMAGETOOL
+fi
 
 # Clean start
 if [[ -d "$APPDIR" ]]; then
@@ -49,4 +55,4 @@ rsync -av "./dist/sketchymaze-latest/" "$APPDIR/"
 
 echo "Making AppImage..."
 cd $APPDIR
-appimagetool $(pwd)
+../../$APPIMAGETOOL $(pwd)

@@ -14,7 +14,7 @@ the repos easily. This script will also handle installing the SDL2 dependencies
 on Fedora, Debian and macOS type systems.
 """
 
-import sys
+import argparse
 import os
 import os.path
 import subprocess
@@ -49,7 +49,7 @@ dep_arch = ["go", "sdl2", "sdl2_ttf", "sdl2_mixer"]
 ROOT = pathlib.Path().absolute()
 
 
-def main():
+def main(fast=False):
     print(
         "Project: Doodle Full Installer\n\n"
         "Current working directory: {root}\n\n"
@@ -60,7 +60,7 @@ def main():
         .format(root=ROOT)
     )
     input("Press Enter to begin.")
-    install_deps()
+    install_deps(fast)
     clone_repos()
     patch_gomod()
     copy_assets()
@@ -68,22 +68,25 @@ def main():
     build()
 
 
-def install_deps():
+def install_deps(fast):
     """Install system dependencies."""
+    if fast:
+        fast = " -y"
+
     if shell("which rpm") == 0 and shell("which dnf") == 0:
         # Fedora-like.
         if shell("rpm -q {}".format(' '.join(dep_fedora))) != 0:
-            must_shell("sudo dnf install {}".format(' '.join(dep_fedora)))
+            must_shell("sudo dnf install {}{}".format(' '.join(dep_fedora)), fast)
     elif shell("which brew") == 0:
         # MacOS, as Catalina has an apt command now??
-        must_shell("brew install {}".format(' '.join(dep_macos)))
+        must_shell("brew install {} {}".format(' '.join(dep_macos)), fast)
     elif shell("which apt") == 0:
         # Debian-like.
         if shell("dpkg-query -l {}".format(' '.join(dep_debian))) != 0:
-            must_shell("sudo apt update && sudo apt install {}".format(' '.join(dep_debian)))
+            must_shell("sudo apt update && sudo apt install {}{}".format(' '.join(dep_debian)), fast)
     elif shell("which pacman") == 0:
         # Arch-like.
-        must_shell("sudo pacman -S {}".format(' '.join(dep_arch)))
+        must_shell("sudo pacman -S{} {}{}".format(fast, ' '.join(dep_arch)))
     else:
         print("Warning: didn't detect your package manager to install SDL2 and other dependencies")
 
@@ -148,6 +151,17 @@ def must_shell(cmd):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser("doodle bootstrap")
+    parser.add_argument("fast", "f",
+        action="store_true",
+        help="Run the script non-interactively (yes to your package manager, git clone over https)",
+    )
+    args = parser.parse_args()
+
+    if args.fast:
+        main(fast=args.fast)
+        quit()
+
     if not input("Use ssh to git clone these repos? [yN] ").lower().startswith("y"):
         keys = list(repos.keys())
         for k in keys:
