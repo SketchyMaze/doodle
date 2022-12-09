@@ -39,8 +39,8 @@ repos_github = {
 }
 
 # Software dependencies.
-dep_fedora = ["make", "golang", "SDL2-devel", "SDL2_ttf-devel", "SDL2_mixer-devel"]
-dep_debian = ["make", "golang", "libsdl2-dev", "libsdl2-ttf-dev", "libsdl2-mixer-dev"]
+dep_fedora = ["make", "golang", "SDL2-devel", "SDL2_ttf-devel", "SDL2_mixer-devel", "zip", "rsync"]
+dep_debian = ["make", "golang", "libsdl2-dev", "libsdl2-ttf-dev", "libsdl2-mixer-dev", "zip", "rsync"]
 dep_macos = ["golang", "sdl2", "sdl2_ttf", "sdl2_mixer", "pkg-config"]
 dep_arch = ["go", "sdl2", "sdl2_ttf", "sdl2_mixer"]
 

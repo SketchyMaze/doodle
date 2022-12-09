@@ -6,11 +6,13 @@ bin/
 dist/
 rtp/
 guidebook/
+docker-artifacts/
 wasm/assets/
 *.wasm
 *.doodad
 *.level
 *.levelpack
+*.AppImage
 docker/ubuntu
 docker/debian
 docker/fedora

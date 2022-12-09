@@ -154,13 +154,14 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 	switch w.Tool {
 	case drawtool.PanTool:
 		// Pan tool = click to pan the level.
+		var delta render.Point
 		if keybind.LeftClick(ev) || keybind.MiddleClick(ev) {
 			if !w.scrollDragging {
 				w.scrollDragging = true
 				w.scrollStartAt = shmem.Cursor
 				w.scrollWasAt = w.Scroll
 			} else {
-				delta := shmem.Cursor.Compare(w.scrollStartAt)
+				delta = shmem.Cursor.Compare(w.scrollStartAt)
 				w.Scroll = w.scrollWasAt
 				w.Scroll.Subtract(delta)
 
@@ -173,6 +174,65 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 		} else {
 			if w.scrollDragging {
 				w.scrollDragging = false
+			}
+		}
+
+		// All the Pan tool to still interact with the Settings button on mouse-over
+		// of an actor. On touch devices it's difficult to access an actor's settings
+		// without accidentally dragging the actor, so the Pan Tool allows safe access.
+		// NOTE: code copied from Actor Tool but with delete and drag/drop hooks removed.
+		var WP = w.WorldIndexAt(cursor)
+		for _, actor := range w.actors {
+
+			// Compute the bounding box on screen where this doodad
+			// visually appears.
+			var scrollBias = render.Point{
+				X: w.Scroll.X,
+				Y: w.Scroll.Y,
+			}
+			if w.Zoom != 0 {
+				scrollBias.X = w.ZoomDivide(scrollBias.X)
+				scrollBias.Y = w.ZoomDivide(scrollBias.Y)
+			}
+			box := render.Rect{
+				X: actor.Actor.Point.X - scrollBias.X - w.ZoomDivide(P.X),
+				Y: actor.Actor.Point.Y - scrollBias.Y - w.ZoomDivide(P.Y),
+				W: actor.Canvas.Size().W,
+				H: actor.Canvas.Size().H,
+			}
+
+			// Mouse hover?
+			if WP.Inside(box) {
+				actor.Canvas.Configure(ui.Config{
+					BorderSize:  1,
+					BorderColor: render.RGBA(153, 153, 153, 255),
+					BorderStyle: ui.BorderSolid,
+					Background:  render.White, // TODO: cuz the border draws a bgcolor
+				})
+
+				// Show doodad buttons.
+				actor.Canvas.ShowDoodadButtons = true
+
+				// Check for a mouse down event to begin dragging this
+				// canvas around.
+				if keybind.LeftClick(ev) && delta == render.Origin {
+					// Did they click onto the doodad buttons?
+					if shmem.Cursor.Inside(actor.Canvas.doodadButtonRect()) {
+						keybind.ClearLeftClick(ev)
+						if w.OnDoodadConfig != nil {
+							w.OnDoodadConfig(actor)
+						} else {
+							log.Error("OnDoodadConfig: handler not defined for parent canvas")
+						}
+						return nil
+					}
+
+					break
+				}
+			} else {
+				actor.Canvas.SetBorderSize(0)
+				actor.Canvas.SetBackground(render.RGBA(0, 0, 1, 0)) // TODO
+				actor.Canvas.ShowDoodadButtons = false
 			}
 		}
 

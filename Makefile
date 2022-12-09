@@ -171,7 +171,7 @@ dist: doodads build __dist-common
 .PHONY: docker
 docker:
 	mkdir -p docker-artifacts
-	podman build -t doodle_docker .
+	podman build --cap-add SYS_ADMIN --device /dev/fuse -t doodle_docker .
 	podman run --rm --mount type=bind,src=$(shell pwd)/docker-artifacts,dst=/mnt/export doodle_docker
 
 # `make dist-free` builds and tars up a release in shareware mode.
@@ -193,4 +193,4 @@ __dist-common:
 # `make clean` cleans everything up.
 .PHONY: clean
 clean:
-	rm -rf bin dist docker/ubuntu docker/debian docker/fedora
+	rm -rf bin dist docker-artifacts

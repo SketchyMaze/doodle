@@ -25,7 +25,7 @@ ENV PATH /opt/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/go/bin
 RUN apt update && apt -y install git zip tar libsdl2-dev libsdl2-ttf-dev \
     libsdl2-mixer-dev gcc-mingw-w64-x86-64 gcc make wget \
     flatpak-builder ruby-dev gcc rpm libffi-dev \
-    ruby-dev ruby-rubygems rpm libffi-dev rsync
+    ruby-dev ruby-rubygems rpm libffi-dev rsync file
 RUN gem install fpm; exit 0
 
 # Download and install modern Go.
@@ -80,7 +80,7 @@ ENV PATH /opt/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/go/bin
 RUN apt update && apt -y install git zip tar libsdl2-dev libsdl2-ttf-dev \
     libsdl2-mixer-dev gcc-mingw-w64-i686 gcc make wget \
     flatpak-builder ruby-dev gcc rpm libffi-dev \
-    ruby-dev ruby-rubygems rpm libffi-dev
+    ruby-dev ruby-rubygems rpm libffi-dev rsync file
 RUN gem install fpm; exit 0
 
 # Download and install modern Go.
