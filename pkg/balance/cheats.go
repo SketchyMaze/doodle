@@ -1,5 +1,7 @@
 package balance
 
+import magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
+
 // Store a copy of the PlayerCharacterDoodad original value.
 var playerCharacterDefault string
 
@@ -49,4 +51,40 @@ var CheatActors = map[string]string{
 	"bluebird":        "bird-blue",
 	"megaton weight":  "anvil",
 	"play as thief":   "thief",
+}
+
+// Options for the "Play as:" drop-down in the Cheat Menu window.
+var CheatMenuActors = []magicform.Option{
+	{
+		Value: "",
+		Label: "Play as . . .",
+	},
+	{
+		Value: "boy.doodad",
+		Label: "Boy",
+	},
+	{
+		Value: "thief.doodad",
+		Label: "Thief",
+	},
+	{
+		Value: "azu-blu.doodad",
+		Label: "Azulian",
+	},
+	{
+		Value: "bird-red.doodad",
+		Label: "Bird",
+	},
+	{
+		Value: "crusher.doodad",
+		Label: "Crusher",
+	},
+	{
+		Value: "snake.doodad",
+		Label: "Snake",
+	},
+	{
+		Value: "anvil.doodad",
+		Label: "Anvil",
+	},
 }

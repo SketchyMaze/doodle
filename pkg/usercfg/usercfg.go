@@ -3,9 +3,9 @@ Package usercfg has functions around the user's Game Settings.
 
 Other places in the codebase to look for its related functionality:
 
-- pkg/windows/settings.go: the Settings Window is the UI owner of
-  this feature, it adjusts the usercfg.Current struct and Saves the
-  changes to disk.
+  - pkg/windows/settings.go: the Settings Window is the UI owner of
+    this feature, it adjusts the usercfg.Current struct and Saves the
+    changes to disk.
 */
 package usercfg
 
@@ -45,6 +45,7 @@ type Settings struct {
 	ShowHiddenDoodads bool `json:",omitempty"`
 	WriteLockOverride bool `json:",omitempty"`
 	JSONIndent        bool `json:",omitempty"`
+	EnableCheatsMenu  bool `json:",omitempty"`
 
 	// Bookkeeping.
 	UpdatedAt time.Time

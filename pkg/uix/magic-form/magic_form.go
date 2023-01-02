@@ -152,9 +152,15 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 				btn.Compute(form.Engine)
 				form.Supervisor.Add(btn)
 
+				// Tooltip? TODO - make nicer.
+				if row.Tooltip.Text != "" || row.Tooltip.TextVariable != nil {
+					tt := ui.NewTooltip(btn, row.Tooltip)
+					tt.Supervise(form.Supervisor)
+				}
+
 				frame.Pack(btn, ui.Pack{
 					Side: ui.W,
-					PadX: 4,
+					PadX: 2,
 					PadY: 2,
 				})
 			}

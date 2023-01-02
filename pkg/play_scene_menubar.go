@@ -20,7 +20,7 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 		// TODO: de-duplicate code from MainScene
 		if u.winLevelPacks == nil {
 			u.winLevelPacks = windows.NewLevelPackWindow(windows.LevelPack{
-				Supervisor: u.supervisor,
+				Supervisor: u.Supervisor,
 				Engine:     d.Engine,
 
 				OnPlayLevel: func(lp levelpack.LevelPack, which levelpack.Level) {
@@ -66,7 +66,7 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 		levelMenu.AddSeparator()
 		levelMenu.AddItemAccel("New viewport", "v", func() {
 			pip := windows.MakePiPWindow(d.width, d.height, windows.PiP{
-				Supervisor: u.supervisor,
+				Supervisor: u.Supervisor,
 				Engine:     u.d.Engine,
 				Level:      u.Level,
 				Event:      u.d.event,
@@ -76,9 +76,22 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 	}
 
-	d.MakeHelpMenu(menu, u.supervisor)
+	helpMenu := d.MakeHelpMenu(menu, u.Supervisor)
+	if usercfg.Current.EnableCheatsMenu {
+		helpMenu.AddSeparator()
+		helpMenu.AddItem("Cheats Menu", func() {
+			if u.cheatsWindow != nil {
+				u.cheatsWindow.Hide()
+				u.cheatsWindow.Destroy()
+				u.cheatsWindow = nil
+			}
 
-	menu.Supervise(u.supervisor)
+			u.cheatsWindow = u.d.MakeCheatsWindow(u.Supervisor)
+			u.cheatsWindow.Show()
+		})
+	}
+
+	menu.Supervise(u.Supervisor)
 	menu.Compute(d.Engine)
 
 	return menu

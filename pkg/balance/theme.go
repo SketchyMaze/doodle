@@ -227,6 +227,9 @@ var (
 	DoodadDropperCols      = 6 // rows/columns of buttons
 	DoodadDropperRows      = 3
 
+	// CheatsMenu window settings.
+	CheatsMenuBackground = render.RGBA(0, 153, 153, 255)
+
 	// Button styles, customized in init().
 	ButtonPrimary  = style.DefaultButton
 	ButtonDanger   = style.DefaultButton

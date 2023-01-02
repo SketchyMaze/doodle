@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -42,6 +43,20 @@ func (d *Doodle) PromptPre(question string, prefilled string, callback func(stri
 	d.shell.Prompt = question
 	d.shell.callback = callback
 	d.shell.Open = true
+}
+
+// FindLikelySupervisor will locate a most likely ui.Supervisor depending on the current Scene,
+// if it understands the Scene and knows where it keeps its Supervisor.
+func (d *Doodle) FindLikelySupervisor() (*ui.Supervisor, error) {
+	switch scene := d.Scene.(type) {
+	case *EditorScene:
+		return scene.UI.Supervisor, nil
+	case *PlayScene:
+		return scene.Supervisor, nil
+	case *MainScene:
+		return scene.Supervisor, nil
+	}
+	return nil, errors.New("couldn't find a Supervisor")
 }
 
 // Shell implements the developer console in-game.

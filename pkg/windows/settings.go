@@ -7,6 +7,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	magicform "git.kirsle.net/SketchyMaze/doodle/pkg/uix/magic-form"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
@@ -32,9 +33,13 @@ type Settings struct {
 	ControllerStyle    *int
 
 	// Configuration options.
-	SceneName string // name of scene which called this window
-	ActiveTab string // specify the tab to open
-	OnApply   func()
+	SceneName          string // name of scene which called this window
+	ActiveTab          string // specify the tab to open
+	OnApply            func()
+	OnOpenCheatsWindow func() *ui.Window // user opens the Cheats Menu
+
+	// The Settings window owns the Cheats window to ensure only one opens at a time.
+	cheatsWindow *ui.Window
 }
 
 // MakeSettingsWindow initializes a settings window for any scene.
@@ -451,6 +456,42 @@ func (c Settings) makeExperimentalTab(tabFrame *ui.TabFrame, Width, Height int) 
 		{
 			Label: "Restart the game for changes to take effect.",
 			Font:  balance.UIFont,
+		},
+		{
+			Label: "Cheat Codes",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "The ` (or ~) key will open a developer console into which you\n" +
+				"can enter cheat codes (see your guidebook). For touch-only\n" +
+				"devices, most of the useful cheats may be toggled via the\n" +
+				"Cheats Menu which you can launch by clicking below:",
+			Font: balance.UIFont,
+		},
+		{
+			Buttons: []magicform.Field{
+				{
+					ButtonStyle: &balance.ButtonPrimary,
+					Label:       "Open Cheats Window",
+					Font: balance.UIFont.Update(render.Text{
+						PadY: 0,
+					}),
+					OnClick: func() {
+						if c.OnOpenCheatsWindow != nil {
+							if c.cheatsWindow != nil {
+								c.cheatsWindow.Hide()
+								c.cheatsWindow.Destroy()
+								c.cheatsWindow = nil
+							}
+
+							c.cheatsWindow = c.OnOpenCheatsWindow()
+							c.cheatsWindow.Show()
+						} else {
+							shmem.FlashError("OnOpenCheatsWindow not handled")
+						}
+					},
+				},
+			},
 		},
 	})
 

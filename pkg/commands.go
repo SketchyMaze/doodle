@@ -315,13 +315,14 @@ func (c Command) BoolProp(d *Doodle) error {
 	}
 
 	if len(c.Args) != 2 {
-		return errors.New("Usage: boolProp <name> [true or false]")
+		return errors.New("Usage: boolProp <name> [true, false, flip]")
 	}
 
 	var (
 		name   = c.Args[0]
 		value  = c.Args[1]
 		truthy = value[0] == 't' || value[0] == 'T' || value[0] == '1'
+		flip   = value == "flip"
 		ok     = true
 	)
 
@@ -331,16 +332,28 @@ func (c Command) BoolProp(d *Doodle) error {
 		d.Debug = truthy
 	case "DebugOverlay":
 	case "DO":
-		DebugOverlay = truthy
+		if flip {
+			DebugOverlay = !DebugOverlay
+		} else {
+			DebugOverlay = truthy
+		}
 	case "DebugCollision":
 	case "DC":
-		DebugCollision = truthy
+		if flip {
+			DebugCollision = !DebugCollision
+		} else {
+			DebugCollision = truthy
+		}
 	default:
 		ok = false
 	}
 
 	if ok {
-		d.Flash("Set boolProp %s=%s", name, strconv.FormatBool(truthy))
+		if flip {
+			d.Flash("Toggled boolProp %s", name)
+		} else {
+			d.Flash("Set boolProp %s=%s", name, strconv.FormatBool(truthy))
+		}
 	} else {
 		// Try the global boolProps in balance package.
 		if err := balance.BoolProp(name, truthy); err != nil {

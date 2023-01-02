@@ -7,10 +7,47 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
+	"git.kirsle.net/go/ui"
 )
 
 // IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has
 // been modified
+
+// MakeCheatsWindow initializes the windows/cheats_menu.go window from anywhere you need it,
+// binding all the variables in. If you pass a nil Supervisor, this function will attempt to
+// find one based on your Scene and
+func (d *Doodle) MakeCheatsWindow(supervisor *ui.Supervisor) *ui.Window {
+	// If not given a supervisor, try and find one.
+	if supervisor == nil {
+		if v, err := d.FindLikelySupervisor(); err != nil {
+			d.FlashError("Couldn't make cheats window: %s", err)
+			return nil
+		} else {
+			supervisor = v
+		}
+	}
+
+	cfg := windows.CheatsMenu{
+		Supervisor: supervisor,
+		Engine:     d.Engine,
+		SceneName: func() string {
+			return d.Scene.Name()
+		},
+		RunCommand: func(command string) {
+			d.shell.Execute(command)
+		},
+		OnSetPlayerCharacter: func(doodad string) {
+			if scene, ok := d.Scene.(*PlayScene); ok {
+				scene.SetPlayerCharacter(doodad)
+			} else {
+				shmem.FlashError("This only works during Play Mode.")
+			}
+		},
+	}
+	return windows.MakeCheatsMenu(cfg)
+}
 
 // SetPlayerCharacter -- this is designed to be called in-game with the developer
 // console. Sets your player character to whatever doodad you want, not just the

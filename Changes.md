@@ -1,5 +1,17 @@
 # Changes
 
+## v0.13.2 (TBD)
+
+* In the level editor, you can now use the Pan Tool to access the actor
+  properties of doodads you've dropped into your level. Similar to the
+  Actor Tool, when you mouse-over an actor on your level it will highlight
+  in a grey box and a gear icon in the corner can be clicked to access
+  its properties. Making the properties available for the Pan Tool can
+  help with touchscreen devices, where it is difficult to touch the
+  properties button without accidentally dragging the actor elsewhere
+  on your level as might happen with the Actor Tool!
+* Start distributing AppImage releases for GNU/Linux (64-bit and 32-bit)
+
 ## v0.13.1 (Oct 10 2022)
 
 This release brings a handful of minor new features to the game.

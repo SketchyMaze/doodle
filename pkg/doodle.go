@@ -255,6 +255,9 @@ func (d *Doodle) MakeSettingsWindow(supervisor *ui.Supervisor) *ui.Window {
 		OnApply: func() {
 
 		},
+		OnOpenCheatsWindow: func() *ui.Window {
+			return d.MakeCheatsWindow(supervisor)
+		},
 
 		// Boolean checkbox bindings
 		DebugOverlay:       &DebugOverlay,

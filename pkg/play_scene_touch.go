@@ -30,8 +30,8 @@ func (s *PlayScene) LoopTouchable(ev *event.State) {
 
 	// Don't do any of this if the mouse is over the menu bar, so
 	// clicking on the menus doesn't make the character move or jump.
-	if cursor.Inside(s.menubar.Rect()) || s.supervisor.GetModal() != nil ||
-		s.supervisor.IsPointInWindow(cursor) {
+	if cursor.Inside(s.menubar.Rect()) || s.Supervisor.GetModal() != nil ||
+		s.Supervisor.IsPointInWindow(cursor) {
 		return
 	}
 

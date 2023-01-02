@@ -54,7 +54,7 @@ type PlayScene struct {
 	cheated    bool      // user has entered a cheat code while playing
 
 	// UI widgets.
-	supervisor    *ui.Supervisor
+	Supervisor    *ui.Supervisor
 	screen        *ui.Frame // A window sized invisible frame to position UI elements.
 	menubar       *ui.MenuBar
 	editButton    *ui.Button
@@ -87,6 +87,9 @@ type PlayScene struct {
 	invenItems   []string // item list
 	invenDoodads map[string]*uix.Canvas
 
+	// Cheats window
+	cheatsWindow *ui.Window
+
 	// Elapsed Time frame.
 	timerFrame          *ui.Frame
 	timerPerfectImage   *ui.Image
@@ -109,7 +112,7 @@ func (s *PlayScene) Name() string {
 func (s *PlayScene) Setup(d *Doodle) error {
 	s.d = d
 	s.scripting = scripting.NewSupervisor()
-	s.supervisor = ui.NewSupervisor()
+	s.Supervisor = ui.NewSupervisor()
 
 	// Show the loading screen.
 	loadscreen.ShowWithProgress()
@@ -167,7 +170,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		s.EditLevel()
 		return nil
 	})
-	s.supervisor.Add(s.editButton)
+	s.Supervisor.Add(s.editButton)
 
 	// Set up the inventory HUD.
 	s.setupInventoryHud()
@@ -751,7 +754,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	// Update the timer.
 	s.timerLabel.Text = savegame.FormatDuration(time.Since(s.startTime))
 
-	s.supervisor.Loop(ev)
+	s.Supervisor.Loop(ev)
 
 	// Has the window been resized?
 	if ev.WindowResized || s.drawing.Point().IsZero() {
@@ -845,7 +848,7 @@ func (s *PlayScene) Draw(d *Doodle) error {
 	s.DrawTouchable()
 
 	// Let Supervisor draw menus
-	s.supervisor.Present(d.Engine)
+	s.Supervisor.Present(d.Engine)
 
 	return nil
 }
