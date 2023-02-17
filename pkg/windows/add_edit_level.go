@@ -26,10 +26,13 @@ type AddEditLevel struct {
 	// Editing settings for an existing level?
 	EditLevel *level.Level
 
+	// Show the "New Doodad" tab by default?
+	NewDoodad bool
+
 	// Callback functions.
 	OnChangePageTypeAndWallpaper func(pageType level.PageType, wallpaper string)
 	OnCreateNewLevel             func(*level.Level)
-	OnCreateNewDoodad            func(size int)
+	OnCreateNewDoodad            func(width, height int)
 	OnReload                     func()
 	OnCancel                     func()
 }
@@ -73,6 +76,11 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	}
 
 	tabframe.Supervise(config.Supervisor)
+
+	// Show the doodad tab?
+	if config.NewDoodad {
+		tabframe.SetTab("doodad")
+	}
 
 	window.Hide()
 	return window
@@ -389,7 +397,8 @@ func (config AddEditLevel) setupLevelFrame(tf *ui.TabFrame) {
 func (config AddEditLevel) setupDoodadFrame(tf *ui.TabFrame) {
 	// Default options.
 	var (
-		doodadSize = 64
+		doodadWidth  = 64
+		doodadHeight = doodadWidth
 	)
 
 	frame := tf.AddTab("doodad", ui.NewLabel(ui.Label{
@@ -401,110 +410,89 @@ func (config AddEditLevel) setupDoodadFrame(tf *ui.TabFrame) {
 	 * Frame for selecting Page Type
 	 ******************/
 
-	typeFrame := ui.NewFrame("Doodad Options Frame")
-	frame.Pack(typeFrame, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-	})
-
-	label1 := ui.NewLabel(ui.Label{
-		Text: "Doodad sprite size (square):",
-		Font: balance.LabelFont,
-	})
-	typeFrame.Pack(label1, ui.Pack{
-		Side: ui.W,
-	})
-
-	// A selectbox to suggest some sizes or let the user enter a custom.
-	sizeBtn := ui.NewSelectBox("Size Select", ui.Label{
-		Font: ui.MenuFont,
-	})
-	typeFrame.Pack(sizeBtn, ui.Pack{
-		Side:   ui.W,
-		Expand: true,
-	})
-
-	for _, row := range []struct {
-		Name  string
-		Value int
-	}{
-		{"32", 32},
-		{"64", 64},
-		{"96", 96},
-		{"128", 128},
-		{"200", 200},
-		{"256", 256},
-		{"Custom...", 0},
-	} {
-		row := row
-		sizeBtn.AddItem(row.Name, row.Value, func() {})
+	var sizeOptions = []magicform.Option{
+		{Label: "32", Value: 32},
+		{Label: "64", Value: 64},
+		{Label: "96", Value: 96},
+		{Label: "128", Value: 128},
+		{Label: "200", Value: 200},
+		{Label: "256", Value: 256},
+		{Label: "Custom...", Value: 0},
 	}
 
-	sizeBtn.SetValue(doodadSize)
-	sizeBtn.Handle(ui.Change, func(ed ui.EventData) error {
-		if selection, ok := sizeBtn.GetValue(); ok {
-			if size, ok := selection.Value.(int); ok {
-				if size == 0 {
-					shmem.Prompt("Enter a custom size for the doodad width and height: ", func(answer string) {
+	form := magicform.Form{
+		Supervisor: config.Supervisor,
+		Engine:     config.Engine,
+		Vertical:   true,
+		LabelWidth: 90,
+	}
+	form.Create(frame, []magicform.Field{
+		{
+			Label:       "Width:",
+			Font:        balance.LabelFont,
+			Type:        magicform.Selectbox,
+			IntVariable: &doodadWidth,
+			Options:     sizeOptions,
+			OnSelect: func(v interface{}) {
+				if v.(int) == 0 {
+					shmem.Prompt("Enter a custom size for the doodad width: ", func(answer string) {
 						if a, err := strconv.Atoi(answer); err == nil && a > 0 {
-							doodadSize = a
+							doodadWidth = a
 						} else {
 							shmem.FlashError("Doodad size should be a number greater than zero.")
 						}
 					})
-				} else {
-					doodadSize = size
 				}
-			}
-		}
-		return nil
+			},
+		},
+		{
+			Label:       "Height:",
+			Font:        balance.LabelFont,
+			Type:        magicform.Selectbox,
+			IntVariable: &doodadHeight,
+			Options:     sizeOptions,
+			OnSelect: func(v interface{}) {
+				if v.(int) == 0 {
+					shmem.Prompt("Enter a custom size for the doodad height: ", func(answer string) {
+						if a, err := strconv.Atoi(answer); err == nil && a > 0 {
+							doodadHeight = a
+						} else {
+							shmem.FlashError("Doodad size should be a number greater than zero.")
+						}
+					})
+				}
+			},
+		},
+		{
+			Buttons: []magicform.Field{
+				{
+					Label:       "Continue",
+					Font:        balance.UIFont,
+					ButtonStyle: &balance.ButtonPrimary,
+					OnClick: func() {
+						if config.OnCreateNewDoodad != nil {
+							config.OnCreateNewDoodad(doodadWidth, doodadHeight)
+						} else {
+							shmem.FlashError("OnCreateNewDoodad not attached")
+						}
+					},
+				},
+				{
+					Label:       "Cancel",
+					Font:        balance.UIFont,
+					ButtonStyle: &balance.ButtonPrimary,
+					OnClick: func() {
+						if config.OnCancel != nil {
+							config.OnCancel()
+						} else {
+							shmem.FlashError("OnCancel not attached")
+						}
+					},
+				},
+			},
+		},
 	})
 
-	sizeBtn.Supervise(config.Supervisor)
-	config.Supervisor.Add(sizeBtn)
-
-	/******************
-	 * Confirm/cancel buttons.
-	 ******************/
-
-	bottomFrame := ui.NewFrame("Button Frame")
-	frame.Pack(bottomFrame, ui.Pack{
-		Side:  ui.N,
-		FillX: true,
-		PadY:  8,
-	})
-
-	var buttons = []struct {
-		Label string
-		F     func(ui.EventData) error
-	}{
-		{"Continue", func(ed ui.EventData) error {
-			if config.OnCreateNewDoodad != nil {
-				config.OnCreateNewDoodad(doodadSize)
-			} else {
-				shmem.FlashError("OnCreateNewDoodad not attached")
-			}
-			return nil
-		}},
-
-		{"Cancel", func(ed ui.EventData) error {
-			config.OnCancel()
-			return nil
-		}},
-	}
-	for _, t := range buttons {
-		btn := ui.NewButton(t.Label, ui.NewLabel(ui.Label{
-			Text: t.Label,
-			Font: balance.MenuFont,
-		}))
-		btn.Handle(ui.Click, t.F)
-		config.Supervisor.Add(btn)
-		bottomFrame.Pack(btn, ui.Pack{
-			Side: ui.W,
-			PadX: 4,
-			PadY: 8,
-		})
-	}
 }
 
 // Creates the Game Rules frame for existing level (set difficulty, etc.)

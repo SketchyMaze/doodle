@@ -32,7 +32,7 @@ type EditorScene struct {
 	DrawingType            enum.DrawingType
 	OpenFile               bool
 	Filename               string
-	DoodadSize             int
+	DoodadSize             render.Rect
 	RememberScrollPosition render.Point // Play mode remembers it for us
 
 	UI *EditorUI
@@ -195,7 +195,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		// No Doodad?
 		if s.Doodad == nil {
 			log.Debug("EditorScene.Setup: initializing a new Doodad")
-			s.Doodad = doodads.New(s.DoodadSize)
+			s.Doodad = doodads.New(s.DoodadSize.W, s.DoodadSize.H)
 			s.UI.Canvas.LoadDoodad(s.Doodad)
 		}
 
@@ -206,7 +206,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		)
 
 		// TODO: move inside the UI. Just an approximate position for now.
-		s.UI.Canvas.Resize(render.NewRect(s.DoodadSize, s.DoodadSize))
+		s.UI.Canvas.Resize(s.DoodadSize)
 		s.UI.Canvas.ScrollTo(render.Origin)
 		s.UI.Canvas.Scrollable = false
 		s.UI.Workspace.Compute(d.Engine)
@@ -574,7 +574,7 @@ func (s *EditorScene) LoadDoodad(filename string) error {
 
 	s.DrawingType = enum.DoodadDrawing
 	s.Doodad = doodad
-	s.DoodadSize = doodad.Layers[0].Chunker.Size
+	s.DoodadSize = doodad.Size
 	s.UI.Canvas.LoadDoodad(s.Doodad)
 	return nil
 }

@@ -104,7 +104,9 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	// Read the source images. Ensure they all have the same boundaries.
 	var (
 		imageBounds image.Point
-		chunkSize   int // the square shape for the Doodad chunk size
+		chunkSize   uint8 // the square shape for the Doodad chunk size
+		width       int   // dimensions of the incoming image
+		height      int
 		images      []image.Image
 	)
 
@@ -130,9 +132,9 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		if i == 0 {
 			imageBounds = imageSize
 			if imageSize.X > imageSize.Y {
-				chunkSize = imageSize.X
+				width = imageSize.X
 			} else {
-				chunkSize = imageSize.Y
+				height = imageSize.Y
 			}
 		} else if imageSize != imageBounds {
 			return cli.Exit("your source images are not all the same dimensions", 1)
@@ -151,7 +153,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	switch strings.ToLower(filepath.Ext(outputFile)) {
 	case extDoodad:
 		log.Info("Output is a Doodad file (chunk size %d): %s", chunkSize, outputFile)
-		doodad := doodads.New(chunkSize)
+		doodad := doodads.New(width, height)
 		doodad.GameVersion = branding.Version
 		doodad.Title = c.String("title")
 		if doodad.Title == "" {
@@ -188,6 +190,9 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 
 		lvl := level.New()
 		lvl.GameVersion = branding.Version
+		lvl.MaxWidth = int64(width)
+		lvl.MaxHeight = int64(height)
+		lvl.PageType = level.Bounded
 		lvl.Title = c.String("title")
 		if lvl.Title == "" {
 			lvl.Title = "Converted Level"
@@ -288,7 +293,7 @@ func drawingToImage(c *cli.Context, chroma render.Color, inputFiles []string, ou
 //
 // img: input image like a PNG
 // chroma: transparent color
-func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette, chunkSize int) (*level.Palette, *level.Chunker) {
+func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette, chunkSize uint8) (*level.Palette, *level.Chunker) {
 	var (
 		chunker = level.NewChunker(chunkSize)
 		bounds  = img.Bounds()

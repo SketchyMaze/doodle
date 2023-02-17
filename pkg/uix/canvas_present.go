@@ -121,9 +121,10 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 				src.H = S.H
 			}
 
+			var size = int(chunk.Size)
 			dst := render.Rect{
-				X: p.X + w.Scroll.X + w.BoxThickness(1) + w.ZoomMultiply(coord.X*chunk.Size),
-				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + w.ZoomMultiply(coord.Y*chunk.Size),
+				X: p.X + w.Scroll.X + w.BoxThickness(1) + w.ZoomMultiply(coord.X*size),
+				Y: p.Y + w.Scroll.Y + w.BoxThickness(1) + w.ZoomMultiply(coord.Y*size),
 
 				// src.W and src.H will be AT MOST the full width and height of
 				// a Canvas widget. Subtract the scroll offset to keep it bounded

@@ -471,10 +471,10 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 	// Center the player within the box of the doodad, for the Start Flag especially.
 	if !centerIn.IsZero() {
 		spawn = render.NewPoint(
-			spawn.X+(centerIn.W/2)-(player.Layers[0].Chunker.Size/2),
+			spawn.X+(centerIn.W/2)-(player.ChunkSize()/2),
 
 			// Y: the bottom of the flag, 4 pixels from the floor.
-			spawn.Y+centerIn.H-4-(player.Layers[0].Chunker.Size),
+			spawn.Y+centerIn.H-4-(player.ChunkSize()),
 		)
 	} else if spawn.IsZero() && !s.SpawnPoint.IsZero() {
 		spawn = s.SpawnPoint

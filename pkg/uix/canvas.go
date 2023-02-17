@@ -132,15 +132,17 @@ type Canvas struct {
 
 // NewCanvas initializes a Canvas widget.
 //
+// size is the Chunker size (uint8)
+//
 // If editable is true, Scrollable is also set to true, which means the arrow
 // keys will scroll the canvas viewport which is desirable in Edit Mode.
-func NewCanvas(size int, editable bool) *Canvas {
+func NewCanvas(size uint8, editable bool) *Canvas {
 	w := &Canvas{
 		Editable:   editable,
 		Scrollable: editable,
 		Palette:    level.NewPalette(),
 		BrushSize:  1,
-		chunks:     level.NewChunker(size),
+		chunks:     level.NewChunker(uint8(size)),
 		actors:     make([]*Actor, 0),
 		wallpaper:  &Wallpaper{},
 
@@ -372,7 +374,7 @@ func (w *Canvas) ViewportRelative() render.Rect {
 // levels under control.
 func (w *Canvas) LoadingViewport() render.Rect {
 	var (
-		chunkSize int
+		chunkSize uint8
 		vp        = w.Viewport()
 		margin    = balance.LoadingViewportMarginChunks
 	)
@@ -381,17 +383,18 @@ func (w *Canvas) LoadingViewport() render.Rect {
 	if w.level != nil {
 		chunkSize = w.level.Chunker.Size
 	} else if w.doodad != nil {
-		chunkSize = w.doodad.ChunkSize()
+		chunkSize = w.doodad.ChunkSize8()
 	} else {
 		chunkSize = balance.ChunkSize
 		log.Error("Canvas.LoadingViewport: no drawing to get chunk size from, default to %d", chunkSize)
 	}
 
+	var size = int(chunkSize)
 	return render.Rect{
-		X: vp.X - chunkSize*margin.X,
-		Y: vp.Y - chunkSize*margin.Y,
-		W: vp.W + chunkSize*margin.X,
-		H: vp.H + chunkSize*margin.Y,
+		X: vp.X - size*margin.X,
+		Y: vp.Y - size*margin.Y,
+		W: vp.W + size*margin.X,
+		H: vp.H + size*margin.Y,
 	}
 }
 

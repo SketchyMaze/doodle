@@ -27,7 +27,7 @@ type Chunk struct {
 
 	// Values told to it from higher up, not stored in JSON.
 	Point render.Point
-	Size  int
+	Size  uint8
 
 	// Texture cache properties so we don't redraw pixel-by-pixel every frame.
 	uuid               uuid.UUID
@@ -157,14 +157,17 @@ func (c *Chunk) generateTexture(mask render.Color) (render.Texturer, error) {
 // want a cached bitmap image that only generates itself once, and
 // again when marked dirty.
 func (c *Chunk) ToBitmap(mask render.Color) image.Image {
-	canvas := c.SizePositive()
-	imgSize := image.Rectangle{
-		Min: image.Point{},
-		Max: image.Point{
-			X: c.Size,
-			Y: c.Size,
-		},
-	}
+	var (
+		size    = int(c.Size)
+		canvas  = c.SizePositive()
+		imgSize = image.Rectangle{
+			Min: image.Point{},
+			Max: image.Point{
+				X: size,
+				Y: size,
+			},
+		}
+	)
 
 	if imgSize.Max.X == 0 {
 		imgSize.Max.X = int(canvas.W)
@@ -186,8 +189,8 @@ func (c *Chunk) ToBitmap(mask render.Color) image.Image {
 	// Pixel coordinate offset to map the Chunk World Position to the
 	// smaller image boundaries.
 	pointOffset := render.Point{
-		X: c.Point.X * c.Size,
-		Y: c.Point.Y * c.Size,
+		X: c.Point.X * size,
+		Y: c.Point.Y * size,
 	}
 
 	// Blot all the pixels onto it.

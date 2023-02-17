@@ -398,6 +398,14 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 					if row.OnSelect != nil {
 						row.OnSelect(selection.Value)
 					}
+
+					// Update bound variables.
+					if v, ok := selection.Value.(int); ok && row.IntVariable != nil {
+						*row.IntVariable = v
+					}
+					if v, ok := selection.Value.(string); ok && row.TextVariable != nil {
+						*row.TextVariable = v
+					}
 				}
 				return nil
 			})

@@ -52,12 +52,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	// File menu
 	fileMenu := menu.AddMenu("File")
 	fileMenu.AddItemAccel("New level", "Ctrl-N", u.Scene.MenuNewLevel)
-	fileMenu.AddItem("New doodad", func() {
-		u.Scene.ConfirmUnload(func() {
-			// New doodad size with prompt.
-			d.NewDoodad(0)
-		})
-	})
+	fileMenu.AddItem("New doodad", u.Scene.MenuNewDoodad)
 	fileMenu.AddItemAccel("Save", "Ctrl-S", u.Scene.MenuSave(false))
 	fileMenu.AddItemAccel("Save as...", "Shift-Ctrl-S", func() {
 		d.Prompt("Save as filename>", func(answer string) {
@@ -282,6 +277,13 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 func (s *EditorScene) MenuNewLevel() {
 	s.ConfirmUnload(func() {
 		s.d.GotoNewMenu()
+	})
+}
+
+func (s *EditorScene) MenuNewDoodad() {
+	s.ConfirmUnload(func() {
+		// New doodad size with prompt.
+		s.d.GotoNewDoodadMenu()
 	})
 }
 

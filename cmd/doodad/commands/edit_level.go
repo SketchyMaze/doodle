@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
@@ -220,7 +221,13 @@ func editLevel(c *cli.Context, filename string) error {
 // Handles the deep operation of re-copying the old level into a new level
 // at the new chunk size.
 func rechunkLevel(c *cli.Context, filename string, lvl *level.Level) error {
-	var chunkSize = c.Int("resize")
+	var chunkSize = balance.ChunkSize
+	if v := c.Int("resize"); v != 0 {
+		if v > 255 {
+			return errors.New("chunk size must be a uint8 <= 255")
+		}
+		chunkSize = uint8(v)
+	}
 	log.Info("Resizing the level's chunk size.")
 	log.Info("Current chunk size: %d", lvl.Chunker.Size)
 	log.Info("Target chunk size: %d", chunkSize)

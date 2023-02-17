@@ -70,23 +70,22 @@ def main(fast=False):
 
 def install_deps(fast):
     """Install system dependencies."""
-    if fast:
-        fast = " -y"
+    fast = " -y" if fast else ""
 
     if shell("which rpm") == 0 and shell("which dnf") == 0:
         # Fedora-like.
         if shell("rpm -q {}".format(' '.join(dep_fedora))) != 0:
-            must_shell("sudo dnf install {}{}".format(' '.join(dep_fedora)), fast)
+            must_shell("sudo dnf install {}{}".format(' '.join(dep_fedora), fast))
     elif shell("which brew") == 0:
         # MacOS, as Catalina has an apt command now??
-        must_shell("brew install {} {}".format(' '.join(dep_macos)), fast)
+        must_shell("brew install {} {}".format(' '.join(dep_macos), fast))
     elif shell("which apt") == 0:
         # Debian-like.
         if shell("dpkg-query -l {}".format(' '.join(dep_debian))) != 0:
-            must_shell("sudo apt update && sudo apt install {}{}".format(' '.join(dep_debian)), fast)
+            must_shell("sudo apt update && sudo apt install {}{}".format(' '.join(dep_debian), fast))
     elif shell("which pacman") == 0:
         # Arch-like.
-        must_shell("sudo pacman -S{} {}{}".format(fast, ' '.join(dep_arch)))
+        must_shell("sudo pacman -S{} {}".format(fast, ' '.join(dep_arch)))
     else:
         print("Warning: didn't detect your package manager to install SDL2 and other dependencies")
 
@@ -152,7 +151,7 @@ def must_shell(cmd):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("doodle bootstrap")
-    parser.add_argument("fast", "f",
+    parser.add_argument("--fast", "-f",
         action="store_true",
         help="Run the script non-interactively (yes to your package manager, git clone over https)",
     )

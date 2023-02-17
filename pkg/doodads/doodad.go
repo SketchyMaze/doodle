@@ -14,6 +14,7 @@ type Doodad struct {
 	Filename string             `json:"-"` // used internally, not saved in json
 	Hidden   bool               `json:"hidden,omitempty"`
 	Palette  *level.Palette     `json:"palette"`
+	Size     render.Rect        `json:"size"` // doodad dimensions
 	Script   string             `json:"script"`
 	Hitbox   render.Rect        `json:"hitbox"`
 	Layers   []Layer            `json:"layers"`
@@ -30,10 +31,41 @@ type Layer struct {
 	Chunker *level.Chunker `json:"chunks"`
 }
 
-// New creates a new Doodad.
-func New(size int) *Doodad {
-	if size == 0 {
-		size = balance.DoodadSize
+/*
+New creates a new Doodad.
+
+You can give it one or two values for dimensions:
+
+- New(size int) creates a square doodad (classic)
+- New(width, height int) lets you have a different width x height.
+*/
+func New(dimensions ...int) *Doodad {
+	var (
+		// Defaults
+		size      = balance.DoodadSize
+		chunkSize = balance.ChunkSize
+		width     int
+		height    int
+	)
+
+	switch len(dimensions) {
+	case 1:
+		size = dimensions[0]
+	case 2:
+		width, height = dimensions[0], dimensions[1]
+	}
+
+	// If no width/height, make it a classic square doodad.
+	if width+height == 0 {
+		width = size
+		height = size
+	}
+
+	// Pick an optimal chunk size - if our doodad size
+	// is under 256 use only one chunk per layer by matching
+	// that size.
+	if size <= 255 {
+		chunkSize = uint8(size)
 	}
 
 	return &Doodad{
@@ -41,11 +73,12 @@ func New(size int) *Doodad {
 			Version: 1,
 		},
 		Palette: level.DefaultPalette(),
-		Hitbox:  render.NewRect(size, size),
+		Hitbox:  render.NewRect(width, height),
+		Size:    render.NewRect(width, height),
 		Layers: []Layer{
 			{
 				Name:    "main",
-				Chunker: level.NewChunker(size),
+				Chunker: level.NewChunker(chunkSize),
 			},
 		},
 		Tags:        map[string]string{},
@@ -59,7 +92,7 @@ func New(size int) *Doodad {
 // is optional - pass nil and a new blank chunker is created.
 func (d *Doodad) AddLayer(name string, chunker *level.Chunker) Layer {
 	if chunker == nil {
-		chunker = level.NewChunker(d.ChunkSize())
+		chunker = level.NewChunker(d.ChunkSize8())
 	}
 
 	layer := Layer{
@@ -107,12 +140,17 @@ func (d *Doodad) Tag(name string) string {
 
 // ChunkSize returns the chunk size of the Doodad's first layer.
 func (d *Doodad) ChunkSize() int {
+	return int(d.Layers[0].Chunker.Size)
+}
+
+// ChunkSize8 returns the chunk size of the Doodad's first layer as its actual uint8 value.
+func (d *Doodad) ChunkSize8() uint8 {
 	return d.Layers[0].Chunker.Size
 }
 
 // Rect returns a rect of the ChunkSize for scaling a Canvas widget.
 func (d *Doodad) Rect() render.Rect {
-	var size = d.ChunkSize()
+	var size = int(d.ChunkSize())
 	return render.Rect{
 		W: size,
 		H: size,

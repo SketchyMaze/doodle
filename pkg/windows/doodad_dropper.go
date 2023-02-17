@@ -253,7 +253,7 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 				lastColumn = 0
 			}
 
-			can := uix.NewCanvas(int(buttonSize), true)
+			can := uix.NewCanvas(uint8(buttonSize), true) // TODO: dangerous - buttonSize must be small
 			can.Name = doodad.Title
 			can.SetBackground(balance.DoodadButtonBackground)
 			can.LoadDoodad(doodad)
