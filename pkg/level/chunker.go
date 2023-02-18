@@ -20,8 +20,8 @@ type Chunker struct {
 	// Layer is optional for the caller, levels use only 0 and
 	// doodads use them for frames. When chunks are exported to
 	// zipfile the Layer keeps them from overlapping.
-	Layer int `json:"-"` // internal use only
-	Size  int `json:"size"`
+	Layer int   `json:"-"` // internal use only
+	Size  uint8 `json:"size"`
 
 	// A Zipfile reference for new-style levels and doodads which
 	// keep their chunks in external parts of a zip file.
@@ -51,7 +51,7 @@ type Chunker struct {
 }
 
 // NewChunker creates a new chunk manager with a given chunk size.
-func NewChunker(size int) *Chunker {
+func NewChunker(size uint8) *Chunker {
 	return &Chunker{
 		Size:   size,
 		Chunks: ChunkMap{},
@@ -186,10 +186,13 @@ func (c *Chunker) IterCachedChunks() <-chan *Chunk {
 func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
 	pipe := make(chan render.Point)
 	go func() {
-		sent := make(map[render.Point]interface{})
+		var (
+			sent = make(map[render.Point]interface{})
+			size = int(c.Size)
+		)
 
-		for x := viewport.X; x < viewport.W; x += (c.Size / 4) {
-			for y := viewport.Y; y < viewport.H; y += (c.Size / 4) {
+		for x := viewport.X; x < viewport.W; x += (size / 4) {
+			for y := viewport.Y; y < viewport.H; y += (size / 4) {
 
 				// Constrain this chunksize step to a point within the bounds
 				// of the viewport. This can yield partial chunks on the edges
@@ -243,12 +246,16 @@ func (c *Chunker) IterPixels() <-chan Pixel {
 // manage: the lowest pixels from the lowest chunks to the highest pixels of
 // the highest chunks.
 func (c *Chunker) WorldSize() render.Rect {
-	chunkLowest, chunkHighest := c.Bounds()
+	var (
+		size                      = int(c.Size)
+		chunkLowest, chunkHighest = c.Bounds()
+	)
+
 	return render.Rect{
-		X: chunkLowest.X * c.Size,
-		Y: chunkLowest.Y * c.Size,
-		W: (chunkHighest.X * c.Size) + (c.Size - 1),
-		H: (chunkHighest.Y * c.Size) + (c.Size - 1),
+		X: chunkLowest.X * size,
+		Y: chunkLowest.Y * size,
+		W: (chunkHighest.X * size) + (size - 1),
+		H: (chunkHighest.Y * size) + (size - 1),
 	}
 }
 

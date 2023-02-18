@@ -3,7 +3,6 @@ package doodle
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
@@ -32,7 +32,7 @@ type EditorScene struct {
 	DrawingType            enum.DrawingType
 	OpenFile               bool
 	Filename               string
-	DoodadSize             int
+	DoodadSize             render.Rect
 	RememberScrollPosition render.Point // Play mode remembers it for us
 
 	UI *EditorUI
@@ -195,7 +195,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		// No Doodad?
 		if s.Doodad == nil {
 			log.Debug("EditorScene.Setup: initializing a new Doodad")
-			s.Doodad = doodads.New(s.DoodadSize)
+			s.Doodad = doodads.New(s.DoodadSize.W, s.DoodadSize.H)
 			s.UI.Canvas.LoadDoodad(s.Doodad)
 		}
 
@@ -206,7 +206,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		)
 
 		// TODO: move inside the UI. Just an approximate position for now.
-		s.UI.Canvas.Resize(render.NewRect(s.DoodadSize, s.DoodadSize))
+		s.UI.Canvas.Resize(s.DoodadSize)
 		s.UI.Canvas.ScrollTo(render.Origin)
 		s.UI.Canvas.Scrollable = false
 		s.UI.Workspace.Compute(d.Engine)
@@ -512,7 +512,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		m.Title = "Alpha"
 	}
 	if m.Author == "" {
-		m.Author = os.Getenv("USER")
+		m.Author = native.DefaultAuthor()
 	}
 
 	m.Palette = s.UI.Canvas.Palette
@@ -574,7 +574,7 @@ func (s *EditorScene) LoadDoodad(filename string) error {
 
 	s.DrawingType = enum.DoodadDrawing
 	s.Doodad = doodad
-	s.DoodadSize = doodad.Layers[0].Chunker.Size
+	s.DoodadSize = doodad.Size
 	s.UI.Canvas.LoadDoodad(s.Doodad)
 	return nil
 }
@@ -595,7 +595,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		d.Title = "Untitled Doodad"
 	}
 	if d.Author == "" {
-		d.Author = os.Getenv("USER")
+		d.Author = native.DefaultAuthor()
 	}
 
 	// TODO: is this copying necessary?

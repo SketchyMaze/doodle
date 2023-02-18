@@ -44,7 +44,7 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 	// How big will our image be?
 	var (
 		size                = lvl.Chunker.WorldSizePositive()
-		chunkSize           = lvl.Chunker.Size
+		chunkSize           = int(lvl.Chunker.Size)
 		chunkLow, chunkHigh = lvl.Chunker.Bounds()
 		worldSize           = render.Rect{
 			X: chunkLow.X,

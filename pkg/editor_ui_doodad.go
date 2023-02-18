@@ -46,7 +46,7 @@ func (u *EditorUI) startDragActor(doodad *doodads.Doodad, actor *level.Actor) {
 	}
 
 	// Size and scale this doodad according to the zoom level.
-	size := doodad.Rect()
+	size := doodad.Size
 	size.W = u.Canvas.ZoomMultiply(size.W)
 	size.H = u.Canvas.ZoomMultiply(size.H)
 

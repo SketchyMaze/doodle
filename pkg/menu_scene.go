@@ -24,6 +24,7 @@ on the MainScene or elsewhere as wanted.
 type MenuScene struct {
 	// Configuration.
 	StartupMenu string
+	NewDoodad   bool
 
 	Supervisor *ui.Supervisor
 
@@ -56,6 +57,17 @@ func (d *Doodle) GotoNewMenu() {
 	log.Info("Loading the MenuScene to the New window")
 	scene := &MenuScene{
 		StartupMenu: "new",
+	}
+	d.Goto(scene)
+}
+
+// GotoNewDoodadMenu loads the MenuScene and shows the "New" window,
+// but selected on the Doodad tab by default.
+func (d *Doodle) GotoNewDoodadMenu() {
+	log.Info("Loading the MenuScene to the New window")
+	scene := &MenuScene{
+		StartupMenu: "new",
+		NewDoodad:   true,
 	}
 	d.Goto(scene)
 }
@@ -152,6 +164,7 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 	window := windows.NewAddEditLevel(windows.AddEditLevel{
 		Supervisor: s.Supervisor,
 		Engine:     d.Engine,
+		NewDoodad:  s.NewDoodad,
 		OnChangePageTypeAndWallpaper: func(pageType level.PageType, wallpaper string) {
 			log.Info("OnChangePageTypeAndWallpaper called: %+v, %+v", pageType, wallpaper)
 			s.canvas.Destroy() // clean up old textures
@@ -163,8 +176,8 @@ func (s *MenuScene) setupNewWindow(d *Doodle) error {
 				Level:       lvl,
 			})
 		},
-		OnCreateNewDoodad: func(size int) {
-			d.NewDoodad(size)
+		OnCreateNewDoodad: func(width, height int) {
+			d.NewDoodad(width, height)
 		},
 		OnCancel: func() {
 			d.Goto(&MainScene{})

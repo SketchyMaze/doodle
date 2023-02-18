@@ -69,7 +69,7 @@ func (s *PlayScene) computeInventory() {
 				continue
 			}
 
-			canvas := uix.NewCanvas(doodad.ChunkSize(), false)
+			canvas := uix.NewCanvas(doodad.ChunkSize8(), false)
 			canvas.SetBackground(render.RGBA(1, 0, 0, 0))
 			canvas.LoadDoodad(doodad)
 			canvas.Resize(render.NewRect(

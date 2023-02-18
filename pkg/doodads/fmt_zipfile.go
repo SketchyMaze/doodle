@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/go/render"
 )
 
 // ToZipfile serializes the doodad into zipfile format.
@@ -63,7 +63,7 @@ func (d *Doodad) ToZipfile() ([]byte, error) {
 // FromZipfile reads a doodad from zipfile format.
 func FromZipfile(data []byte) (*Doodad, error) {
 	var (
-		doodad = New(balance.DoodadSize)
+		doodad = New(0)
 		err    = doodad.populateFromZipfile(data)
 	)
 	return doodad, err
@@ -108,6 +108,13 @@ func (d *Doodad) populateFromZipfile(data []byte) error {
 
 	// Re-inflate data after saving a new zipfile.
 	d.Inflate()
+
+	// If we are a legacy doodad and don't have a Size (width x height),
+	// set it from the chunk size.
+	if d.Size.IsZero() {
+		var size = d.ChunkSize()
+		d.Size = render.NewRect(size, size)
+	}
 
 	return err
 }

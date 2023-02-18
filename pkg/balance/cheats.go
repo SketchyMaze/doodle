@@ -43,7 +43,7 @@ var (
 
 // Actor replacement cheats
 var CheatActors = map[string]string{
-	"pinocchio":       "boy",
+	"pinocchio":       PlayerCharacterDoodad,
 	"the cell":        "azu-blu",
 	"super azulian":   "azu-red",
 	"hyper azulian":   "azu-white",

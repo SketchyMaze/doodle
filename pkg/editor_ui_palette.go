@@ -83,11 +83,11 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 	if u.Canvas != nil && u.Canvas.Palette != nil {
 		for i, swatch := range u.Canvas.Palette.Swatches {
 			swatch := swatch
-			var width = buttonSize
+			var width = uint8(buttonSize) // TODO: dangerous - buttonSize must be small
 
 			// Drawing buttons in two-column mode? (default right-side palette layout)
 			if twoColumn {
-				width = buttonSize / 2
+				width /= 2
 				if row == nil || i%2 == 0 {
 					row = ui.NewFrame(fmt.Sprintf("Swatch(%s) Button Frame", swatch.Name))
 					frame.Pack(row, packConfig)
@@ -101,7 +101,8 @@ func (u *EditorUI) setupPaletteFrame(window *ui.Window) *ui.Frame {
 			var (
 				colorbox = uix.NewCanvas(width, false)
 				chunker  = level.NewChunker(width)
-				size     = render.NewRect(width, width)
+				iw       = int(width)
+				size     = render.NewRect(iw, iw)
 			)
 			chunker.SetRect(size, swatch)
 			colorbox.Resize(size)

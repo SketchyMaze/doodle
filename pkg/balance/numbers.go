@@ -55,7 +55,7 @@ var (
 	FollowPlayerFirstTicks uint64 = 60
 
 	// Default chunk size for canvases.
-	ChunkSize = 128
+	ChunkSize uint8 = 128
 
 	// Default size for a new Doodad.
 	DoodadSize = 100

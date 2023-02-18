@@ -205,6 +205,7 @@ func showDoodad(c *cli.Context, filename string) error {
 	fmt.Printf("  Game version: %s\n", dd.GameVersion)
 	fmt.Printf("  Doodad title: %s\n", dd.Title)
 	fmt.Printf("        Author: %s\n", dd.Author)
+	fmt.Printf("    Dimensions: %s\n", dd.Size)
 	fmt.Printf("        Hitbox: %s\n", dd.Hitbox)
 	fmt.Printf("        Locked: %+v\n", dd.Locked)
 	fmt.Printf("        Hidden: %+v\n", dd.Hidden)
@@ -256,9 +257,12 @@ func showPalette(pal *level.Palette) {
 }
 
 func showChunker(c *cli.Context, ch *level.Chunker) {
-	var worldSize = ch.WorldSize()
-	var width = worldSize.W - worldSize.X
-	var height = worldSize.H - worldSize.Y
+	var (
+		worldSize = ch.WorldSize()
+		chunkSize = int(ch.Size)
+		width     = worldSize.W - worldSize.X
+		height    = worldSize.H - worldSize.Y
+	)
 	fmt.Println("Chunks:")
 	fmt.Printf("  Pixels Per Chunk: %d^2\n", ch.Size)
 	fmt.Printf("  Number Generated: %d\n", len(ch.Chunks))
@@ -277,10 +281,10 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 			fmt.Printf("  - Coord: %s\n", point)
 			fmt.Printf("     Type: %s\n", chunkTypeToName(chunk.Type))
 			fmt.Printf("    Range: (%d,%d) ... (%d,%d)\n",
-				int(point.X)*ch.Size,
-				int(point.Y)*ch.Size,
-				(int(point.X)*ch.Size)+ch.Size,
-				(int(point.Y)*ch.Size)+ch.Size,
+				int(point.X)*chunkSize,
+				int(point.Y)*chunkSize,
+				(int(point.X)*chunkSize)+chunkSize,
+				(int(point.Y)*chunkSize)+chunkSize,
 			)
 		}
 	} else {

@@ -348,6 +348,11 @@ func (s *PlayScene) PlaceResizeCanvas() {
 	})
 }
 
+// Canvas returns the main level canvas - useful to call from the debug console as `d.Scene.Canvas()`
+func (s *PlayScene) Canvas() *uix.Canvas {
+	return s.drawing
+}
+
 // SetPlayerCharacter changes the doodad used for the player, by destroying the
 // current player character and making it from scratch.
 func (s *PlayScene) SetPlayerCharacter(filename string) {
@@ -471,10 +476,10 @@ func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, cen
 	// Center the player within the box of the doodad, for the Start Flag especially.
 	if !centerIn.IsZero() {
 		spawn = render.NewPoint(
-			spawn.X+(centerIn.W/2)-(player.Layers[0].Chunker.Size/2),
+			spawn.X+(centerIn.W/2)-(player.ChunkSize()/2),
 
 			// Y: the bottom of the flag, 4 pixels from the floor.
-			spawn.Y+centerIn.H-4-(player.Layers[0].Chunker.Size),
+			spawn.Y+centerIn.H-4-(player.ChunkSize()),
 		)
 	} else if spawn.IsZero() && !s.SpawnPoint.IsZero() {
 		spawn = s.SpawnPoint
@@ -636,6 +641,11 @@ func (s *PlayScene) SetCheated() {
 // querying this in the dev console during gameplay, you would be marked as cheating. ;)
 func (s *PlayScene) GetCheated() bool {
 	return s.cheated
+}
+
+// GetPerfect gives read-only access to the perfectRun flag.
+func (s *PlayScene) GetPerfect() bool {
+	return s.perfectRun
 }
 
 // ShowEndLevelModal centralizes the EndLevel modal config.
@@ -826,6 +836,13 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		for _, actor := range s.drawing.Actors() {
 			d.DrawCollisionBox(s.drawing, actor)
 		}
+	}
+
+	// Bug: sometimes (especially after cheating) if you restart a level
+	// properly, cheated=false perfectRun=true but the perfectRunIcon
+	// would not be showing.
+	if !s.cheated && s.perfectRun && s.timerPerfectImage.Hidden() {
+		s.timerPerfectImage.Show()
 	}
 
 	// Draw the UI screen and any widgets that attached to it.
