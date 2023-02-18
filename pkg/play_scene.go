@@ -643,6 +643,11 @@ func (s *PlayScene) GetCheated() bool {
 	return s.cheated
 }
 
+// GetPerfect gives read-only access to the perfectRun flag.
+func (s *PlayScene) GetPerfect() bool {
+	return s.perfectRun
+}
+
 // ShowEndLevelModal centralizes the EndLevel modal config.
 // This is the common handler function between easy methods such as
 // BeatLevel, FailLevel, and DieByFire.
@@ -831,6 +836,13 @@ func (s *PlayScene) Draw(d *Doodle) error {
 		for _, actor := range s.drawing.Actors() {
 			d.DrawCollisionBox(s.drawing, actor)
 		}
+	}
+
+	// Bug: sometimes (especially after cheating) if you restart a level
+	// properly, cheated=false perfectRun=true but the perfectRunIcon
+	// would not be showing.
+	if !s.cheated && s.perfectRun && s.timerPerfectImage.Hidden() {
+		s.timerPerfectImage.Show()
 	}
 
 	// Draw the UI screen and any widgets that attached to it.

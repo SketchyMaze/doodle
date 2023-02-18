@@ -36,10 +36,15 @@ func (d *Doodle) MakeCheatsWindow(supervisor *ui.Supervisor) *ui.Window {
 			return d.Scene.Name()
 		},
 		RunCommand: func(command string) {
+			// If we are in Play Mode, every command out of here is cheating.
+			if playScene, ok := d.Scene.(*PlayScene); ok {
+				playScene.SetCheated()
+			}
 			d.shell.Execute(command)
 		},
 		OnSetPlayerCharacter: func(doodad string) {
 			if scene, ok := d.Scene.(*PlayScene); ok {
+				scene.SetCheated()
 				scene.SetPlayerCharacter(doodad)
 			} else {
 				shmem.FlashError("This only works during Play Mode.")
