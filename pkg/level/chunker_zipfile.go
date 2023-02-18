@@ -218,7 +218,7 @@ func ChunkFromZipfile(zf *zip.Reader, layer int, coord render.Point) (*Chunk, er
 
 	// Read from the new binary format.
 	if file, err := zf.Open(binfile); err == nil {
-		log.Debug("Reading binary compressed chunk from %s", binfile)
+		// log.Debug("Reading binary compressed chunk from %s", binfile)
 		bin, err := ioutil.ReadAll(file)
 		if err != nil {
 			return nil, err
@@ -229,7 +229,7 @@ func ChunkFromZipfile(zf *zip.Reader, layer int, coord render.Point) (*Chunk, er
 			return nil, err
 		}
 	} else if file, err := zf.Open(jsonfile); err == nil {
-		log.Debug("Reading JSON encoded chunk from %s", jsonfile)
+		// log.Debug("Reading JSON encoded chunk from %s", jsonfile)
 		bin, err := ioutil.ReadAll(file)
 		if err != nil {
 			return nil, err

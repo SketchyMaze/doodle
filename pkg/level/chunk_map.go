@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -281,13 +282,16 @@ func (a *MapAccessor) UnmarshalBinary(compressed []byte) error {
 			sw, err3 = binary.ReadUvarint(reader)
 		)
 
-		point := render.NewPoint(int(x), int(y))
-		a.grid[point] = NewSparseSwatch(int(sw))
-
+		// We expect all 3 errors to be EOF together if the binary is formed correctly.
 		if err1 != nil || err2 != nil || err3 != nil {
-			// log.Error("Break read loop: %s; %s; %s", err1, err2, err3)
+			if err1 == nil || err2 == nil || err3 == nil {
+				log.Error("MapAccessor.UnmarshalBinary: found odd number of varints!")
+			}
 			break
 		}
+
+		point := render.NewPoint(int(x), int(y))
+		a.grid[point] = NewSparseSwatch(int(sw))
 	}
 
 	return nil

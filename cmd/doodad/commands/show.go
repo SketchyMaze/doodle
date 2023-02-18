@@ -293,7 +293,7 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 	fmt.Println("")
 }
 
-func chunkTypeToName(v int) string {
+func chunkTypeToName(v uint64) string {
 	switch v {
 	case level.MapType:
 		return "map"

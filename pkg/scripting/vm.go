@@ -65,6 +65,11 @@ func (vm *VM) Set(name string, v interface{}) error {
 	return vm.vm.Set(name, v)
 }
 
+// Get a value from the VM.
+func (vm *VM) Get(name string) goja.Value {
+	return vm.vm.Get(name)
+}
+
 // RegisterLevelHooks registers accessors to the level hooks
 // and Doodad API for Play Mode.
 func (vm *VM) RegisterLevelHooks() error {

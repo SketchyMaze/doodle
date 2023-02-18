@@ -7,9 +7,11 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/ui"
+	"github.com/dop251/goja"
 )
 
 // IsDefaultPlayerCharacter checks whether the DefaultPlayerCharacter doodad has
@@ -197,6 +199,31 @@ func (c Command) cheatCommand(d *Doodle) bool {
 			}
 		} else {
 			d.FlashError("Use this cheat in Play Mode to toggle invincibility.")
+		}
+
+	case balance.CheatFreeEnergy:
+		if isPlay {
+			playScene.SetCheated()
+			d.Flash("Power toggle sent to all actors in the level.")
+			for _, a := range playScene.Canvas().Actors() {
+				// Hacky stuff here - just a fun cheat code anyway.
+				vm := playScene.ScriptSupervisor().To(a.ID())
+				value := vm.Get("__tesla")
+				if value == nil || !value.ToBoolean() {
+					vm.Set("__tesla", true)
+					value = vm.Get("__tesla")
+				} else if value.ToBoolean() {
+					vm.Set("__tesla", false)
+					value = vm.Get("__tesla")
+				}
+				vm.Inbound <- scripting.Message{
+					Name:     "power",
+					SenderID: a.ID(),
+					Args:     []goja.Value{value},
+				}
+			}
+		} else {
+			d.FlashError("Use this cheat in Play Mode to send power to all actors (chaotic!).")
 		}
 
 	case balance.CheatDebugLoadScreen:

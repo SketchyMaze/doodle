@@ -353,6 +353,11 @@ func (s *PlayScene) Canvas() *uix.Canvas {
 	return s.drawing
 }
 
+// ScriptSupervisor returns the scripting supervisor for play mode.
+func (s *PlayScene) ScriptSupervisor() *scripting.Supervisor {
+	return s.scripting
+}
+
 // SetPlayerCharacter changes the doodad used for the player, by destroying the
 // current player character and making it from scratch.
 func (s *PlayScene) SetPlayerCharacter(filename string) {

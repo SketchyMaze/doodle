@@ -26,6 +26,9 @@ Other miscellaneous changes:
   help with touchscreen devices, where it is difficult to touch the
   properties button without accidentally dragging the actor elsewhere
   on your level as might happen with the Actor Tool!
+* New cheat code: `tesla` will send a power signal to ALL actors on the
+  current level in play mode - opening all electric doors and trapdoors.
+  May cause fun chaos during gameplay. Probably not very useful.
 * Start distributing AppImage releases for GNU/Linux (64-bit and 32-bit)
 
 Some technical changes:

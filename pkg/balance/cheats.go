@@ -34,6 +34,7 @@ var (
 	CheatDebugWaitScreen  = "test wait screen"
 	CheatUnlockLevels     = "master key"
 	CheatSkipLevel        = "warp whistle"
+	CheatFreeEnergy       = "tesla"
 )
 
 // Global cheat boolean states.
