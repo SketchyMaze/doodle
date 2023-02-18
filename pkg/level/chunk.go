@@ -1,6 +1,8 @@
 package level
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -16,13 +18,13 @@ import (
 
 // Types of chunks.
 const (
-	MapType int = iota
+	MapType uint64 = iota
 	GridType
 )
 
 // Chunk holds a single portion of the pixel canvas.
 type Chunk struct {
-	Type int // map vs. 2D array.
+	Type uint64 // map vs. 2D array.
 	Accessor
 
 	// Values told to it from higher up, not stored in JSON.
@@ -43,7 +45,7 @@ type Chunk struct {
 // JSONChunk holds a lightweight (interface-free) copy of the Chunk for
 // unmarshalling JSON files from disk.
 type JSONChunk struct {
-	Type    int             `json:"type"`
+	Type    uint64          `json:"type"`
 	Data    json.RawMessage `json:"data"`
 	BinData interface{}     `json:"-"`
 }
@@ -58,6 +60,8 @@ type Accessor interface {
 	Set(render.Point, *Swatch) error
 	Delete(render.Point) error
 	Len() int
+	MarshalBinary() ([]byte, error)
+	UnmarshalBinary([]byte) error
 	MarshalJSON() ([]byte, error)
 	UnmarshalJSON([]byte) error
 }
@@ -327,6 +331,8 @@ func (c *Chunk) Usage(size int) float64 {
 }
 
 // MarshalJSON writes the chunk to JSON.
+//
+// DEPRECATED: MarshalBinary will encode chunks to a tighter binary format.
 func (c *Chunk) MarshalJSON() ([]byte, error) {
 	data, err := c.Accessor.MarshalJSON()
 	if err != nil {
@@ -343,6 +349,8 @@ func (c *Chunk) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON loads the chunk from JSON and uses the correct accessor to
 // parse the inner details.
+//
+// DEPRECATED in favor of binary marshalling.
 func (c *Chunk) UnmarshalJSON(b []byte) error {
 	// Parse it generically so we can hand off the inner "data" object to the
 	// right accessor for unmarshalling.
@@ -356,6 +364,50 @@ func (c *Chunk) UnmarshalJSON(b []byte) error {
 	case MapType:
 		c.Accessor = NewMapAccessor()
 		return c.Accessor.UnmarshalJSON(generic.Data)
+	default:
+		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)
+	}
+}
+
+// MarshalBinary encodes a chunk to binary format.
+//
+// The binary format consists of one Uvarint for the chunk Type and then followed
+// by whatever binary representation that chunk type encodes its data with.
+func (c *Chunk) MarshalBinary() ([]byte, error) {
+	var (
+		compressed []byte
+	)
+
+	// Encode the chunk type first.
+	compressed = binary.AppendUvarint(compressed, c.Type)
+
+	// Encode the rest of the chunk.
+	data, err := c.Accessor.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	compressed = append(compressed, data...)
+	return compressed, nil
+}
+
+// UnmarshalBinary decodes a chunk from binary format.
+func (c *Chunk) UnmarshalBinary(b []byte) error {
+	var reader = bytes.NewBuffer(b)
+
+	// Read off the type byte.
+	chunkType, err := binary.ReadUvarint(reader)
+	if err != nil {
+		return err
+	}
+
+	// Read off the remaining data.
+
+	// Decode the rest of the byte stream.
+	switch chunkType {
+	case MapType:
+		c.Accessor = NewMapAccessor()
+		return c.Accessor.UnmarshalBinary(reader.Bytes())
 	default:
 		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)
 	}

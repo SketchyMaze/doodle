@@ -340,6 +340,10 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 	sort.Strings(sortedColors)
 	for _, hex := range sortedColors {
 		if _, ok := newColors[hex]; ok {
+			if err := palette.AddSwatch(uniqueColor[hex]); err != nil {
+				log.Error("Could not add more colors to the palette: %s", err)
+				panic(err.Error())
+			}
 			palette.Swatches = append(palette.Swatches, uniqueColor[hex])
 		}
 	}

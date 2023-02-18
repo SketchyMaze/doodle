@@ -310,7 +310,12 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 			},
 			OnAddColor: func() {
 				// Adding a new color to the palette.
-				sw := pal.AddSwatch()
+				sw, err := pal.NewSwatch()
+				if err != nil {
+					modal.Alert("Couldn't add this swatch: %s", err).WithTitle("Limit Reached")
+					return
+				}
+
 				log.Info("Added new palette color: %+v", sw)
 
 				// Awkward but... reload this very same window.

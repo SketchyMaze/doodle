@@ -1,5 +1,35 @@
 package balance
 
+// Hard-coded feature flags.
+const (
+	// Enable "v1.5" compression in the MapAccessor Chunker.
+	//
+	// The original MapAccessor encodes a chunk to json using syntax like
+	// {"x,y": index} mapping coordinates to palette swatches.
+	//
+	// With compression on, it is encoded to a byte stream of x,y,index
+	// triplets. The game can read both formats and will follow this flag
+	// on all saves. NOTE: this applies to when we still use JSON format.
+	// If BinaryChunkerEnabled, map accessors are always compressed as they
+	// are written to .bin files instead of .json.
+	CompressMapAccessor = true
+
+	// Enable "v2" binary storage of Chunk data in Zipfiles.
+	//
+	// This is a separate toggle to the CompressMapAccessor. Some possible
+	// variations of these flags includes:
+	//
+	// - CompressMapAccessor=true alone, will write the compressed bytes
+	//   still wrapped in the JSON format as a Base64 encoded string.
+	// - With BinaryChunkerEnabled=true: all chunks are encoded to
+	//   binary and put in the zip as .bin instead of as .json files.
+	//   MapAccessor is always compressed in binary mode.
+	//
+	// If you set both flags to false, level zipfiles will use the classic
+	// json chunk format as before on save.
+	BinaryChunkerEnabled = true
+)
+
 // Feature Flags to turn on/off experimental content.
 var Feature = feature{
 	/////////

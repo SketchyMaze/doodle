@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
@@ -15,7 +16,7 @@ import (
 // chunks of large levels need be in active memory.
 
 var (
-	zipChunkfileRegexp = regexp.MustCompile(`^chunks/(\d+)/(.+?)\.json$`)
+	zipChunkfileRegexp = regexp.MustCompile(`^chunks/(\d+)/(.+?)\.(bin|json)$`)
 )
 
 // MigrateZipfile is called on save to migrate old-style ChunkMap
@@ -24,7 +25,10 @@ var (
 func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 	// Identify if any chunks in active memory had been completely erased.
 	var (
+		// Chunks that have become empty and are to be REMOVED from zip.
 		erasedChunks = map[render.Point]interface{}{}
+
+		// Unique chunks we added to the zip file so we don't add duplicates.
 		chunksZipped = map[render.Point]interface{}{}
 	)
 	for coord, chunk := range c.Chunks {
@@ -42,8 +46,19 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 		for _, file := range c.Zipfile.File {
 			m := zipChunkfileRegexp.FindStringSubmatch(file.Name)
 			if len(m) > 0 {
-				mLayer, _ := strconv.Atoi(m[1])
-				coord := m[2]
+				var (
+					mLayer, _ = strconv.Atoi(m[1])
+					coord     = m[2]
+					ext       = m[3]
+				)
+
+				// Will we need to do a format conversion now?
+				var reencode bool
+				if ext == "json" && balance.BinaryChunkerEnabled {
+					reencode = true
+				} else if ext == "bin" && !balance.BinaryChunkerEnabled {
+					reencode = true
+				}
 
 				// Not our layer, not our problem.
 				if mLayer != c.Layer {
@@ -77,14 +92,27 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 				}
 
 				// Verify that this chunk file in the old ZIP was not empty.
-				if chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, point); err == nil && chunk.Len() == 0 {
+				chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, point)
+				if err == nil && chunk.Len() == 0 {
 					log.Debug("Skip chunk %s (old zipfile chunk was empty)", coord)
 					continue
 				}
 
-				log.Debug("Copy existing chunk %s", file.Name)
-				if err := zf.Copy(file); err != nil {
-					return err
+				// Are we simply copying the existing chunk, or re-encoding it too?
+				if reencode {
+					log.Debug("Re-encoding existing chunk %s into target format", file.Name)
+					if err := chunk.Inflate(c.pal); err != nil {
+						return fmt.Errorf("couldn't inflate cold storage chunk for reencode: %s", err)
+					}
+
+					if err := chunk.ToZipfile(zf, mLayer, point); err != nil {
+						return err
+					}
+				} else {
+					log.Debug("Copy existing chunk %s", file.Name)
+					if err := zf.Copy(file); err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -104,9 +132,9 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 			continue
 		}
 
-		filename := fmt.Sprintf("chunks/%d/%s.json", c.Layer, coord.String())
-		log.Debug("Flush in-memory chunks to %s", filename)
-		chunk.ToZipfile(zf, filename)
+		// Are we encoding chunks as JSON?
+		log.Debug("Flush in-memory chunks %s to zip", coord)
+		chunk.ToZipfile(zf, c.Layer, coord)
 	}
 
 	// Flush the chunkmap out.
@@ -136,18 +164,41 @@ func (c *Chunker) GCSize() int {
 }
 
 // ToZipfile writes just a chunk's data into a zipfile.
-func (c *Chunk) ToZipfile(zf *zip.Writer, filename string) error {
+//
+// It will write a file like "chunks/{layer}/{coord}.json" if using JSON
+// format or a .bin file for binary format based on the BinaryChunkerEnabled
+// game config constant.
+func (c *Chunk) ToZipfile(zf *zip.Writer, layer int, coord render.Point) error {
+	// File name?
+	ext := ".json"
+	if balance.BinaryChunkerEnabled {
+		ext = ".bin"
+	}
+	filename := fmt.Sprintf("chunks/%d/%s%s", layer, coord, ext)
+
 	writer, err := zf.Create(filename)
 	if err != nil {
 		return err
 	}
 
-	json, err := c.MarshalJSON()
-	if err != nil {
-		return err
+	// Are we writing it as binary format?
+	var data []byte
+	if balance.BinaryChunkerEnabled {
+		if bytes, err := c.MarshalBinary(); err != nil {
+			return err
+		} else {
+			data = bytes
+		}
+	} else {
+		if json, err := c.MarshalJSON(); err != nil {
+			return err
+		} else {
+			data = json
+		}
 	}
 
-	n, err := writer.Write(json)
+	// Write the file contents to zip whether binary or json.
+	n, err := writer.Write(data)
 	if err != nil {
 		return err
 	}
@@ -158,21 +209,37 @@ func (c *Chunk) ToZipfile(zf *zip.Writer, filename string) error {
 
 // ChunkFromZipfile loads a chunk from a zipfile.
 func ChunkFromZipfile(zf *zip.Reader, layer int, coord render.Point) (*Chunk, error) {
-	filename := fmt.Sprintf("chunks/%d/%s.json", layer, coord)
+	// File names?
+	var (
+		binfile  = fmt.Sprintf("chunks/%d/%s.bin", layer, coord)
+		jsonfile = fmt.Sprintf("chunks/%d/%s.json", layer, coord)
+		chunk    = NewChunk()
+	)
 
-	file, err := zf.Open(filename)
-	if err != nil {
-		return nil, err
-	}
+	// Read from the new binary format.
+	if file, err := zf.Open(binfile); err == nil {
+		log.Debug("Reading binary compressed chunk from %s", binfile)
+		bin, err := ioutil.ReadAll(file)
+		if err != nil {
+			return nil, err
+		}
 
-	bin, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+		err = chunk.UnmarshalBinary(bin)
+		if err != nil {
+			return nil, err
+		}
+	} else if file, err := zf.Open(jsonfile); err == nil {
+		log.Debug("Reading JSON encoded chunk from %s", jsonfile)
+		bin, err := ioutil.ReadAll(file)
+		if err != nil {
+			return nil, err
+		}
 
-	var chunk = NewChunk()
-	err = chunk.UnmarshalJSON(bin)
-	if err != nil {
+		err = chunk.UnmarshalJSON(bin)
+		if err != nil {
+			return nil, err
+		}
+	} else {
 		return nil, err
 	}
 

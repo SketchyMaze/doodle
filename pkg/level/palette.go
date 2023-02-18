@@ -1,10 +1,14 @@
 package level
 
 import (
+	"errors"
 	"fmt"
 
 	"git.kirsle.net/go/render"
 )
+
+// Palettes are limited to uint8 in length, to aid image compression.
+const PaletteSizeLimit = 256
 
 // DefaultPalette returns a sensible default palette.
 func DefaultPalette() *Palette {
@@ -98,14 +102,18 @@ func (p *Palette) FlushCaches() {
 	p.update()
 }
 
-// AddSwatch adds a new swatch to the palette.
-func (p *Palette) AddSwatch() *Swatch {
+// NewSwatch adds a new swatch to the palette.
+func (p *Palette) NewSwatch() (*Swatch, error) {
 	p.update()
 
 	var (
 		index = len(p.Swatches)
 		name  = fmt.Sprintf("color %d", len(p.Swatches))
 	)
+
+	if index > PaletteSizeLimit {
+		return nil, errors.New("only 256 colors are supported in a palette")
+	}
 
 	p.Swatches = append(p.Swatches, &Swatch{
 		Name:  name,
@@ -114,7 +122,22 @@ func (p *Palette) AddSwatch() *Swatch {
 	})
 	p.byName[name] = index
 
-	return p.Swatches[index]
+	return p.Swatches[index], nil
+}
+
+// AddSwatch adds a new swatch to the palette.
+func (p *Palette) AddSwatch(swatch *Swatch) error {
+	p.update()
+
+	var index = len(p.Swatches)
+	if len(p.Swatches) > PaletteSizeLimit {
+		return errors.New("only 256 colors are supported in a palette")
+	}
+
+	p.Swatches = append(p.Swatches, swatch)
+	p.byName[swatch.Name] = index
+
+	return nil
 }
 
 // Get a swatch by name.

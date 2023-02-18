@@ -1,11 +1,14 @@
 package level
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/go/render"
 )
 
@@ -121,9 +124,34 @@ func (a *MapAccessor) Delete(p render.Point) error {
 // When serialized, the key is the "X,Y" coordinate and the value is the
 // swatch index of the Palette, rather than redundantly serializing out the
 // Swatch object for every pixel.
+//
+// DEPRECATED: in the Zipfile format chunks will be saved as binary files
+// instead of with their JSON wrappers, so MarshalJSON will be phased out.
 func (a *MapAccessor) MarshalJSON() ([]byte, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
+	// Write in the new compressed format.
+	if balance.CompressMapAccessor {
+		var compressed []byte
+		for point, sw := range a.grid {
+			var (
+				x     = int64(point.X)
+				y     = int64(point.Y)
+				sw    = uint64(sw.index)
+				entry = []byte{}
+			)
+
+			entry = binary.AppendVarint(entry, x)
+			entry = binary.AppendVarint(entry, y)
+			entry = binary.AppendUvarint(entry, sw)
+
+			compressed = append(compressed, entry...)
+		}
+
+		out, err := json.Marshal(compressed)
+		return out, err
+	}
 
 	dict := map[string]int{}
 	for point, sw := range a.grid {
@@ -135,22 +163,131 @@ func (a *MapAccessor) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON to convert the chunk map back from JSON.
+//
+// DEPRECATED: in the Zipfile format chunks will be saved as binary files
+// instead of with their JSON wrappers, so MarshalJSON will be phased out.
 func (a *MapAccessor) UnmarshalJSON(b []byte) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	var dict map[string]int
+	// Transparently upgrade the compression algorithm for this level.
+	// - Old style was a map[string]int like {"123,456": 4} mapping
+	//   a coordinate to a palette index.
+	// - Now, coords and palettes are uint8 constrained so we can
+	//   really tighten this up.
+	// For transparent upgrade, try and parse it the old way first.
+	var (
+		dict       map[string]int // old-style
+		compressed []byte         // new-style
+	)
 	err := json.Unmarshal(b, &dict)
 	if err != nil {
-		return err
+		// Now try the new way.
+		err = json.Unmarshal(b, &compressed)
+		if err != nil {
+			return err
+		}
 	}
 
+	// New format: decompress the byte stream.
+	if compressed != nil {
+		// log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
+
+		var (
+			reader = bytes.NewBuffer(compressed)
+		)
+
+		for {
+			var (
+				x, err1  = binary.ReadVarint(reader)
+				y, err2  = binary.ReadVarint(reader)
+				sw, err3 = binary.ReadUvarint(reader)
+			)
+
+			point := render.NewPoint(int(x), int(y))
+			a.grid[point] = NewSparseSwatch(int(sw))
+
+			if err1 != nil || err2 != nil || err3 != nil {
+				// log.Error("Break read loop: %s; %s; %s", err1, err2, err3)
+				break
+			}
+		}
+		return nil
+	}
+
+	// Old format: read the dict in.
 	for coord, index := range dict {
 		point, err := render.ParsePoint(coord)
 		if err != nil {
 			return fmt.Errorf("MapAccessor.UnmarshalJSON: %s", err)
 		}
 		a.grid[point] = NewSparseSwatch(index)
+	}
+
+	return nil
+}
+
+/*
+MarshalBinary converts the chunk data to a binary representation, for
+better compression compared to JSON.
+
+In the binary format each chunk begins with one Varint (the chunk Type)
+followed by whatever wire format the chunk needs given its type.
+
+This function is related to the CompressMapAccessor config constant:
+the MapAccessor compression boils down each point to a series if packed
+varints: the X, Y coord (varint) followed by palette index (Uvarint).
+
+The output of this function is just the compressed MapAccessor stream.
+*/
+func (a *MapAccessor) MarshalBinary() ([]byte, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	// Write in the new compressed format.
+	var compressed []byte
+	for point, sw := range a.grid {
+		var (
+			x     = int64(point.X)
+			y     = int64(point.Y)
+			sw    = uint64(sw.index)
+			entry = []byte{}
+		)
+
+		entry = binary.AppendVarint(entry, x)
+		entry = binary.AppendVarint(entry, y)
+		entry = binary.AppendUvarint(entry, sw)
+
+		compressed = append(compressed, entry...)
+	}
+
+	return compressed, nil
+}
+
+// UnmarshalBinary will decode a compressed MapAccessor byte stream.
+func (a *MapAccessor) UnmarshalBinary(compressed []byte) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	// New format: decompress the byte stream.
+	//log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
+
+	var reader = bytes.NewBuffer(compressed)
+
+	for {
+		var (
+			x, err1  = binary.ReadVarint(reader)
+			y, err2  = binary.ReadVarint(reader)
+			sw, err3 = binary.ReadUvarint(reader)
+		)
+
+		point := render.NewPoint(int(x), int(y))
+		a.grid[point] = NewSparseSwatch(int(sw))
+
+		if err1 != nil || err2 != nil || err3 != nil {
+			// log.Error("Break read loop: %s; %s; %s", err1, err2, err3)
+			break
+		}
 	}
 
 	return nil
