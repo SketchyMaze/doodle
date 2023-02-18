@@ -42,23 +42,29 @@ You can give it one or two values for dimensions:
 func New(dimensions ...int) *Doodad {
 	var (
 		// Defaults
-		size      = balance.DoodadSize
-		chunkSize = balance.ChunkSize
+		size      int
+		chunkSize uint8
 		width     int
 		height    int
 	)
 
 	switch len(dimensions) {
 	case 1:
-		size = dimensions[0]
+		width, height = dimensions[0], dimensions[0]
 	case 2:
 		width, height = dimensions[0], dimensions[1]
 	}
 
-	// If no width/height, make it a classic square doodad.
-	if width+height == 0 {
-		width = size
-		height = size
+	// Set the desired chunkSize to be the largest dimension.
+	if width > height {
+		size = width
+	} else {
+		size = height
+	}
+
+	// If no size at all, fall back on the default.
+	if size == 0 {
+		size = int(balance.ChunkSize)
 	}
 
 	// Pick an optimal chunk size - if our doodad size

@@ -4,12 +4,12 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/go/render"
 )
 
@@ -83,7 +83,7 @@ func New() *Level {
 		Base: Base{
 			Version: 1,
 			Title:   "Untitled",
-			Author:  os.Getenv("USER"),
+			Author:  native.DefaultAuthor(),
 			Files:   NewFileSystem(),
 		},
 		Chunker: NewChunker(balance.ChunkSize),

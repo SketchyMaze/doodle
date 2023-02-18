@@ -348,6 +348,11 @@ func (s *PlayScene) PlaceResizeCanvas() {
 	})
 }
 
+// Canvas returns the main level canvas - useful to call from the debug console as `d.Scene.Canvas()`
+func (s *PlayScene) Canvas() *uix.Canvas {
+	return s.drawing
+}
+
 // SetPlayerCharacter changes the doodad used for the player, by destroying the
 // current player character and making it from scratch.
 func (s *PlayScene) SetPlayerCharacter(filename string) {

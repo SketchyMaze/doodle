@@ -220,7 +220,7 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			// Hitting the left edge. Cap the X coord and shrink the width.
 			delta := p.X - drawAt.X // positive number
 			drawAt.X = p.X
-			// scrollTo.X -= delta // TODO
+			scrollTo.X -= delta
 			resizeTo.W -= delta
 		}
 
@@ -232,6 +232,7 @@ func (w *Canvas) drawActors(e render.Engine, p render.Point) {
 			// Hitting the top edge. Cap the Y coord and shrink the height.
 			delta := p.Y - drawAt.Y
 			drawAt.Y = p.Y
+			scrollTo.Y -= delta
 			resizeTo.H -= delta
 		}
 

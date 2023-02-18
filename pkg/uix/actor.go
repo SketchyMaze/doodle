@@ -164,7 +164,7 @@ func (a *Actor) SetWet(v bool) {
 
 // Size returns the size of the actor, from the underlying doodads.Drawing.
 func (a *Actor) Size() render.Rect {
-	return a.Drawing.Size()
+	return a.Drawing.Doodad.Size
 }
 
 // Velocity returns the actor's current velocity vector.

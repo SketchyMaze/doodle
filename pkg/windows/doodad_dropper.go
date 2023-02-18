@@ -262,6 +262,7 @@ func makeDoodadTab(config DoodadDropper, frame *ui.Frame, size render.Rect, cate
 			canvases = append(canvases, can)
 
 			btn := ui.NewButton(doodad.Title, can)
+			can.CroppedSize = true
 			btn.Resize(render.NewRect(
 				buttonSize-2, // TODO: without the -2 the button border
 				buttonSize-2, // rests on top of the window border

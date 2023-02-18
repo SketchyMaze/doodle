@@ -1,7 +1,6 @@
 package doodads
 
 import (
-	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 	"github.com/google/uuid"
 )
@@ -25,7 +24,6 @@ func NewDrawing(id string, doodad *Doodad) *Drawing {
 	if id == "" {
 		id = uuid.Must(uuid.NewUUID()).String()
 	}
-	log.Warn("NewDraging(%s): doodad.Rect=%s doodad.Size=%s", doodad.Title, doodad.Rect(), doodad.Size)
 	return &Drawing{
 		id:     id,
 		Doodad: doodad,

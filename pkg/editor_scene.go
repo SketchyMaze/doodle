@@ -3,7 +3,6 @@ package doodle
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
@@ -512,7 +512,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		m.Title = "Alpha"
 	}
 	if m.Author == "" {
-		m.Author = os.Getenv("USER")
+		m.Author = native.DefaultAuthor()
 	}
 
 	m.Palette = s.UI.Canvas.Palette
@@ -595,7 +595,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		d.Title = "Untitled Doodad"
 	}
 	if d.Author == "" {
-		d.Author = os.Getenv("USER")
+		d.Author = native.DefaultAuthor()
 	}
 
 	// TODO: is this copying necessary?

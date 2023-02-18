@@ -36,6 +36,11 @@ type Canvas struct {
 	Scrollable bool // Cursor keys will scroll the viewport of this canvas.
 	Zoom       int  // Zoom level on the canvas.
 
+	// Set this if your Canvas is a small fixed size (e.g. in doodad dropper),
+	// so that doodads will crop their texture (if chunk size larger than your
+	// Canvas) as to not overflow the canvas bounds. Not needed for Level canvases.
+	CroppedSize bool
+
 	// Toogle for doodad canvases in the Level Editor to show their buttons.
 	ShowDoodadButtons         bool
 	doodadButtonFrame         ui.Widget // lazy init

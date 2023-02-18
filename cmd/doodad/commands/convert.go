@@ -15,6 +15,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/go/render"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/image/bmp"
@@ -104,8 +105,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	// Read the source images. Ensure they all have the same boundaries.
 	var (
 		imageBounds image.Point
-		chunkSize   uint8 // the square shape for the Doodad chunk size
-		width       int   // dimensions of the incoming image
+		width       int // dimensions of the incoming image
 		height      int
 		images      []image.Image
 	)
@@ -131,11 +131,8 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		// Validate all images are the same size.
 		if i == 0 {
 			imageBounds = imageSize
-			if imageSize.X > imageSize.Y {
-				width = imageSize.X
-			} else {
-				height = imageSize.Y
-			}
+			width = imageSize.X
+			height = imageSize.Y
 		} else if imageSize != imageBounds {
 			return cli.Exit("your source images are not all the same dimensions", 1)
 		}
@@ -152,17 +149,18 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 	// Generate the output drawing file.
 	switch strings.ToLower(filepath.Ext(outputFile)) {
 	case extDoodad:
-		log.Info("Output is a Doodad file (chunk size %d): %s", chunkSize, outputFile)
 		doodad := doodads.New(width, height)
 		doodad.GameVersion = branding.Version
 		doodad.Title = c.String("title")
 		if doodad.Title == "" {
 			doodad.Title = "Converted Doodad"
 		}
-		doodad.Author = os.Getenv("USER")
+		doodad.Author = native.DefaultAuthor()
 
 		// Write the first layer and gather its palette.
 		log.Info("Converting first layer to drawing and getting the palette")
+		var chunkSize = doodad.ChunkSize8()
+		log.Info("Output is a Doodad file (%dx%d): %s", width, height, outputFile)
 		palette, layer0 := imageToChunker(images[0], chroma, nil, chunkSize)
 		doodad.Palette = palette
 		doodad.Layers[0].Chunker = layer0
@@ -197,7 +195,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		if lvl.Title == "" {
 			lvl.Title = "Converted Level"
 		}
-		lvl.Author = os.Getenv("USER")
+		lvl.Author = native.DefaultAuthor()
 		palette, chunker := imageToChunker(images[0], chroma, nil, lvl.Chunker.Size)
 		lvl.Palette = palette
 		lvl.Chunker = chunker
