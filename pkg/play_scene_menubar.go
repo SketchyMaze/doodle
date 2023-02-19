@@ -23,7 +23,7 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 				Supervisor: u.Supervisor,
 				Engine:     d.Engine,
 
-				OnPlayLevel: func(lp levelpack.LevelPack, which levelpack.Level) {
+				OnPlayLevel: func(lp *levelpack.LevelPack, which levelpack.Level) {
 					if err := d.PlayFromLevelpack(lp, which); err != nil {
 						shmem.FlashError(err.Error())
 					}

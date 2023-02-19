@@ -2,6 +2,7 @@ package level
 
 import (
 	"archive/zip"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -91,6 +92,18 @@ func (fs *FileSystem) Delete(filename string) {
 	fs.filemap[filename] = File{
 		Data: []byte{},
 	}
+}
+
+// Checksum returns a SHA-256 checksum of a file's data.
+func (fs *FileSystem) Checksum(filename string) (string, error) {
+	data, err := fs.Get(filename)
+	if err != nil {
+		return "", err
+	}
+
+	h := sha256.New()
+	h.Write(data)
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
 
 // List files in the FileSystem, including the ZIP file.

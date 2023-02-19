@@ -95,7 +95,7 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 	// Render the doodads.
 	log.Debug("GiantScreenshot: Render actors...")
 	for _, actor := range lvl.Actors {
-		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, lvl)
+		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, lvl, false)
 		if err != nil {
 			log.Error("GiantScreenshot: Load doodad: %s", err)
 			continue

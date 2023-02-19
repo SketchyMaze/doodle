@@ -175,7 +175,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 						Supervisor: s.Supervisor,
 						Engine:     d.Engine,
 
-						OnPlayLevel: func(lp levelpack.LevelPack, which levelpack.Level) {
+						OnPlayLevel: func(lp *levelpack.LevelPack, which levelpack.Level) {
 							if err := d.PlayFromLevelpack(lp, which); err != nil {
 								shmem.FlashError(err.Error())
 							}
@@ -353,7 +353,7 @@ func (s *MainScene) SetupDemoLevel(d *Doodle) error {
 			log.Error("Error loading DemoLevelPack(%s): %s", balance.DemoLevelPack, err)
 		} else {
 			log.Debug("Loading selected level from pack: %s", levelName)
-			levelbin, err := lp.GetData("levels/" + levelName)
+			levelbin, err := lp.GetFile("levels/" + levelName)
 			if err != nil {
 				log.Error("Error getting level from DemoLevelpack(%s#%s): %s",
 					balance.DemoLevelPack,

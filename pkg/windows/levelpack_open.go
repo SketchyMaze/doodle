@@ -20,7 +20,7 @@ type LevelPack struct {
 	Engine     render.Engine
 
 	// Callback functions.
-	OnPlayLevel   func(pack levelpack.LevelPack, level levelpack.Level)
+	OnPlayLevel   func(pack *levelpack.LevelPack, level levelpack.Level)
 	OnCloseWindow func()
 
 	// Internal variables
@@ -131,12 +131,13 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 	return window
 }
 
-/* Index screen for the LevelPack window.
+/*
+	Index screen for the LevelPack window.
 
 frame: a TabFrame to populate
 */
 func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
-	lpFiles []string, packmap map[string]levelpack.LevelPack, onChoose func(string)) {
+	lpFiles []string, packmap map[string]*levelpack.LevelPack, onChoose func(string)) {
 	var (
 		buttonHeight = 60 // height of each LevelPack button
 		buttonWidth  = width - 40
@@ -268,7 +269,7 @@ func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
 }
 
 // Detail screen for a given levelpack.
-func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp levelpack.LevelPack) *ui.Frame {
+func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp *levelpack.LevelPack) *ui.Frame {
 	var (
 		buttonHeight = 40
 		buttonWidth  = width - 40

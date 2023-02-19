@@ -341,11 +341,11 @@ func (d *Doodle) PlayLevel(filename string) error {
 
 // PlayFromLevelpack initializes the Play Scene from a level as part of
 // a levelpack.
-func (d *Doodle) PlayFromLevelpack(pack levelpack.LevelPack, which levelpack.Level) error {
+func (d *Doodle) PlayFromLevelpack(pack *levelpack.LevelPack, which levelpack.Level) error {
 	log.Info("Loading level %s from levelpack %s", which.Filename, pack.Title)
 	scene := &PlayScene{
 		Filename:  which.Filename,
-		LevelPack: &pack,
+		LevelPack: pack,
 	}
 	d.Goto(scene)
 	return nil

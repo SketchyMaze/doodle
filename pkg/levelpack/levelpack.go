@@ -16,14 +16,16 @@ import (
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/assets"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 )
 
 // LevelPack describes the contents of a levelpack file.
 type LevelPack struct {
-	Title       string    `json:"title`
+	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Author      string    `json:"author"`
 	Created     time.Time `json:"created"`
@@ -40,6 +42,10 @@ type LevelPack struct {
 
 	// A reference to the original filename, not stored in json.
 	Filename string `json:"-"`
+
+	// Signature to allow free versions of the game to load embedded
+	// custom doodads inside this levelpack for its levels.
+	Signature []byte `json:"signature,omitempty"`
 }
 
 // Level holds metadata about the levels in the levelpack.
@@ -50,7 +56,7 @@ type Level struct {
 }
 
 // LoadFile reads a .levelpack zip file.
-func LoadFile(filename string) (LevelPack, error) {
+func LoadFile(filename string) (*LevelPack, error) {
 	var (
 		fh       io.ReaderAt
 		filesize int64
@@ -66,33 +72,33 @@ func LoadFile(filename string) (LevelPack, error) {
 	if fh == nil {
 		stat, err := os.Stat(filename)
 		if err != nil {
-			return LevelPack{}, err
+			return nil, err
 		}
 		filesize = stat.Size()
 
 		fh, err = os.Open(filename)
 		if err != nil {
-			return LevelPack{}, err
+			return nil, err
 		}
 	}
 
 	// No luck?
 	if fh == nil {
-		return LevelPack{}, errors.New("no file found")
+		return nil, errors.New("no file found")
 	}
 
 	reader, err := zip.NewReader(fh, filesize)
 	if err != nil {
-		return LevelPack{}, err
+		return nil, err
 	}
 
-	lp := LevelPack{
+	lp := &LevelPack{
 		Filename: filename,
 		Zipfile:  reader,
 	}
 
 	// Read the index.json.
-	lp.GetJSON(&lp, "index.json")
+	lp.GetJSON(lp, "index.json")
 
 	return lp, nil
 }
@@ -100,18 +106,18 @@ func LoadFile(filename string) (LevelPack, error) {
 // LoadAllAvailable loads every levelpack visible to the game. Returns
 // the sorted list of filenames as from ListFiles, plus a deeply loaded
 // hash map associating the filenames with their data.
-func LoadAllAvailable() ([]string, map[string]LevelPack, error) {
+func LoadAllAvailable() ([]string, map[string]*LevelPack, error) {
 	filenames, err := ListFiles()
 	if err != nil {
 		return filenames, nil, err
 	}
 
-	var dictionary = map[string]LevelPack{}
+	var dictionary = map[string]*LevelPack{}
 	for _, filename := range filenames {
 		// Resolve the filename to a definite path on disk.
 		path, err := filesystem.FindFile(filename)
 		if err != nil {
-			fmt.Errorf("LoadAllAvailable: FindFile(%s): %s", path, err)
+			log.Error("LoadAllAvailable: FindFile(%s): %s", path, err)
 			return filenames, nil, err
 		}
 
@@ -185,10 +191,56 @@ func (l LevelPack) WriteFile(filename string) error {
 	return ioutil.WriteFile(filename, out, 0655)
 }
 
-// GetData returns file data from inside the loaded zipfile of a levelpack.
-func (l LevelPack) GetData(filename string) ([]byte, error) {
+// WriteZipfile saves a levelpack back into a zip file.
+func (l LevelPack) WriteZipfile(filename string) error {
+	fh, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	// Copy all of the levels and other files from the old zip to new zip.
+	zf := zip.NewWriter(fh)
+	defer zf.Close()
+
+	// Copy attached doodads and levels.
+	for _, file := range l.Zipfile.File {
+		if !strings.HasPrefix(file.Name, "doodads/") &&
+			!strings.HasPrefix(file.Name, "levels/") {
+			continue
+		}
+
+		if err := zf.Copy(file); err != nil {
+			return err
+		}
+	}
+
+	// Write the index.json metadata.
+	meta, err := json.Marshal(l)
+	if err != nil {
+		return err
+	}
+
+	writer, err := zf.Create("index.json")
+	if err != nil {
+		return err
+	}
+	_, err = writer.Write(meta)
+	return err
+}
+
+// GetFile returns file data from inside the loaded zipfile of a levelpack.
+//
+// This also implements the Embeddable interface.
+func (l LevelPack) GetFile(filename string) ([]byte, error) {
 	if l.Zipfile == nil {
 		return []byte{}, errors.New("zipfile not loaded")
+	}
+
+	// NOTE: levelpacks don't have an "assets/" prefix but the game
+	// might come looking for "assets/doodads"
+	if strings.HasPrefix(filename, balance.EmbeddedDoodadsBasePath) {
+		filename = strings.Replace(filename, balance.EmbeddedDoodadsBasePath, "doodads/", 1)
 	}
 
 	file, err := l.Zipfile.Open(filename)
@@ -201,7 +253,7 @@ func (l LevelPack) GetData(filename string) ([]byte, error) {
 
 // GetJSON loads a JSON file from the zipfile and marshals it into your struct.
 func (l LevelPack) GetJSON(v interface{}, filename string) error {
-	data, err := l.GetData(filename)
+	data, err := l.GetFile(filename)
 	if err != nil {
 		return err
 	}

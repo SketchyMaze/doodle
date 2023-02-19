@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/wallpaper"
@@ -77,6 +78,11 @@ type Canvas struct {
 	chunks   *level.Chunker
 	doodad   *doodads.Doodad
 	modified bool // set to True when the drawing has been modified, like in Editor Mode.
+
+	// PlayScene can set whether the Levelpack has a valid signature on it, so that
+	// in InstallActors() we can allow a levelpack to load attached doodads on free
+	// mode for their levels.
+	IsSignedLevelPack *levelpack.LevelPack // filled in ONLY IF SIGNED.
 
 	// Actors to superimpose on top of the drawing.
 	actor  *Actor   // if this canvas IS an actor

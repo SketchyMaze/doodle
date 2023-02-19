@@ -132,7 +132,9 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 				"by "+s.Level.Author,
 			)
 			s.UI.Canvas.LoadLevel(s.Level)
-			s.UI.Canvas.InstallActors(s.Level.Actors)
+			if err := s.installActors(); err != nil {
+				log.Error("InstallActors: %s", err)
+			}
 		} else if s.filename != "" && s.OpenFile {
 			log.Debug("EditorScene.Setup: Loading map from filename at %s", s.filename)
 			loadscreen.SetSubtitle(
@@ -141,7 +143,9 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 			if err := s.LoadLevel(s.filename); err != nil {
 				d.FlashError("LoadLevel error: %s", err)
 			} else {
-				s.UI.Canvas.InstallActors(s.Level.Actors)
+				if err := s.installActors(); err != nil {
+					log.Error("InstallActors: %s", err)
+				}
 			}
 		}
 
@@ -236,6 +240,25 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 		d.Flash("Press 'P' to playtest this level.")
 	}
 
+	return nil
+}
+
+// Common function to install the actors into the level.
+//
+// InstallActors may return an error if doodads were not found - because the
+// player is on the free version and can't load attached doodads from nonsigned
+// files.
+func (s *EditorScene) installActors() error {
+	if err := s.UI.Canvas.InstallActors(s.Level.Actors); err != nil {
+		summary := "This level references some doodads that were not found:"
+		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+			summary = "This level contains embedded doodads, but this is not\n" +
+				"available in the free version of the game. The following\n" +
+				"doodads could not be loaded:"
+		}
+		modal.Alert("%s\n\n%s", summary, err).WithTitle("Level Errors")
+		return fmt.Errorf("EditorScene.LoadLevel: InstallActors: %s", err)
+	}
 	return nil
 }
 

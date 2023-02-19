@@ -52,7 +52,7 @@ func Publish(lvl *level.Level) error {
 		log.Debug("Embed filename: %s", filename)
 		names[filename] = nil
 
-		doodad, err := doodads.LoadFromEmbeddable(filename, lvl)
+		doodad, err := doodads.LoadFromEmbeddable(filename, lvl, false)
 		if err != nil {
 			return fmt.Errorf("couldn't load doodad %s: %s", filename, err)
 		}

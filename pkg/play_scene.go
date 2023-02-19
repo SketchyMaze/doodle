@@ -2,6 +2,7 @@ package doodle
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
@@ -12,6 +13,8 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license/levelsigning"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
@@ -242,11 +245,18 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	s.drawing.OnSetPlayerCharacter = s.SetPlayerCharacter
 	s.drawing.OnResetTimer = s.ResetTimer
 
+	// If this level game from a signed LevelPack, inform the canvas.
+	if s.LevelPack != nil && levelsigning.IsLevelPackSigned(s.LevelPack) {
+		s.drawing.IsSignedLevelPack = s.LevelPack
+	}
+
 	// Given a filename or map data to play?
 	if s.Level != nil {
 		log.Debug("PlayScene.Setup: received level from scene caller")
 		s.drawing.LoadLevel(s.Level)
-		s.drawing.InstallActors(s.Level.Actors)
+		if err := s.installActors(); err != nil {
+			log.Error("InstallActors: %s", err)
+		}
 	} else if s.Filename != "" {
 		loadscreen.SetSubtitle("Opening: " + s.Filename)
 		log.Debug("PlayScene.Setup: loading map from file %s", s.Filename)
@@ -258,7 +268,9 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 		log.Debug("PlayScene.Setup: no grid given, initializing empty grid")
 		s.Level = level.New()
 		s.drawing.LoadLevel(s.Level)
-		s.drawing.InstallActors(s.Level.Actors)
+		if err := s.installActors(); err != nil {
+			log.Error("InstallActors: %s", err)
+		}
 	}
 
 	// Choose a death barrier in case the user falls off the map,
@@ -313,6 +325,25 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	// s.screen.Compute(d.Engine)
 	// s.PlaceResizeCanvas()
 
+	return nil
+}
+
+// Common function to install the actors into the level.
+//
+// InstallActors may return an error if doodads were not found - because the
+// player is on the free version and can't load attached doodads from nonsigned
+// files.
+func (s *PlayScene) installActors() error {
+	if err := s.drawing.InstallActors(s.Level.Actors); err != nil {
+		summary := "This level references some doodads that were not found:"
+		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+			summary = "This level contains embedded doodads, but this is not\n" +
+				"available in the free version of the game. The following\n" +
+				"doodads could not be loaded:"
+		}
+		modal.Alert("%s\n\n%s", summary, err).WithTitle("Level Errors")
+		return fmt.Errorf("EditorScene.LoadLevel: InstallActors: %s", err)
+	}
 	return nil
 }
 
@@ -472,7 +503,7 @@ func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 // centerIn is optional, ignored if zero.
 func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, centerIn render.Rect) {
 	// Load in the player character.
-	player, err := doodads.LoadFromEmbeddable(filename, s.Level)
+	player, err := doodads.LoadFromEmbeddable(filename, s.Level, false)
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)
@@ -726,7 +757,7 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 					config.OnNextLevel = func() {
 						nextLevel := s.LevelPack.Levels[i+1]
 						log.Info("Advance to next level: %s", nextLevel.Filename)
-						s.d.PlayFromLevelpack(*s.LevelPack, nextLevel)
+						s.d.PlayFromLevelpack(s.LevelPack, nextLevel)
 					}
 				}
 			}
@@ -897,7 +928,7 @@ func (s *PlayScene) LoadLevel(filename string) error {
 
 	// Are we playing out of a levelpack?
 	if s.LevelPack != nil {
-		levelbin, err := s.LevelPack.GetData("levels/" + filename)
+		levelbin, err := s.LevelPack.GetFile("levels/" + filename)
 		if err != nil {
 			log.Error("Error reading levels/%s from zip: %s", filename, err)
 		}
@@ -921,7 +952,9 @@ func (s *PlayScene) LoadLevel(filename string) error {
 
 	s.Level = lvl
 	s.drawing.LoadLevel(s.Level)
-	s.drawing.InstallActors(s.Level.Actors)
+	if err := s.installActors(); err != nil {
+		return err
+	}
 
 	return nil
 }

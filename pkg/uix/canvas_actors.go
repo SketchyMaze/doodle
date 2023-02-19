@@ -8,6 +8,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/license/levelsigning"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
@@ -33,13 +34,30 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		actor.Canvas.Destroy()
 	}
 
+	// Signed Levels: the free version normally won't load embedded assets from
+	// a level and the call to LoadFromEmbeddable below returns the error. If the
+	// level is signed it is allowed to use its embedded assets.
+	isSigned := w.IsSignedLevelPack != nil || levelsigning.IsLevelSigned(w.level)
+
 	w.actors = make([]*Actor, 0)
 	for _, id := range actorIDs {
 		var actor = actors[id]
-		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level)
+
+		// Try loading the doodad from the level's own attached files.
+		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level, isSigned)
 		if err != nil {
-			errs = append(errs, fmt.Sprintf("%s: %s", actor.Filename, err.Error()))
-			continue
+			// If we have a signed levelpack, try loading from the levelpack.
+			if w.IsSignedLevelPack != nil {
+				if found, err := doodads.LoadFromEmbeddable(actor.Filename, w.IsSignedLevelPack, true); err == nil {
+					doodad = found
+				}
+			}
+
+			// If not found, append the error and continue.
+			if doodad == nil {
+				errs = append(errs, fmt.Sprintf("%s: %s", actor.Filename, err.Error()))
+				continue
+			}
 		}
 
 		// Create the "live" Actor to exist in the world, and set its world

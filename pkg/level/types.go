@@ -67,6 +67,9 @@ type Level struct {
 	SaveDoodads  bool `json:"saveDoodads"`
 	SaveBuiltins bool `json:"saveBuiltins"`
 
+	// Signature for a level with embedded doodads to still play in free mode.
+	Signature []byte `json:"signature,omitempty"`
+
 	// Undo history, temporary live data not persisted to the level file.
 	UndoHistory *drawtool.History `json:"-"`
 }

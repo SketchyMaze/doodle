@@ -47,6 +47,8 @@ func main() {
 		command.Key,
 		command.Sign,
 		command.Verify,
+		command.SignLevel,
+		command.VerifyLevel,
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))

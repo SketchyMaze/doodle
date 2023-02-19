@@ -114,12 +114,20 @@ func ListBuiltin() ([]string, error) {
 	return result, nil
 }
 
-// LoadFromEmbeddable reads a doodad file, checking a level's embeddable
-// file data in addition to the usual places.
-func LoadFromEmbeddable(filename string, fs filesystem.Embeddable) (*Doodad, error) {
+/*
+LoadFromEmbeddable reads a doodad file, checking a level's embeddable
+file data in addition to the usual places.
+
+Use a true value for `force` to always return the file if available. By
+default it will do a license check and free versions of the game won't
+read the asset and get an error instead. A "Signed Level" is allowed to
+use embedded assets in free versions and the caller uses force=true to
+communicate the signature status.
+*/
+func LoadFromEmbeddable(filename string, fs filesystem.Embeddable, force bool) (*Doodad, error) {
 	if bin, err := fs.GetFile(balance.EmbeddedDoodadsBasePath + filename); err == nil {
 		log.Debug("doodads.LoadFromEmbeddable: found %s", filename)
-		if !license.IsRegistered() {
+		if !force && !license.IsRegistered() {
 			return nil, license.ErrRegisteredFeature
 		}
 		return Deserialize(filename, bin)

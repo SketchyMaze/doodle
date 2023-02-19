@@ -56,7 +56,7 @@ func init() {
 						Name:    "doodads",
 						Aliases: []string{"D"},
 						Usage:   "which doodads to embed: none, custom, all",
-						Value:   "all",
+						Value:   "custom",
 					},
 				},
 				Action: levelpackCreate,
@@ -233,7 +233,7 @@ func levelpackCreate(c *cli.Context) error {
 				continue
 			}
 
-			log.Info("New doodad: %s", actor.Filename)
+			log.Info("Adding doodad to zipfile: %s", actor.Filename)
 
 			// Get this doodad from the game's built-ins or the user's
 			// profile directory only. Pulling embedded doodads out of
