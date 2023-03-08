@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 )
@@ -50,6 +51,7 @@ type LevelPack struct {
 
 // Level holds metadata about the levels in the levelpack.
 type Level struct {
+	UUID     string `json:"uuid"`
 	Title    string `json:"title"`
 	Author   string `json:"author"`
 	Filename string `json:"filename"`
@@ -249,6 +251,21 @@ func (l LevelPack) GetFile(filename string) ([]byte, error) {
 	}
 
 	return ioutil.ReadAll(file)
+}
+
+// GetLevel returns a parsed Level object from a file inside the zipfile.
+func (l LevelPack) GetLevel(filename string) (*level.Level, error) {
+	levelbin, err := l.GetFile("levels/" + filename)
+	if err != nil {
+		return nil, err
+	}
+
+	lvl, err := level.FromJSON(filename, levelbin)
+	if err != nil {
+		return nil, fmt.Errorf("LevelPack.GetLevel(%s) parsing from zipfile: %s", filename, err)
+	}
+
+	return lvl, nil
 }
 
 // GetJSON loads a JSON file from the zipfile and marshals it into your struct.

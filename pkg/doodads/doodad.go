@@ -72,6 +72,8 @@ func New(dimensions ...int) *Doodad {
 	// that size.
 	if size <= 255 {
 		chunkSize = uint8(size)
+	} else {
+		chunkSize = balance.ChunkSize
 	}
 
 	return &Doodad{

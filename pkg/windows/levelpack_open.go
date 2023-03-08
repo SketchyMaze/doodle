@@ -204,7 +204,7 @@ func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
 		})
 
 		numLevels := ui.NewLabel(ui.Label{
-			Text: fmt.Sprintf("[completed %d of %d levels]", config.savegame.CountCompleted(lp.Filename), len(lp.Levels)),
+			Text: fmt.Sprintf("[completed %d of %d levels]", config.savegame.CountCompleted(lp), len(lp.Levels)),
 			Font: balance.MenuFont,
 		})
 		btnFrame.Pack(numLevels, ui.Pack{
@@ -290,7 +290,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 
 	// How many levels completed?
 	var (
-		numCompleted = config.savegame.CountCompleted(lp.Filename)
+		numCompleted = config.savegame.CountCompleted(lp)
 		numUnlocked  = lp.FreeLevels + numCompleted
 	)
 
@@ -363,7 +363,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 	var buttons []*ui.Button
 	for i, level := range lp.Levels {
 		level := level
-		score := config.savegame.GetLevelScore(lp.Filename, level.Filename)
+		score := config.savegame.GetLevelScore(lp.Filename, level.Filename, level.UUID)
 
 		// Make a frame to hold a complex button layout.
 		btnFrame := ui.NewFrame("Frame")

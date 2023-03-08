@@ -12,6 +12,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/savegame"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
@@ -275,6 +276,13 @@ func (s *MainScene) Setup(d *Doodle) error {
 
 	// Check for update in the background.
 	go s.checkUpdate()
+
+	// Migrate the savefile format to UUIDs.
+	go func() {
+		if err := savegame.Migrate(); err != nil {
+			log.Error(err.Error())
+		}
+	}()
 
 	// Eager load the level in background, no time for load screen.
 	go func() {

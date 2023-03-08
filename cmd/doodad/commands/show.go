@@ -105,6 +105,7 @@ func showLevel(c *cli.Context, filename string) error {
 	fmt.Printf("   File format: %s\n", fileType)
 	fmt.Printf("  File version: %d\n", lvl.Version)
 	fmt.Printf("  Game version: %s\n", lvl.GameVersion)
+	fmt.Printf("    Level UUID: %s\n", lvl.UUID)
 	fmt.Printf("   Level title: %s\n", lvl.Title)
 	fmt.Printf("        Author: %s\n", lvl.Author)
 	fmt.Printf("      Password: %s\n", lvl.Password)

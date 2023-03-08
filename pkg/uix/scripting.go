@@ -38,6 +38,15 @@ func (w *Canvas) MakeScriptAPI(vm *scripting.VM) {
 			return nil
 		},
 
+		// Actors.CameraFollowPlayer tells the camera to follow the player character.
+		"CameraFollowPlayer": func() {
+			for _, actor := range w.actors {
+				if actor.IsPlayer() {
+					w.FollowActor = actor.ID()
+				}
+			}
+		},
+
 		// Actors.New: create a new actor.
 		"New": func(filename string) *Actor {
 			doodad, err := doodads.LoadFile(filename)
@@ -102,6 +111,10 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Position": actor.Position,
 		"MoveTo": func(p render.Point) {
 			actor.MoveTo(p)
+			actor.SetGrounded(false)
+		},
+		"MoveBy": func(p render.Point) {
+			actor.MoveBy(p)
 			actor.SetGrounded(false)
 		},
 		"Grounded":        actor.Grounded,

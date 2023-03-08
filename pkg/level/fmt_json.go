@@ -10,11 +10,24 @@ import (
 	"net/http"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"github.com/google/uuid"
 )
 
-// FromJSON loads a level from JSON string (gzip supported).
+/*
+FromJSON loads a level from "JSON string" (gzip supported).
+
+This is the primary "load level from file on disk" method. It can read
+levels of all historical file formats the game supported:
+
+  - If the data begins with a `{` it is parsed in the legacy (v1) JSON format.
+  - If the level begins with a Gzip header (hex `1F8B“) it is taken to be
+    a gzip compressed (v2) level JSON file.
+  - If the file is identified by `net/http#DetectContentType()` to be an
+    application/zip file (v3) it is loaded from zipfile format.
+*/
 func FromJSON(filename string, data []byte) (*Level, error) {
 	var m = New()
 
@@ -54,12 +67,25 @@ func FromJSON(filename string, data []byte) (*Level, error) {
 	return m, nil
 }
 
-// ToJSON serializes the level as JSON (gzip supported).
-//
-// Notice about gzip: if the pkg/balance.CompressLevels boolean is true, this
-// function will apply gzip compression before returning the byte string.
-// This gzip-compressed level can be read back by any functions that say
-// "gzip supported" in their descriptions.
+/*
+ToJSON serializes the level as JSON (gzip supported).
+
+This is the primary "write level to disk" function and can output in a
+vairety of historical formats controlled by pkg/balance#DrawingFormat:
+
+  - balance.FormatJSON (the default): writes the level as an original-style
+    single JSON document that contains all chunk data directly. These levels
+    take a long time to load from disk for any non-trivial level design. (v1)
+  - balance.FormatGzip: writes as a gzip compressed JSON file (v2)
+  - balance.FormatZipfile: creates a zip file where most of the level JSON
+    is stored as "index.json" and chunks and attached doodads are separate
+    members of the zipfile.
+
+Notice about gzip: if the pkg/balance.CompressLevels boolean is true, this
+function will apply gzip compression before returning the byte string.
+This gzip-compressed level can be read back by any functions that say
+"gzip supported" in their descriptions.
+*/
 func (m *Level) ToJSON() ([]byte, error) {
 	// Gzip compressing?
 	if balance.DrawingFormat == balance.FormatGZip {
@@ -76,6 +102,13 @@ func (m *Level) ToJSON() ([]byte, error) {
 
 // AsJSON returns it just as JSON without any fancy gzip/zip magic.
 func (m *Level) AsJSON() ([]byte, error) {
+	// Always write the game version and ensure levels have a UUID set.
+	m.GameVersion = branding.Version
+	if m.UUID == "" {
+		m.UUID = uuid.New().String()
+		log.Info("Note: assigned new level UUID %s", m.UUID)
+	}
+
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
 	if usercfg.Current.JSONIndent {

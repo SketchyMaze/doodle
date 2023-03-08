@@ -42,6 +42,7 @@ type Base struct {
 type Level struct {
 	Base
 	Password string   `json:"passwd"`
+	UUID     string   `json:"uuid"` // unique level IDs, especially for the savegame.json
 	GameRule GameRule `json:"rules"`
 
 	// Chunked pixel data.

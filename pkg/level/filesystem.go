@@ -187,7 +187,7 @@ func (fs *FileSystem) MigrateZipfile(zf *zip.Writer) error {
 	// except for the ones marked for deletion OR the ones currently in the
 	// warm cache which will be written next.
 	if fs.Zipfile != nil {
-		log.Info("FileSystem.MigrateZipfile: Copying files from old zip to new zip")
+		log.Debug("FileSystem.MigrateZipfile: Copying files from old zip to new zip")
 		for _, file := range fs.Zipfile.File {
 			if !strings.HasPrefix(file.Name, "assets/") {
 				continue
@@ -218,7 +218,7 @@ func (fs *FileSystem) MigrateZipfile(zf *zip.Writer) error {
 	// Export currently warmed up files to ZIP, these will be ones that
 	// were updated recently OR legacy files from an old level read.
 	if fs.filemap != nil {
-		log.Info("FileSystem.MigrateZipfile: has %d files in memory to write to ZIP", len(fs.filemap))
+		log.Debug("FileSystem.MigrateZipfile: has %d files in memory to write to ZIP", len(fs.filemap))
 		for filename, file := range fs.filemap {
 			if _, ok := filesZipped[filename]; ok {
 				continue

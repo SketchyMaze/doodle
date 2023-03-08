@@ -116,7 +116,7 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 Loop() subroutine to constrain the scrolled view to within a bounded level.
 */
 func (w *Canvas) loopConstrainScroll() error {
-	if w.NoLimitScroll {
+	if w.NoLimitScroll || w.scrollOutOfBounds {
 		return errors.New("NoLimitScroll enabled")
 	}
 

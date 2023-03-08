@@ -730,7 +730,7 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 			log.Info("Mark level '%s' from pack '%s' as completed", s.Filename, s.LevelPack.Filename)
 			if !s.cheated {
 				elapsed := time.Since(s.startTime)
-				highscore := save.NewHighScore(s.LevelPack.Filename, s.Filename, s.perfectRun, elapsed, s.Level.GameRule)
+				highscore := save.NewHighScore(s.LevelPack.Filename, s.Filename, s.Level.UUID, s.perfectRun, elapsed, s.Level.GameRule)
 				if highscore {
 					s.d.Flash("New record!")
 					config.NewRecord = true
@@ -739,7 +739,7 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 				}
 			} else {
 				// Player has cheated! Mark the level completed but grant no high score.
-				save.MarkCompleted(s.LevelPack.Filename, s.Filename)
+				save.MarkCompleted(s.LevelPack.Filename, s.Filename, s.Level.UUID)
 			}
 
 			// Save the player's scores file.

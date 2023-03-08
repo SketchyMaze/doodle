@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 )
 
@@ -32,6 +33,9 @@ func (d *Doodad) ToJSON() ([]byte, error) {
 
 // AsJSON returns it just as JSON without any fancy gzip/zip magic.
 func (d *Doodad) AsJSON() ([]byte, error) {
+	// Always write the game version that last saved this doodad.
+	d.GameVersion = branding.Version
+
 	out := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(out)
 	if usercfg.Current.JSONIndent {

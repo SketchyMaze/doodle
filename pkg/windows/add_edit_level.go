@@ -16,6 +16,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
+	"github.com/google/uuid"
 )
 
 // AddEditLevel is the "Create New Level & Edit Level Properties" window
@@ -73,6 +74,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	} else {
 		// Additional Level tabs (existing level only)
 		config.setupGameRuleFrame(tabframe)
+		config.setupAdvancedFrame(tabframe)
 	}
 
 	tabframe.Supervise(config.Supervisor)
@@ -555,6 +557,58 @@ func (config AddEditLevel) setupGameRuleFrame(tf *ui.TabFrame) {
 					"longest time rather than fastest time. The gold high\n" +
 					"score will still be for fastest time.",
 				Edge: ui.Top,
+			},
+		},
+	}
+
+	form.Create(frame, fields)
+}
+
+// Creates the Game Rules frame for existing level (set difficulty, etc.)
+func (config AddEditLevel) setupAdvancedFrame(tf *ui.TabFrame) {
+	frame := tf.AddTab("Advanced", ui.NewLabel(ui.Label{
+		Text: "Advanced",
+		Font: balance.TabFont,
+	}))
+
+	form := magicform.Form{
+		Supervisor: config.Supervisor,
+		Engine:     config.Engine,
+		Vertical:   true,
+		LabelWidth: 120,
+		PadY:       2,
+	}
+	fields := []magicform.Field{
+		{
+			Label: "Level UUID Number",
+			Font:  balance.LabelFont,
+		},
+		{
+			Label: "Levels are assigned a unique identifier (UUID) for the purpose\n" +
+				"of saving your high scores for them (in levels which are part of\n" +
+				"level packs). Your level's UUID is shown below. Click it to\n" +
+				"re-roll a new UUID number (e.g. in case you save a new copy\n" +
+				"of a level that you want to be distinct from its original.)",
+			Font: balance.UIFont,
+		},
+		{
+			Label:        "Level UUID:",
+			Font:         balance.UIFont,
+			TextVariable: &config.EditLevel.UUID,
+			Tooltip: ui.Tooltip{
+				Text: "Click to re-roll a new UUID value.",
+				Edge: ui.Top,
+			},
+			OnClick: func() {
+				modal.Confirm(
+					"Are you sure you want to re-roll a new UUID value?\n\n" +
+						"Saving with a new UUID will mark this level as distinct\n" +
+						"from the previous version - if you place both versions\n" +
+						"in a levelpack together they will have separate high\n" +
+						"score values.",
+				).WithTitle("Re-roll UUID").Then(func() {
+					config.EditLevel.UUID = uuid.New().String()
+				})
 			},
 		},
 	}

@@ -33,7 +33,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 	)
 	for coord, chunk := range c.Chunks {
 		if chunk.Len() == 0 {
-			log.Info("Chunker.MigrateZipfile: %s has become empty, remove from zip", coord)
+			log.Debug("Chunker.MigrateZipfile: %s has become empty, remove from zip", coord)
 			erasedChunks[coord] = nil
 		}
 	}
@@ -42,7 +42,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 	// These are chunks that are NOT actively loaded (those are written next),
 	// and erasedChunks are not written to the zipfile at all.
 	if c.Zipfile != nil {
-		log.Info("MigrateZipfile: Copying chunk files from old zip to new zip")
+		log.Debug("MigrateZipfile: Copying chunk files from old zip to new zip")
 		for _, file := range c.Zipfile.File {
 			m := zipChunkfileRegexp.FindStringSubmatch(file.Name)
 			if len(m) > 0 {
@@ -124,7 +124,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 		return nil
 	}
 
-	log.Info("MigrateZipfile: chunker has %d in memory, exporting to zipfile", len(c.Chunks))
+	log.Debug("MigrateZipfile: chunker has %d in memory, exporting to zipfile", len(c.Chunks))
 
 	// Flush in-memory chunks out to zipfile.
 	for coord, chunk := range c.Chunks {

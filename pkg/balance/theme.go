@@ -290,6 +290,10 @@ var (
 			Value: "white.png",
 		},
 		{
+			Label: "Atmosphere",
+			Value: "atmosphere.png",
+		},
+		{
 			Separator: true,
 		},
 		{

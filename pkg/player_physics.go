@@ -129,7 +129,8 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 	}
 
 	// If we insist that the canvas follow the player doodad.
-	if shmem.Tick < s.mustFollowPlayerUntil || keybind.Up(ev) || keybind.Left(ev) || keybind.Right(ev) || keybind.Use(ev) {
+	// Also any directional key will focus the player unless the player is frozen.
+	if shmem.Tick < s.mustFollowPlayerUntil || (!s.Player.IsFrozen() && (keybind.Up(ev) || keybind.Left(ev) || keybind.Right(ev) || keybind.Use(ev))) {
 		s.drawing.FollowActor = s.Player.ID()
 	}
 

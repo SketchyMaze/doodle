@@ -67,7 +67,8 @@ type Canvas struct {
 
 	// Debug tools
 	// NoLimitScroll suppresses the scroll limit for bounded levels.
-	NoLimitScroll bool
+	NoLimitScroll     bool
+	scrollOutOfBounds bool // player is far out of bounds = temporary NoLimitScroll.
 
 	// Show custom mouse cursors over this canvas (eg. editor tools)
 	FancyCursors bool

@@ -52,7 +52,7 @@ var (
 	// Number of game ticks to insist the canvas follows the player at the start
 	// of a level - to overcome Anvils settling into their starting positions so
 	// they don't steal the camera focus straight away.
-	FollowPlayerFirstTicks uint64 = 60
+	FollowPlayerFirstTicks uint64 = 20
 
 	// Default chunk size for canvases.
 	ChunkSize uint8 = 128
@@ -90,11 +90,12 @@ var (
 	PlayerCharacterDoodad = "boy.doodad"
 
 	// Levelpack and level names for the title screen.
-	DemoLevelPack = "assets/levelpacks/001000-TUTORIAL.levelpack"
+	DemoLevelPack = "assets/levelpacks/builtin-Tutorial.levelpack"
 	DemoLevelName = []string{
 		"Tutorial 1.level",
 		"Tutorial 2.level",
 		"Tutorial 3.level",
+		"Tutorial 5.level",
 	}
 
 	// Level attachment filename for the custom wallpaper.
@@ -145,6 +146,13 @@ var (
 	LoadingViewportMarginChunks              = render.NewPoint(10, 8) // hoz, vert
 	CanvasLoadUnloadModuloTicks       uint64 = 4
 	CanvasChunkFreeChoppingBlockTicks uint64 = 128 // number of ticks old a chunk is to free it
+
+	// For bounded levels, the game will try and keep actors inside the boundaries. But
+	// in case e.g. the player is teleported far out of the boundaries (going thru a warp
+	// door into an interior room "off the map"), allow them to be out of bounds. This
+	// variable is the tolerance offset - if they are only this far out of bounds, put them
+	// back in bounds but further out and they're OK.
+	OutOfBoundsMargin = 40
 )
 
 // Edit Mode Values

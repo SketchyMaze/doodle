@@ -1,6 +1,7 @@
 package uix
 
 import (
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/wallpaper"
 	"git.kirsle.net/go/render"
@@ -31,17 +32,26 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 	}
 
 	var (
-		orig   = a.Position() // Actor's World Position
-		moveBy render.Point
-		size   = a.Size()
+		orig      = a.Position() // Actor's World Position
+		moveBy    render.Point
+		size      = a.Size()
+		playerOOB bool // player character is out of bounds
 	)
 
 	// Bound it on the top left edges.
 	if orig.X < 0 {
-		moveBy.X = -orig.X
+		if orig.X > -balance.OutOfBoundsMargin {
+			moveBy.X = -orig.X
+		} else if a.IsPlayer() {
+			playerOOB = true
+		}
 	}
 	if orig.Y < 0 {
-		moveBy.Y = -orig.Y
+		if orig.Y > -balance.OutOfBoundsMargin {
+			moveBy.Y = -orig.Y
+		} else if a.IsPlayer() {
+			playerOOB = true
+		}
 	}
 
 	// Bound it on the right bottom edges. XXX: downcast from int64!
@@ -49,23 +59,35 @@ func (w *Canvas) loopContainActorsInsideLevel(a *Actor) {
 		if w.wallpaper.maxWidth > 0 {
 			if int64(orig.X+size.W) > w.wallpaper.maxWidth {
 				var delta = w.wallpaper.maxWidth - int64(orig.X+size.W)
-				moveBy.X = int(delta)
+				if delta > int64(-balance.OutOfBoundsMargin) {
+					moveBy.X = int(delta)
+				} else if a.IsPlayer() {
+					playerOOB = true
+				}
 			}
 		}
 		if w.wallpaper.maxHeight > 0 {
 			if int64(orig.Y+size.H) > w.wallpaper.maxHeight {
 				var delta = w.wallpaper.maxHeight - int64(orig.Y+size.H)
-				moveBy.Y = int(delta)
+				if delta > int64(-balance.OutOfBoundsMargin) {
+					moveBy.Y = int(delta)
 
-				// Allow them to jump from the bottom by marking them as grounded.
-				a.SetGrounded(true)
+					// Allow them to jump from the bottom by marking them as grounded.
+					a.SetGrounded(true)
+				} else if a.IsPlayer() {
+					playerOOB = true
+				}
 			}
 		}
 	}
 
-	if !moveBy.IsZero() {
+	if !moveBy.IsZero() && !(a.IsPlayer() && playerOOB) {
 		a.MoveBy(moveBy)
 	}
+
+	// If the player doodad is far out of bounds, tag it as such and
+	// the canvas will allow scrolling OOB to see the player.
+	w.scrollOutOfBounds = playerOOB
 }
 
 // PresentWallpaper draws the wallpaper.

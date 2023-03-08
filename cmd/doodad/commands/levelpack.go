@@ -211,6 +211,7 @@ func levelpackCreate(c *cli.Context) error {
 
 		// Log the level in the index.json list.
 		lp.Levels = append(lp.Levels, levelpack.Level{
+			UUID:     lvl.UUID,
 			Title:    lvl.Title,
 			Author:   lvl.Author,
 			Filename: filepath.Base(filename),
