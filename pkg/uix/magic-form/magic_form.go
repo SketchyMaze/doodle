@@ -118,13 +118,10 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 
 		// Pager row?
 		if row.Pager != nil {
-			row.Pager.Compute(form.Engine)
-			form.Supervisor.Add(row.Pager)
+			row.Pager.Supervise(form.Supervisor)
 			frame.Pack(row.Pager, ui.Pack{
-				Side:   ui.W,
-				Expand: true,
+				Side: ui.W,
 			})
-
 		}
 
 		// Buttons row?
@@ -284,7 +281,7 @@ func (form Form) Create(into *ui.Frame, fields []Field) {
 					}
 				})
 
-				picker.Center(shmem.CurrentRenderEngine.WindowSize())
+				picker.Center(form.Engine.WindowSize())
 				picker.Show()
 				return nil
 			})

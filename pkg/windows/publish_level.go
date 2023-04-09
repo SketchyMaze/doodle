@@ -34,9 +34,9 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		windowWidth    = 380
 		windowHeight   = 220
 		page           = 1
-		perPage        = 4
+		perPage        = 3 // rows of `columns`
 		pages          = 1
-		maxPageButtons = 8
+		maxPageButtons = 12
 
 		// columns and sizes to draw the doodad list
 		columns   = 3
@@ -218,7 +218,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 			Font: balance.UIFont,
 		},
 		// Pager is broken, Supervisor doesn't pick it up, TODO
-		/*{
+		{
 			Label: "Doodads currently used on this level:",
 			Font:  balance.LabelFont,
 		},
@@ -231,7 +231,7 @@ func NewPublishWindow(cfg Publish) *ui.Window {
 		},
 		{
 			Pager: pager,
-		},*/
+		},
 		{
 			Buttons: []magicform.Field{
 				{

@@ -94,11 +94,8 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Title":    actor.Doodad().Title,
 
 		// functions
-		"ID": actor.ID,
-		"Size": func() render.Rect {
-			var size = actor.Doodad().ChunkSize()
-			return render.NewRect(size, size)
-		},
+		"ID":      actor.ID,
+		"Size":    actor.Size,
 		"GetTag":  actor.Doodad().Tag,
 		"Options": actor.Options,
 		"GetOption": func(name string) interface{} {
@@ -117,6 +114,10 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 			actor.MoveBy(p)
 			actor.SetGrounded(false)
 		},
+		"IsOnScreen": actor.IsOnScreen,
+		// 	// TODO: passing this to actor.IsOnScreen didn't work?
+		// 	return actor.Position().Inside(actor.Canvas.ViewportRelative())
+		// },
 		"Grounded":        actor.Grounded,
 		"SetHitbox":       actor.SetHitbox,
 		"Hitbox":          actor.Hitbox,

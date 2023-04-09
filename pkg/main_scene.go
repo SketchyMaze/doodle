@@ -34,14 +34,16 @@ type MainScene struct {
 	canvas    *uix.Canvas
 
 	// UI components.
-	labelTitle    *ui.Label
-	labelSubtitle *ui.Label
-	labelVersion  *ui.Label
-	labelHint     *ui.Label
-	frame         *ui.Frame // Main button frame
-	winRegister   *ui.Window
-	winSettings   *ui.Window
-	winLevelPacks *ui.Window
+	labelTitle     *ui.Label
+	labelSubtitle  *ui.Label
+	labelVersion   *ui.Label
+	labelHint      *ui.Label
+	frame          *ui.Frame // Main button frame
+	winRegister    *ui.Window
+	winSettings    *ui.Window
+	winLevelPacks  *ui.Window
+	winPlayLevel   *ui.Window
+	winOpenDrawing *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -196,8 +198,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Style: &balance.ButtonBabyBlue,
 		},
 		{
-			Name:  "Play a Level",
-			Func:  d.GotoPlayMenu,
+			Name: "Play a Level",
+			Func: func() {
+				s.showOpenDrawing(d, true)
+			},
 			Style: &balance.ButtonBabyBlue,
 		},
 		{
@@ -206,8 +210,10 @@ func (s *MainScene) Setup(d *Doodle) error {
 			Style: &balance.ButtonPink,
 		},
 		{
-			Name:  "Edit Drawing",
-			Func:  d.GotoLoadMenu,
+			Name: "Edit Drawing",
+			Func: func() {
+				s.showOpenDrawing(d, false)
+			},
 			Style: &balance.ButtonPink,
 		},
 		{
@@ -296,6 +302,52 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.Resized(d.width, d.height)
 
 	return nil
+}
+
+// common function to show the "Open Drawing" window for the Play Level/Edit Drawing buttons.
+func (s *MainScene) showOpenDrawing(d *Doodle, forPlay bool) {
+	// Find or create the relevant window.
+	var window *ui.Window
+	if forPlay {
+		window = s.winPlayLevel
+		if window == nil {
+			window = windows.NewOpenDrawingWindow(windows.OpenDrawing{
+				Supervisor: s.Supervisor,
+				Engine:     shmem.CurrentRenderEngine,
+				LevelsOnly: true,
+				OnOpenDrawing: func(filename string) {
+					d.PlayLevel(filename)
+				},
+				OnCloseWindow: func() {
+					s.winPlayLevel.Destroy()
+					s.winPlayLevel = nil
+				},
+			})
+			s.winPlayLevel = window
+		}
+	} else {
+		window = s.winOpenDrawing
+		if window == nil {
+			window = windows.NewOpenDrawingWindow(windows.OpenDrawing{
+				Supervisor: s.Supervisor,
+				Engine:     shmem.CurrentRenderEngine,
+				OnOpenDrawing: func(filename string) {
+					d.EditFile(filename)
+				},
+				OnCloseWindow: func() {
+					s.winOpenDrawing.Destroy()
+					s.winOpenDrawing = nil
+				},
+			})
+			s.winOpenDrawing = window
+		}
+	}
+
+	window.MoveTo(render.Point{
+		X: (d.width / 2) - (window.Size().W / 2),
+		Y: (d.height / 2) - (window.Size().H / 2),
+	})
+	window.Show()
 }
 
 // setupAsync runs background tasks from setup, e.g. eager load

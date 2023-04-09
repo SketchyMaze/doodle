@@ -1,4 +1,5 @@
-//+build !js,!wasm
+//go:build !js && !wasm
+// +build !js,!wasm
 
 package sound
 
@@ -99,11 +100,11 @@ func LoadSound(filename string) audio.Playable {
 	return &track
 }
 
-// PlaySound plays the named sound.
+// PlaySound plays the named sound. It will de-duplicate if the same sound is already playing.
 func PlaySound(filename string) {
 	log.Debug("Play sound: %s", filename)
 	sound := LoadSound(filename)
-	if sound != nil {
+	if sound != nil && !sound.Playing() {
 		sound.Play(1)
 	}
 }

@@ -64,6 +64,7 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		// position to the Point defined in the level data.
 		liveActor := NewActor(id, actor, doodad)
 		liveActor.Canvas.parent = w
+		liveActor.LevelCanvas = w
 		liveActor.MoveTo(actor.Point)
 
 		w.actors = append(w.actors, liveActor)
@@ -151,6 +152,7 @@ func (w *Canvas) InstallScripts() error {
 
 // AddActor injects additional actors into the canvas, such as a Player doodad.
 func (w *Canvas) AddActor(actor *Actor) error {
+	actor.LevelCanvas = w
 	w.actors = append(w.actors, actor)
 	return nil
 }

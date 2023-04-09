@@ -25,9 +25,10 @@ import (
 //     as defined in the map: its spawn coordinate and configuration.
 //   - A uix.Canvas that can present the actor's graphics to the screen.
 type Actor struct {
-	Drawing *doodads.Drawing
-	Actor   *level.Actor
-	Canvas  *Canvas
+	Drawing     *doodads.Drawing
+	Actor       *level.Actor
+	Canvas      *Canvas
+	LevelCanvas *Canvas // the parent Canvas of the level we reside in
 
 	activeLayer int  // active drawing frame for display
 	flagDestroy bool // flag the actor for destruction
@@ -57,7 +58,6 @@ type Actor struct {
 
 	// Mutex.
 	muInventory sync.RWMutex
-	muData      sync.RWMutex
 }
 
 // NewActor sets up a uix.Actor.
@@ -155,6 +155,12 @@ func (a *Actor) SetInvulnerable(v bool) {
 // Wet returns whether the actor is in contact with water pixels in a level.
 func (a *Actor) IsWet() bool {
 	return a.wet
+}
+
+// IsOnScreen checks whether the actor's visual sprite box is on-screen in the level viewport.
+func (a *Actor) IsOnScreen() bool {
+	var result = a.Position().Inside(a.LevelCanvas.ViewportRelative())
+	return result
 }
 
 // SetWet updates the state of the actor's wet-ness.

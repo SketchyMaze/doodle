@@ -16,6 +16,12 @@ import (
 )
 
 // OpenLevelEditor is the "Open a Level to Edit It" window
+//
+// DEPRECATED: in favor of OpenDrawing which has a nicer listbox instead
+// of the ugly button grid of this window.
+//
+// You can invoke this old window by the shell commands
+// `$ d.GotoPlayMenu()` or `$ d.GotoLoadMenu()`
 type OpenLevelEditor struct {
 	Supervisor *ui.Supervisor
 	Engine     render.Engine
