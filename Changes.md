@@ -1,6 +1,6 @@
 # Changes
 
-## v0.13.2 (TBD)
+## v0.13.2 (Dec 2 2023)
 
 This release brings some new features and optimization for the game's file
 formats to improve performance and memory usage.
