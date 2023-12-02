@@ -10,7 +10,7 @@ import (
 
 // Test the high level Chunker.
 func TestChunker(t *testing.T) {
-	c := level.NewChunker(1000)
+	c := level.NewChunker(128)
 
 	// Test swatches.
 	var (
@@ -239,7 +239,7 @@ func TestMapAccessor(t *testing.T) {
 
 // Test the ChunkCoordinate function.
 func TestChunkCoordinates(t *testing.T) {
-	c := level.NewChunker(1000)
+	c := level.NewChunker(128)
 
 	type testCase struct {
 		In     render.Point

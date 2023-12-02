@@ -341,7 +341,7 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 	// Is our chunk cache getting too full? e.g. on full level
 	// sweeps where a whole zip file's worth of chunks are scanned.
 	if balance.ChunkerLRUCacheMax > 0 && len(c.Chunks) > balance.ChunkerLRUCacheMax {
-		log.Error("Chunks in memory (%d) exceeds LRU cache cap of %d, freeing random chunks")
+		log.Error("Chunks in memory (%d) exceeds LRU cache cap of %d, freeing random chunks", len(c.Chunks), balance.ChunkerLRUCacheMax)
 		c.chunkMu.Lock()
 		defer c.chunkMu.Unlock()
 

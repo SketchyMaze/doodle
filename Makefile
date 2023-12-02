@@ -17,8 +17,8 @@ setup: clean
 # `make build` to build the binary.
 .PHONY: build
 build:
-	go build $(LDFLAGS) -i -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -i -o bin/doodad cmd/doodad/main.go
+	go build $(LDFLAGS) -o bin/sketchymaze cmd/doodle/main.go
+	go build $(LDFLAGS) -o bin/doodad cmd/doodad/main.go
 
 # `make buildall` to run all build steps including doodads.
 .PHONY: buildall
@@ -28,15 +28,15 @@ buildall: doodads build
 .PHONY: build-free
 build-free:
 	gofmt -w .
-	go build $(LDFLAGS) -tags="shareware" -i -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad cmd/doodad/main.go
+	go build $(LDFLAGS) -tags="shareware" -o bin/sketchymaze cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="shareware" -o bin/doodad cmd/doodad/main.go
 
 # `make build-debug` to build the binary in developer mode.
 .PHONY: build-debug
 build-debug:
 	gofmt -w .
-	go build $(LDFLAGS) -tags="developer" -i -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -tags="developer" -i -o bin/doodad cmd/doodad/main.go
+	go build $(LDFLAGS) -tags="developer" -o bin/sketchymaze cmd/doodle/main.go
+	go build $(LDFLAGS) -tags="developer" -o bin/doodad cmd/doodad/main.go
 
 # `make bindata` generates the embedded binary assets package.
 .PHONY: bindata

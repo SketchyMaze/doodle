@@ -12,7 +12,7 @@ import (
 
 func TestCollisionFunctions(t *testing.T) {
 	// Create a basic level for testing.
-	grid := level.NewChunker(1000)
+	grid := level.NewChunker(128)
 	solid := &level.Swatch{
 		Name:  "solid",
 		Color: render.Black,

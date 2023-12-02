@@ -420,7 +420,7 @@ func (w *Canvas) loopEditable(ev *event.State) error {
 			baseColor, err := chunker.Get(cursor)
 			if err != nil {
 				limit = balance.FloodToolVoidLimit
-				log.Warn("FloodTool: couldn't get base color at %s: %s (got %s)", cursor, err)
+				log.Warn("FloodTool: couldn't get base color at %s: %s (got %s)", cursor, err, baseColor.Color)
 			}
 
 			// If no change, do nothing.

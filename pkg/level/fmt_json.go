@@ -167,7 +167,7 @@ func (m *Level) ToZipfile() ([]byte, error) {
 		if n, err := writer.Write(header); err != nil {
 			return nil, err
 		} else {
-			log.Debug("Written level.json to zipfile: %s bytes", n)
+			log.Debug("Written level.json to zipfile: %d bytes", n)
 		}
 	}
 

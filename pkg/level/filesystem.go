@@ -194,14 +194,14 @@ func (fs *FileSystem) MigrateZipfile(zf *zip.Writer) error {
 			}
 
 			if _, ok := filesDeleted[file.Name]; ok {
-				log.Debug("Skip copying attachment %s: was marked for deletion")
+				log.Debug("Skip copying attachment %s: was marked for deletion", file.Name)
 				continue
 			}
 
 			// Skip files currently in memory.
 			if fs.filemap != nil {
 				if _, ok := fs.filemap[file.Name]; ok {
-					log.Debug("Skip copying attachment %s: one is loaded in memory")
+					log.Debug("Skip copying attachment %s: one is loaded in memory", file.Name)
 					continue
 				}
 			}

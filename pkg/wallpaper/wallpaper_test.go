@@ -70,7 +70,7 @@ func TestWallpaper(t *testing.T) {
 			}
 		}
 
-		wp, err := FromImage(nil, img, "dummy")
+		wp, err := FromImage(img, "dummy")
 		if err != nil {
 			t.Errorf("Couldn't create FromImage: %s", err)
 			t.FailNow()

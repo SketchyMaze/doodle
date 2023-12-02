@@ -94,7 +94,7 @@ func TestHistory(t *testing.T) {
 	// Add a few more points.
 	for i := 3; i <= 6; i++ {
 		H.AddStroke(&Stroke{
-			PointA: render.NewPoint(int32(i), int32(i)),
+			PointA: render.NewPoint(i, i),
 		})
 	}
 	shouldInt("after adding more strokes", 6, H.Size())
@@ -116,7 +116,7 @@ func TestHistory(t *testing.T) {
 	// Overflow past our history size to test rollover.
 	for i := 8; i <= 16; i++ {
 		H.AddStroke(&Stroke{
-			PointA: render.NewPoint(int32(i), int32(i)),
+			PointA: render.NewPoint(i, i),
 		})
 	}
 	shouldInt("after tons of new history, size is capped out", 10, H.Size())

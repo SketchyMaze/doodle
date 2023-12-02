@@ -1,12 +1,12 @@
 /*
 Package gamepad provides game controller logic for the game.
 
-Controls
+# Controls
 
 The gamepad controls are currently hard-coded for Xbox 360 style controllers, and the
 controller mappings vary depending on the "mode" of control.
 
-N Style and X Style
+# N Style and X Style
 
 If the gamepad control is set to "NStyle" then the A/B and X/Y buttons will be swapped
 to match the labels of a Nintendo style controller. Since the game has relatively few
@@ -16,7 +16,7 @@ defined as:
 PrimaryButton: A or X button
 SecondaryButton: B or Y button
 
-Mouse Mode
+# Mouse Mode
 
 - Left stick moves the mouse cursor (a cursor sprite is drawn on screen)
 - Right stick scrolls the level (title screen or level editor)
@@ -26,7 +26,7 @@ Mouse Mode
 - Left Trigger (L2) closes the top-most window in the Editor (Backspace key)
 - Right Shoulder toggles between Mouse Mode and other scene-specific mode.
 
-Gameplay Mode
+# Gameplay Mode
 
 - Left stick moves the player character (left/right only).
 - D-Pad also moves the player character (left/right only).
@@ -125,7 +125,7 @@ func Loop(ev *event.State) {
 		if len(ev.Controllers) > 0 {
 			for idx, ctrl := range ev.Controllers {
 				SetControllerIndex(idx)
-				log.Info("Gamepad: using controller #%d (%d) as Player 1", idx, ctrl.Name())
+				log.Info("Gamepad: using controller #%d (%s) as Player 1", idx, ctrl.Name())
 				break
 			}
 		} else {

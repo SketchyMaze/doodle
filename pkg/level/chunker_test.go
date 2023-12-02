@@ -10,14 +10,14 @@ import (
 
 func TestWorldSize(t *testing.T) {
 	type TestCase struct {
-		Size   int
+		Size   uint8
 		Points []render.Point
 		Expect render.Rect
 		Zero   render.Rect // expected WorldSizePositive
 	}
 	var tests = []TestCase{
 		{
-			Size: 1000,
+			Size: 200,
 			Points: []render.Point{
 				render.NewPoint(0, 0),       // chunk 0,0
 				render.NewPoint(512, 788),   // 0,0
@@ -86,9 +86,9 @@ func TestWorldSize(t *testing.T) {
 
 func TestViewportChunks(t *testing.T) {
 	// Initialize a 100 chunk image with 5x5 chunks.
-	var ChunkSize int = 100
+	var ChunkSize uint8 = 100
 	var Offset int = 50
-	c := level.NewChunker(int(ChunkSize))
+	c := level.NewChunker(ChunkSize)
 	sw := &level.Swatch{
 		Name:  "solid",
 		Color: render.Black,
@@ -106,8 +106,8 @@ func TestViewportChunks(t *testing.T) {
 	for x := -2; x <= 2; x++ {
 		for y := -2; y <= 2; y++ {
 			point := render.NewPoint(
-				x*ChunkSize+Offset,
-				y*ChunkSize+Offset,
+				x*int(ChunkSize)+Offset,
+				y*int(ChunkSize)+Offset,
 			)
 			fmt.Printf("in chunk: %d,%d  set pt: %s\n",
 				x, y, point,

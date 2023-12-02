@@ -419,7 +419,7 @@ func (u *EditorUI) SetupCanvas(d *Doodle) *uix.Canvas {
 	// mode when you click an existing Doodad and it "pops" out of the canvas
 	// and onto the cursor to be repositioned.
 	drawing.OnDragStart = func(actor *level.Actor) {
-		log.Warn("drawing.OnDragStart: grab actor %s", actor)
+		log.Warn("drawing.OnDragStart: grab actor %s", actor.Filename)
 		u.startDragActor(nil, actor)
 	}
 

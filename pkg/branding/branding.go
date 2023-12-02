@@ -11,7 +11,7 @@ const (
 	Summary   = "A drawing-based maze game"
 	Version   = "0.13.2"
 	Website   = "https://www.sketchymaze.com"
-	Copyright = "2022 Noah Petherbridge"
+	Copyright = "2023 Noah Petherbridge"
 	Byline    = "a game by Noah Petherbridge."
 
 	// Update check URL
