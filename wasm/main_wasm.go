@@ -1,3 +1,4 @@
+//go:build js && wasm
 // +build js,wasm
 
 package main
@@ -38,7 +39,7 @@ func main() {
 	game.SetWindowSize(w, h)
 
 	// game.Goto(&doodle.GUITestScene{})
-	game.Goto(&doodle.EditorScene{})
+	// game.Goto(&doodle.EditorScene{})
 
 	game.Run()
 }

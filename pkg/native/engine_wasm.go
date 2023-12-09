@@ -4,6 +4,7 @@
 package native
 
 import (
+	"errors"
 	"image"
 
 	"git.kirsle.net/go/render"
@@ -19,4 +20,8 @@ func TextToImage(e render.Engine, text render.Text) (image.Image, error) {
 
 func CopyToClipboard(text string) error {
 	return errors.New("not supported on WASM")
+}
+
+func CountTextures(e render.Engine) string {
+	return "n/a"
 }

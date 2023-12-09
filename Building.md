@@ -278,6 +278,32 @@ cp /usr/x86_64-w64-mingw32/bin/SDL*.dll bin/
 SDL2_ttf requires libfreetype, you can get its DLL here:
 https://github.com/ubawurinna/freetype-windows-binaries
 
+# WebAssembly
+
+There is some **experimental** support for a WebAssembly build of Sketchy Maze
+since the very early days. Early on, the game "basically worked" but performance
+could be awful: playing levels was OK but clicking and dragging in the editor
+would cause your browser to freeze. Then for a time, the game wouldn't even get
+that far. Recently (December 2023), WASM performance seems much better but there
+are strange graphical glitches:
+
+* On the title screen, the example levels in the background load OK and their
+  doodads will wander around and performance seems OK.
+* But during Play Mode, only the menu bar draws but nothing else on the screen.
+* In the Level Editor, the entire screen is white BUT tooltips will appear and
+  the menu bar can be clicked on (blindly) and the drop-down menus do appear.
+  Some popups like the Palette Editor can be invoked and draw to varying degrees
+  of success.
+
+Some tips to get a WASM build to work:
+
+* For fonts: symlink it so that ./wasm/fonts points to ./assets/fonts.
+* You may need an updated wasm_exec.js shim from Go. On Fedora,
+  `dnf install golang-misc` and `cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .`
+  from the wasm/ folder.
+* Run `make wasm` to build the WASM binary and `make wasm-serve` to run a simple
+  Go web server to serve it from.
+
 # Old Docs
 
 ## Build Tags

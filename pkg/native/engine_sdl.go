@@ -5,6 +5,7 @@ package native
 
 import (
 	"errors"
+	"fmt"
 	"image"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -31,6 +32,15 @@ func CopyToClipboard(text string) error {
 		return sdl2.SetClipboardText(text)
 	}
 	return errors.New("not supported")
+}
+
+// CountTextures returns the count of loaded SDL2 textures, for the F3 debug overlay, or "n/a"
+func CountTextures(e render.Engine) string {
+	var texCount = "n/a"
+	if sdl, ok := e.(*sdl.Renderer); ok {
+		texCount = fmt.Sprintf("%d", sdl.CountTextures())
+	}
+	return texCount
 }
 
 /*

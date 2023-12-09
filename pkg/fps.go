@@ -8,9 +8,9 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
-	"git.kirsle.net/go/render/sdl"
 	"git.kirsle.net/go/ui"
 )
 
@@ -65,10 +65,7 @@ func (d *Doodle) DrawDebugOverlay() {
 	}
 
 	// Get the size of cached SDL2 textures at the render engine level.
-	var texCount = "n/a"
-	if sdl, ok := d.Engine.(*sdl.Renderer); ok {
-		texCount = fmt.Sprintf("%d", sdl.CountTextures())
-	}
+	var texCount = native.CountTextures(d.Engine)
 
 	var (
 		darken  = balance.DebugStrokeDarken

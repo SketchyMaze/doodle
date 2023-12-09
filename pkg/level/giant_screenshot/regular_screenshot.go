@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
@@ -21,6 +22,11 @@ import (
 
 // CroppedScreenshot returns a rendered RGBA image of the level.
 func CroppedScreenshot(lvl *level.Level, viewport render.Rect) (image.Image, error) {
+	// Not for WASM for now.
+	if runtime.GOOS == "js" {
+		return nil, errors.New("screenshots not yet supported for WASM")
+	}
+
 	// Lock this to one user at a time.
 	if locked {
 		return nil, errors.New("a screenshot is still being processed; try later...")

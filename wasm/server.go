@@ -1,3 +1,4 @@
+//go:build disabled
 // +build disabled
 
 package main
@@ -9,15 +10,13 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/fsnotify/fsnotify"
 )
 
 func main() {
 	const wasm = "/doodle.wasm"
 
 	// Watch the dev directory for changes.
-	go watchChanges()
+	// go watchChanges()
 
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.HandleFunc(wasm, func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +40,7 @@ func onChange() {
 
 // Watch the Doodle source tree for changes to Go files and rebuild
 // the wasm binary automatically.
+/*
 func watchChanges() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -86,6 +86,7 @@ func watchChanges() {
 	}
 	<-done
 }
+*/
 
 // Crawl the filesystem and return paths with Go files.
 func crawlDirectory(root string) []string {
