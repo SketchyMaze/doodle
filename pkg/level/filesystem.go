@@ -37,6 +37,28 @@ func NewFileSystem() *FileSystem {
 	}
 }
 
+// Exists checks if a file exists.
+func (fs *FileSystem) Exists(filename string) bool {
+	if fs.filemap == nil {
+		fs.filemap = map[string]File{}
+	}
+
+	// Legacy file map.
+	if _, ok := fs.filemap[filename]; ok {
+		return ok
+	}
+
+	// Check in the zipfile.
+	if fs.Zipfile != nil {
+		file, err := fs.Zipfile.Open(filename)
+		if err == nil {
+			defer file.Close()
+			return true
+		}
+	}
+	return false
+}
+
 // Get a file from the FileSystem.
 func (fs *FileSystem) Get(filename string) ([]byte, error) {
 	if fs.filemap == nil {

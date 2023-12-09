@@ -141,6 +141,13 @@ var (
 		Color:   render.Black,
 	}
 
+	// DangerFont is a red version of UIFont.
+	DangerFont = render.Text{
+		Size:    12,
+		Padding: 4,
+		Color:   render.Red,
+	}
+
 	// LabelFont is the font for strong labels in UI.
 	LabelFont = render.Text{
 		Size:         12,

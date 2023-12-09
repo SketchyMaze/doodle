@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/go/render"
+	"git.kirsle.net/go/ui"
 )
 
 // Useful variables.
@@ -73,6 +74,9 @@ type Level struct {
 
 	// Undo history, temporary live data not persisted to the level file.
 	UndoHistory *drawtool.History `json:"-"`
+
+	// Cache of loaded images (e.g. screenshots).
+	cacheImages map[string]*ui.Image
 }
 
 // GameRule
@@ -116,6 +120,13 @@ func (m *Level) Teardown() {
 		freed := chunk.Teardown()
 		chunks++
 		textures += freed
+	}
+
+	// Free any cached images (screenshots)
+	if m.cacheImages != nil {
+		for _, img := range m.cacheImages {
+			img.Destroy()
+		}
 	}
 
 	log.Debug("Teardown level (%s): Freed %d textures across %d level chunks", m.Title, textures, chunks)

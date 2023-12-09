@@ -34,6 +34,7 @@ type AddEditLevel struct {
 	OnChangePageTypeAndWallpaper func(pageType level.PageType, wallpaper string)
 	OnCreateNewLevel             func(*level.Level)
 	OnCreateNewDoodad            func(width, height int)
+	OnUpdateScreenshot           func() error
 	OnReload                     func()
 	OnCancel                     func()
 }
@@ -74,6 +75,7 @@ func NewAddEditLevel(config AddEditLevel) *ui.Window {
 	} else {
 		// Additional Level tabs (existing level only)
 		config.setupGameRuleFrame(tabframe)
+		config.setupScreenshotFrame(tabframe)
 		config.setupAdvancedFrame(tabframe)
 	}
 
@@ -562,6 +564,91 @@ func (config AddEditLevel) setupGameRuleFrame(tf *ui.TabFrame) {
 	}
 
 	form.Create(frame, fields)
+}
+
+// Level Screenshot management frame.
+func (config AddEditLevel) setupScreenshotFrame(tf *ui.TabFrame) {
+	frame := tf.AddTab("Screenshot", ui.NewLabel(ui.Label{
+		Text: "Screenshot",
+		Font: balance.TabFont,
+	}))
+
+	var image *ui.Image
+
+	// Have a screenshot already?
+	if config.EditLevel.HasScreenshot() {
+		if img, err := config.EditLevel.GetScreenshotImageAsUIImage(balance.LevelScreenshotSmallFilename); err != nil {
+			lbl := ui.NewLabel(ui.Label{
+				Text: err.Error(),
+				Font: balance.DangerFont,
+			})
+			frame.Pack(lbl, ui.Pack{
+				Side: ui.N,
+			})
+		} else {
+			// Draw the image.
+			log.Error("Got img: %+v", img)
+			frame.Pack(img, ui.Pack{
+				Side: ui.N,
+			})
+
+			// Hold onto it in case we need to refresh it.
+			image = img
+		}
+	} else {
+		lbl := ui.NewLabel(ui.Label{
+			Text: "This level has no screenshot available. If this is\n" +
+				"a new drawing, its first screenshot will be created\n" +
+				"upon save; playtest or close and re-open the level\n" +
+				"then and its screenshot should appear here and can\n" +
+				"be refreshed.",
+			Font: balance.DangerFont,
+		})
+		frame.Pack(lbl, ui.Pack{
+			Side: ui.N,
+		})
+
+		// Exit now - don't add the Refresh button in case of nil pointer exception
+		// while we are in this state.
+		return
+	}
+
+	// Image refresh button.
+	btn := ui.NewButton("Refresh", ui.NewLabel(ui.Label{
+		Text: "Update Screenshot",
+		Font: balance.UIFont,
+	}))
+	ui.NewTooltip(btn, ui.Tooltip{
+		Text: "Update the screenshot from your current scroll point\nin the level editor.",
+	})
+
+	btn.Handle(ui.Click, func(ed ui.EventData) error {
+		// Take a new screenshot.
+		if config.OnUpdateScreenshot == nil {
+			shmem.FlashError("OnUpdateScreenshot handler not configured!")
+		} else {
+			if err := config.OnUpdateScreenshot(); err != nil {
+				modal.Alert(err.Error()).WithTitle("Error updating screenshot")
+			} else {
+				// Get the updated screenshot image from the level.
+				if img, err := config.EditLevel.GetScreenshotImage(balance.LevelScreenshotSmallFilename); err != nil {
+					shmem.FlashError("Couldn't reload screenshot from level: %s", err)
+				} else {
+					image.ReplaceFromImage(img)
+				}
+			}
+		}
+		return nil
+	})
+
+	btn.Compute(config.Engine)
+
+	frame.Pack(btn, ui.Pack{
+		Side:   ui.N,
+		Expand: true,
+	})
+
+	config.Supervisor.Add(btn)
 }
 
 // Creates the Game Rules frame for existing level (set difficulty, etc.)

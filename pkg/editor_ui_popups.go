@@ -188,6 +188,9 @@ func (u *EditorUI) SetupPopups(d *Doodle) {
 				u.Canvas.Destroy() // clean up old textures
 				u.Canvas.LoadLevel(scene.Level)
 			},
+			OnUpdateScreenshot: func() error {
+				return scene.UpdateLevelScreenshot(scene.Level)
+			},
 			OnReload: func() {
 				log.Warn("RELOAD LEVEL")
 				scene.Reset()

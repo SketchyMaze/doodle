@@ -13,6 +13,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level/giant_screenshot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/publishing"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
@@ -553,7 +554,26 @@ func (s *EditorScene) SaveLevel(filename string) error {
 	}
 
 	s.lastAutosaveAt = time.Now()
+
+	// Save screenshots into the level file.
+	if !m.HasScreenshot() {
+		s.UpdateLevelScreenshot(m)
+	}
+
 	return m.WriteFile(filename)
+}
+
+// UpdateLevelScreenshot updates a level screenshot in its zipfile.
+func (s *EditorScene) UpdateLevelScreenshot(lvl *level.Level) error {
+	// The level must have been saved and have a filename to update in.
+	if s.filename == "" {
+		return errors.New("Save your level to disk before updating its screenshot.")
+	}
+
+	if err := giant_screenshot.UpdateLevelScreenshots(lvl, s.UI.Canvas.Viewport().Point()); err != nil {
+		return fmt.Errorf("Error saving level screenshots: %s", err)
+	}
+	return nil
 }
 
 // AutoSave takes an autosave snapshot of the level or drawing.

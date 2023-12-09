@@ -153,6 +153,14 @@ var (
 	// variable is the tolerance offset - if they are only this far out of bounds, put them
 	// back in bounds but further out and they're OK.
 	OutOfBoundsMargin = 40
+
+	// Level screenshot dimensions saved within the level data.
+	LevelScreenshotLargeFilename  = "large.png"
+	LevelScreenshotMediumFilename = "medium.png"
+	LevelScreenshotSmallFilename  = "small.png"
+	LevelScreenshotLargeSize      = render.NewRect(1280, 720)
+	LevelScreenshotMediumSize     = render.NewRect(640, 360)
+	LevelScreenshotSmallSize      = render.NewRect(320, 180)
 )
 
 // Edit Mode Values

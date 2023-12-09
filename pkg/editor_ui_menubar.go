@@ -11,6 +11,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/giant_screenshot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
@@ -115,18 +116,40 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		})
 
 		levelMenu.AddSeparator()
-		levelMenu.AddItem("Giant Screenshot", func() {
+		levelMenu.AddItem("Screenshot", func() {
 			// It takes a LONG TIME to render for medium+ maps.
 			// Do so on a background thread.
 			go func() {
-				filename, err := giant_screenshot.SaveGiantScreenshot(u.Scene.Level)
+				filename, err := giant_screenshot.SaveCroppedScreenshot(u.Scene.Level, u.Scene.GetDrawing().Viewport())
 				if err != nil {
 					d.FlashError("Error: %s", err.Error())
 					return
 				}
 
-				d.FlashError("Giant screenshot saved as: %s", filename)
+				d.FlashError("Screenshot saved as: %s", filename)
 			}()
+		})
+		levelMenu.AddItem("Giant Screenshot", func() {
+			// It takes a LONG TIME to render for medium+ maps.
+			modal.Confirm(
+				"Do you want to make a 'Giant Screenshot' of\n" +
+					"your WHOLE level? Note: this may take several\n" +
+					"seconds for very large maps!",
+			).WithTitle("Giant Screenshot").Then(func() {
+				// Show the wait modal and generate the screenshot on a background thread.
+				m := modal.Wait("Generating a giant screenshot...").WithTitle("Please hold")
+				go func() {
+					defer m.Dismiss(true)
+
+					filename, err := giant_screenshot.SaveGiantScreenshot(u.Scene.Level)
+					if err != nil {
+						d.FlashError("Error: %s", err.Error())
+						return
+					}
+
+					d.FlashError("Giant screenshot saved as: %s", filename)
+				}()
+			})
 		})
 		levelMenu.AddItem("Open screenshot folder", func() {
 			native.OpenLocalURL(userdir.ScreenshotDirectory)

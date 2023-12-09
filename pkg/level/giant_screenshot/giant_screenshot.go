@@ -72,7 +72,7 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 
 	// Render the wallpaper onto it.
 	log.Debug("GiantScreenshot: Render wallpaper to image (%s)...", size)
-	img = WallpaperToImage(lvl, img, size.W, size.H)
+	img = WallpaperToImage(lvl, img, size.W, size.H, render.Origin)
 
 	// Render the chunks.
 	log.Debug("GiantScreenshot: Render level chunks...")
@@ -158,7 +158,9 @@ func SaveGiantScreenshot(level *level.Level) (string, error) {
 //
 // The image is assumed to have a rect of (0,0,width,height) and that
 // width and height are positive. Used for the Giant Screenshot feature.
-func WallpaperToImage(lvl *level.Level, target *image.RGBA, width, height int) *image.RGBA {
+//
+// Pass an offset point to 'scroll' the wallpaper (for the Cropped Screenshot).
+func WallpaperToImage(lvl *level.Level, target *image.RGBA, width, height int, offset render.Point) *image.RGBA {
 	wp, err := wallpaper.FromFile("assets/wallpapers/"+lvl.Wallpaper, lvl)
 	if err != nil {
 		log.Error("GiantScreenshot: wallpaper load: %s", err)
@@ -167,30 +169,48 @@ func WallpaperToImage(lvl *level.Level, target *image.RGBA, width, height int) *
 	var size = wp.QuarterRect()
 	var resultImage = target
 
-	// Tile the repeat texture.
-	for x := 0; x < width; x += size.W {
-		for y := 0; y < height; y += size.H {
-			offset := image.Pt(x, y)
-			resultImage = blotImage(resultImage, wp.Repeat(), offset)
+	// Handling the scroll offsets: wallpapers are made up of small-ish
+	// repeating squares so the scroll offset needs only be a modulus within
+	// the size of one square.
+	absOffset := offset
+	if offset != render.Origin {
+		offset.X = render.AbsInt(offset.X % size.W)
+		offset.Y = render.AbsInt(offset.Y % size.H)
+	}
+
+	// Tile the repeat texture. Go one tile extra in case of offset.
+	for x := 0; x < width+size.W; x += size.W {
+		for y := 0; y < height+size.H; y += size.H {
+			dst := image.Pt(x-offset.X, y-offset.Y)
+			resultImage = blotImage(resultImage, wp.Repeat(), dst)
 		}
 	}
 
 	// Tile the left edge for bounded lvls.
 	if lvl.PageType > level.Unbounded {
-		// The left edge.
-		for y := 0; y < height; y += size.H {
-			offset := image.Pt(0, y)
-			resultImage = blotImage(resultImage, wp.Left(), offset)
+		// The left edge (unless off screen)
+		if absOffset.X < size.W {
+			for y := 0; y < height; y += size.H {
+				dst := image.Pt(0-offset.X, y-offset.Y)
+				resultImage = blotImage(resultImage, wp.Left(), dst)
+			}
 		}
 
 		// The top edge.
-		for x := 0; x < width; x += size.W {
-			offset := image.Pt(x, 0)
-			resultImage = blotImage(resultImage, wp.Top(), offset)
+		if absOffset.Y < size.H {
+			for x := 0; x < width; x += size.W {
+				dst := image.Pt(x-offset.X, 0-offset.Y)
+				resultImage = blotImage(resultImage, wp.Top(), dst)
+			}
 		}
 
 		// The top left corner.
-		resultImage = blotImage(resultImage, wp.Corner(), image.Point{})
+		if absOffset.X < size.W && absOffset.Y < size.H {
+			resultImage = blotImage(resultImage, wp.Corner(), image.Pt(
+				-offset.X,
+				-offset.Y,
+			))
+		}
 	}
 
 	return resultImage
