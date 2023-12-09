@@ -7,8 +7,10 @@ RegisterEventHooks attaches the supervisor level event hooks into a JS VM.
 
 Names registered:
 
-- EndLevel(): for a doodad to exit the level. Panics if the OnLevelExit
-  handler isn't defined.
+  - EndLevel(): for a doodad to exit the level. Panics if the OnLevelExit
+    handler isn't defined.
+  - FailLevel(): for a doodad to cause a level failure.
+  - SetCheckpoint(): update the player's respawn location.
 */
 func RegisterEventHooks(s *Supervisor, vm *VM) {
 	vm.Set("EndLevel", func() {

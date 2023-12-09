@@ -21,10 +21,6 @@ var (
 	Width  = 1024
 	Height = 768
 
-	// Title screen height needed for the main menu. Phones in landscape
-	// mode will switch to the horizontal layout if less than this height.
-	TitleScreenResponsiveHeight = 600
-
 	// Speed to scroll a canvas with arrow keys in Edit Mode.
 	CanvasScrollSpeed         = 8
 	FollowActorMaxScrollSpeed = 64
@@ -158,9 +154,11 @@ var (
 	LevelScreenshotLargeFilename  = "large.png"
 	LevelScreenshotMediumFilename = "medium.png"
 	LevelScreenshotSmallFilename  = "small.png"
+	LevelScreenshotTinyFilename   = "tiny.png"
 	LevelScreenshotLargeSize      = render.NewRect(1280, 720)
 	LevelScreenshotMediumSize     = render.NewRect(640, 360)
-	LevelScreenshotSmallSize      = render.NewRect(320, 180)
+	LevelScreenshotSmallSize      = render.NewRect(320, 180) // Level Properties thumbnail size
+	LevelScreenshotTinySize       = render.NewRect(224, 126) // Story Mode thumbnail size
 )
 
 // Edit Mode Values

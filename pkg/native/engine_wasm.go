@@ -25,3 +25,5 @@ func CopyToClipboard(text string) error {
 func CountTextures(e render.Engine) string {
 	return "n/a"
 }
+
+func MaximizeWindow(e render.Engine) {}

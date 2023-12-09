@@ -109,3 +109,10 @@ func TextToImage(e render.Engine, text render.Text) (image.Image, error) {
 
 	return img, nil
 }
+
+// Set the window to maximized.
+func MaximizeWindow(e render.Engine) {
+	if sdl, ok := e.(*sdl.Renderer); ok {
+		sdl.Maximize()
+	}
+}

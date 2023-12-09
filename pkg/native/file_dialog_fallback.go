@@ -1,3 +1,4 @@
+//go:build js && wasm
 // +build js,wasm
 
 package native
@@ -17,4 +18,3 @@ func OpenFile(title string, filter string) (string, error) {
 	})
 	return "", nil
 }
-

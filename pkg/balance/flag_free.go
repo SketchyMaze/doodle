@@ -1,3 +1,4 @@
+//go:build shareware
 // +build shareware
 
 package balance

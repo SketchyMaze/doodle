@@ -1,9 +1,9 @@
 package wallpaper
 
 import (
-	"os"
-	"io/ioutil"
 	"encoding/base64"
+	"io/ioutil"
+	"os"
 )
 
 /*

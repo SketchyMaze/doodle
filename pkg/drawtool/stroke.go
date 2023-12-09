@@ -7,12 +7,12 @@ Stroke holds temporary pixel data with a shape and color.
 
 It is used for myriad purposes:
 
-- As a staging area for drawing new pixels to the drawing without committing
-  them until completed.
-- As a unit of work for the Undo/Redo History when editing a drawing.
-- As imaginary visual lines superimposed on top of a drawing, for example to
-  visualize the link between two doodads or to draw collision hitboxes and other
-  debug lines to the drawing.
+  - As a staging area for drawing new pixels to the drawing without committing
+    them until completed.
+  - As a unit of work for the Undo/Redo History when editing a drawing.
+  - As imaginary visual lines superimposed on top of a drawing, for example to
+    visualize the link between two doodads or to draw collision hitboxes and other
+    debug lines to the drawing.
 */
 type Stroke struct {
 	ID        int // Unique ID per each stroke

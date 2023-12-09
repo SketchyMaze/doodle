@@ -133,7 +133,7 @@ func SaveCroppedScreenshot(level *level.Level, viewport render.Rect) (string, er
 // UpdateLevelScreenshots will generate and embed the screenshot PNGs into the level data.
 func UpdateLevelScreenshots(lvl *level.Level, scroll render.Point) error {
 	// Take screenshots.
-	large, medium, small, err := CreateLevelScreenshots(lvl, scroll)
+	large, medium, small, tiny, err := CreateLevelScreenshots(lvl, scroll)
 	if err != nil {
 		return err
 	}
@@ -143,6 +143,7 @@ func UpdateLevelScreenshots(lvl *level.Level, scroll render.Point) error {
 		balance.LevelScreenshotLargeFilename:  large,
 		balance.LevelScreenshotMediumFilename: medium,
 		balance.LevelScreenshotSmallFilename:  small,
+		balance.LevelScreenshotTinyFilename:   tiny,
 	} {
 		var fh = bytes.NewBuffer([]byte{})
 		if err := png.Encode(fh, img); err != nil {
@@ -165,7 +166,7 @@ func UpdateLevelScreenshots(lvl *level.Level, scroll render.Point) error {
 // will be embedded within the level data itself.
 //
 // Returns the large, medium and small images.
-func CreateLevelScreenshots(lvl *level.Level, scroll render.Point) (large, medium, small image.Image, err error) {
+func CreateLevelScreenshots(lvl *level.Level, scroll render.Point) (large, medium, small, tiny image.Image, err error) {
 	// Viewport to screenshot.
 	viewport := render.Rect{
 		X: scroll.X,
@@ -183,7 +184,8 @@ func CreateLevelScreenshots(lvl *level.Level, scroll render.Point) (large, mediu
 	// Scale the medium and small versions.
 	medium = Scale(large, image.Rect(0, 0, balance.LevelScreenshotMediumSize.W, balance.LevelScreenshotMediumSize.H), draw.ApproxBiLinear)
 	small = Scale(large, image.Rect(0, 0, balance.LevelScreenshotSmallSize.W, balance.LevelScreenshotSmallSize.H), draw.ApproxBiLinear)
-	return large, medium, small, nil
+	tiny = Scale(large, image.Rect(0, 0, balance.LevelScreenshotTinySize.W, balance.LevelScreenshotTinySize.H), draw.ApproxBiLinear)
+	return large, medium, small, tiny, nil
 }
 
 // Scale down an image. Example:

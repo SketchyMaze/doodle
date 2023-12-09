@@ -497,12 +497,11 @@ func (s *MainScene) Resized(width, height int) {
 	log.Info("Resized to %dx%d", width, height)
 
 	// If the height is not tall enough for the menu, switch to the horizontal layout.
-	if height < balance.TitleScreenResponsiveHeight {
-		log.Error("Switch to landscape mode")
-		s.landscapeMode = true
-	} else {
-		s.landscapeMode = false
+	isLandscape := balance.IsShortWide(width, height)
+	if isLandscape != s.landscapeMode {
+		log.Info("Toggled LandscapeMode to: %+v", isLandscape)
 	}
+	s.landscapeMode = isLandscape
 
 	s.canvas.Resize(render.Rect{
 		W: width,

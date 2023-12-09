@@ -21,9 +21,9 @@ EditFile opens a drawing file (Level or Doodad) in the EditorScene.
 
 The filename can be one of the following:
 
-	- A simple filename with no path separators in it and/or no file extension.
-	- An absolute path beginning with "/"
-	- A relative path beginning with "./"
+  - A simple filename with no path separators in it and/or no file extension.
+  - An absolute path beginning with "/"
+  - A relative path beginning with "./"
 
 If the filename has an extension (`.level` or `.doodad`), that will disambiguate
 how to find the file and which mode to start the EditorMode in. Otherwise, the

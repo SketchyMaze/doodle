@@ -110,6 +110,7 @@ var (
 	MenuFont       = render.Text{
 		Size: 12,
 		PadX: 4,
+		PadY: 2,
 	}
 	MenuFontBold = render.Text{
 		FontFilename: SansBoldFont,
@@ -122,6 +123,14 @@ var (
 		Size: 12,
 		PadX: 8,
 		PadY: 4,
+	}
+
+	// Pager styles.
+	PagerLargeFont = render.Text{
+		FontFilename: SansBoldFont,
+		Size:         14,
+		PadX:         6,
+		PadY:         4,
 	}
 
 	// Modal backdrop color.

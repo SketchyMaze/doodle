@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"regexp"
 	"runtime"
@@ -47,9 +46,6 @@ func init() {
 	// Use all the CPU cores for collision detection and other load balanced
 	// goroutine work in the app.
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	// Seed the random number generator.
-	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
@@ -154,10 +150,12 @@ func main() {
 		}
 
 		// Setting a custom resolution?
+		var maximize = true
 		if c.String("window") != "" {
 			if err := setResolution(c.String("window")); err != nil {
 				panic(err)
 			}
+			maximize = false
 		}
 
 		// Enable feature flags?
@@ -199,6 +197,12 @@ func main() {
 
 		game := doodle.New(c.Bool("debug"), engine)
 		game.SetupEngine()
+
+		// Start with maximized window unless -w was given.
+		if maximize {
+			log.Info("Maximize window")
+			engine.Maximize()
+		}
 
 		// Reload usercfg - if their settings.json doesn't exist, we try and pick a
 		// default "hide touch hints" based on touch device presence - which is only

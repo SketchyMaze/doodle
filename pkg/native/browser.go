@@ -1,3 +1,4 @@
+//go:build !js
 // +build !js
 
 package native
@@ -14,8 +15,8 @@ import (
 // OpenURL opens a web browser to the given URL.
 //
 // On Linux this will look for xdg-open or try a few common browser names.
-// On Windows this uses the ``start`` command.
-// On MacOS this uses the ``open`` command.
+// On Windows this uses the “start“ command.
+// On MacOS this uses the “open“ command.
 func OpenURL(url string) {
 	if runtime.GOOS == "windows" {
 		go windowsOpenURL(url)

@@ -9,10 +9,10 @@ by its index number.
 
 This function calls the following:
 
-* Chunker.Inflate(Palette) to update references to the level's pixels to point
-  to the Swatch entry.
-* Actors.Inflate()
-* Palette.Inflate() to load private instance values for the palette subsystem.
+  - Chunker.Inflate(Palette) to update references to the level's pixels to point
+    to the Swatch entry.
+  - Actors.Inflate()
+  - Palette.Inflate() to load private instance values for the palette subsystem.
 */
 func (l *Level) Inflate() {
 	// Inflate the chunk metadata to map the pixels to their palette indexes.

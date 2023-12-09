@@ -24,11 +24,16 @@ type LevelPack struct {
 	OnCloseWindow func()
 
 	// Internal variables
+	isLandscape  bool // wide window rather than tall
 	window       *ui.Window
 	tabFrame     *ui.TabFrame
 	savegame     *savegame.SaveGame
 	goldSprite   *ui.Image
 	silverSprite *ui.Image
+
+	// Button frames for the footer: one with Back+Close, other with Close only.
+	footerWithBackButton  *ui.Frame
+	footerWithCloseButton *ui.Frame
 }
 
 // NewLevelPackWindow initializes the window.
@@ -37,10 +42,17 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 	var (
 		title = "Select a Level"
 
-		// size of the popup window
+		// size of the popup window (vertical)
 		width  = 320
-		height = 360
+		height = 540
 	)
+
+	// Are we horizontal?
+	if balance.IsBreakpointTablet(config.Engine.WindowSize()) {
+		width = 720
+		height = 360
+		config.isLandscape = true
+	}
 
 	// Get the available .levelpack files.
 	lpFiles, packmap, err := levelpack.LoadAllAvailable()
@@ -69,6 +81,15 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 		Width:      width,
 		Height:     height,
 		Background: render.Grey,
+	})
+	window.Handle(ui.CloseWindow, func(ed ui.EventData) error {
+		if config.OnCloseWindow != nil {
+			// fn := config.OnCloseWindow
+			// config.OnCloseWindow = nil
+			// fn()
+			config.OnCloseWindow()
+		}
+		return nil
 	})
 	config.window = window
 
@@ -99,6 +120,8 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 	config.makeIndexScreen(indexTab, width, height, lpFiles, packmap, func(screen string) {
 		// Callback for user choosing a level pack.
 		// Hide the index screen and show the screen for this pack.
+		config.footerWithBackButton.Show()
+		config.footerWithCloseButton.Hide()
 		tabFrame.SetTab(screen)
 	})
 	for _, filename := range lpFiles {
@@ -109,20 +132,65 @@ func NewLevelPackWindow(config LevelPack) *ui.Window {
 		config.makeDetailScreen(tab, width, height, packmap[filename])
 	}
 
-	// Close button.
+	// Button toolbar at the bottom (Back, Close)
+	config.footerWithBackButton = ui.NewFrame("Button Bar w/ Back Button")
+	config.footerWithCloseButton = ui.NewFrame("Button Bar w/ Close Button Only")
+	window.Place(config.footerWithBackButton, ui.Place{
+		Bottom: 15,
+		Center: true,
+	})
+	window.Place(config.footerWithCloseButton, ui.Place{
+		Bottom: 15,
+		Center: true,
+	})
+
+	// Back button hidden by default.
+	config.footerWithBackButton.Hide()
+
+	// Back button (conditionally visible)
+	backButton := ui.NewButton("Back", ui.NewLabel(ui.Label{
+		Text: "« Back",
+		Font: balance.MenuFont,
+	}))
+	backButton.SetStyle(&balance.ButtonBabyBlue)
+	backButton.Handle(ui.Click, func(ed ui.EventData) error {
+		tabFrame.SetTab("LevelPacks")
+		config.footerWithBackButton.Hide()
+		config.footerWithCloseButton.Show()
+		return nil
+	})
+	config.Supervisor.Add(backButton)
+	config.footerWithBackButton.Pack(backButton, ui.Pack{
+		Side: ui.W,
+		PadX: 4,
+	})
+
+	// Close button (on both versions of the footer frame).
 	if config.OnCloseWindow != nil {
-		closeBtn := ui.NewButton("Close Window", ui.NewLabel(ui.Label{
-			Text: "Close",
-			Font: balance.MenuFont,
-		}))
-		closeBtn.Handle(ui.Click, func(ed ui.EventData) error {
-			config.OnCloseWindow()
-			return nil
+		// Create two copies of the button, so we can parent one to each footer frame.
+		makeCloseButton := func() *ui.Button {
+			closeBtn := ui.NewButton("Close Window", ui.NewLabel(ui.Label{
+				Text: "Close",
+				Font: balance.MenuFont,
+			}))
+			closeBtn.Handle(ui.Click, func(ed ui.EventData) error {
+				config.OnCloseWindow()
+				return nil
+			})
+			config.Supervisor.Add(closeBtn)
+			return closeBtn
+		}
+		var (
+			button1 = makeCloseButton()
+			button2 = makeCloseButton()
+		)
+
+		// Add it to both frames.
+		config.footerWithBackButton.Pack(button1, ui.Pack{
+			Side: ui.W,
 		})
-		config.Supervisor.Add(closeBtn)
-		window.Place(closeBtn, ui.Place{
-			Bottom: 15,
-			Center: true,
+		config.footerWithCloseButton.Pack(button2, ui.Pack{
+			Side: ui.W,
 		})
 	}
 
@@ -235,7 +303,7 @@ func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
 		Pages:          pages,
 		PerPage:        perPage,
 		MaxPageButtons: maxPageButtons,
-		Font:           balance.MenuFont,
+		Font:           balance.PagerLargeFont,
 		OnChange: func(newPage, perPage int) {
 			page = newPage
 			log.Info("Page: %d, %d", page, perPage)
@@ -271,18 +339,32 @@ func (config LevelPack) makeIndexScreen(frame *ui.Frame, width, height int,
 // Detail screen for a given levelpack.
 func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp *levelpack.LevelPack) *ui.Frame {
 	var (
-		buttonHeight = 40
-		buttonWidth  = width - 40
-
 		page    = 1
-		perPage = 4
+		perPage = 2 // 2 for tall mobile, 3 for landscape
 		pages   = int(
 			math.Ceil(
 				float64(len(lp.Levels)) / float64(perPage),
 			),
 		)
 		maxPageButtons = 10
+
+		buttonHeight  = 172
+		buttonWidth   = 230
+		thumbnailName = balance.LevelScreenshotTinyFilename
+		thumbnailPadY = 46
 	)
+	if config.isLandscape {
+		perPage = 3
+		pages = int(
+			math.Ceil(
+				float64(len(lp.Levels)) / float64(perPage),
+			),
+		)
+		buttonHeight = 172
+		thumbnailName = balance.LevelScreenshotTinyFilename
+		thumbnailPadY = 46
+		buttonWidth = (width / perPage) - 16 // pixel-pushing
+	}
 
 	// Load the padlock icon for locked levels.
 	// If not loadable, won't be used in UI.
@@ -294,42 +376,13 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		numUnlocked  = lp.FreeLevels + numCompleted
 	)
 
-	/** Back Button */
-	backButton := ui.NewButton("Back", ui.NewLabel(ui.Label{
-		Text: "< Back",
-		Font: ui.MenuFont,
-	}))
-	backButton.SetStyle(&balance.ButtonBabyBlue)
-	backButton.Handle(ui.Click, func(ed ui.EventData) error {
-		config.tabFrame.SetTab("LevelPacks")
-		return nil
-	})
-	config.Supervisor.Add(backButton)
-	frame.Pack(backButton, ui.Pack{
-		Side: ui.NE,
-		PadY: 2,
-		PadX: 6,
-	})
-
-	// Spacer: the back button is position NW and the rest against N
-	// so may overlap.
-	spacer := ui.NewFrame("Spacer")
-	spacer.Configure(ui.Config{
-		Width:  64,
-		Height: 30,
-	})
-	frame.Pack(spacer, ui.Pack{
-		Side: ui.N,
-	})
-
 	// LevelPack Title label
 	label := ui.NewLabel(ui.Label{
 		Text: lp.Title,
 		Font: balance.LabelFont,
 	})
 	frame.Pack(label, ui.Pack{
-		Side: ui.NW,
-		PadX: 8,
+		Side: ui.N,
 		PadY: 2,
 	})
 
@@ -359,11 +412,35 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		})
 	}
 
+	// Arranging the buttons into groups of 3, vertical or horizontal.
+	var packDir = ui.Pack{
+		Side: ui.N,
+		PadY: 2,
+	}
+	if config.isLandscape {
+		packDir = ui.Pack{
+			Side: ui.W,
+			PadX: 2,
+		}
+	}
+	buttonRow := ui.NewFrame("Level Buttons")
+	frame.Pack(buttonRow, ui.Pack{
+		Side: ui.N,
+		PadY: 4,
+	})
+
 	// Loop over all the levels in this pack.
 	var buttons []*ui.Button
 	for i, level := range lp.Levels {
 		level := level
 		score := config.savegame.GetLevelScore(lp.Filename, level.Filename, level.UUID)
+
+		// Load the level zip for its thumbnail image.
+		lvl, err := lp.GetLevel(level.Filename)
+		if err != nil {
+			log.Error("Couldn't GetLevel(%s) from LevelPack %s: %s", level.Filename, lp.Filename, err)
+			lvl = nil
+		}
 
 		// Make a frame to hold a complex button layout.
 		btnFrame := ui.NewFrame("Frame")
@@ -464,6 +541,16 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 			})
 		}
 
+		// Level screenshot.
+		if lvl != nil {
+			if img, err := lvl.GetScreenshotImageAsUIImage(thumbnailName); err == nil {
+				btnFrame.Pack(img, ui.Pack{
+					Side: ui.N,
+					PadY: thumbnailPadY, // TODO: otherwise it overlaps the other labels :(
+				})
+			}
+		}
+
 		btn := ui.NewButton(level.Filename, btnFrame)
 		btn.Handle(ui.Click, func(ed ui.EventData) error {
 			// Is this level locked?
@@ -484,10 +571,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 			return nil
 		})
 
-		frame.Pack(btn, ui.Pack{
-			Side: ui.N,
-			PadY: 2,
-		})
+		buttonRow.Pack(btn, packDir)
 		config.Supervisor.Add(btn)
 
 		if i > perPage-1 {
@@ -502,7 +586,7 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		Pages:          pages,
 		PerPage:        perPage,
 		MaxPageButtons: maxPageButtons,
-		Font:           balance.MenuFont,
+		Font:           balance.PagerLargeFont,
 		OnChange: func(newPage, perPage int) {
 			page = newPage
 			log.Info("Page: %d, %d", page, perPage)
