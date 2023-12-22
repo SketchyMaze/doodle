@@ -56,6 +56,9 @@ ADD . /SketchyMaze
 # Use go-winres on the Windows exe (embed application icons)
 RUN go install github.com/tc-hib/go-winres@latest && go-winres make
 
+# Revert any local change to go.mod (replace lines)
+RUN git checkout -- go.mod
+
 # Install Go dependencies and do the thing:
 # - builds the program for Linux
 # - builds for Windows via MinGW
