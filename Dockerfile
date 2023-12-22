@@ -30,7 +30,7 @@ RUN gem install fpm; exit 0
 
 # Download and install modern Go.
 WORKDIR /root
-RUN wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz -O go.tgz && \
+RUN wget https://go.dev/dl/go1.21.4.linux-amd64.tar.gz -O go.tgz && \
     tar -xzf go.tgz && \
     cp -r go /opt/go
 

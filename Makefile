@@ -170,9 +170,7 @@ dist: doodads build __dist-common
 # and Windows apps.
 .PHONY: docker
 docker:
-	mkdir -p docker-artifacts
-	podman build --cap-add SYS_ADMIN --device /dev/fuse -t doodle_docker .
-	podman run --rm --mount type=bind,src=$(shell pwd)/docker-artifacts,dst=/mnt/export doodle_docker
+	./scripts/docker-build.sh
 
 # `make dist-free` builds and tars up a release in shareware mode.
 .PHONY: dist-free
