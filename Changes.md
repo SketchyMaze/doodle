@@ -1,5 +1,41 @@
 # Changes
 
+## v0.14.0 TBD
+
+Level screenshots and thumbnails:
+
+* Level files will begin to take thumbnail screenshots of themselves and
+  store them as PNG images embedded with the level data, and are displayed
+  on the Story Mode level select screen.
+    * A thumbnail is saved the first time your level is saved, and can be
+      viewed and re-computed in the Level->Level Properties window of the
+      editor.
+    * Tip: for bounded levels when you want to screenshot the bottom edge,
+      try setting the page type to Unbounded to get a good screenshot and
+      then set it back to Bounded before saving the level.
+* In the editor, a new Level->Take Screenshot menu item is available which
+  will save just your editor viewport as a PNG image to your screenshots
+  folder.
+* In the editor, the Level->Giant Screenshot feature has been improved.
+    * It now will show a confirmation modal, warning that it may take a
+      while to screenshot a very large level.
+    * While the giant screenshot is processing, a progress bar modal will
+      block interaction with the game so that you don't accidentally modify
+      the level while the screenshot is generating.
+
+Some minor changes:
+
+* Tweaked the player movement physics and adjusted doodads accordingly.
+    * The player is given a lower gravity while they are jumping into the air
+      than the standard (faster) gravity when they are falling. This results
+      in a smoother jump animation instead of the player launching quickly from
+      the ground in order to overcome the constant (fast) gravity.
+    * Coyote time where the player can still jump a few frames late when they
+      walk off a cliff and jump late.
+* Sound effects are now preferred to be in OGG format over MP3 as it is more
+  reliable to compile the game cross-platform without the dependency on mpg123.
+* The game window maximizes on startup to fill the screen.
+
 ## v0.13.2 (Dec 2 2023)
 
 This release brings some new features and optimization for the game's file

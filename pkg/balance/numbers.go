@@ -31,7 +31,7 @@ var (
 		Y: 60,
 	}
 
-	// Player speeds
+	// Player speeds, gravity and movement physics.
 	PlayerMaxVelocity       float64 = 7
 	PlayerJumpVelocity      float64 = -15
 	PlayerAcceleration      float64 = 0.04 // 0.12
@@ -44,6 +44,7 @@ var (
 	SwimGravity             float64 = 3
 	SwimJumpVelocity        float64 = -12
 	SwimJumpCooldown        uint64  = 24 // number of frames of cooldown between swim-jumps
+	CoyoteFrames            uint64  = 4  // Coyote time, frames after we walk off a cliff but can still jump late
 	SlopeMaxHeight                  = 8  // max pixel height for player to walk up a slope
 
 	// Number of game ticks to insist the canvas follows the player at the start

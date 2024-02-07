@@ -6,11 +6,13 @@ import (
 	"sort"
 	"sync"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"github.com/dop251/goja"
 	"github.com/google/uuid"
@@ -47,9 +49,10 @@ type Actor struct {
 	inventory    map[string]int // item inventory. doodad name -> quantity, 0 for key item.
 
 	// Movement data.
-	position render.Point
-	velocity physics.Vector
-	grounded bool
+	position     render.Point
+	velocity     physics.Vector
+	grounded     bool
+	lostGroundAt uint64 // tick where grounded last became false, for coyote time
 
 	// Animation variables.
 	animations        map[string]*Animation
@@ -205,10 +208,28 @@ func (a *Actor) Grounded() bool {
 
 // SetGrounded sets the actor's grounded value. If true, also sets their Y velocity to zero.
 func (a *Actor) SetGrounded(v bool) {
+	if a.grounded && !v {
+		a.lostGroundAt = shmem.Tick
+	}
+
 	a.grounded = v
 	// if v && a.velocity.Y > 0 {
 	// 	a.velocity.Y = 0
 	// }
+}
+
+// IsCoyoteTime returns whether the actor has only just lost ground, so can still
+// jump a few frames late.
+//
+// Pass a true value to unset, or "consume" the coyote time. The next call will
+// then return that it is not coyote time, even if the lost ground frame is still
+// within the CoyoteFrames threshold.
+func (a *Actor) IsCoyoteTime(reset bool) (result bool) {
+	result = shmem.Tick-a.lostGroundAt <= balance.CoyoteFrames
+	if reset {
+		a.lostGroundAt = 0
+	}
+	return result
 }
 
 // Hide makes the actor invisible.

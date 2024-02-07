@@ -62,7 +62,7 @@ func (s *PlayScene) movePlayer(ev *event.State) {
 					s.jumpCooldownUntil = shmem.Tick + balance.SwimJumpCooldown
 					velocity.Y = balance.SwimJumpVelocity
 				}
-			} else if s.Player.Grounded() {
+			} else if s.Player.Grounded() || s.Player.IsCoyoteTime(true) {
 				velocity.Y = balance.PlayerJumpVelocity
 			}
 		} else {
