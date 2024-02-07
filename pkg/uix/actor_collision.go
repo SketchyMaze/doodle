@@ -73,14 +73,23 @@ func (w *Canvas) loopActorCollision() error {
 			// Apply gravity to the actor's velocity.
 			if a.hasGravity && !a.Grounded() { //v.Y >= 0 {
 				if !a.Grounded() {
-					var gravity = balance.Gravity
+					var (
+						gravity      = balance.GravityMaximum
+						acceleration = balance.GravityAcceleration
+					)
 					if a.IsWet() {
 						gravity = balance.SwimGravity
 					}
+
+					// If the actor is jumping/moving upwards, apply softer gravity.
+					if v.Y < 0 {
+						acceleration = balance.GravityJumpAcceleration
+					}
+
 					v.Y = physics.Lerp(
 						v.Y,     // current speed
 						gravity, // target max gravity falling downwards
-						balance.GravityAcceleration,
+						acceleration,
 					)
 				} else {
 					v.Y = 0

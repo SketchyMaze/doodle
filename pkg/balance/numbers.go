@@ -32,18 +32,19 @@ var (
 	}
 
 	// Player speeds
-	PlayerMaxVelocity    float64 = 7
-	PlayerJumpVelocity   float64 = -23
-	PlayerAcceleration   float64 = 0.04 // 0.12
-	PlayerFriction       float64 = 0.1
-	SlipperyAcceleration float64 = 0.02
-	SlipperyFriction     float64 = 0.02
-	Gravity              float64 = 7
-	GravityAcceleration  float64 = 0.1
-	SwimGravity          float64 = 3
-	SwimJumpVelocity     float64 = -12
-	SwimJumpCooldown     uint64  = 24 // number of frames of cooldown between swim-jumps
-	SlopeMaxHeight               = 8  // max pixel height for player to walk up a slope
+	PlayerMaxVelocity       float64 = 7
+	PlayerJumpVelocity      float64 = -15
+	PlayerAcceleration      float64 = 0.04 // 0.12
+	PlayerFriction          float64 = 0.1
+	SlipperyAcceleration    float64 = 0.02
+	SlipperyFriction        float64 = 0.02
+	GravityMaximum          float64 = 7    // max pull of gravity
+	GravityAcceleration     float64 = 0.25 // normal gravity acceleration downward
+	GravityJumpAcceleration float64 = 0.05 // gravity while jumping upward (smoother jumps)
+	SwimGravity             float64 = 3
+	SwimJumpVelocity        float64 = -12
+	SwimJumpCooldown        uint64  = 24 // number of frames of cooldown between swim-jumps
+	SlopeMaxHeight                  = 8  // max pixel height for player to walk up a slope
 
 	// Number of game ticks to insist the canvas follows the player at the start
 	// of a level - to overcome Anvils settling into their starting positions so
