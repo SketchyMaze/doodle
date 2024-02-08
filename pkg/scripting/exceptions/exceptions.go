@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"git.kirsle.net/SketchyMaze/doodle/lib/debugging"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
@@ -13,6 +14,7 @@ import (
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
 	"git.kirsle.net/go/ui"
+	"github.com/dop251/goja"
 )
 
 // The exception catching window is a singleton and appears on top with
@@ -59,6 +61,38 @@ func Catch(exc string, args ...interface{}) {
 	Window.Show()
 	lastException = exc
 	*excLabel = trim(exc)
+}
+
+// FormatAndCatch an exception from a JavaScript VM. This is the common function called
+// immediately when a scripting-related panic is recovered, and appends stack trace frames
+// and formats the message for final Catch display.
+func FormatAndCatch(vm *goja.Runtime, exc string, args ...interface{}) {
+	// Collect the JavaScript stack frame for debugging.
+	var (
+		buf       [1000]goja.StackFrame
+		jsCallers = []string{}
+		sections  = []string{
+			fmt.Sprintf(exc, args...),
+		}
+	)
+
+	if vm != nil {
+		frames := vm.CaptureCallStack(1000, buf[:0])
+		for i, frame := range frames {
+			var position = frame.Position()
+			jsCallers = append(jsCallers, fmt.Sprintf("%d. %s at %s line %d column %d", i+1, frame.FuncName(), position.Filename, position.Line, position.Column))
+		}
+
+		if len(jsCallers) > 0 {
+			sections = append(sections, fmt.Sprintf("JS stack:\n%s", strings.Join(jsCallers, "\n")))
+		}
+	}
+
+	sections = append(sections, fmt.Sprintf("Go stack:\n%s", debugging.StringifyCallers()))
+
+	Catch(
+		strings.Join(sections, "\n\n"),
+	)
 }
 
 // Setup the global supervisor and window the first time - after the render engine has initialized,

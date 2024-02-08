@@ -26,4 +26,6 @@ func CountTextures(e render.Engine) string {
 	return "n/a"
 }
 
+func FreeTextures() {}
+
 func MaximizeWindow(e render.Engine) {}

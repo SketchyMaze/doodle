@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"github.com/dop251/goja"
 )
@@ -107,7 +106,7 @@ func (e *Events) run(name string, args ...interface{}) error {
 			// TODO EXCEPTIONS: I once saw a "runtime error: index out of range [-1]"
 			// from an OnCollide handler between azu-white and thief that was crashing
 			// the app, report this upstream nicely to the user.
-			exceptions.Catch("PANIC: JS %s handler: %s", name, err)
+			exceptions.FormatAndCatch(e.vm.vm, "PANIC: JS %s handler (%s): %s", name, e.vm.Name, err)
 		}
 	}()
 
@@ -126,13 +125,13 @@ func (e *Events) run(name string, args ...interface{}) error {
 			// TODO EXCEPTIONS: this err is useful like
 			// `ReferenceError: playerSpeed is not defined at <eval>:173:9(93)`
 			// but wherever we're returning the err to isn't handling it!
-			exceptions.Catch(
+			exceptions.FormatAndCatch(
+				e.vm.vm,
 				"Scripting error in %s for %s:\n\n%s",
 				name,
 				e.vm.Name,
 				err,
 			)
-			log.Error("Scripting error on %s: %s", name, err)
 			return err
 		}
 

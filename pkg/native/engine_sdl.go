@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
@@ -41,6 +42,16 @@ func CountTextures(e render.Engine) string {
 		texCount = fmt.Sprintf("%d", sdl.CountTextures())
 	}
 	return texCount
+}
+
+// FreeTextures will free all SDL2 textures currently in memory.
+func FreeTextures(e render.Engine) {
+	if sdl, ok := e.(*sdl.Renderer); ok {
+		texCount := sdl.FreeTextures()
+		if texCount > 0 {
+			log.Info("FreeTextures: %d SDL2 textures freed", texCount)
+		}
+	}
 }
 
 /*

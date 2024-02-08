@@ -127,7 +127,8 @@ func (w *Canvas) InstallScripts() error {
 
 		// Call the main() function.
 		if err := vm.Main(); err != nil {
-			exceptions.Catch(
+			exceptions.FormatAndCatch(
+				nil,
 				"Error in main() for actor %s:\n\n%s\n\nActor ID: %s\nFilename: %s\nPosition: %s",
 				actor.Actor.Filename,
 				err,

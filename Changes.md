@@ -32,8 +32,15 @@ Some minor changes:
       the ground in order to overcome the constant (fast) gravity.
     * Coyote time where the player can still jump a few frames late when they
       walk off a cliff and jump late.
+    * Improved character speed when walking up slopes, they will now travel
+      horizontally at their regular speed instead of being slowed down by level
+      collision every step of the way.
 * Sound effects are now preferred to be in OGG format over MP3 as it is more
   reliable to compile the game cross-platform without the dependency on mpg123.
+* Fix a bug where level chunks on the far right and bottom edge of the screen
+  would flicker out of existence while the level scrolls.
+* When JavaScript exceptions are caught in doodad scripts, the error message
+  will now include the Go and JavaScript stack traces to help with debugging.
 * The game window maximizes on startup to fill the screen.
 
 ## v0.13.2 (Dec 2 2023)

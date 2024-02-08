@@ -191,8 +191,8 @@ func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
 			size = int(c.Size)
 		)
 
-		for x := viewport.X; x < viewport.W; x += (size / 4) {
-			for y := viewport.Y; y < viewport.H; y += (size / 4) {
+		for x := viewport.X; x < viewport.W+size; x += (size / 4) {
+			for y := viewport.Y; y < viewport.H+size; y += (size / 4) {
 
 				// Constrain this chunksize step to a point within the bounds
 				// of the viewport. This can yield partial chunks on the edges

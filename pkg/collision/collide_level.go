@@ -78,6 +78,7 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	// e.g.: Boy's Canvas size is 56x56 but he is a narrower character with a
 	// hitbox width smaller than its Canvas size.
 	S = SizePlusHitbox(GetBoundingRect(d), hitbox)
+	actorHeight := P.Y + S.H
 
 	// Test if we are ALREADY colliding with level geometry and try and wiggle
 	// free. ScanBoundingBox scans level pixels along the four edges of the
@@ -120,20 +121,16 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 
 	// Cap our horizontal movement if we're touching walls.
 	if (result.Left && target.X < P.X) || (result.Right && target.X > P.X) {
-		// If the step is short enough, try and jump up.
-		height := P.Y + S.H
-		if result.Left { // && target.X < P.X {
-			height -= result.LeftPoint.Y
-		} else {
-			height -= result.RightPoint.Y
+		// Handle walking up slopes, if the step is short enough.
+		var slopeHeight int
+		if result.Left {
+			slopeHeight = result.LeftPoint.Y
+		} else if result.Right {
+			slopeHeight = result.RightPoint.Y
 		}
-		if height <= balance.SlopeMaxHeight {
-			target.Y -= height
-			if target.X < P.X {
-				target.X-- // push along to the left
-			} else if target.X > P.X {
-				target.X++ // push along to the right
-			}
+
+		if offset, ok := CanStepUp(actorHeight, slopeHeight, target.X > P.X); ok {
+			target.Add(offset)
 		} else {
 			// Not a slope.. may be a solid wall. If the wall is a SemiSolid though,
 			// do not cap our direction just yet.
@@ -198,13 +195,20 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 			// for regular solid slopes too. But if this block of code is dummied out for
 			// solid walls, the player is able to clip thru thin walls (couple px thick); the
 			// capLeft/capRight behavior is good at stopping the player here.
+
+			// See if they have hit a solid wall on their left or right edge. If the wall
+			// is short enough to step up, allow them to pass through.
 			if result.Left && !hitLeft && !result.LeftPixel.SemiSolid {
-				hitLeft = true
-				capLeft = result.LeftPoint.X
+				if _, ok := CanStepUp(actorHeight, result.LeftPoint.Y, false); !ok {
+					hitLeft = true
+					capLeft = result.LeftPoint.X
+				}
 			}
 			if result.Right && !hitRight && !result.RightPixel.SemiSolid {
-				hitRight = true
-				capRight = result.RightPoint.X - S.W
+				if _, ok := CanStepUp(actorHeight, result.RightPoint.Y, false); !ok {
+					hitRight = true
+					capRight = result.RightPoint.X - S.W
+				}
 			}
 		}
 
@@ -232,6 +236,37 @@ func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Colli
 	}
 
 	return result, result.IsColliding()
+}
+
+/*
+CanStepUp checks whether the actor is moving left or right onto a gentle slope which
+they can step on top of instead of being blocked by the solid wall.
+
+* actorHeight is the actor's Y position + their hitbox height.
+* slopeHeight is the Y position of the left or right edge of the level they collide with.
+* moveRight is true if moving right, false if moving left.
+
+If the actor can step up the slope, the return value is the Point of how to offset their
+X,Y position to move up the slope and the boolean is whether they can step up.
+*/
+func CanStepUp(actorHeight, slopeHeight int, moveRight bool) (render.Point, bool) {
+	var (
+		height = actorHeight - slopeHeight
+		target render.Point
+	)
+
+	if height <= balance.SlopeMaxHeight {
+		target.Y -= height
+		if moveRight {
+			target.X++
+		} else {
+			target.X--
+		}
+
+		return target, true
+	}
+
+	return target, false
 }
 
 // IsColliding returns whether any sort of collision has occurred.

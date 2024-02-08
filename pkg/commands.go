@@ -14,6 +14,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"github.com/dop251/goja"
 )
@@ -112,6 +113,10 @@ func (c Command) Run(d *Doodle) error {
 				"Filename: trapdoor-down.doodad\n" +
 				"Position: 643,266",
 		)
+	case "flush-textures":
+		// Flush all textures.
+		native.FreeTextures(d.Engine)
+		d.Flash("All textures freed.")
 	default:
 		return c.Default(d)
 	}

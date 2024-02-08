@@ -3,6 +3,7 @@ package doodle
 import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"git.kirsle.net/go/render/event"
 )
@@ -38,6 +39,9 @@ func (d *Doodle) Goto(scene Scene) error {
 
 	// Teardown exceptions modal (singleton windows so it can clean up).
 	exceptions.Teardown()
+
+	// Flush all SDL2 textures between scenes.
+	native.FreeTextures(d.Engine)
 
 	log.Info("Goto Scene: %s", scene.Name())
 	d.Scene = scene
