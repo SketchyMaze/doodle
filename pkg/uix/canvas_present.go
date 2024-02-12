@@ -346,7 +346,7 @@ func (w *Canvas) doodadButtonRect() render.Rect {
 	return render.Rect{
 		X: drawAt.X,
 		Y: drawAt.Y,
-		W: drawAt.X + balance.UICanvasDoodadButtonSize,
-		H: drawAt.Y + balance.UICanvasDoodadButtonSize,
+		W: balance.UICanvasDoodadButtonSize,
+		H: balance.UICanvasDoodadButtonSize,
 	}
 }
