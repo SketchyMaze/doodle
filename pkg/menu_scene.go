@@ -73,6 +73,8 @@ func (d *Doodle) GotoNewDoodadMenu() {
 }
 
 // GotoLoadMenu loads the MenuScene and shows the "Load" window.
+//
+// DEPRECATED: loads the old menu, in dev console run `$ d.GotoLoadMenu()` to see.
 func (d *Doodle) GotoLoadMenu() {
 	log.Info("Loading the MenuScene to the Load window for Edit Mode")
 	scene := &MenuScene{
@@ -83,6 +85,8 @@ func (d *Doodle) GotoLoadMenu() {
 
 // GotoPlayMenu loads the MenuScene and shows the "Load" window for playing a
 // level, not editing it.
+//
+// DEPRECATED: loads the old menu, in dev console run `$ d.GotoPlayMenu()` to see.
 func (d *Doodle) GotoPlayMenu() {
 	log.Info("Loading the MenuScene to the Load window for Play Mode")
 	scene := &MenuScene{

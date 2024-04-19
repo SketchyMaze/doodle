@@ -9,10 +9,10 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/savegame"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -225,7 +225,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		{
 			Name: "Register",
 			If: func() bool {
-				return balance.DPP && !license.IsRegistered()
+				return balance.DPP && !dpp.Driver.IsRegistered()
 			},
 			Func: func() {
 				if s.winRegister == nil {

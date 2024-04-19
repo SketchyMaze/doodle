@@ -13,13 +13,12 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license/levelsigning"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/savegame"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -63,6 +62,7 @@ type PlayScene struct {
 	menubar       *ui.MenuBar
 	editButton    *ui.Button
 	winLevelPacks *ui.Window
+	winOpenLevel  *ui.Window
 
 	// Custom debug labels.
 	debPosition   *string
@@ -247,7 +247,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 	s.drawing.OnResetTimer = s.ResetTimer
 
 	// If this level game from a signed LevelPack, inform the canvas.
-	if s.LevelPack != nil && levelsigning.IsLevelPackSigned(s.LevelPack) {
+	if s.LevelPack != nil && dpp.Driver.IsLevelPackSigned(s.LevelPack) {
 		s.drawing.IsSignedLevelPack = s.LevelPack
 	}
 
@@ -337,7 +337,7 @@ func (s *PlayScene) setupAsync(d *Doodle) error {
 func (s *PlayScene) installActors() error {
 	if err := s.drawing.InstallActors(s.Level.Actors); err != nil {
 		summary := "This level references some doodads that were not found:"
-		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+		if strings.Contains(err.Error(), plus.ErrRegisteredFeature.Error()) {
 			summary = "This level contains embedded doodads, but this is not\n" +
 				"available in the free version of the game. The following\n" +
 				"doodads could not be loaded:"
@@ -504,7 +504,7 @@ func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 // centerIn is optional, ignored if zero.
 func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, centerIn render.Rect) {
 	// Load in the player character.
-	player, err := plus.DoodadFromEmbeddable(filename, s.Level, false)
+	player, err := dpp.Driver.LoadFromEmbeddable(filename, s.Level, false)
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)

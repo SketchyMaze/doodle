@@ -11,7 +11,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/wallpaper"
@@ -95,7 +95,7 @@ func GiantScreenshot(lvl *level.Level) (image.Image, error) {
 	// Render the doodads.
 	log.Debug("GiantScreenshot: Render actors...")
 	for _, actor := range lvl.Actors {
-		doodad, err := plus.DoodadFromEmbeddable(actor.Filename, lvl, false)
+		doodad, err := dpp.Driver.LoadFromEmbeddable(actor.Filename, lvl, false)
 		if err != nil {
 			log.Error("GiantScreenshot: Load doodad: %s", err)
 			continue

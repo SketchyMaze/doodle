@@ -1,8 +1,8 @@
 package command
 
 import (
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/dpp/license"
 	"github.com/urfave/cli/v2"
 )
 

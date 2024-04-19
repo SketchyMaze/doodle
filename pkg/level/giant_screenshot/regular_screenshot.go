@@ -14,7 +14,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 	"golang.org/x/image/draw"
@@ -78,7 +78,7 @@ func CroppedScreenshot(lvl *level.Level, viewport render.Rect) (image.Image, err
 	// Render the doodads.
 	log.Debug("CroppedScreenshot: Render actors...")
 	for _, actor := range lvl.Actors {
-		doodad, err := plus.DoodadFromEmbeddable(actor.Filename, lvl, false)
+		doodad, err := dpp.Driver.LoadFromEmbeddable(actor.Filename, lvl, false)
 		if err != nil {
 			log.Error("CroppedScreenshot: Load doodad: %s", err)
 			continue

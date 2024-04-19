@@ -7,10 +7,11 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
 	"git.kirsle.net/go/ui/style"
@@ -51,12 +52,12 @@ func NewLicenseWindow(cfg License) *ui.Window {
 		labelSize    = render.NewRect(100, 16)
 		valueSize    = render.NewRect(windowWidth-labelSize.W-4, labelSize.H)
 		isRegistered bool
-		registration license.Registration
+		registration plus.Registration
 		summary      = "Unregistered" + builds.VersionSuffix
 	)
 
 	// Get our current registration status.
-	if reg, err := license.GetRegistration(); err == nil {
+	if reg, err := dpp.Driver.GetRegistration(); err == nil {
 		isRegistered = true
 		registration = reg
 		windowHeight = 200
@@ -141,7 +142,7 @@ func NewLicenseWindow(cfg License) *ui.Window {
 				}
 
 				// Upload and validate the license key.
-				reg, err := license.UploadLicenseFile(filename)
+				reg, err := dpp.Driver.UploadLicenseFile(filename)
 				if err != nil {
 					modal.Alert("That license key didn't seem quite right.").WithTitle("License Error")
 					return

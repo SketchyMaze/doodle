@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/cmd/doodad/commands"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,6 +27,8 @@ func init() {
 }
 
 func main() {
+	bootstrap.InitPlugins()
+
 	app := cli.NewApp()
 	app.Name = "doodad"
 	app.Usage = "command line interface for Doodle"

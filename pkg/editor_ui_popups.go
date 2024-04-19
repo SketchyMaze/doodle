@@ -9,9 +9,9 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/ui"
@@ -68,7 +68,7 @@ func (u *EditorUI) OpenPublishWindow() {
 		OnPublish: func(includeBuiltins bool) {
 			u.d.FlashError("OnPublish Called")
 			// XXX: Paid Version Only.
-			if !license.IsRegistered() {
+			if !dpp.Driver.IsRegistered() {
 				if u.licenseWindow != nil {
 					u.licenseWindow.Show()
 					u.Supervisor.FocusWindow(u.licenseWindow)

@@ -4,16 +4,14 @@ package plus
 import (
 	"errors"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
 	"github.com/dgrijalva/jwt-go"
 )
 
-var ErrNotImplemented = errors.New("not implemented")
-
-type Bridge interface {
-	DoodadFromEmbeddable(filename string, fs filesystem.Embeddable, force bool) (*doodads.Doodad, error)
-}
+// Errors
+var (
+	ErrNotImplemented    = errors.New("not implemented")
+	ErrRegisteredFeature = errors.New("feature not available")
+)
 
 // Registration object encoded into a license key file.
 type Registration struct {

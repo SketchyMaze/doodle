@@ -5,9 +5,9 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license/levelsigning"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/dpp/license"
+	"git.kirsle.net/SketchyMaze/dpp/license/levelsigning"
 	"github.com/urfave/cli/v2"
 )
 

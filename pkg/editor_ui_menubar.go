@@ -9,10 +9,11 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/giant_screenshot"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
@@ -282,7 +283,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	// Registration item for Doodle++ builds.
 	if balance.DPP {
 		var registerText = "Register"
-		if license.IsRegistered() {
+		if dpp.Driver.IsRegistered() {
 			registerText = "Registration"
 		}
 
@@ -318,7 +319,24 @@ func (s *EditorScene) MenuNewDoodad() {
 // File->Open, or Ctrl-O
 func (s *EditorScene) MenuOpen() {
 	s.ConfirmUnload(func() {
-		s.d.GotoLoadMenu()
+		if s.winOpenLevel == nil {
+			s.winOpenLevel = windows.NewOpenDrawingWindow(windows.OpenDrawing{
+				Supervisor: s.UI.Supervisor,
+				Engine:     shmem.CurrentRenderEngine,
+				OnOpenDrawing: func(filename string) {
+					s.d.EditFile(filename)
+				},
+				OnCloseWindow: func() {
+					s.winOpenLevel.Destroy()
+					s.winOpenLevel = nil
+				},
+			})
+		}
+		s.winOpenLevel.MoveTo(render.Point{
+			X: (s.d.width / 2) - (s.winOpenLevel.Size().W / 2),
+			Y: (s.d.height / 2) - (s.winOpenLevel.Size().H / 2),
+		})
+		s.winOpenLevel.Show()
 	})
 }
 

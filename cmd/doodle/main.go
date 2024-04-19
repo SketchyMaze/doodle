@@ -20,6 +20,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
@@ -50,6 +51,8 @@ func init() {
 
 func main() {
 	runtime.LockOSThread()
+
+	bootstrap.InitPlugins()
 
 	app := cli.NewApp()
 	app.Name = "doodle"

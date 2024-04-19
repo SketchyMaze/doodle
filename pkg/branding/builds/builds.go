@@ -6,7 +6,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 )
 
 var (
@@ -26,7 +26,7 @@ var (
 func init() {
 	if !balance.DPP {
 		VersionSuffix = " (open source)"
-	} else if !license.IsRegistered() {
+	} else if !dpp.Driver.IsRegistered() {
 		VersionSuffix = " (shareware)"
 	} else {
 		VersionSuffix = ""
