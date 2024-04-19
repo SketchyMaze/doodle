@@ -42,6 +42,17 @@ Some minor changes:
 * When JavaScript exceptions are caught in doodad scripts, the error message
   will now include the Go and JavaScript stack traces to help with debugging.
 * The game window maximizes on startup to fill the screen.
+* Fixed a few places where the old "Load Level" menu was being called instead
+  of the fancy new one with the listbox.
+
+Some code cleanup and architecture changes:
+
+* Create a clean build process for FOSS versions of the game, which won't
+  include any license registration code or proprietary features reserved for
+  first-party releases of the game.
+* Dust off the WebAssembly build of the game: thanks to browser innovations
+  performance is very good! But many UI elements fail to draw properly and it
+  is not very usable yet.
 
 ## v0.13.2 (Dec 2 2023)
 

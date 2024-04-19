@@ -118,6 +118,7 @@ def patch_gomod():
                 "\n\nreplace git.kirsle.net/go/render => {root}/deps/render\n"
                 "replace git.kirsle.net/go/ui => {root}/deps/ui\n"
                 "replace git.kirsle.net/go/audio => {root}/deps/audio\n"
+                "replace git.kirsle.net/SketchyMaze/dpp => {root}/deps/dpp\n"
                 .format(root=ROOT)
             )
 
