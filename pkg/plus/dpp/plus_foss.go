@@ -18,7 +18,11 @@ var ErrNotImplemented = errors.New("not implemented")
 type Plugin struct{}
 
 func (Plugin) LoadFromEmbeddable(filename string, fs filesystem.Embeddable, force bool) (*doodads.Doodad, error) {
-	return doodads.LoadFile(filename)
+	if result, err := doodads.LoadFile(filename); err != nil {
+		return nil, plus.ErrRegisteredFeature
+	} else {
+		return result, nil
+	}
 }
 
 func (Plugin) IsRegistered() bool {

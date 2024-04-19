@@ -539,7 +539,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		m.Title = "Alpha"
 	}
 	if m.Author == "" {
-		m.Author = native.DefaultAuthor()
+		m.Author = native.DefaultAuthor
 	}
 
 	m.Palette = s.UI.Canvas.Palette
@@ -641,7 +641,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		d.Title = "Untitled Doodad"
 	}
 	if d.Author == "" {
-		d.Author = native.DefaultAuthor()
+		d.Author = native.DefaultAuthor
 	}
 
 	// TODO: is this copying necessary?

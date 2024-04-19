@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 	"git.kirsle.net/SketchyMaze/dpp/embedding"
 	"git.kirsle.net/SketchyMaze/dpp/license"
@@ -46,11 +47,19 @@ func (Plugin) UploadLicenseFile(filename string) (plus.Registration, error) {
 
 // Hack: to translate JWT token types, easiest is to just encode/decode them (inner jwt.StandardClaims complexity).
 func translateLicenseStruct(reg license.Registration) (plus.Registration, error) {
-	jsonStr, err := json.Marshal(reg)
+	// Set the DefaultAuthor to the registered user's name.
+	if reg.Name != "" {
+		native.DefaultAuthor = reg.Name
+	}
+
+	// Marshal to JSON and back to cast the type.
+	var (
+		result       plus.Registration
+		jsonStr, err = json.Marshal(reg)
+	)
 	if err != nil {
 		return plus.Registration{}, err
 	}
-	var result plus.Registration
 	err = json.Unmarshal(jsonStr, &result)
 	return result, err
 }

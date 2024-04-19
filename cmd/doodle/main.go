@@ -21,6 +21,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
@@ -117,6 +118,11 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		log.Info("Starting %s %s", app.Name, app.Version)
+
+		// Print registration information, + also this sets the DefaultAuthor field.
+		if reg, err := dpp.Driver.GetRegistration(); err == nil {
+			log.Info("Registered to %s", reg.Name)
+		}
 
 		// --chdir into a different working directory? e.g. for Flatpak especially.
 		if doodlePath := c.String("chdir"); doodlePath != "" {
