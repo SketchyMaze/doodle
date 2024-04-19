@@ -1,6 +1,3 @@
-//go:build dpp
-// +build dpp
-
 /*
 Package bootstrap is a common import between the Doodle and Doodad programs.
 

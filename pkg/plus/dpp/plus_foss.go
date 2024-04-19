@@ -4,16 +4,12 @@
 package dpp
 
 import (
-	"errors"
-
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 )
-
-var ErrNotImplemented = errors.New("not implemented")
 
 type Plugin struct{}
 
@@ -30,11 +26,11 @@ func (Plugin) IsRegistered() bool {
 }
 
 func (Plugin) GetRegistration() (plus.Registration, error) {
-	return plus.Registration{}, ErrNotImplemented
+	return plus.Registration{}, plus.ErrNotImplemented
 }
 
 func (Plugin) UploadLicenseFile(string) (plus.Registration, error) {
-	return plus.Registration{}, ErrNotImplemented
+	return plus.Registration{}, plus.ErrNotImplemented
 }
 
 func (Plugin) IsLevelPackSigned(*levelpack.LevelPack) bool {

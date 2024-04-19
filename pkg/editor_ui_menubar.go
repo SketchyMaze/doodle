@@ -112,9 +112,11 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
 		})
-		levelMenu.AddItem("Publish", func() {
-			u.OpenPublishWindow()
-		})
+		if balance.DPP {
+			levelMenu.AddItem("Publish", func() {
+				u.OpenPublishWindow()
+			})
+		}
 
 		levelMenu.AddSeparator()
 		levelMenu.AddItem("Screenshot", func() {

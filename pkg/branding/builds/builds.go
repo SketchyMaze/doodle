@@ -29,7 +29,7 @@ func init() {
 	} else if !dpp.Driver.IsRegistered() {
 		VersionSuffix = " (shareware)"
 	} else {
-		VersionSuffix = ""
+		VersionSuffix = " (registered)"
 	}
 
 	Version = fmt.Sprintf("v%s%s", branding.Version, VersionSuffix)
