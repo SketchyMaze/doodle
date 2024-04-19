@@ -9,11 +9,9 @@ import (
 	"strings"
 
 	"git.kirsle.net/SketchyMaze/doodle/assets"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/filesystem"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/wasm"
@@ -112,27 +110,6 @@ func ListBuiltin() ([]string, error) {
 	sort.Strings(result)
 
 	return result, nil
-}
-
-/*
-LoadFromEmbeddable reads a doodad file, checking a level's embeddable
-file data in addition to the usual places.
-
-Use a true value for `force` to always return the file if available. By
-default it will do a license check and free versions of the game won't
-read the asset and get an error instead. A "Signed Level" is allowed to
-use embedded assets in free versions and the caller uses force=true to
-communicate the signature status.
-*/
-func LoadFromEmbeddable(filename string, fs filesystem.Embeddable, force bool) (*Doodad, error) {
-	if bin, err := fs.GetFile(balance.EmbeddedDoodadsBasePath + filename); err == nil {
-		log.Debug("doodads.LoadFromEmbeddable: found %s", filename)
-		if !force && !license.IsRegistered() {
-			return nil, license.ErrRegisteredFeature
-		}
-		return Deserialize(filename, bin)
-	}
-	return LoadFile(filename)
 }
 
 // LoadFile reads a doodad file from disk, checking a few locations.

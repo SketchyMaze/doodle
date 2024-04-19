@@ -276,17 +276,22 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	////////
 	// Help menu
 	var (
-		helpMenu     = u.d.MakeHelpMenu(menu, u.Supervisor)
-		registerText = "Register"
+		helpMenu = u.d.MakeHelpMenu(menu, u.Supervisor)
 	)
-	helpMenu.AddSeparator()
-	if license.IsRegistered() {
-		registerText = "Registration"
+
+	// Registration item for Doodle++ builds.
+	if balance.DPP {
+		var registerText = "Register"
+		if license.IsRegistered() {
+			registerText = "Registration"
+		}
+
+		helpMenu.AddSeparator()
+		helpMenu.AddItem(registerText, func() {
+			u.licenseWindow.Show()
+			u.Supervisor.FocusWindow(u.licenseWindow)
+		})
 	}
-	helpMenu.AddItem(registerText, func() {
-		u.licenseWindow.Show()
-		u.Supervisor.FocusWindow(u.licenseWindow)
-	})
 
 	menu.Supervise(u.Supervisor)
 	menu.Compute(d.Engine)

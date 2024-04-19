@@ -9,6 +9,12 @@ CURDIR=$(shell curdir)
 LDFLAGS := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE)"
 LDFLAGS_W := -ldflags "-X main.Build=$(BUILD) -X main.BuildDate=$(BUILD_DATE) -H windowsgui"
 
+# Doodle++ build tag for official builds of the game.
+BUILD_TAGS := -tags=""
+ifneq ("$(wildcard ./deps/dpp)", "")
+	BUILD_TAGS = -tags="dpp"
+endif
+
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup
 setup: clean
@@ -17,8 +23,8 @@ setup: clean
 # `make build` to build the binary.
 .PHONY: build
 build:
-	go build $(LDFLAGS) -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -o bin/doodad cmd/doodad/main.go
+	go build $(LDFLAGS) $(BUILD_TAGS) -o bin/sketchymaze cmd/doodle/main.go
+	go build $(LDFLAGS) $(BUILD_TAGS) -o bin/doodad cmd/doodad/main.go
 
 # `make buildall` to run all build steps including doodads.
 .PHONY: buildall
@@ -28,15 +34,8 @@ buildall: doodads build
 .PHONY: build-free
 build-free:
 	gofmt -w .
-	go build $(LDFLAGS) -tags="shareware" -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -tags="shareware" -o bin/doodad cmd/doodad/main.go
-
-# `make build-debug` to build the binary in developer mode.
-.PHONY: build-debug
-build-debug:
-	gofmt -w .
-	go build $(LDFLAGS) -tags="developer" -o bin/sketchymaze cmd/doodle/main.go
-	go build $(LDFLAGS) -tags="developer" -o bin/doodad cmd/doodad/main.go
+	go build $(LDFLAGS) -o bin/sketchymaze cmd/doodle/main.go
+	go build $(LDFLAGS) -o bin/doodad cmd/doodad/main.go
 
 # `make bindata` generates the embedded binary assets package.
 .PHONY: bindata
@@ -74,30 +73,30 @@ doodads:
 mingw:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) $(BUILD_TAGS) -i -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) $(BUILD_TAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
 # `make mingw32` to cross-compile a Windows binary with mingw (32-bit).
 .PHONY: mingw32
 mingw32:
 	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) $(BUILD_TAGS) -i -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) $(BUILD_TAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
 mingw-free:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -tags="shareware" -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) -tags="shareware" -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
 
 # `make release` runs the release.sh script, must be run
 # after `make dist`
@@ -145,12 +144,17 @@ from-docker32: build mingw32 __dist-common
 # `make run` to run it from source.
 .PHONY: run
 run:
+	go run ${BUILD_TAGS} cmd/doodle/main.go
+
+# `make run-free` to run it from source with no build tags (foss version).
+.PHONY: run-free
+run-free:
 	go run cmd/doodle/main.go
 
 # `make debug` to run it in -debug mode.
 .PHONY: debug
 debug:
-	go run cmd/doodle/main.go -debug
+	go run $(BUILD_TAGS) cmd/doodle/main.go -debug
 
 # `make guitest` to run it in guitest mode.
 .PHONY: guitest

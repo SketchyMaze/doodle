@@ -3,7 +3,7 @@ package native
 import (
 	"os"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 )
 
 var USER string = os.Getenv("USER")
@@ -18,8 +18,8 @@ Otherwise fall back to their native operating system user.
 */
 func DefaultAuthor() string {
 	// Are we registered?
-	if license.IsRegistered() {
-		if reg, err := license.GetRegistration(); err == nil {
+	if plus.IsRegistered() {
+		if reg, err := plus.GetRegistration(); err == nil {
 			return reg.Name
 		}
 	}

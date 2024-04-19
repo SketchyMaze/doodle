@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
@@ -51,7 +52,7 @@ func NewLicenseWindow(cfg License) *ui.Window {
 		valueSize    = render.NewRect(windowWidth-labelSize.W-4, labelSize.H)
 		isRegistered bool
 		registration license.Registration
-		summary      = "Unregistered (shareware)"
+		summary      = "Unregistered" + builds.VersionSuffix
 	)
 
 	// Get our current registration status.

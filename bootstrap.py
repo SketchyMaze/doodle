@@ -37,6 +37,10 @@ repos_github = {
     "git@github.com:kirsle/audio": "audio",
     # TODO: the rest
 }
+repos_ssh = {
+    # SSH-only (private) repos.
+    "git@git.kirsle.net:SketchyMaze/dpp": "dpp",
+}
 
 # Software dependencies.
 dep_fedora = ["make", "golang", "SDL2-devel", "SDL2_ttf-devel", "SDL2_mixer-devel", "zip", "rsync"]
@@ -167,4 +171,8 @@ if __name__ == "__main__":
             https = k.replace("git@git.kirsle.net:", "https://git.kirsle.net/")
             repos[https] = repos[k]
             del repos[k]
+    else:
+        # mix in SSH-only repos
+        repos.update(repos_ssh)
+
     main()

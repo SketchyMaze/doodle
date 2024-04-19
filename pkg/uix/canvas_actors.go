@@ -6,10 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license/levelsigning"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/exceptions"
 	"git.kirsle.net/go/render"
@@ -44,11 +44,11 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		var actor = actors[id]
 
 		// Try loading the doodad from the level's own attached files.
-		doodad, err := doodads.LoadFromEmbeddable(actor.Filename, w.level, isSigned)
+		doodad, err := plus.DoodadFromEmbeddable(actor.Filename, w.level, isSigned)
 		if err != nil {
 			// If we have a signed levelpack, try loading from the levelpack.
 			if w.IsSignedLevelPack != nil {
-				if found, err := doodads.LoadFromEmbeddable(actor.Filename, w.IsSignedLevelPack, true); err == nil {
+				if found, err := plus.DoodadFromEmbeddable(actor.Filename, w.IsSignedLevelPack, true); err == nil {
 					doodad = found
 				}
 			}

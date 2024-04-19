@@ -6,6 +6,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/levelpack"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
@@ -120,12 +121,8 @@ func (s *MainScene) Setup(d *Doodle) error {
 	s.labelSubtitle.Compute(d.Engine)
 
 	// Version label.
-	var shareware string
-	if !license.IsRegistered() {
-		shareware = " (shareware)"
-	}
 	ver := ui.NewLabel(ui.Label{
-		Text: fmt.Sprintf("v%s%s", branding.Version, shareware),
+		Text: builds.Version,
 		Font: balance.TitleScreenVersionFont,
 	})
 	ver.Compute(d.Engine)
@@ -228,7 +225,7 @@ func (s *MainScene) Setup(d *Doodle) error {
 		{
 			Name: "Register",
 			If: func() bool {
-				return !license.IsRegistered()
+				return balance.DPP && !license.IsRegistered()
 			},
 			Func: func() {
 				if s.winRegister == nil {

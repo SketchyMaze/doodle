@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/savegame"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -503,7 +504,7 @@ func (s *PlayScene) setupPlayer(playerCharacterFilename string) {
 // centerIn is optional, ignored if zero.
 func (s *PlayScene) installPlayerDoodad(filename string, spawn render.Point, centerIn render.Rect) {
 	// Load in the player character.
-	player, err := doodads.LoadFromEmbeddable(filename, s.Level, false)
+	player, err := plus.DoodadFromEmbeddable(filename, s.Level, false)
 	if err != nil {
 		log.Error("PlayScene.Setup: failed to load player doodad: %s", err)
 		player = doodads.NewDummy(32)
