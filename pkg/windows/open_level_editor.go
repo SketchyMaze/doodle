@@ -171,9 +171,8 @@ func NewOpenLevelEditor(config OpenLevelEditor) *ui.Window {
 		 * Frame for selecting User Doodads
 		 ******************/
 
-		// Doodads not shown if we're loading a map to play, nor are they
-		// available to the free version.
-		if !config.LoadForPlay && !balance.FreeVersion {
+		// Doodads not shown if we're loading a map to play.
+		if !config.LoadForPlay {
 			label2 := ui.NewLabel(ui.Label{
 				Text: "Doodads",
 				Font: balance.LabelFont,

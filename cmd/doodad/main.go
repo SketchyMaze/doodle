@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/cmd/doodad/commands"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,19 +27,15 @@ func init() {
 }
 
 func main() {
+	bootstrap.InitPlugins()
+
 	app := cli.NewApp()
 	app.Name = "doodad"
 	app.Usage = "command line interface for Doodle"
 
-	var freeLabel string
-	if !license.IsRegistered() {
-		freeLabel = " (shareware)"
-	}
-
-	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
-		branding.Version,
+	app.Version = fmt.Sprintf("%s build %s. Built on %s",
+		builds.Version,
 		Build,
-		freeLabel,
 		BuildDate,
 	)
 

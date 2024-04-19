@@ -15,11 +15,13 @@ import (
 	doodle "git.kirsle.net/SketchyMaze/doodle/pkg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/chatbot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
@@ -51,14 +53,11 @@ func init() {
 func main() {
 	runtime.LockOSThread()
 
+	bootstrap.InitPlugins()
+
 	app := cli.NewApp()
 	app.Name = "doodle"
 	app.Usage = fmt.Sprintf("%s - %s", branding.AppName, branding.Summary)
-
-	var freeLabel string
-	if !license.IsRegistered() {
-		freeLabel = " (shareware)"
-	}
 
 	// Load user settings from disk ASAP.
 	if err := usercfg.Load(); err != nil {
@@ -73,10 +72,9 @@ func main() {
 	// Set GameController style.
 	gamepad.SetStyle(gamepad.Style(usercfg.Current.ControllerStyle))
 
-	app.Version = fmt.Sprintf("%s build %s%s. Built on %s",
-		branding.Version,
+	app.Version = fmt.Sprintf("%s build %s. Built on %s",
+		builds.Version,
 		Build,
-		freeLabel,
 		BuildDate,
 	)
 
@@ -119,6 +117,13 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		log.Info("Starting %s %s", app.Name, app.Version)
+
+		// Print registration information, + also this sets the DefaultAuthor field.
+		if reg, err := dpp.Driver.GetRegistration(); err == nil {
+			log.Info("Registered to %s", reg.Name)
+		}
+
 		// --chdir into a different working directory? e.g. for Flatpak especially.
 		if doodlePath := c.String("chdir"); doodlePath != "" {
 			if err := os.Chdir(doodlePath); err != nil {

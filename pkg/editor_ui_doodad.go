@@ -9,6 +9,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
 	"git.kirsle.net/go/render"
 )
@@ -34,7 +35,7 @@ func (u *EditorUI) startDragActor(doodad *doodads.Doodad, actor *level.Actor) {
 
 	if doodad == nil {
 		if actor != nil {
-			obj, err := doodads.LoadFromEmbeddable(actor.Filename, u.Scene.Level, false)
+			obj, err := dpp.Driver.LoadFromEmbeddable(actor.Filename, u.Scene.Level, false)
 			if err != nil {
 				log.Error("startDragExistingActor: actor doodad name %s not found: %s", actor.Filename, err)
 				return

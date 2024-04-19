@@ -9,10 +9,11 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/giant_screenshot"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
@@ -111,9 +112,11 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		levelMenu.AddItemAccel("Playtest", "P", func() {
 			u.Scene.Playtest()
 		})
-		levelMenu.AddItem("Publish", func() {
-			u.OpenPublishWindow()
-		})
+		if balance.DPP {
+			levelMenu.AddItem("Publish", func() {
+				u.OpenPublishWindow()
+			})
+		}
 
 		levelMenu.AddSeparator()
 		levelMenu.AddItem("Screenshot", func() {
@@ -276,17 +279,22 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 	////////
 	// Help menu
 	var (
-		helpMenu     = u.d.MakeHelpMenu(menu, u.Supervisor)
-		registerText = "Register"
+		helpMenu = u.d.MakeHelpMenu(menu, u.Supervisor)
 	)
-	helpMenu.AddSeparator()
-	if license.IsRegistered() {
-		registerText = "Registration"
+
+	// Registration item for Doodle++ builds.
+	if balance.DPP {
+		var registerText = "Register"
+		if dpp.Driver.IsRegistered() {
+			registerText = "Registration"
+		}
+
+		helpMenu.AddSeparator()
+		helpMenu.AddItem(registerText, func() {
+			u.licenseWindow.Show()
+			u.Supervisor.FocusWindow(u.licenseWindow)
+		})
 	}
-	helpMenu.AddItem(registerText, func() {
-		u.licenseWindow.Show()
-		u.Supervisor.FocusWindow(u.licenseWindow)
-	})
 
 	menu.Supervise(u.Supervisor)
 	menu.Compute(d.Engine)
@@ -313,7 +321,24 @@ func (s *EditorScene) MenuNewDoodad() {
 // File->Open, or Ctrl-O
 func (s *EditorScene) MenuOpen() {
 	s.ConfirmUnload(func() {
-		s.d.GotoLoadMenu()
+		if s.winOpenLevel == nil {
+			s.winOpenLevel = windows.NewOpenDrawingWindow(windows.OpenDrawing{
+				Supervisor: s.UI.Supervisor,
+				Engine:     shmem.CurrentRenderEngine,
+				OnOpenDrawing: func(filename string) {
+					s.d.EditFile(filename)
+				},
+				OnCloseWindow: func() {
+					s.winOpenLevel.Destroy()
+					s.winOpenLevel = nil
+				},
+			})
+		}
+		s.winOpenLevel.MoveTo(render.Point{
+			X: (s.d.width / 2) - (s.winOpenLevel.Size().W / 2),
+			Y: (s.d.height / 2) - (s.winOpenLevel.Size().H / 2),
+		})
+		s.winOpenLevel.Show()
 	})
 }
 

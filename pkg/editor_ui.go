@@ -6,11 +6,11 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/branding/builds"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/drawtool"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/uix"
@@ -595,12 +595,8 @@ func (u *EditorUI) SetupStatusBar(d *Doodle) *ui.Frame {
 		}
 	}
 
-	var shareware string
-	if !license.IsRegistered() {
-		shareware = " (shareware)"
-	}
 	extraLabel := ui.NewLabel(ui.Label{
-		Text: fmt.Sprintf("%s v%s%s", branding.AppName, branding.Version, shareware),
+		Text: fmt.Sprintf("%s %s", branding.AppName, builds.Version),
 		Font: balance.StatusFont,
 	})
 	extraLabel.Configure(ui.Config{

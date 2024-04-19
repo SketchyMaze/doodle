@@ -17,8 +17,8 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 )
 
 /*
@@ -37,7 +37,7 @@ func Publish(lvl *level.Level) error {
 	}
 
 	// Registered games only.
-	if !license.IsRegistered() {
+	if !balance.DPP || !dpp.Driver.IsRegistered() {
 		return errors.New("only registered versions of the game can attach doodads to levels")
 	}
 
@@ -52,7 +52,7 @@ func Publish(lvl *level.Level) error {
 		log.Debug("Embed filename: %s", filename)
 		names[filename] = nil
 
-		doodad, err := doodads.LoadFromEmbeddable(filename, lvl, false)
+		doodad, err := dpp.Driver.LoadFromEmbeddable(filename, lvl, false)
 		if err != nil {
 			return fmt.Errorf("couldn't load doodad %s: %s", filename, err)
 		}

@@ -1,12 +1,21 @@
 # Building Doodle
 
-* [Automated Release Scripts](#automated-release-scripts)
-* [Quickstart with bootstrap.py](#quickstart-with-bootstrap-py)
-* [Detailed Instructions](#detailed-instructions)
-* [Linux](#linux)
-* [Flatpak for Linux](#flatpak-for-linux)
-* [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
-* [Old Docs](#old-docs)
+- [Building Doodle](#building-doodle)
+- [Dockerfile](#dockerfile)
+- [Automated Release Scripts](#automated-release-scripts)
+- [Go Environment](#go-environment)
+- [Quickstart with bootstrap.py](#quickstart-with-bootstrappy)
+- [Detailed Instructions](#detailed-instructions)
+  - [Fonts](#fonts)
+  - [Makefile](#makefile)
+- [Dependencies](#dependencies)
+  - [Flatpak for Linux](#flatpak-for-linux)
+  - [Windows Cross-Compile from Linux](#windows-cross-compile-from-linux)
+    - [Windows DLLs](#windows-dlls)
+  - [Build on macOS from scratch](#build-on-macos-from-scratch)
+- [WebAssembly](#webassembly)
+- [Build Tags](#build-tags)
+  - [dpp](#dpp)
 
 # Dockerfile
 
@@ -42,6 +51,21 @@ Other Dockerfiles and scripts used to release the game:
 
 The Docker container depends on all the git servers being up, but if you have
 the uber blob source code you can read the Dockerfile to see what it does.
+
+# Go Environment
+
+Part of the build scripts involve building and running the `doodad` command
+from this repo in order to generate the game's built-in doodads. For this to
+work smoothly from your Linux or macOS build environment, you may need to
+ensure that your `${GOPATH}/bin` directory is on your `$PATH` by, for example,
+configuring this in your bash/zsh profile:
+
+```bash
+export GOPATH="${HOME}/go"
+export PATH="${PATH}:${GOPATH}/bin"
+```
+
+For a complete example, see the "Build on macOS from scratch" section below.
 
 # Quickstart with bootstrap.py
 
@@ -278,6 +302,47 @@ cp /usr/x86_64-w64-mingw32/bin/SDL*.dll bin/
 SDL2_ttf requires libfreetype, you can get its DLL here:
 https://github.com/ubawurinna/freetype-windows-binaries
 
+## Build on macOS from scratch
+
+Here are some detailed instructions how to build Sketchy Maze from a fresh
+install of macOS Ventura that assumes no previous software or configuration
+was applied to the system yet.
+
+Install homebrew: https://brew.sh pay attention to the instructions at the end
+of the install to set up your zsh profile for homebrew to work correctly.
+
+Clone the doodle repository:
+
+```bash
+git clone https://git.kirsle.net/SketchyMaze/doodle
+cd doodle
+```
+
+Note: on a fresh install, invoking the `git` command may cause macOS to install
+developer tools and Xcode. After installed, run the git clone again to finish
+cloning the repository.
+
+Set your Go environment variables: edit your ~/.zprofile and ensure that $GOPATH
+is configured and that your $PATH includes $GOPATH/bin. **Note:** restart your
+terminal session or reload the config file (e.g. `. ~/.zprofile`) after making
+this change.
+
+```bash
+# in your .zprofile, .bash_profile, .zshrc or similar shell config
+export GOPATH="${HOME}/go"
+export PATH="${PATH}:${GOPATH}/bin"
+```
+
+Run the bootstrap script:
+
+```bash
+python3 bootstrap.py
+```
+
+Answer N (default) when asked to clone dependency repos over ssh. The bootstrap
+script will `brew install` any necessary dependencies (Go, SDL2, etc.) and clone
+support repos for the game (doodads, levelpacks, assets).
+
 # WebAssembly
 
 There is some **experimental** support for a WebAssembly build of Sketchy Maze
@@ -304,33 +369,33 @@ Some tips to get a WASM build to work:
 * Run `make wasm` to build the WASM binary and `make wasm-serve` to run a simple
   Go web server to serve it from.
 
-# Old Docs
+# Build Tags
 
-## Build Tags
+Go build tags used by this game:
 
-These aren't really used much anymore but documented here:
+## dpp
 
-### shareware
+The dpp tag stands for Doodle++ and is used for official commercial builds of
+the game. Doodle++ builds include additional code not found in the free & open
+source release of the game engine.
 
-> Files ending with `_free.go` are for the shareware release as opposed to
-> `_paid.go` for the full version.
+This build tag should be set automatically by the Makefile **if** the deps/
+folder has a git clone of the dpp project. The bootstrap.py script will clone
+the dpp repo **if** you use SSH to clone dependencies: so you will need SSH
+credentials to the upstream git server. It basically means that third-party
+users who download the open source release will not have the dpp dependency,
+and will not build dpp copies of the game.
 
-Builds the game in the free shareware release mode.
+If you _do_ have the dpp dependency, you can force build (and run) FOSS
+versions of the game via the Makefile commands `make build-free`,
+`make run-free` or `make dist-free` which are counterparts to the main make
+commands but which deliberately do not set the dpp build tag.
 
-Run `make build-free` to build the shareware binary.
+In source code, files ending with `_dpp.go` and `_foss.go` are conditionally
+compiled depending on this build tag.
 
-Shareware releases of the game have the following changes compared to the default
-(release) mode:
+How to tell whether your build of Sketchy Maze is Doodle++ include:
 
-* No access to the Doodad Editor scene in-game (soft toggle)
-
-### developer
-
-> Files ending with `_developer.go` are for the developer build as opposed to
-> `_release.go` for the public version.
-
-Developer builds support extra features over the standard release version:
-
-* Ability to write the JSON file format for Levels and Doodads.
-
-Run `make build-debug` to build a developer version of the program.
+* The version string on the title screen.
+    * FOSS builds (not dpp) will say "open source" in the version.
+    * DPP builds may say "shareware" if unregistered or just the version.

@@ -15,16 +15,17 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/giant_screenshot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/publishing"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/license"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/plus"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/windows"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
+	"git.kirsle.net/go/ui"
 )
 
 // EditorScene manages the "Edit Level" game mode.
@@ -55,6 +56,8 @@ type EditorScene struct {
 	filename string
 
 	lastAutosaveAt time.Time
+
+	winOpenLevel *ui.Window
 }
 
 // Name of the scene.
@@ -252,7 +255,7 @@ func (s *EditorScene) setupAsync(d *Doodle) error {
 func (s *EditorScene) installActors() error {
 	if err := s.UI.Canvas.InstallActors(s.Level.Actors); err != nil {
 		summary := "This level references some doodads that were not found:"
-		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+		if strings.Contains(err.Error(), plus.ErrRegisteredFeature.Error()) {
 			summary = "This level contains embedded doodads, but this is not\n" +
 				"available in the free version of the game. The following\n" +
 				"doodads could not be loaded:"
@@ -507,7 +510,7 @@ func (s *EditorScene) LoadLevel(filename string) error {
 	log.Info("Installing %d actors into the drawing", len(level.Actors))
 	if err := s.UI.Canvas.InstallActors(level.Actors); err != nil {
 		summary := "This level references some doodads that were not found:"
-		if strings.Contains(err.Error(), license.ErrRegisteredFeature.Error()) {
+		if strings.Contains(err.Error(), plus.ErrRegisteredFeature.Error()) {
 			summary = "This level contains embedded doodads, but this is not\n" +
 				"available in the free version of the game. The following\n" +
 				"doodads could not be loaded:"
@@ -536,7 +539,7 @@ func (s *EditorScene) SaveLevel(filename string) error {
 		m.Title = "Alpha"
 	}
 	if m.Author == "" {
-		m.Author = native.DefaultAuthor()
+		m.Author = native.DefaultAuthor
 	}
 
 	m.Palette = s.UI.Canvas.Palette
@@ -638,7 +641,7 @@ func (s *EditorScene) SaveDoodad(filename string) error {
 		d.Title = "Untitled Doodad"
 	}
 	if d.Author == "" {
-		d.Author = native.DefaultAuthor()
+		d.Author = native.DefaultAuthor
 	}
 
 	// TODO: is this copying necessary?

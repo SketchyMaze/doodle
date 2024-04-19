@@ -40,7 +40,26 @@ func (u *PlayScene) setupMenuBar(d *Doodle) *ui.MenuBar {
 		u.winLevelPacks.Show()
 	})
 	gameMenu.AddItemAccel("New drawing", "Ctrl-N", d.GotoNewMenu)
-	gameMenu.AddItemAccel("Open drawing", "Ctrl-O", d.GotoLoadMenu)
+	gameMenu.AddItemAccel("Open drawing", "Ctrl-O", func() {
+		if u.winOpenLevel == nil {
+			u.winOpenLevel = windows.NewOpenDrawingWindow(windows.OpenDrawing{
+				Supervisor: u.Supervisor,
+				Engine:     shmem.CurrentRenderEngine,
+				OnOpenDrawing: func(filename string) {
+					d.EditFile(filename)
+				},
+				OnCloseWindow: func() {
+					u.winOpenLevel.Destroy()
+					u.winOpenLevel = nil
+				},
+			})
+		}
+		u.winOpenLevel.MoveTo(render.Point{
+			X: (d.width / 2) - (u.winOpenLevel.Size().W / 2),
+			Y: (d.height / 2) - (u.winOpenLevel.Size().H / 2),
+		})
+		u.winOpenLevel.Show()
+	})
 
 	gameMenu.AddSeparator()
 	gameMenu.AddItem("Quit to menu", func() {

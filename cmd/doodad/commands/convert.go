@@ -155,7 +155,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		if doodad.Title == "" {
 			doodad.Title = "Converted Doodad"
 		}
-		doodad.Author = native.DefaultAuthor()
+		doodad.Author = native.DefaultAuthor
 
 		// Write the first layer and gather its palette.
 		log.Info("Converting first layer to drawing and getting the palette")
@@ -195,7 +195,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		if lvl.Title == "" {
 			lvl.Title = "Converted Level"
 		}
-		lvl.Author = native.DefaultAuthor()
+		lvl.Author = native.DefaultAuthor
 		palette, chunker := imageToChunker(images[0], chroma, nil, lvl.Chunker.Size)
 		lvl.Palette = palette
 		lvl.Chunker = chunker

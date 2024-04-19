@@ -91,7 +91,7 @@ func New() *Level {
 		Base: Base{
 			Version: 1,
 			Title:   "Untitled",
-			Author:  native.DefaultAuthor(),
+			Author:  native.DefaultAuthor,
 			Files:   NewFileSystem(),
 		},
 		Chunker: NewChunker(balance.ChunkSize),
