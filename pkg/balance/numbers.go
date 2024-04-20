@@ -31,6 +31,10 @@ var (
 		Y: 60,
 	}
 
+	// Threshold of how many ticks should pass between the last Fingers Up
+	// event and a mouse movement, to indicate that TouchScreenMode should end.
+	TouchScreenModeLastFingerDownTicks uint64 = 10
+
 	// Player speeds, gravity and movement physics.
 	PlayerMaxVelocity       float64 = 7
 	PlayerJumpVelocity      float64 = -15

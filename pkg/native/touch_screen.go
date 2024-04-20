@@ -1,6 +1,7 @@
 package native
 
 import (
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render/event"
@@ -9,13 +10,16 @@ import (
 // Common code to handle basic touch screen detection.
 
 var (
+	// Force the TouchScreenMode to always be enabled.
+	ForceTouchScreenModeAlwaysOn bool
+
 	isTouchScreenMode  bool
 	lastFingerDownTick uint64
 )
 
 // IsTouchScreenMode is activated when the user has touched the screen, and false when the mouse is moved.
 func IsTouchScreenMode() bool {
-	return isTouchScreenMode
+	return ForceTouchScreenModeAlwaysOn || isTouchScreenMode
 }
 
 /*
@@ -51,7 +55,7 @@ func UpdateTouchScreenMode(ev *event.State) {
 
 			// If we have registered a mouse event a few ticks after the finger was
 			// removed, it is a real mouse cursor and we exit touch screen mode.
-			if ev.IsMouseEvent && shmem.Tick-lastFingerDownTick > 5 {
+			if ev.IsMouseEvent && shmem.Tick-lastFingerDownTick > balance.TouchScreenModeLastFingerDownTicks {
 				log.Info("TouchScreenMode OFF")
 				isTouchScreenMode = false
 			}

@@ -44,6 +44,11 @@ Some minor changes:
 * The game window maximizes on startup to fill the screen.
 * Fixed a few places where the old "Load Level" menu was being called instead
   of the fancy new one with the listbox.
+* Fixed a touch screen detection bug that was causing the mouse cursor to hide
+  on Macbooks when using their touchpad.
+* Add a `--touch` command line flag to the game binary, which forces touch screen
+  mode to always be on (which hides the mouse cursor), in case of touch screen
+  detection errors or annoyances.
 
 Some code cleanup and architecture changes:
 

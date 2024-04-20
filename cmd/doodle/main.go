@@ -19,6 +19,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/chatbot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -102,6 +103,11 @@ func main() {
 			Usage:   "set the window size (e.g. -w 1024x768) or special value: desktop, mobile, landscape, maximized",
 		},
 		&cli.BoolFlag{
+			Name:    "touch",
+			Aliases: []string{"t"},
+			Usage:   "force TouchScreenMode to be on at all times, which hides the mouse cursor",
+		},
+		&cli.BoolFlag{
 			Name:  "guitest",
 			Usage: "enter the GUI Test scene on startup",
 		},
@@ -167,10 +173,9 @@ func main() {
 			balance.FeaturesOn()
 		}
 
-		// Offline mode?
-		if c.Bool("offline") {
-			shmem.OfflineMode = true
-		}
+		// Set other program flags.
+		shmem.OfflineMode = c.Bool("offline")
+		native.ForceTouchScreenModeAlwaysOn = c.Bool("touch")
 
 		// SDL engine.
 		engine := sdl.New(
