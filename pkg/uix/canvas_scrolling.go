@@ -56,7 +56,7 @@ func (w *Canvas) loopEditorScroll(ev *event.State) error {
 	}
 
 	// Multitouch events to pan the level, like middle click on desktop.
-	if ev.Touching {
+	if ev.Touching && ev.TouchNumFingers > 1 {
 		// Intention: user drags with 2 fingers to scroll the canvas.
 		// SDL2 will register one finger also as a Button1 mouse click.
 		// We need to record the "mouse cursor" as start point but then

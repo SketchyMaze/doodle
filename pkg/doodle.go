@@ -141,6 +141,20 @@ func (d *Doodle) Run() error {
 		}
 		d.event = ev
 
+		// If they have touched a touch screen, set the touchscreen mode boolean. This
+		// will hide the mouse cursor until they let up off the screen.
+		if !native.IsTouchScreenMode {
+			if ev.IsFingerDown {
+				log.Debug("TouchScreenMode ON!")
+				native.IsTouchScreenMode = true
+			}
+		} else {
+			if !ev.IsFingerDown {
+				log.Debug("TouchScreenMode OFF")
+				native.IsTouchScreenMode = false
+			}
+		}
+
 		// Always have an accurate idea of the window size.
 		if ev.WindowResized {
 			d.width, d.height = d.Engine.WindowSize()

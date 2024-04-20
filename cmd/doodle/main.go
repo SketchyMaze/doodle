@@ -215,9 +215,7 @@ func main() {
 		usercfg.Load()
 
 		// Hide the mouse cursor over the window, we draw our own sprite image for it.
-		if !native.HasTouchscreen(engine) {
-			engine.ShowCursor(false)
-		}
+		engine.ShowCursor(false)
 
 		// Set the app window icon.
 		if engine, ok := game.Engine.(*sdl.Renderer); ok {
