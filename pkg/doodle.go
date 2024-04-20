@@ -141,24 +141,13 @@ func (d *Doodle) Run() error {
 		}
 		d.event = ev
 
-		// If they have touched a touch screen, set the touchscreen mode boolean. This
-		// will hide the mouse cursor until they let up off the screen.
-		if !native.IsTouchScreenMode {
-			if ev.IsFingerDown {
-				log.Debug("TouchScreenMode ON!")
-				native.IsTouchScreenMode = true
-			}
-		} else {
-			if !ev.IsFingerDown {
-				log.Debug("TouchScreenMode OFF")
-				native.IsTouchScreenMode = false
-			}
-		}
-
 		// Always have an accurate idea of the window size.
 		if ev.WindowResized {
 			d.width, d.height = d.Engine.WindowSize()
 		}
+
+		// Update touch screen control (mainly whether to show the mouse cursor).
+		native.UpdateTouchScreenMode(ev)
 
 		// Let the gamepad controller check for events, if it's in MouseMode
 		// it will fake the mouse cursor.

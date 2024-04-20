@@ -25,7 +25,7 @@ var NoCursor = &Cursor{}
 
 // Draw the cursor on screen. NOTE: Does not draw on touchscreen devices.
 func Draw(e render.Engine) {
-	if native.IsTouchScreenMode {
+	if native.IsTouchScreenMode() {
 		return
 	}
 

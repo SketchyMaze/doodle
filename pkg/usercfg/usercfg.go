@@ -18,8 +18,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 )
@@ -57,12 +55,6 @@ var Current = Defaults()
 // Defaults returns sensible default user settings.
 func Defaults() *Settings {
 	settings := &Settings{}
-
-	// If not a touchscreen device, disable touchscreen hints as default.
-	if !native.HasTouchscreen(shmem.CurrentRenderEngine) {
-		settings.HideTouchHints = true
-	}
-
 	return settings
 }
 

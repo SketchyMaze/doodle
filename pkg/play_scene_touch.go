@@ -5,6 +5,7 @@ import (
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/event"
@@ -119,7 +120,9 @@ func (s *PlayScene) LoopTouchable(ev *event.State) {
 
 // DrawTouchable draws any UI elements if needed for the touch UI.
 func (s *PlayScene) DrawTouchable() {
-	if usercfg.Current.HideTouchHints {
+	// If we are not in touch mode (user has not touched their screen at all), don't
+	// show the hints - mouse & keyboard mode. And user opt-out setting.
+	if !native.IsTouchScreenMode() || usercfg.Current.HideTouchHints {
 		return
 	}
 

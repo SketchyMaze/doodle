@@ -19,7 +19,6 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/chatbot"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/gamepad"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/bootstrap"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
@@ -251,7 +250,7 @@ func main() {
 
 		// Log some basic environment details.
 		w, h := engine.WindowSize()
-		log.Info("Has touchscreen? %+v  Window size: %dx%d", native.HasTouchscreen(engine), w, h)
+		log.Info("Window size: %dx%d", w, h)
 
 		game.Run()
 		return nil

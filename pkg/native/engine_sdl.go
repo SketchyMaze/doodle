@@ -19,17 +19,6 @@ import (
 // Native render engine functions (SDL2 edition),
 // not for JavaScript/WASM yet.
 
-// HasTouchscreen checks if the device has at least one SDL_GetNumTouchDevices.
-//
-// Note: SDL2 GetNumTouchDevices will sometimes return 0 until a touch device is actually touched. On Macbooks,
-// the trackpad counts as a touch device and on first touch, HasTouchscreen may begin returning true.
-func HasTouchscreen(e render.Engine) bool {
-	if _, ok := e.(*sdl.Renderer); ok {
-		return sdl2.GetNumTouchDevices() > 0
-	}
-	return false
-}
-
 // CopyToClipboard puts some text on your clipboard.
 func CopyToClipboard(text string) error {
 	if _, ok := shmem.CurrentRenderEngine.(*sdl.Renderer); ok {
