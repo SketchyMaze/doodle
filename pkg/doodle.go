@@ -29,9 +29,6 @@ import (
 )
 
 const (
-	// TargetFPS is the frame rate to cap the game to.
-	TargetFPS = 1000 / 60 // 60 FPS
-
 	// Millisecond64 is a time.Millisecond casted to float64.
 	Millisecond64 = float64(time.Millisecond)
 )
@@ -230,8 +227,8 @@ func (d *Doodle) Run() error {
 		if !fpsDoNotCap {
 			elapsed := time.Now().Sub(start)
 			tmp := elapsed / time.Millisecond
-			if TargetFPS-int(tmp) > 0 { // make sure it won't roll under
-				delay = uint32(TargetFPS - int(tmp))
+			if balance.TargetClockRate-int(tmp) > 0 { // make sure it won't roll under
+				delay = uint32(balance.TargetClockRate - int(tmp))
 			}
 			d.Engine.Delay(delay)
 		}

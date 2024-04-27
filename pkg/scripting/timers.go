@@ -3,6 +3,8 @@ package scripting
 import (
 	"time"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"github.com/dop251/goja"
 )
 
@@ -10,9 +12,9 @@ import (
 type Timer struct {
 	id       int
 	callback goja.Value
-	interval time.Duration // milliseconds delay for timeout
-	next     time.Time     // scheduled time for next invocation
-	repeat   bool          // for setInterval
+	ticks    uint64 // interval (milliseconds) converted into game ticks
+	nextTick uint64 // next tick to trigger the callback
+	repeat   bool   // for setInterval
 }
 
 /*
@@ -47,12 +49,16 @@ AddTimer loads timeouts and intervals into the VM's memory and returns the ID.
 func (vm *VM) AddTimer(callback goja.Value, interval int, repeat bool) int {
 	// Get the next timer ID. The first timer has ID 1.
 	vm.timerLastID++
-	id := vm.timerLastID
+
+	var (
+		id    = vm.timerLastID
+		ticks = float64(interval) * (float64(balance.TargetFPS) / 1000)
+	)
 
 	t := &Timer{
 		id:       id,
 		callback: callback,
-		interval: time.Duration(interval),
+		ticks:    uint64(ticks),
 		repeat:   repeat,
 	}
 	t.Schedule()
@@ -71,7 +77,7 @@ func (vm *VM) TickTimer(now time.Time) {
 	var clear []int
 
 	for id, timer := range vm.timers {
-		if now.After(timer.next) {
+		if shmem.Tick > timer.nextTick {
 			if function, ok := goja.AssertFunction(timer.callback); ok {
 				function(goja.Undefined())
 			}
@@ -104,5 +110,5 @@ func (vm *VM) ClearTimer(id int) {
 
 // Schedule the callback to be run in the future.
 func (t *Timer) Schedule() {
-	t.next = time.Now().Add(t.interval * time.Millisecond)
+	t.nextTick = shmem.Tick + t.ticks
 }

@@ -15,6 +15,12 @@ const (
 	FormatZipfile               // v2: zip archive with external chunks
 )
 
+// Target frame rate for the game (also ticks per second for logic).
+const (
+	TargetFPS       = 60
+	TargetClockRate = 1000 / 60 // wallclock milliseconds per tick
+)
+
 // Numbers.
 var (
 	// Window dimensions.
