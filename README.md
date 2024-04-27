@@ -49,6 +49,16 @@ game:
 * If you receive a map with custom doodads, you can **install** the doodads
   into your copy of the game and use them in your own maps.
 
+# Developer Documentation
+
+In case you are reading this from the game's open source repository, take a
+look in the `docs/` folder or the `*.md` files in the root of the repository.
+
+Some to start with:
+
+* [Building](Building.md) the game (tl;dr. run bootstrap.py)
+* [Tour of the Code](docs/Tour%20of%20the%20Code.md)
+
 # Keybindings
 
 Global Keybindings:
@@ -133,52 +143,6 @@ Note: characters with antigravity (such as the Bird) can move in all
 four directions but characters with gravity only move left and right
 and have the dedicated "Jump" button. This differs from regular
 keyboard controls where the Up arrow is to Jump.
-
-# Built-In Doodads
-
-A brief introduction to the built-in doodads available so far:
-
-- **Characters**
-  - Blue Azulian: this is used as the player character for now. If
-    dragged into a level, it doesn't do anything but is affected
-    by gravity.
-  - Red Azulian: an example mobile mob for now. It walks back and
-    forth, changing directions only when it comes across an
-    obstacle and can't proceed any further.
-- **Doors and Keys**
-  - Colored Doors: these act like solid barriers until the player or
-    another doodad collects the matching colored key.
-  - Colored Keys: these are collectable items that allow the player or
-    another doodad to open the door of matching color. Note that
-    inventories are doodad-specific, so other mobs besides the
-    player can steal a key before the player gets it! (For now)
-  - Electric Door: this mechanical door stays closed and only
-    opens when it receives a power signal from a linked button.
-  - Trapdoor: this door allows one-way access, but once it's closed
-    behind you, you can't pass through it from that side!
-- **Buttons**
-  - Button: while pressed by a player or other doodad, the button
-    emits a power signal to any doodad it is linked to. Link a button
-    to an electric door, and the door will open while the button is
-    pressed and close when the button is released.
-  - Sticky Button: this button will stay pressed once activated and
-    will not release unless it receives a power signal from another
-    linked doodad. For example, one Button that links to a Sticky
-    Button will release the sticky button if pressed.
-- **Switches**
-  - Switch: when touched by the player or other doodad, the switch will
-    toggle its state from "OFF" to "ON" or vice versa. Link it to an
-    Electric Door to open/close the door. Link switches _to each other_ as
-    well as to a door, and all switches will stay in sync with their ON/OFF
-    state when any switch is pressed.
-- **Crumbly Floor**
-  - This rocky floor will break and fall away after being stepped on.
-- **Two State Blocks**
-  - Blue and orange blocks that will toggle between solid and pass-thru
-    whenever the corresponding ON/OFF block is hit.
-- **Start and Exit Flags**
-  - The "Go" flag lets you pick a spawn point for the player character.
-  - The "Exit" flag marks the level goal.
 
 # Developer Console
 

@@ -93,60 +93,10 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 		"Filename": actor.Doodad().Filename,
 		"Title":    actor.Doodad().Title,
 
-		// functions
-		"ID":      actor.ID,
-		"Size":    actor.Size,
-		"GetTag":  actor.Doodad().Tag,
-		"Options": actor.Options,
-		"GetOption": func(name string) interface{} {
-			opt := actor.GetOption(name)
-			if opt == nil {
-				return nil
-			}
-			return opt.Value
-		},
-		"Position": actor.Position,
-		"MoveTo": func(p render.Point) {
-			actor.MoveTo(p)
-			actor.SetGrounded(false)
-		},
-		"MoveBy": func(p render.Point) {
-			actor.MoveBy(p)
-			actor.SetGrounded(false)
-		},
-		"IsOnScreen": actor.IsOnScreen,
-		// 	// TODO: passing this to actor.IsOnScreen didn't work?
-		// 	return actor.Position().Inside(actor.Canvas.ViewportRelative())
-		// },
-		"Grounded":        actor.Grounded,
-		"SetHitbox":       actor.SetHitbox,
-		"Hitbox":          actor.Hitbox,
-		"SetVelocity":     actor.SetVelocity,
-		"GetVelocity":     actor.Velocity,
-		"SetMobile":       actor.SetMobile,
-		"SetInventory":    actor.SetInventory,
-		"HasInventory":    actor.HasInventory,
-		"SetGravity":      actor.SetGravity,
-		"Invulnerable":    actor.Invulnerable,
-		"SetInvulnerable": actor.SetInvulnerable,
-		"AddAnimation":    actor.AddAnimation,
-		"IsAnimating":     actor.IsAnimating,
-		"IsPlayer":        actor.IsPlayer,
-		"PlayAnimation":   actor.PlayAnimation,
-		"StopAnimation":   actor.StopAnimation,
-		"ShowLayer":       actor.ShowLayer,
-		"ShowLayerNamed":  actor.ShowLayerNamed,
-		"Inventory":       actor.Inventory,
-		"AddItem":         actor.AddItem,
-		"RemoveItem":      actor.RemoveItem,
-		"HasItem":         actor.HasItem,
-		"ClearInventory":  actor.ClearInventory,
-		"Destroy":         actor.Destroy,
-		"Freeze":          actor.Freeze,
-		"Unfreeze":        actor.Unfreeze,
-		"IsWet":           actor.IsWet,
-		"Hide":            actor.Hide,
-		"Show":            actor.Show,
+		/*
+			Unique options to the Self API over regular Actors.
+		*/
+
 		"GetLinks": func() []map[string]interface{} {
 			var result = []map[string]interface{}{}
 			for _, linked := range w.GetLinkedActors(actor) {
@@ -160,5 +110,80 @@ func (w *Canvas) MakeSelfAPI(actor *Actor) map[string]interface{} {
 			// Update the doodad that the camera should focus on.
 			w.FollowActor = actor.ID()
 		},
+
+		// functions
+
+		"GetTag": actor.Doodad().Tag,
+
+		/*
+			Expose the uix.Actor API surface area, in the same order
+			that these functions are defined in their respective files
+			to keep it easy to maintain.
+		*/
+
+		// actor.go
+		"ID":              actor.ID,
+		"Doodad":          actor.Doodad,
+		"SetGravity":      actor.SetGravity,
+		"SetMobile":       actor.SetMobile,
+		"SetInventory":    actor.SetInventory,
+		"IsMobile":        actor.IsMobile,
+		"IsPlayer":        actor.IsPlayer,
+		"HasInventory":    actor.HasInventory,
+		"HasGravity":      actor.HasGravity,
+		"Invulnerable":    actor.Invulnerable,
+		"SetInvulnerable": actor.SetInvulnerable,
+		"IsWet":           actor.IsWet,
+		"IsOnScreen":      actor.IsOnScreen,
+		"SetWet":          actor.SetWet,
+		"Size":            actor.Size,
+		"Velocity":        actor.Velocity,
+		"GetVelocity":     actor.Velocity, // TODO: deprecated, old Self.GetVelocity inconsistency
+		"SetVelocity":     actor.SetVelocity,
+		"Position":        actor.Position,
+		"MoveTo": func(p render.Point) {
+			actor.MoveTo(p)
+			actor.SetGrounded(false)
+		},
+		"MoveBy": func(p render.Point) {
+			actor.MoveBy(p)
+			actor.SetGrounded(false)
+		},
+		"Grounded":     actor.Grounded,
+		"SetGrounded":  actor.SetGrounded,
+		"IsCoyoteTime": actor.IsCoyoteTime,
+		"Hide":         actor.Hide,
+		"Show":         actor.Show,
+		"Freeze":       actor.Freeze,
+		"Unfreeze":     actor.Unfreeze,
+		"IsFrozen":     actor.IsFrozen,
+		// Not: SetUsing, SetNoclip
+		"AddItem":         actor.AddItem,
+		"RemoveItem":      actor.RemoveItem,
+		"ClearInventory":  actor.ClearInventory,
+		"HasItem":         actor.HasItem,
+		"ListItems":       actor.ListItems,
+		"Inventory":       actor.Inventory,
+		"GetBoundingRect": actor.GetBoundingRect,
+		"SetHitbox":       actor.SetHitbox,
+		"Hitbox":          actor.Hitbox,
+		"Options":         actor.Options,
+		"GetOption": func(name string) interface{} {
+			opt := actor.GetOption(name)
+			if opt == nil {
+				return nil
+			}
+			return opt.Value
+		},
+		"LayerCount":     actor.LayerCount,
+		"ShowLayer":      actor.ShowLayer,
+		"ShowLayerNamed": actor.ShowLayerNamed,
+		"Destroy":        actor.Destroy,
+
+		// actor_animation.go
+		"AddAnimation":  actor.AddAnimation,
+		"PlayAnimation": actor.PlayAnimation,
+		"IsAnimating":   actor.IsAnimating,
+		"StopAnimation": actor.StopAnimation,
 	}
 }
