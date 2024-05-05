@@ -22,6 +22,7 @@ var (
 	CampaignDirectory   string
 	ScreenshotDirectory string
 	SaveFile            string
+	LogFile             string
 
 	CacheDirectory string
 	FontDirectory  string
@@ -43,6 +44,7 @@ func init() {
 	CampaignDirectory = configdir.LocalConfig(ConfigDirectoryName, "campaigns")
 	ScreenshotDirectory = configdir.LocalConfig(ConfigDirectoryName, "screenshots")
 	SaveFile = configdir.LocalConfig(ConfigDirectoryName, "savegame.json")
+	LogFile = configdir.LocalConfig(ConfigDirectoryName, "logfile.txt")
 
 	// Cache directory to extract font files to.
 	CacheDirectory = configdir.LocalCache(ConfigDirectoryName)

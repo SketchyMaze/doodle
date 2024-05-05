@@ -26,6 +26,8 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
+	golog "git.kirsle.net/go/log"
 	"git.kirsle.net/go/render"
 	"git.kirsle.net/go/render/sdl"
 	"github.com/urfave/cli/v2"
@@ -85,6 +87,11 @@ func main() {
 			Usage:   "enable debug level logging",
 		},
 		&cli.StringFlag{
+			Name:    "log",
+			Aliases: []string{"o"},
+			Usage:   "path on disk to copy the game's standard output logs (default goes to your game profile directory)",
+		},
+		&cli.StringFlag{
 			Name:  "pprof",
 			Usage: "record pprof metrics to a filename",
 		},
@@ -122,6 +129,11 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		// Write the game's log to disk.
+		if err := initLogFile(c.String("log")); err != nil {
+			log.Error("Couldn't write logs to disk: %s", err)
+		}
+
 		log.Info("Starting %s %s", app.Name, app.Version)
 
 		// Print registration information, + also this sets the DefaultAuthor field.
@@ -296,5 +308,20 @@ func setResolution(value string) error {
 		balance.Width = w
 		balance.Height = h
 	}
+	return nil
+}
+
+func initLogFile(filename string) error {
+	// Default log file to disk goes to your profile directory.
+	if filename == "" {
+		filename = userdir.LogFile
+	}
+
+	fh, err := golog.NewFileTee(filename)
+	if err != nil {
+		return err
+	}
+
+	log.Logger.Config.Writer = fh
 	return nil
 }
