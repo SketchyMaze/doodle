@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/userdir"
 	"git.kirsle.net/go/render"
 )
@@ -92,27 +93,29 @@ func Load() error {
 		filename = Filepath()
 		settings = Defaults()
 	)
+
+	// No file exists yet?
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		Current = settings
-		return nil // no file, no problem
-	}
+	} else {
+		fh, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
 
-	fh, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
+		// Decode JSON from file.
+		dec := json.NewDecoder(fh)
+		err = dec.Decode(settings)
+		if err != nil {
+			return err
+		}
 
-	// Decode JSON from file.
-	dec := json.NewDecoder(fh)
-	err = dec.Decode(settings)
-	if err != nil {
-		return err
+		Current = settings
 	}
-
-	Current = settings
 
 	// If we don't have an entropy key saved, make one and save it.
 	if Current.Entropy == nil || len(Current.Entropy) == 0 {
+		log.Info("Initialized entropy field in settings.json")
 		Save()
 	}
 

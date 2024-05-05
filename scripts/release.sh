@@ -127,6 +127,10 @@ macos() {
     # Create the .app bundle.
     ../../../../scripts/mac-app.sh
 
+    # Clean up extra files that don't need to go inside the .dmg image as
+    # they are only necessary for the .app bundle itself.
+    rm -rf "./rtp"
+
     # Remove redundant Mac binaries from stage folder.
     rm ./sketchymaze ./doodad
     hdiutil create "${RELEASE_PATH}/macos/sketchymaze-${VERSION}-macOS-x64.dmg" \

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"runtime/pprof"
@@ -69,6 +70,7 @@ func main() {
 	// Set default user settings.
 	if usercfg.Current.CrosshairColor == render.Invisible {
 		usercfg.Current.CrosshairColor = balance.DefaultCrosshairColor
+		usercfg.Save()
 	}
 
 	// Set GameController style.
@@ -129,6 +131,11 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
+		// Set the log level now if debugging is enabled.
+		if c.Bool("debug") {
+			log.Logger.Config.Level = golog.DebugLevel
+		}
+
 		// Write the game's log to disk.
 		if err := initLogFile(c.String("log")); err != nil {
 			log.Error("Couldn't write logs to disk: %s", err)
@@ -142,11 +149,8 @@ func main() {
 		}
 
 		// --chdir into a different working directory? e.g. for Flatpak especially.
-		if doodlePath := c.String("chdir"); doodlePath != "" {
-			if err := os.Chdir(doodlePath); err != nil {
-				log.Error("--chdir: couldn't enter '%s': %s", doodlePath, err)
-				return err
-			}
+		if err := setWorkingDirectory(c); err != nil {
+			log.Error("Couldn't set working directory: %s", err)
 		}
 
 		// Recording pprof stats?
@@ -260,7 +264,7 @@ func main() {
 
 		// Log what Doodle thinks its working directory is, for debugging.
 		pwd, _ := os.Getwd()
-		log.Debug("PWD: %s", pwd)
+		log.Info("Program's working directory is: %s", pwd)
 
 		// Initialize the developer shell chatbot easter egg.
 		chatbot.Setup()
@@ -280,6 +284,53 @@ func main() {
 	if err != nil {
 		log.Error(err.Error())
 	}
+}
+
+// Set the app's working directory to find the runtime rtp assets.
+func setWorkingDirectory(c *cli.Context) error {
+	// If they used the --chdir CLI option, go there.
+	if doodlePath := c.String("chdir"); doodlePath != "" {
+		return os.Chdir(doodlePath)
+	}
+
+	var test = func(paths ...string) bool {
+		paths = append(paths, filepath.Join("rtp", "Credits.txt"))
+		_, err := os.Stat(filepath.Join(paths...))
+		return err == nil
+	}
+
+	// If the rtp/ folder is already here, nothing is needed.
+	if test() {
+		return nil
+	}
+
+	// Get the path to the executable and search around from there.
+	ex, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("couldn't find the path to current executable: %s", err)
+	}
+	exPath := filepath.Dir(ex)
+
+	log.Debug("Trying to locate rtp/ folder relative to game's executable path: %s", exPath)
+
+	// Test a few relative paths around the executable's folder.
+	paths := []string{
+		exPath,                                   // same directory, e.g. Linux /opt/sketchymaze root or Windows zipfile
+		filepath.Join(exPath, ".."),              // parent directory, e.g. from the git clone root
+		filepath.Join(exPath, "..", "Resources"), // e.g. in a macOS .app bundle.
+
+		// Some well-known installed paths to check.
+		"/opt/sketchymaze",       // Linux deb/rpm package
+		"/app/share/sketchymaze", // Linux flatpak package
+	}
+	for _, testPath := range paths {
+		if test(testPath) {
+			log.Info("Found rtp folder in: %s", testPath)
+			return os.Chdir(testPath)
+		}
+	}
+
+	return nil
 }
 
 func setResolution(value string) error {
