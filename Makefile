@@ -72,30 +72,30 @@ doodads:
 mingw:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) $(BUILD_TAGS) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) $(BUILD_TAGS) -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) $(BUILD_TAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) $(BUILD_TAGS) -o bin/doodad.exe cmd/doodad/main.go
 
 # `make mingw32` to cross-compile a Windows binary with mingw (32-bit).
 .PHONY: mingw32
 mingw32:
 	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) $(BUILD_TAGS) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) $(BUILD_TAGS) -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/i686-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) $(BUILD_TAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) $(BUILD_TAGS) -o bin/doodad.exe cmd/doodad/main.go
 
 # `make mingw-free` for Windows binary in free mode.
 .PHONY: mingw-free
 mingw-free:
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS_W) -i -o bin/sketchymaze.exe cmd/doodle/main.go
+		go build $(LDFLAGS_W) -o bin/sketchymaze.exe cmd/doodle/main.go
 	env CGO_ENABLED="1" CC="/usr/bin/x86_64-w64-mingw32-gcc" \
 		GOOS="windows" CGO_LDFLAGS="-lmingw32 -lSDL2" CGO_CFLAGS="-D_REENTRANT" \
-		go build $(LDFLAGS) -i -o bin/doodad.exe cmd/doodad/main.go
+		go build $(LDFLAGS) -o bin/doodad.exe cmd/doodad/main.go
 
 # `make release` runs the release.sh script, must be run
 # after `make dist`
