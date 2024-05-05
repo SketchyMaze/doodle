@@ -1,6 +1,6 @@
 # Changes
 
-## v0.14.0 TBD
+## v0.14.0 (May 4 2024)
 
 Level screenshots and thumbnails:
 
@@ -22,6 +22,26 @@ Level screenshots and thumbnails:
     * While the giant screenshot is processing, a progress bar modal will
       block interaction with the game so that you don't accidentally modify
       the level while the screenshot is generating.
+
+Updates to the JavaScript API for doodad scripts:
+
+* `setTimeout()` and `setInterval()` will now be more deterministic and
+  reliable to time your doodad scripts with, as they are now based on the
+  game's tick speed. At the target average of 60 FPS, 1000 millisecond
+  timers will fire in 60 game ticks every time.
+* The `Self` API now exposes more functions on the underlying Actor object
+  that points to the current doodad. See the guidebook for full details.
+    * Self.Doodad() *Doodad
+    * Self.GetBoundingRect() Rect
+    * Self.HasGravity() bool
+    * Self.IsFrozen() bool
+    * Self.IsMobile() bool
+    * Self.LayerCount() int
+    * Self.ListItems() []string
+    * Self.SetGrounded(bool)
+    * Self.SetWet(bool)
+    * Self.Velocity() Point
+* Self.GetVelocity() is now deprecated and will be an alias to Self.Velocity.
 
 Some minor changes:
 
@@ -46,6 +66,9 @@ Some minor changes:
   of the fancy new one with the listbox.
 * Fixed a touch screen detection bug that was causing the mouse cursor to hide
   on Macbooks when using their touchpad.
+* Fixed how touch screen mode is activated. The game's mouse cursor will
+  disappear on touch and reappear when your last finger leaves the screen, and
+  then a mouse movement is detected.
 * Add a `--touch` command line flag to the game binary, which forces touch screen
   mode to always be on (which hides the mouse cursor), in case of touch screen
   detection errors or annoyances.

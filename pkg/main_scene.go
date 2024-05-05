@@ -45,6 +45,7 @@ type MainScene struct {
 	winLevelPacks  *ui.Window
 	winPlayLevel   *ui.Window
 	winOpenDrawing *ui.Window
+	winAbout       *ui.Window
 
 	// Update check variables.
 	updateButton *ui.Button
@@ -249,6 +250,29 @@ func (s *MainScene) Setup(d *Doodle) error {
 				s.winRegister.Show()
 			},
 			Style: &balance.ButtonPrimary,
+		},
+		{
+			Name: "About",
+			If: func() bool {
+				return !balance.DPP
+			},
+			Func: func() {
+				if s.winAbout == nil {
+					s.winAbout = windows.NewAboutWindow(windows.About{
+						Supervisor: s.Supervisor,
+						Engine:     d.Engine,
+					})
+					s.winAbout.Compute(d.Engine)
+					s.winAbout.Supervise(s.Supervisor)
+
+					// Center the window.
+					s.winAbout.MoveTo(render.Point{
+						X: (d.width / 2) - (s.winAbout.Size().W / 2),
+						Y: 60,
+					})
+				}
+				s.winAbout.Show()
+			},
 		},
 	}
 	for _, button := range buttons {
