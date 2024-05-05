@@ -18,7 +18,6 @@ endif
 # `make setup` to set up a new environment, pull dependencies, etc.
 .PHONY: setup
 setup: clean
-	go get ./...
 
 # `make build` to build the binary.
 .PHONY: build
