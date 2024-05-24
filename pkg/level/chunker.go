@@ -627,11 +627,6 @@ func RelativeCoordinate(abs render.Point, chunkCoord render.Point, chunkSize uin
 		}
 	)
 
-	if point.X < 0 || point.Y < 0 {
-		log.Error("RelativeCoordinate: X < 0! abs=%s rel=%s chunk=%s size=%d", abs, point, chunkCoord, chunkSize)
-		log.Error("RelativeCoordinate(2): size=%d offset=%s point=%s", size, offset, point)
-	}
-
 	return point
 }
 

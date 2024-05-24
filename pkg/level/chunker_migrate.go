@@ -14,9 +14,7 @@ import (
 // and possibly migrate them to a different Accessor implementation when
 // saving on disk.
 func (c *Chunker) OptimizeChunkerAccessors() {
-	log.Info("Optimizing Chunker Accessors")
-
-	// TODO: parallelize this with goroutines
+	// Parallelize this with goroutines.
 	var (
 		chunks = make(chan *Chunk, len(c.Chunks))
 		wg     sync.WaitGroup
@@ -58,7 +56,6 @@ func (c *Chunker) OptimizeChunkerAccessors() {
 
 	close(chunks)
 	wg.Wait()
-
 }
 
 // FromMapAccessor migrates from a MapAccessor to RLE.

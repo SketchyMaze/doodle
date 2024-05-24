@@ -2,7 +2,6 @@ package level
 
 import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level/rle"
-	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -63,7 +62,7 @@ This accessor uses Run Length Encoding (RLE) in its binary format. Starting
 with the top-left pixel of this chunk, the binary format is a stream of bytes
 formatted as such:
 
-- UVarint for the palette index number (0-255), with 0xFF meaning void
+- UVarint for the palette index number (0-255), with 0xFFFF meaning void
 - UVarint for the length of repetition of that palette index
 */
 func (a *RLEAccessor) MarshalBinary() ([]byte, error) {
@@ -103,7 +102,7 @@ func (a *RLEAccessor) UnmarshalBinary(compressed []byte) error {
 	defer a.acc.mu.Unlock()
 
 	// New format: decompress the byte stream.
-	log.Debug("RLEAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
+	// log.Debug("RLEAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
 
 	grid, err := rle.NewGrid(int(a.chunk.Size))
 	if err != nil {
@@ -129,46 +128,3 @@ func (a *RLEAccessor) UnmarshalBinary(compressed []byte) error {
 
 	return nil
 }
-
-/*
-// Prepare the 2D grid to decompress the RLE stream into.
-	var (
-		size         = int(a.chunk.Size)
-		_, err       = rle.NewGrid(size)
-		x, y, cursor int
-	)
-	if err != nil {
-		return err
-	}
-
-	var reader = bytes.NewBuffer(compressed)
-
-	for {
-		var (
-			paletteIndex, err1 = binary.ReadUvarint(reader)
-			repeatCount, err2  = binary.ReadUvarint(reader)
-		)
-
-		if err1 != nil || err2 != nil {
-			log.Error("reading Uvarints from compressed data: {%s, %s}", err1, err2)
-			break
-		}
-
-		log.Warn("RLE index %d for %dpx", paletteIndex, repeatCount)
-
-		for i := uint64(0); i < repeatCount; i++ {
-			cursor++
-			if cursor%size == 0 {
-				y++
-				x = 0
-			} else {
-				x++
-			}
-
-			point := render.NewPoint(int(x), int(y))
-			if paletteIndex != 0xFF {
-				a.acc.grid[point] = NewSparseSwatch(int(paletteIndex))
-			}
-		}
-	}
-*/

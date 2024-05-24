@@ -278,7 +278,7 @@ func (a *MapAccessor) UnmarshalBinary(compressed []byte) error {
 	defer a.mu.Unlock()
 
 	// New format: decompress the byte stream.
-	log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
+	// log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
 
 	var reader = bytes.NewBuffer(compressed)
 
