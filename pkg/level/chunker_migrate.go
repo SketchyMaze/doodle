@@ -36,8 +36,11 @@ func (c *Chunker) OptimizeChunkerAccessors() {
 						ma, _ := chunk.Accessor.(*MapAccessor)
 						rle := NewRLEAccessor(chunk).FromMapAccessor(ma)
 
+						// Lock the chunker for updating.
+						c.chunkMu.Lock()
 						c.Chunks[point].Type = RLEType
 						c.Chunks[point].Accessor = rle
+						c.chunkMu.Unlock()
 					}
 				}
 			}

@@ -15,6 +15,7 @@
   - [Build on macOS from scratch](#build-on-macos-from-scratch)
 - [WebAssembly](#webassembly)
 - [Build Tags](#build-tags)
+  - [doodad](#doodad)
   - [dpp](#dpp)
 
 # Dockerfile
@@ -372,6 +373,13 @@ Some tips to get a WASM build to work:
 # Build Tags
 
 Go build tags used by this game:
+
+## doodad
+
+This tag is used when building the `doodad` command-line tool.
+
+It ensures that the embedded bindata assets (built-in doodads, etc.) do not
+need to be bundled into the doodad binary, but only the main game binary.
 
 ## dpp
 

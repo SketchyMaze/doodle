@@ -101,6 +101,12 @@ func resaveDoodad(c *cli.Context, filename string) error {
 		filename = output
 	}
 
+	if err := dd.Vacuum(); err != nil {
+		log.Error("Vacuum error: %s", err)
+	} else {
+		log.Info("Run vacuum on doodad file.")
+	}
+
 	log.Info("Saving back to disk")
 	if err := dd.WriteJSON(filename); err != nil {
 		return fmt.Errorf("couldn't write %s: %s", filename, err)

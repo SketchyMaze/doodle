@@ -1,3 +1,6 @@
+//go:build !doodad
+// +build !doodad
+
 // Package assets gets us off go-bindata by using Go 1.16 embed support.
 //
 // For Go 1.16 embed, this source file had to live inside the assets/ folder
