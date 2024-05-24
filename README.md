@@ -58,6 +58,7 @@ Some to start with:
 
 * [Building](Building.md) the game (tl;dr. run bootstrap.py)
 * [Tour of the Code](docs/Tour%20of%20the%20Code.md)
+* [Evolution of File Formats](docs/Evolution%20of%20File%20Formats.md)
 
 # Keybindings
 

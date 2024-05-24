@@ -102,6 +102,11 @@ func main() {
 			Usage: "working directory for the game's runtime package",
 		},
 		&cli.BoolFlag{
+			Name:    "new",
+			Aliases: []string{"n"},
+			Usage:   "open immediately to the level editor",
+		},
+		&cli.BoolFlag{
 			Name:    "edit",
 			Aliases: []string{"e"},
 			Usage:   "edit the map given on the command line (instead of play it)",
@@ -248,6 +253,8 @@ func main() {
 
 		if c.Bool("guitest") {
 			game.Goto(&doodle.GUITestScene{})
+		} else if c.Bool("new") {
+			game.NewMap()
 		} else if filename != "" {
 			if c.Bool("edit") {
 				game.EditFile(filename)

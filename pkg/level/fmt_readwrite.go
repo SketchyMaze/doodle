@@ -3,6 +3,7 @@ package level
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"strings"
 
@@ -96,7 +97,9 @@ func (m *Level) WriteFile(filename string) error {
 	m.GameVersion = branding.Version
 
 	// Maintenance functions, clean up cruft before save.
-	m.PruneLinks()
+	if err := m.Vacuum(); err != nil {
+		log.Error("Vacuum level %s: %s", filename, err)
+	}
 
 	bin, err := m.ToJSON()
 	if err != nil {
@@ -115,7 +118,7 @@ func (m *Level) WriteFile(filename string) error {
 	}
 
 	// Desktop: write to disk.
-	err = ioutil.WriteFile(filename, bin, 0644)
+	err = os.WriteFile(filename, bin, 0644)
 	if err != nil {
 		return fmt.Errorf("level.WriteFile: %s", err)
 	}

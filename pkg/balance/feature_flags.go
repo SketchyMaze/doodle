@@ -28,6 +28,12 @@ const (
 	// If you set both flags to false, level zipfiles will use the classic
 	// json chunk format as before on save.
 	BinaryChunkerEnabled = true
+
+	// Enable "v3" Run-Length Encoding for level chunker.
+	//
+	// This only supports Zipfile levels and will use the ".bin" format
+	// enabled by the previous setting.
+	RLEBinaryChunkerEnabled = true
 )
 
 // Feature Flags to turn on/off experimental content.

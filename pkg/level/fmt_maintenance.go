@@ -4,6 +4,21 @@ import "git.kirsle.net/SketchyMaze/doodle/pkg/log"
 
 // Maintenance functions for the file format on disk.
 
+// Vacuum runs any maintenance or migration tasks for the level at time of save.
+//
+// It will prune broken links between actors, or migrate internal data structures
+// to optimize storage on disk of its binary data.
+func (m *Level) Vacuum() error {
+	if links := m.PruneLinks(); links > 0 {
+		log.Debug("Vacuum: removed %d broken links between actors in this level.")
+	}
+
+	// Let the Chunker optimize accessor types.
+	m.Chunker.OptimizeChunkerAccessors()
+
+	return nil
+}
+
 // PruneLinks cleans up any Actor Links that can not be resolved in the
 // level data. For example, if actors were linked in Edit Mode and one
 // actor is deleted leaving a broken link.

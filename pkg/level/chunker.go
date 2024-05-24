@@ -325,7 +325,7 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 
 	// Hit the zipfile for it.
 	if c.Zipfile != nil {
-		if chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, p); err == nil {
+		if chunk, err := c.ChunkFromZipfile(p); err == nil {
 			// log.Debug("GetChunk(%s) cache miss, read from zip", p)
 			c.SetChunk(p, chunk)       // cache it
 			c.logChunkAccess(p, chunk) // for the LRU cache
@@ -603,6 +603,51 @@ func (c *Chunker) ChunkCoordinate(abs render.Point) render.Point {
 		int(math.Floor(float64(abs.X)/size)),
 		int(math.Floor(float64(abs.Y)/size)),
 	)
+}
+
+// RelativeCoordinate will translate from an absolute world coordinate, into one that
+// is relative to fit inside of the chunk with the given chunk coordinate and size.
+//
+// Example:
+//
+// - With 128x128 chunks and a world coordinate of (280,-600)
+// - The ChunkCoordinate would be (2,-4) which encompasses (256,-512) to (383,-639)
+// - And relative inside that chunk, the pixel is at (24,)
+func RelativeCoordinate(abs render.Point, chunkCoord render.Point, chunkSize uint8) render.Point {
+	// Pixel coordinate offset.
+	var (
+		size   = int(chunkSize)
+		offset = render.Point{
+			X: chunkCoord.X * size,
+			Y: chunkCoord.Y * size,
+		}
+		point = render.Point{
+			X: abs.X - offset.X,
+			Y: abs.Y - offset.Y,
+		}
+	)
+
+	return point
+}
+
+// FromRelativeCoordinate is the inverse of RelativeCoordinate.
+//
+// With a chunk size of 128 and a relative coordinate like (8, 12),
+// this function will return the absolute world coordinates based
+// on your chunk.Point's placement in the level.
+func FromRelativeCoordinate(rel render.Point, chunkCoord render.Point, chunkSize uint8) render.Point {
+	var (
+		size   = int(chunkSize)
+		offset = render.Point{
+			X: chunkCoord.X * size,
+			Y: chunkCoord.Y * size,
+		}
+	)
+
+	return render.Point{
+		X: rel.X + offset.X,
+		Y: rel.Y + offset.Y,
+	}
 }
 
 // ChunkMap maps a chunk coordinate to its chunk data.

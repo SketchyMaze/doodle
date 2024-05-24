@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -9,6 +11,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/enum"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/level/rle"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"github.com/urfave/cli/v2"
 )
@@ -43,6 +46,14 @@ func init() {
 				Name:    "verbose",
 				Aliases: []string{"v"},
 				Usage:   "print verbose output (all verbose flags enabled)",
+			},
+			&cli.BoolFlag{
+				Name:  "visualize-rle",
+				Usage: "visually dump RLE encoded chunks to the terminal (VERY noisy for large drawings!)",
+			},
+			&cli.StringFlag{
+				Name:  "chunk",
+				Usage: "specific chunk coordinate; when debugging chunks, only show this chunk (example: 2,-1)",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -263,6 +274,10 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 		chunkSize = int(ch.Size)
 		width     = worldSize.W - worldSize.X
 		height    = worldSize.H - worldSize.Y
+
+		// Chunk debugging CLI options.
+		visualize     = c.Bool("visualize-rle")
+		specificChunk = c.String("chunk")
 	)
 	fmt.Println("Chunks:")
 	fmt.Printf("  Pixels Per Chunk: %d^2\n", ch.Size)
@@ -278,7 +293,18 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 	// Verbose chunk information.
 	if c.Bool("chunks") || c.Bool("verbose") {
 		fmt.Println("  Chunk Details:")
-		for point, chunk := range ch.Chunks {
+		for point := range ch.IterChunks() {
+			// Debugging specific chunk coordinate?
+			if specificChunk != "" && point.String() != specificChunk {
+				log.Warn("Skip chunk %s: not the specific chunk you're looking for", point)
+				continue
+			}
+
+			chunk, ok := ch.GetChunk(point)
+			if !ok {
+				continue
+			}
+
 			fmt.Printf("  - Coord: %s\n", point)
 			fmt.Printf("     Type: %s\n", chunkTypeToName(chunk.Type))
 			fmt.Printf("    Range: (%d,%d) ... (%d,%d)\n",
@@ -287,6 +313,33 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 				(int(point.X)*chunkSize)+chunkSize,
 				(int(point.Y)*chunkSize)+chunkSize,
 			)
+			fmt.Printf("    Usage: %f (%d len of %d)\n", chunk.Usage(), chunk.Len(), chunkSize*chunkSize)
+
+			// Visualize the RLE encoded chunks?
+			if visualize && chunk.Type == level.RLEType {
+				ext, bin, err := ch.RawChunkFromZipfile(point)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				} else if ext != ".bin" {
+					log.Error("Unexpected filetype for RLE compressed chunk (expected .bin, got %s)", ext)
+					continue
+				}
+
+				// Read off the first byte (chunk type)
+				var reader = bytes.NewBuffer(bin)
+				binary.ReadUvarint(reader)
+				bin = reader.Bytes()
+
+				grid, err := rle.NewGrid(chunkSize)
+				if err != nil {
+					log.Error(err.Error())
+					continue
+				}
+
+				grid.Decompress(bin)
+				fmt.Println(grid.Visualize())
+			}
 		}
 	} else {
 		fmt.Println("  Use -chunks or -verbose to serialize Chunks")
@@ -298,8 +351,8 @@ func chunkTypeToName(v uint64) string {
 	switch v {
 	case level.MapType:
 		return "map"
-	case level.GridType:
-		return "grid"
+	case level.RLEType:
+		return "rle map"
 	default:
 		return fmt.Sprintf("type %d", v)
 	}

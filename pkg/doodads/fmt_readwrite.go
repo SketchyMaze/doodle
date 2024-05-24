@@ -164,6 +164,11 @@ func (d *Doodad) WriteFile(filename string) error {
 	d.Version = 1
 	d.GameVersion = branding.Version
 
+	// Maintenance functions, clean up cruft before save.
+	if err := d.Vacuum(); err != nil {
+		log.Error("Vacuum level %s: %s", filename, err)
+	}
+
 	bin, err := d.ToJSON()
 	if err != nil {
 		return err

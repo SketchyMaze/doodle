@@ -21,27 +21,10 @@ func init() {
 		Usage:     "load and re-save a level or doodad file to migrate to newer file format versions",
 		ArgsUsage: "<.level or .doodad>",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "actors",
-				Usage: "print verbose actor data in Level files",
-			},
-			&cli.BoolFlag{
-				Name:  "chunks",
-				Usage: "print verbose data about all the pixel chunks in a file",
-			},
-			&cli.BoolFlag{
-				Name:  "script",
-				Usage: "print the script from a doodad file and exit",
-			},
 			&cli.StringFlag{
-				Name:    "attachment",
-				Aliases: []string{"a"},
-				Usage:   "print the contents of the attached filename to terminal",
-			},
-			&cli.BoolFlag{
-				Name:    "verbose",
-				Aliases: []string{"v"},
-				Usage:   "print verbose output (all verbose flags enabled)",
+				Name:    "output",
+				Aliases: []string{"o"},
+				Usage:   "write to a different file than the input",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -84,6 +67,18 @@ func resaveLevel(c *cli.Context, filename string) error {
 	log.Info("Loaded level from file: %s", filename)
 	log.Info("Last saved game version: %s", lvl.GameVersion)
 
+	// Different output filename?
+	if output := c.String("output"); output != "" {
+		log.Info("Output will be saved to: %s", output)
+		filename = output
+	}
+
+	if err := lvl.Vacuum(); err != nil {
+		log.Error("Vacuum error: %s", err)
+	} else {
+		log.Info("Run vacuum on level file.")
+	}
+
 	log.Info("Saving back to disk")
 	if err := lvl.WriteJSON(filename); err != nil {
 		return fmt.Errorf("couldn't write %s: %s", filename, err)
@@ -99,6 +94,18 @@ func resaveDoodad(c *cli.Context, filename string) error {
 
 	log.Info("Loaded doodad from file: %s", filename)
 	log.Info("Last saved game version: %s", dd.GameVersion)
+
+	// Different output filename?
+	if output := c.String("output"); output != "" {
+		log.Info("Output will be saved to: %s", output)
+		filename = output
+	}
+
+	if err := dd.Vacuum(); err != nil {
+		log.Error("Vacuum error: %s", err)
+	} else {
+		log.Info("Run vacuum on doodad file.")
+	}
 
 	log.Info("Saving back to disk")
 	if err := dd.WriteJSON(filename); err != nil {

@@ -1,5 +1,34 @@
 # Changes
 
+## v0.14.1 (TBD)
+
+The file format for Levels and Doodads has been optimized to store drawing data
+with Run Length Encoding (RLE) compression which nets a filesize savings upwards
+of 90%, especially for levels featuring large areas of solid colors.
+
+* For example, the Shapeshifter level from the First Quest has shrank from
+  22 MB to only 263 KB.
+* The complete size of the First Quest levelpack from the previous release of
+  the game shrinks from 50 MB to only 1.8 MB!
+* The game is still able to load levels and doodads created by previous releases
+  and will automatically convert them into the optimized RLE format when you
+  save them back to disk.
+* The `doodad resave` command can also optimize your levels and doodads outside
+  of the game's editor.
+
+Other miscellaneous changes:
+
+* Command line option `sketchymaze --new` to open the game quickly to a new
+  level in the editor.
+
+Cleanup of old features and unused code:
+
+* The game can no longer save any Chunk files in their legacy JSON format: it
+  can still read JSON but all writes will be in the binary chunk format (usually
+  with the new RLE compression). Regular releases of the game have not been
+  writing in the JSON format for a while as it is controlled by hard-coded
+  feature flag constants.
+
 ## v0.14.0 (May 4 2024)
 
 Level screenshots and thumbnails:
