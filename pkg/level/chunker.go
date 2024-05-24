@@ -74,7 +74,6 @@ func (c *Chunker) Inflate(pal *Palette) error {
 	for coord, chunk := range c.Chunks {
 		chunk.Point = coord
 		chunk.Size = c.Size
-		chunk.SetChunkCoordinate(chunk.Point, chunk.Size)
 		chunk.Inflate(pal)
 	}
 	return nil
@@ -326,7 +325,7 @@ func (c *Chunker) GetChunk(p render.Point) (*Chunk, bool) {
 
 	// Hit the zipfile for it.
 	if c.Zipfile != nil {
-		if chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, p); err == nil {
+		if chunk, err := c.ChunkFromZipfile(p); err == nil {
 			// log.Debug("GetChunk(%s) cache miss, read from zip", p)
 			c.SetChunk(p, chunk)       // cache it
 			c.logChunkAccess(p, chunk) // for the LRU cache
@@ -446,7 +445,6 @@ func (c *Chunker) FreeCaches() int {
 // This function should be the singular writer to the chunk cache.
 func (c *Chunker) SetChunk(p render.Point, chunk *Chunk) {
 	c.chunkMu.Lock()
-	chunk.SetChunkCoordinate(p, chunk.Size)
 	c.Chunks[p] = chunk
 	c.chunkMu.Unlock()
 
@@ -623,11 +621,37 @@ func RelativeCoordinate(abs render.Point, chunkCoord render.Point, chunkSize uin
 			X: chunkCoord.X * size,
 			Y: chunkCoord.Y * size,
 		}
+		point = render.Point{
+			X: abs.X - offset.X,
+			Y: abs.Y - offset.Y,
+		}
+	)
+
+	if point.X < 0 || point.Y < 0 {
+		log.Error("RelativeCoordinate: X < 0! abs=%s rel=%s chunk=%s size=%d", abs, point, chunkCoord, chunkSize)
+		log.Error("RelativeCoordinate(2): size=%d offset=%s point=%s", size, offset, point)
+	}
+
+	return point
+}
+
+// FromRelativeCoordinate is the inverse of RelativeCoordinate.
+//
+// With a chunk size of 128 and a relative coordinate like (8, 12),
+// this function will return the absolute world coordinates based
+// on your chunk.Point's placement in the level.
+func FromRelativeCoordinate(rel render.Point, chunkCoord render.Point, chunkSize uint8) render.Point {
+	var (
+		size   = int(chunkSize)
+		offset = render.Point{
+			X: chunkCoord.X * size,
+			Y: chunkCoord.Y * size,
+		}
 	)
 
 	return render.Point{
-		X: abs.X - offset.X,
-		Y: abs.Y - offset.Y,
+		X: rel.X + offset.X,
+		Y: rel.Y + offset.Y,
 	}
 }
 

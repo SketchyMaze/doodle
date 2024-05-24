@@ -228,3 +228,98 @@ func TestViewportChunks(t *testing.T) {
 		}
 	}
 }
+
+func TestRelativeCoordinates(t *testing.T) {
+
+	var (
+		chunker = level.NewChunker(128)
+	)
+
+	type TestCase struct {
+		WorldCoord     render.Point
+		ChunkCoord     render.Point
+		ExpectRelative render.Point
+	}
+	var tests = []TestCase{
+		{
+			WorldCoord:     render.NewPoint(4, 8),
+			ExpectRelative: render.NewPoint(4, 8),
+		},
+		{
+			WorldCoord:     render.NewPoint(128, 128),
+			ExpectRelative: render.NewPoint(0, 0),
+		},
+		{
+			WorldCoord:     render.NewPoint(143, 144),
+			ExpectRelative: render.NewPoint(15, 16),
+		},
+		{
+			WorldCoord:     render.NewPoint(-105, -86),
+			ExpectRelative: render.NewPoint(23, 42),
+		},
+		{
+			WorldCoord:     render.NewPoint(-252, 264),
+			ExpectRelative: render.NewPoint(4, 8),
+		},
+
+		// These were seen breaking actual levels, at the corners of the chunk
+		{
+			WorldCoord:     render.NewPoint(511, 256),
+			ExpectRelative: render.NewPoint(127, 0), // was getting -1,0 in game
+		},
+		{
+			WorldCoord:     render.NewPoint(511, 512),
+			ChunkCoord:     render.NewPoint(4, 4),
+			ExpectRelative: render.NewPoint(127, 0), // was getting -1,0 in game
+		},
+		{
+			WorldCoord:     render.NewPoint(127, 384),
+			ChunkCoord:     render.NewPoint(1, 3),
+			ExpectRelative: render.NewPoint(-1, 0),
+		},
+	}
+	for i, test := range tests {
+		var (
+			chunkCoord     = test.ChunkCoord
+			actualRelative = level.RelativeCoordinate(
+				test.WorldCoord,
+				chunkCoord,
+				chunker.Size,
+			)
+			roundTrip = level.FromRelativeCoordinate(
+				actualRelative,
+				chunkCoord,
+				chunker.Size,
+			)
+		)
+
+		// compute expected chunk coord automatically?
+		if chunkCoord == render.Origin {
+			chunkCoord = chunker.ChunkCoordinate(test.WorldCoord)
+		}
+
+		if actualRelative != test.ExpectRelative {
+			t.Errorf("Test %d: world coord %s in chunk %s\n"+
+				"Expected RelativeCoordinate() to be: %s\n"+
+				"But it was: %s",
+				i,
+				test.WorldCoord,
+				chunkCoord,
+				test.ExpectRelative,
+				actualRelative,
+			)
+		}
+
+		if roundTrip != test.WorldCoord {
+			t.Errorf("Test %d: world coord %s in chunk %s\n"+
+				"Did not survive round trip! Expected: %s\n"+
+				"But it was: %s",
+				i,
+				test.WorldCoord,
+				chunkCoord,
+				test.WorldCoord,
+				roundTrip,
+			)
+		}
+	}
+}

@@ -16,23 +16,22 @@ import (
 // MapAccessor implements a chunk accessor by using a map of points to their
 // palette indexes. This is the simplest accessor and is best for sparse chunks.
 type MapAccessor struct {
-	coord render.Point `json:"-"` // chunk coordinate, assigned by Chunker
-	size  uint8        `json:"-"` // chunk size, assigned by Chunker
+	chunk *Chunk // Pointer to parent struct, for its Size and Point
 	grid  map[render.Point]*Swatch
 	mu    sync.RWMutex
 }
 
 // NewMapAccessor initializes a MapAccessor.
-func NewMapAccessor() *MapAccessor {
+func NewMapAccessor(chunk *Chunk) *MapAccessor {
 	return &MapAccessor{
-		grid: map[render.Point]*Swatch{},
+		chunk: chunk,
+		grid:  map[render.Point]*Swatch{},
 	}
 }
 
-// SetChunkCoordinate receives our chunk's coordinate from the Chunker.
-func (a *MapAccessor) SetChunkCoordinate(p render.Point, size uint8) {
-	a.coord = p
-	a.size = size
+// Reset the MapAccessor.
+func (a *MapAccessor) Reset() {
+	a.grid = map[render.Point]*Swatch{}
 }
 
 // Inflate the sparse swatches from their palette indexes.

@@ -129,8 +129,10 @@ func TestChunker(t *testing.T) {
 
 // Test the map chunk accessor.
 func TestMapAccessor(t *testing.T) {
-	a := level.NewMapAccessor()
-	_ = a
+	var (
+		c = level.NewChunk()
+		a = level.NewMapAccessor(c)
+	)
 
 	// Test action types
 	var (

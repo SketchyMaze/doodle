@@ -24,6 +24,9 @@ const (
 	GridType
 )
 
+// Default chunk type for newly created chunks (was MapType).
+const DefaultChunkType = RLEType
+
 // Chunk holds a single portion of the pixel canvas.
 type Chunk struct {
 	Type uint64 // map vs. 2D array.
@@ -55,7 +58,6 @@ type JSONChunk struct {
 // Accessor provides a high-level API to interact with absolute pixel coordinates
 // while abstracting away the details of how they're stored.
 type Accessor interface {
-	SetChunkCoordinate(render.Point, uint8)
 	Inflate(*Palette) error
 	Iter() <-chan Pixel
 	IterViewport(viewport render.Rect) <-chan Pixel
@@ -69,10 +71,11 @@ type Accessor interface {
 
 // NewChunk creates a new chunk.
 func NewChunk() *Chunk {
-	return &Chunk{
-		Type:     RLEType,
-		Accessor: NewRLEAccessor(),
+	var c = &Chunk{
+		Type: RLEType,
 	}
+	c.Accessor = NewRLEAccessor(c)
+	return c
 }
 
 // Texture will return a cached texture for the rendering engine for this
@@ -335,6 +338,9 @@ func (c *Chunk) Usage(size int) float64 {
 // parse the inner details.
 //
 // DEPRECATED in favor of binary marshalling.
+//
+// Only supports MapAccessor chunk types, which was the only one supported
+// before this function was deprecated.
 func (c *Chunk) UnmarshalJSON(b []byte) error {
 	// Parse it generically so we can hand off the inner "data" object to the
 	// right accessor for unmarshalling.
@@ -346,7 +352,7 @@ func (c *Chunk) UnmarshalJSON(b []byte) error {
 
 	switch c.Type {
 	case MapType:
-		c.Accessor = NewMapAccessor()
+		c.Accessor = NewMapAccessor(c)
 		if unmarshaler, ok := c.Accessor.(json.Unmarshaler); ok {
 			return unmarshaler.UnmarshalJSON(generic.Data)
 		}
@@ -393,12 +399,12 @@ func (c *Chunk) UnmarshalBinary(b []byte) error {
 	// Decode the rest of the byte stream.
 	switch chunkType {
 	case MapType:
-		c.Accessor = NewMapAccessor()
-		c.Accessor.SetChunkCoordinate(c.Point, c.Size)
+		c.Type = MapType
+		c.Accessor = NewMapAccessor(c)
 		return c.Accessor.UnmarshalBinary(reader.Bytes())
 	case RLEType:
-		c.Accessor = NewRLEAccessor()
-		c.Accessor.SetChunkCoordinate(c.Point, c.Size)
+		c.Type = RLEType
+		c.Accessor = NewRLEAccessor(c)
 		return c.Accessor.UnmarshalBinary(reader.Bytes())
 	default:
 		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)

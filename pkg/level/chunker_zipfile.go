@@ -93,7 +93,7 @@ func (c *Chunker) MigrateZipfile(zf *zip.Writer) error {
 				}
 
 				// Verify that this chunk file in the old ZIP was not empty.
-				chunk, err := ChunkFromZipfile(c.Zipfile, c.Layer, point)
+				chunk, err := c.ChunkFromZipfile(point)
 				if err == nil && chunk.Len() == 0 {
 					log.Debug("Skip chunk %s (old zipfile chunk was empty)", coord)
 					continue
@@ -205,13 +205,19 @@ func (c *Chunk) ToZipfile(zf *zip.Writer, layer int, coord render.Point) error {
 }
 
 // ChunkFromZipfile loads a chunk from a zipfile.
-func ChunkFromZipfile(zf *zip.Reader, layer int, coord render.Point) (*Chunk, error) {
+func (c *Chunker) ChunkFromZipfile(coord render.Point) (*Chunk, error) {
 	// File names?
 	var (
+		zf    = c.Zipfile
+		layer = c.Layer
+
 		binfile  = fmt.Sprintf("chunks/%d/%s.bin", layer, coord)
 		jsonfile = fmt.Sprintf("chunks/%d/%s.json", layer, coord)
 		chunk    = NewChunk()
 	)
+
+	chunk.Point = coord
+	chunk.Size = c.Size
 
 	// Read from the new binary format.
 	if file, err := zf.Open(binfile); err == nil {
