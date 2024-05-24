@@ -2,6 +2,7 @@ package level
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -190,11 +191,7 @@ func (c *Chunk) ToZipfile(zf *zip.Writer, layer int, coord render.Point) error {
 			data = bytes
 		}
 	} else {
-		if json, err := c.MarshalJSON(); err != nil {
-			return err
-		} else {
-			data = json
-		}
+		return errors.New("Chunk.ToZipfile: JSON chunk format no longer supported for writing")
 	}
 
 	// Write the file contents to zip whether binary or json.
@@ -226,6 +223,7 @@ func ChunkFromZipfile(zf *zip.Reader, layer int, coord render.Point) (*Chunk, er
 
 		err = chunk.UnmarshalBinary(bin)
 		if err != nil {
+			log.Error("ChunkFromZipfile(%s): %s", coord, err)
 			return nil, err
 		}
 	} else if file, err := zf.Open(jsonfile); err == nil {

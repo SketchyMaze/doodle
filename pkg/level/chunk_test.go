@@ -242,54 +242,88 @@ func TestChunkCoordinates(t *testing.T) {
 	c := level.NewChunker(128)
 
 	type testCase struct {
-		In     render.Point
-		Expect render.Point
+		WorldCoordinate    render.Point
+		ChunkCoordinate    render.Point
+		RelativeCoordinate render.Point
 	}
 	tests := []testCase{
 		testCase{
-			In:     render.NewPoint(0, 0),
-			Expect: render.NewPoint(0, 0),
+			WorldCoordinate:    render.NewPoint(0, 0),
+			ChunkCoordinate:    render.NewPoint(0, 0),
+			RelativeCoordinate: render.NewPoint(0, 0),
 		},
 		testCase{
-			In:     render.NewPoint(128, 128),
-			Expect: render.NewPoint(0, 0),
+			WorldCoordinate:    render.NewPoint(4, 8),
+			ChunkCoordinate:    render.NewPoint(0, 0),
+			RelativeCoordinate: render.NewPoint(4, 8),
 		},
 		testCase{
-			In:     render.NewPoint(1024, 128),
-			Expect: render.NewPoint(1, 0),
+			WorldCoordinate:    render.NewPoint(128, 128),
+			ChunkCoordinate:    render.NewPoint(1, 1),
+			RelativeCoordinate: render.NewPoint(0, 0),
 		},
 		testCase{
-			In:     render.NewPoint(3600, 1228),
-			Expect: render.NewPoint(3, 1),
+			WorldCoordinate:    render.NewPoint(130, 156),
+			ChunkCoordinate:    render.NewPoint(1, 1),
+			RelativeCoordinate: render.NewPoint(2, 28),
 		},
 		testCase{
-			In:     render.NewPoint(-100, -1),
-			Expect: render.NewPoint(-1, -1),
+			WorldCoordinate:    render.NewPoint(1024, 128),
+			ChunkCoordinate:    render.NewPoint(8, 1),
+			RelativeCoordinate: render.NewPoint(0, 0),
 		},
 		testCase{
-			In:     render.NewPoint(-950, 100),
-			Expect: render.NewPoint(-1, 0),
+			WorldCoordinate:    render.NewPoint(3600, 1228),
+			ChunkCoordinate:    render.NewPoint(28, 9),
+			RelativeCoordinate: render.NewPoint(16, 76),
 		},
 		testCase{
-			In:     render.NewPoint(-1001, -856),
-			Expect: render.NewPoint(-2, -1),
+			WorldCoordinate:    render.NewPoint(-100, -1),
+			ChunkCoordinate:    render.NewPoint(-1, -1),
+			RelativeCoordinate: render.NewPoint(28, 127),
 		},
 		testCase{
-			In:     render.NewPoint(-3600, -4800),
-			Expect: render.NewPoint(-4, -5),
+			WorldCoordinate:    render.NewPoint(-950, 100),
+			ChunkCoordinate:    render.NewPoint(-8, 0),
+			RelativeCoordinate: render.NewPoint(74, 100),
+		},
+		testCase{
+			WorldCoordinate:    render.NewPoint(-1001, -856),
+			ChunkCoordinate:    render.NewPoint(-8, -7),
+			RelativeCoordinate: render.NewPoint(23, 40),
+		},
+		testCase{
+			WorldCoordinate:    render.NewPoint(-3600, -4800),
+			ChunkCoordinate:    render.NewPoint(-29, -38),
+			RelativeCoordinate: render.NewPoint(112, 64),
 		},
 	}
 
 	for _, test := range tests {
-		actual := c.ChunkCoordinate(test.In)
-		if actual != test.Expect {
+		// Test conversion from world to chunk coordinate.
+		actual := c.ChunkCoordinate(test.WorldCoordinate)
+		if actual != test.ChunkCoordinate {
 			t.Errorf(
 				"Failed ChunkCoordinate conversion:\n"+
 					"   Input: %s\n"+
 					"Expected: %s\n"+
 					"     Got: %s",
-				test.In,
-				test.Expect,
+				test.WorldCoordinate,
+				test.ChunkCoordinate,
+				actual,
+			)
+		}
+
+		// Test the relative (inside-chunk) coordinate.
+		actual = level.RelativeCoordinate(test.WorldCoordinate, actual, c.Size)
+		if actual != test.RelativeCoordinate {
+			t.Errorf(
+				"Failed RelativeCoordinate conversion:\n"+
+					"   Input: %s\n"+
+					"Expected: %s\n"+
+					"     Got: %s",
+				test.WorldCoordinate,
+				test.RelativeCoordinate,
 				actual,
 			)
 		}

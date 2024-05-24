@@ -16,8 +16,10 @@ import (
 // MapAccessor implements a chunk accessor by using a map of points to their
 // palette indexes. This is the simplest accessor and is best for sparse chunks.
 type MapAccessor struct {
-	grid map[render.Point]*Swatch
-	mu   sync.RWMutex
+	coord render.Point `json:"-"` // chunk coordinate, assigned by Chunker
+	size  uint8        `json:"-"` // chunk size, assigned by Chunker
+	grid  map[render.Point]*Swatch
+	mu    sync.RWMutex
 }
 
 // NewMapAccessor initializes a MapAccessor.
@@ -25,6 +27,12 @@ func NewMapAccessor() *MapAccessor {
 	return &MapAccessor{
 		grid: map[render.Point]*Swatch{},
 	}
+}
+
+// SetChunkCoordinate receives our chunk's coordinate from the Chunker.
+func (a *MapAccessor) SetChunkCoordinate(p render.Point, size uint8) {
+	a.coord = p
+	a.size = size
 }
 
 // Inflate the sparse swatches from their palette indexes.
@@ -271,7 +279,7 @@ func (a *MapAccessor) UnmarshalBinary(compressed []byte) error {
 	defer a.mu.Unlock()
 
 	// New format: decompress the byte stream.
-	//log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
+	log.Debug("MapAccessor.Unmarshal: Reading %d bytes of compressed chunk data", len(compressed))
 
 	var reader = bytes.NewBuffer(compressed)
 

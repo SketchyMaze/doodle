@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"math"
@@ -19,6 +20,7 @@ import (
 // Types of chunks.
 const (
 	MapType uint64 = iota
+	RLEType
 	GridType
 )
 
@@ -53,6 +55,7 @@ type JSONChunk struct {
 // Accessor provides a high-level API to interact with absolute pixel coordinates
 // while abstracting away the details of how they're stored.
 type Accessor interface {
+	SetChunkCoordinate(render.Point, uint8)
 	Inflate(*Palette) error
 	Iter() <-chan Pixel
 	IterViewport(viewport render.Rect) <-chan Pixel
@@ -62,15 +65,13 @@ type Accessor interface {
 	Len() int
 	MarshalBinary() ([]byte, error)
 	UnmarshalBinary([]byte) error
-	MarshalJSON() ([]byte, error)
-	UnmarshalJSON([]byte) error
 }
 
 // NewChunk creates a new chunk.
 func NewChunk() *Chunk {
 	return &Chunk{
-		Type:     MapType,
-		Accessor: NewMapAccessor(),
+		Type:     RLEType,
+		Accessor: NewRLEAccessor(),
 	}
 }
 
@@ -330,23 +331,6 @@ func (c *Chunk) Usage(size int) float64 {
 	return float64(c.Len()) / float64(size)
 }
 
-// MarshalJSON writes the chunk to JSON.
-//
-// DEPRECATED: MarshalBinary will encode chunks to a tighter binary format.
-func (c *Chunk) MarshalJSON() ([]byte, error) {
-	data, err := c.Accessor.MarshalJSON()
-	if err != nil {
-		return []byte{}, err
-	}
-
-	generic := &JSONChunk{
-		Type: c.Type,
-		Data: data,
-	}
-	b, err := json.Marshal(generic)
-	return b, err
-}
-
 // UnmarshalJSON loads the chunk from JSON and uses the correct accessor to
 // parse the inner details.
 //
@@ -363,7 +347,10 @@ func (c *Chunk) UnmarshalJSON(b []byte) error {
 	switch c.Type {
 	case MapType:
 		c.Accessor = NewMapAccessor()
-		return c.Accessor.UnmarshalJSON(generic.Data)
+		if unmarshaler, ok := c.Accessor.(json.Unmarshaler); ok {
+			return unmarshaler.UnmarshalJSON(generic.Data)
+		}
+		return errors.New("Chunk.UnmarshalJSON: this chunk doesn't support JSON unmarshaling")
 	default:
 		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)
 	}
@@ -407,6 +394,11 @@ func (c *Chunk) UnmarshalBinary(b []byte) error {
 	switch chunkType {
 	case MapType:
 		c.Accessor = NewMapAccessor()
+		c.Accessor.SetChunkCoordinate(c.Point, c.Size)
+		return c.Accessor.UnmarshalBinary(reader.Bytes())
+	case RLEType:
+		c.Accessor = NewRLEAccessor()
+		c.Accessor.SetChunkCoordinate(c.Point, c.Size)
 		return c.Accessor.UnmarshalBinary(reader.Bytes())
 	default:
 		return fmt.Errorf("Chunk.UnmarshalJSON: unsupported chunk type '%d'", c.Type)

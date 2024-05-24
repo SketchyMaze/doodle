@@ -74,6 +74,7 @@ func (c *Chunker) Inflate(pal *Palette) error {
 	for coord, chunk := range c.Chunks {
 		chunk.Point = coord
 		chunk.Size = c.Size
+		chunk.SetChunkCoordinate(chunk.Point, chunk.Size)
 		chunk.Inflate(pal)
 	}
 	return nil
@@ -445,6 +446,7 @@ func (c *Chunker) FreeCaches() int {
 // This function should be the singular writer to the chunk cache.
 func (c *Chunker) SetChunk(p render.Point, chunk *Chunk) {
 	c.chunkMu.Lock()
+	chunk.SetChunkCoordinate(p, chunk.Size)
 	c.Chunks[p] = chunk
 	c.chunkMu.Unlock()
 
@@ -603,6 +605,30 @@ func (c *Chunker) ChunkCoordinate(abs render.Point) render.Point {
 		int(math.Floor(float64(abs.X)/size)),
 		int(math.Floor(float64(abs.Y)/size)),
 	)
+}
+
+// RelativeCoordinate will translate from an absolute world coordinate, into one that
+// is relative to fit inside of the chunk with the given chunk coordinate and size.
+//
+// Example:
+//
+// - With 128x128 chunks and a world coordinate of (280,-600)
+// - The ChunkCoordinate would be (2,-4) which encompasses (256,-512) to (383,-639)
+// - And relative inside that chunk, the pixel is at (24,)
+func RelativeCoordinate(abs render.Point, chunkCoord render.Point, chunkSize uint8) render.Point {
+	// Pixel coordinate offset.
+	var (
+		size   = int(chunkSize)
+		offset = render.Point{
+			X: chunkCoord.X * size,
+			Y: chunkCoord.Y * size,
+		}
+	)
+
+	return render.Point{
+		X: abs.X - offset.X,
+		Y: abs.Y - offset.Y,
+	}
 }
 
 // ChunkMap maps a chunk coordinate to its chunk data.
