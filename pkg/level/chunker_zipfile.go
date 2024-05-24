@@ -4,7 +4,7 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"regexp"
 	"strconv"
 
@@ -206,6 +206,42 @@ func (c *Chunk) ToZipfile(zf *zip.Writer, layer int, coord render.Point) error {
 
 // ChunkFromZipfile loads a chunk from a zipfile.
 func (c *Chunker) ChunkFromZipfile(coord render.Point) (*Chunk, error) {
+	// Grab the chunk (bin or json) from the Zipfile.
+	ext, bin, err := c.RawChunkFromZipfile(coord)
+	if err != nil {
+		return nil, err
+	}
+
+	var chunk = NewChunk()
+	chunk.Point = coord
+	chunk.Size = c.Size
+
+	switch ext {
+	case ".bin":
+		// New style .bin compressed format:
+		// Either a MapAccessor compressed bin, or RLE compressed.
+		err = chunk.UnmarshalBinary(bin)
+		if err != nil {
+			log.Error("ChunkFromZipfile(%s): %s", coord, err)
+			return nil, err
+		}
+	case ".json":
+		// Legacy style plain .json file (MapAccessor only).
+		err = chunk.UnmarshalJSON(bin)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unexpected filetype found for this chunk: %s", ext)
+	}
+
+	return chunk, nil
+}
+
+// RawChunkFromZipfile loads a chunk from a zipfile and returns its raw binary content.
+//
+// Returns the file extension (".bin" or ".json"), raw bytes, and an error.
+func (c *Chunker) RawChunkFromZipfile(coord render.Point) (string, []byte, error) {
 	// File names?
 	var (
 		zf    = c.Zipfile
@@ -213,41 +249,18 @@ func (c *Chunker) ChunkFromZipfile(coord render.Point) (*Chunk, error) {
 
 		binfile  = fmt.Sprintf("chunks/%d/%s.bin", layer, coord)
 		jsonfile = fmt.Sprintf("chunks/%d/%s.json", layer, coord)
-		chunk    = NewChunk()
 	)
-
-	chunk.Point = coord
-	chunk.Size = c.Size
 
 	// Read from the new binary format.
 	if file, err := zf.Open(binfile); err == nil {
-		// log.Debug("Reading binary compressed chunk from %s", binfile)
-		bin, err := ioutil.ReadAll(file)
-		if err != nil {
-			return nil, err
-		}
-
-		err = chunk.UnmarshalBinary(bin)
-		if err != nil {
-			log.Error("ChunkFromZipfile(%s): %s", coord, err)
-			return nil, err
-		}
+		data, err := io.ReadAll(file)
+		return ".bin", data, err
 	} else if file, err := zf.Open(jsonfile); err == nil {
-		// log.Debug("Reading JSON encoded chunk from %s", jsonfile)
-		bin, err := ioutil.ReadAll(file)
-		if err != nil {
-			return nil, err
-		}
-
-		err = chunk.UnmarshalJSON(bin)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, err
+		data, err := io.ReadAll(file)
+		return ".json", data, err
 	}
 
-	return chunk, nil
+	return "", nil, errors.New("not found in zipfile")
 }
 
 // ChunksInZipfile returns the list of chunk coordinates in a zipfile.

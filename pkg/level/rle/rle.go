@@ -5,10 +5,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"strings"
 
-	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/go/render"
 )
 
@@ -25,9 +23,9 @@ func NewGrid(size int) (Grid, error) {
 		return nil, errors.New("no size given for RLE Grid: the chunker was probably not initialized")
 	}
 
-	var grid = make([][]*uint64, size+1)
-	for i := 0; i < size+1; i++ {
-		grid[i] = make([]*uint64, size+1)
+	var grid = make([][]*uint64, size)
+	for i := 0; i < size; i++ {
+		grid[i] = make([]*uint64, size)
 	}
 
 	return grid, nil
@@ -58,7 +56,7 @@ func (g Grid) Size() int {
 // - A Uvarint for the palette index (0-255) or 0xffff (65535) for null.
 // - A Uvarint for how many pixels to repeat that color.
 func (g Grid) Compress() ([]byte, error) {
-	log.Error("BEGIN Compress()")
+	// log.Error("BEGIN Compress()")
 	// log.Warn("Visualized:\n%s", g.Visualize())
 
 	// Run-length encode the grid.
@@ -120,13 +118,14 @@ func (g Grid) Compress() ([]byte, error) {
 
 // Decompress the RLE byte stream back into a populated 2D grid.
 func (g Grid) Decompress(compressed []byte) error {
-	log.Error("BEGIN Decompress()")
+	// log.Error("BEGIN Decompress() Length of stream: %d", len(compressed))
 	// log.Warn("Visualized:\n%s", g.Visualize())
 
 	// Prepare the 2D grid to decompress the RLE stream into.
 	var (
-		size         = g.Size()
-		x, y, cursor int
+		size   = g.Size()
+		x, y   = -1, -1
+		cursor int
 	)
 
 	var reader = bytes.NewBuffer(compressed)
@@ -147,22 +146,19 @@ func (g Grid) Decompress(compressed []byte) error {
 			paletteIndex = &paletteIndexRaw
 		}
 
-		// log.Warn("RLE index %v for %dpx", paletteIndexRaw, repeatCount)
+		// log.Warn("RLE index %v for %dpx - coord=%d,%d", paletteIndexRaw, repeatCount, x, y)
 
 		for i := uint64(0); i < repeatCount; i++ {
-			cursor++
 			if cursor%size == 0 {
 				y++
 				x = 0
 			}
 
 			point := render.NewPoint(int(x), int(y))
-			if point.Y >= size || point.X >= size {
-				continue
-			}
 			g[point.Y][point.X] = paletteIndex
 
 			x++
+			cursor++
 		}
 	}
 
@@ -180,10 +176,26 @@ func (g Grid) Visualize() string {
 			if col == nil {
 				line += " "
 			} else {
-				line += fmt.Sprintf("%x", *col)
+				line += Alphabetize(col)
 			}
 		}
 		lines = append(lines, line+"]")
 	}
 	return strings.Join(lines, "\n")
+}
+
+const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// Alphabetize converts a palette index value into a single character for
+// Visualize to display.
+//
+// It supports up to 36 palette indexes before it will wrap back around and
+// begin reusing symbols.
+func Alphabetize(value *uint64) string {
+	if value == nil {
+		return " "
+	}
+
+	var i = int(*value)
+	return string(alphabet[i%len(alphabet)])
 }

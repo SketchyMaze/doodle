@@ -14,9 +14,6 @@ import (
 // and possibly migrate them to a different Accessor implementation when
 // saving on disk.
 func (c *Chunker) OptimizeChunkerAccessors() {
-	c.chunkMu.Lock()
-	defer c.chunkMu.Unlock()
-
 	log.Info("Optimizing Chunker Accessors")
 
 	// TODO: parallelize this with goroutines
@@ -31,7 +28,6 @@ func (c *Chunker) OptimizeChunkerAccessors() {
 			defer wg.Done()
 			for chunk := range chunks {
 				var point = chunk.Point
-				log.Warn("Chunk %s is a: %d", point, chunk.Type)
 
 				// Upgrade all MapTypes into RLE compressed MapTypes?
 				if balance.RLEBinaryChunkerEnabled {
@@ -49,7 +45,11 @@ func (c *Chunker) OptimizeChunkerAccessors() {
 	}
 
 	// Feed it the chunks.
-	for _, chunk := range c.Chunks {
+	for point := range c.IterChunks() {
+		chunk, ok := c.GetChunk(point)
+		if !ok {
+			continue
+		}
 		chunks <- chunk
 	}
 

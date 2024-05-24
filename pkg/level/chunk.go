@@ -330,8 +330,9 @@ func (c *Chunk) SizePositive() render.Rect {
 }
 
 // Usage returns the percent of free space vs. allocated pixels in the chunk.
-func (c *Chunk) Usage(size int) float64 {
-	return float64(c.Len()) / float64(size)
+func (c *Chunk) Usage() float64 {
+	size := float64(c.Size)
+	return float64(c.Len()) / (size * size)
 }
 
 // UnmarshalJSON loads the chunk from JSON and uses the correct accessor to

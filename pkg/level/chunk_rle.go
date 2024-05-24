@@ -77,18 +77,21 @@ func (a *RLEAccessor) MarshalBinary() ([]byte, error) {
 	}
 
 	// Populate the dense 2D array of its pixels.
-	for px := range a.Iter() {
-		var (
-			point    = render.NewPoint(px.X, px.Y)
-			relative = RelativeCoordinate(point, a.chunk.Point, a.chunk.Size)
-			ptr      = uint64(px.Swatch.Index())
-		)
+	for y, row := range grid {
+		for x := range row {
+			var (
+				relative    = render.NewPoint(x, y)
+				absolute    = FromRelativeCoordinate(relative, a.chunk.Point, a.chunk.Size)
+				swatch, err = a.Get(absolute)
+			)
 
-		// TODO: sometimes we get a -1 value in X or Y, not sure why.
-		if relative.X < 0 || relative.Y < 0 {
-			continue
+			if err != nil {
+				continue
+			}
+
+			var ptr = uint64(swatch.Index())
+			grid[relative.Y][relative.X] = &ptr
 		}
-		grid[relative.Y][relative.X] = &ptr
 	}
 
 	return grid.Compress()
@@ -119,10 +122,7 @@ func (a *RLEAccessor) UnmarshalBinary(compressed []byte) error {
 				continue
 			}
 
-			// TODO: x-1 to avoid the level creeping to the right every save,
-			// not sure on the root cause! RLEAccessor Decompress?
 			abs := FromRelativeCoordinate(render.NewPoint(x, y), a.chunk.Point, a.chunk.Size)
-			abs.X -= 1
 			a.acc.grid[abs] = NewSparseSwatch(int(*col))
 		}
 	}
