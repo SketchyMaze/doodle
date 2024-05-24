@@ -353,8 +353,6 @@ func chunkTypeToName(v uint64) string {
 		return "map"
 	case level.RLEType:
 		return "rle map"
-	case level.GridType:
-		return "grid"
 	default:
 		return fmt.Sprintf("type %d", v)
 	}

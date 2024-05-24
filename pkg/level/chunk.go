@@ -21,7 +21,6 @@ import (
 const (
 	MapType uint64 = iota
 	RLEType
-	GridType
 )
 
 // Default chunk type for newly created chunks (was MapType).
