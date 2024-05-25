@@ -185,7 +185,7 @@ func showLevel(c *cli.Context, filename string) error {
 	}
 
 	// Serialize chunk information.
-	showChunker(c, lvl.Chunker)
+	showChunker(c, lvl.Chunker, 0)
 
 	fmt.Println("")
 	return nil
@@ -251,7 +251,7 @@ func showDoodad(c *cli.Context, filename string) error {
 
 	for i, layer := range dd.Layers {
 		fmt.Printf("Layer %d: %s\n", i, layer.Name)
-		showChunker(c, layer.Chunker)
+		showChunker(c, layer.Chunker, i)
 	}
 
 	fmt.Println("")
@@ -268,7 +268,7 @@ func showPalette(pal *level.Palette) {
 	fmt.Println("")
 }
 
-func showChunker(c *cli.Context, ch *level.Chunker) {
+func showChunker(c *cli.Context, ch *level.Chunker, layer int) {
 	var (
 		worldSize = ch.WorldSize()
 		chunkSize = int(ch.Size)
@@ -279,9 +279,16 @@ func showChunker(c *cli.Context, ch *level.Chunker) {
 		visualize     = c.Bool("visualize-rle")
 		specificChunk = c.String("chunk")
 	)
+
+	// If it's a Zipfile, count its chunks.
+	var chunkCount = len(ch.Chunks)
+	if ch.Zipfile != nil {
+		chunkCount = len(level.ChunksInZipfile(ch.Zipfile, layer))
+	}
+
 	fmt.Println("Chunks:")
 	fmt.Printf("  Pixels Per Chunk: %d^2\n", ch.Size)
-	fmt.Printf("  Number Generated: %d\n", len(ch.Chunks))
+	fmt.Printf("  Number Generated: %d\n", chunkCount)
 	fmt.Printf("  Coordinate Range: (%d,%d) ... (%d,%d)\n",
 		worldSize.X,
 		worldSize.Y,
