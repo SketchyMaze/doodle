@@ -1,8 +1,10 @@
 package level
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"git.kirsle.net/go/render"
 )
@@ -78,6 +80,21 @@ func NewPalette() *Palette {
 	}
 }
 
+// LoadPaletteFromFile reads a list of Swatches from a palette.json file.
+func LoadPaletteFromFile(filename string) (*Palette, error) {
+	var (
+		pal      = NewPalette()
+		bin, err = os.ReadFile(filename)
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(bin, &pal.Swatches)
+	pal.update()
+	return pal, err
+}
+
 // Palette holds an index of colors used in a drawing.
 type Palette struct {
 	Swatches []*Swatch `json:"swatches"`
@@ -134,6 +151,7 @@ func (p *Palette) AddSwatch(swatch *Swatch) error {
 		return errors.New("only 256 colors are supported in a palette")
 	}
 
+	swatch.index = index
 	p.Swatches = append(p.Swatches, swatch)
 	p.byName[swatch.Name] = index
 

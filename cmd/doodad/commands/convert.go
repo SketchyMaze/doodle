@@ -140,6 +140,17 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		images = append(images, img)
 	}
 
+	// Initialize the palette from a JSON file?
+	var palette *level.Palette
+	if paletteFile := c.String("palette"); paletteFile != "" {
+		log.Info("Loading initial palette from file: %s", paletteFile)
+		if p, err := level.LoadPaletteFromFile(paletteFile); err != nil {
+			return err
+		} else {
+			palette = p
+		}
+	}
+
 	// Helper function to translate image filenames into layer names.
 	toLayerName := func(filename string) string {
 		ext := filepath.Ext(filename)
@@ -161,7 +172,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 		log.Info("Converting first layer to drawing and getting the palette")
 		var chunkSize = doodad.ChunkSize8()
 		log.Info("Output is a Doodad file (%dx%d): %s", width, height, outputFile)
-		palette, layer0 := imageToChunker(images[0], chroma, nil, chunkSize)
+		palette, layer0 := imageToChunker(images[0], chroma, palette, chunkSize)
 		doodad.Palette = palette
 		doodad.Layers[0].Chunker = layer0
 		doodad.Layers[0].Name = toLayerName(inputFiles[0])
@@ -196,7 +207,7 @@ func imageToDrawing(c *cli.Context, chroma render.Color, inputFiles []string, ou
 			lvl.Title = "Converted Level"
 		}
 		lvl.Author = native.DefaultAuthor
-		palette, chunker := imageToChunker(images[0], chroma, nil, lvl.Chunker.Size)
+		palette, chunker := imageToChunker(images[0], chroma, palette, lvl.Chunker.Size)
 		lvl.Palette = palette
 		lvl.Chunker = chunker
 
@@ -291,6 +302,7 @@ func drawingToImage(c *cli.Context, chroma render.Color, inputFiles []string, ou
 //
 // img: input image like a PNG
 // chroma: transparent color
+// palette: your palette so far (new distinct colors are added)
 func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette, chunkSize uint8) (*level.Palette, *level.Chunker) {
 	var (
 		chunker = level.NewChunker(chunkSize)
@@ -344,7 +356,6 @@ func imageToChunker(img image.Image, chroma render.Color, palette *level.Palette
 				log.Error("Could not add more colors to the palette: %s", err)
 				panic(err.Error())
 			}
-			palette.Swatches = append(palette.Swatches, uniqueColor[hex])
 		}
 	}
 	palette.Inflate()

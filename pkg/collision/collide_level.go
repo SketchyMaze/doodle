@@ -54,8 +54,48 @@ const (
 CollidesWithGrid checks if a Doodad collides with level geometry.
 
 The `target` is the point the actor wants to move to on this tick.
+
+This function handles translation for doodads having an offset hitbox which doesn't begin
+at the 0,0 coordinate on the X,Y axis.
+
+For example:
+
+  - The caller of this function cares about where on screen to display the actor's sprite at
+    (the X,Y position of the top left corner of their sprite).
+  - The target point is where the actor is moving on this tick, which is also relative to their
+    current world coordinate (top corner of their sprite), NOT their hitbox coordinate.
+
+The original collision detection code worked well when the actor's hitbox began at 0,0 as it
+matched their world position. But when the hitbox is offset from the corner, collision detection
+glitches abounded.
+
+This function will compute the physical hitbox of the doodad regarding the level geometry
+(simulating a simple doodad whose hitbox is a full 0,0,W,H) and translate the offset to and
+from.
 */
 func CollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
+	var (
+		actor     = NewActorOffset(d)
+		offset    = actor.Offset()
+		newTarget = render.Point{
+			X: target.X + offset.X,
+			Y: target.Y + offset.Y,
+		}
+	)
+
+	collide, ok := BoxCollidesWithGrid(actor, grid, newTarget)
+
+	// Undo the offset for the MoveTo target.
+	collide.MoveTo.X -= offset.X
+	collide.MoveTo.Y -= offset.Y
+
+	return collide, ok
+}
+
+/*
+BoxCollidesWithGrid handles the core logic for level collision checks.
+*/
+func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Collide, bool) {
 	var (
 		P      = d.Position()
 		S      = d.Size()

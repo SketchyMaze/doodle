@@ -39,13 +39,23 @@ func NewSparseSwatch(paletteIndex int) *Swatch {
 }
 
 func (s Swatch) String() string {
+	var parts = []string{
+		fmt.Sprintf("#%d", s.Index()),
+	}
+
+	if s.Name != "" {
+		parts = append(parts, fmt.Sprintf("'%s'", s.Name))
+	}
+
 	if s.isSparse {
-		return fmt.Sprintf("Swatch<sparse:%d>", s.paletteIndex)
+		parts = append(parts, "sparse")
+	} else {
+		parts = append(parts, s.Color.ToHex())
 	}
-	if s.Name == "" {
-		return s.Color.String()
-	}
-	return s.Name
+
+	parts = append(parts, s.Attributes())
+
+	return fmt.Sprintf("Swatch<%s>", strings.Join(parts, " "))
 }
 
 // Attributes returns a comma-separated list of attributes as a string on

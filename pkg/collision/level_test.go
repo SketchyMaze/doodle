@@ -55,7 +55,7 @@ func TestCollisionFunctions(t *testing.T) {
 
 	// Test cases to check.
 	tests := []testCase{
-		testCase{
+		{
 			Start:           render.NewPoint(0, 0),
 			MoveTo:          render.NewPoint(8, 8),
 			ExpectCollision: false,
@@ -64,7 +64,7 @@ func TestCollisionFunctions(t *testing.T) {
 		// Player is standing on the floor at X=100
 		// with their feet at Y=500 and they move right
 		// 10 pixels.
-		testCase{
+		{
 			Start: render.NewPoint(
 				100,
 				500-playerSize.H,
@@ -80,7 +80,7 @@ func TestCollisionFunctions(t *testing.T) {
 		},
 
 		// Player walks off the right edge of the platform.
-		testCase{
+		{
 			// TODO: if the player is perfectly touching the floor,
 			// this test fails and returns True for collision, so
 			// I use 499-playerSize.H so they hover above the floor.
@@ -97,7 +97,7 @@ func TestCollisionFunctions(t *testing.T) {
 
 		// Player moves through the barrier in the middle and
 		// is stopped in his tracks.
-		testCase{
+		{
 			Start: render.NewPoint(
 				490-playerSize.W, 500-playerSize.H,
 			),
@@ -117,7 +117,7 @@ func TestCollisionFunctions(t *testing.T) {
 		},
 
 		// Player moves up from below the platform and hits the ceiling.
-		testCase{
+		{
 			Start: render.NewPoint(
 				490-playerSize.W,
 				550,

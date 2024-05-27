@@ -13,7 +13,7 @@ func TestActorCollision(t *testing.T) {
 		// Expected intersection rect would be
 		//   X,Y   = 90,10
 		//   X2,Y2 = 100,99
-		render.Rect{
+		{
 			X: 0,
 			Y: 0,
 			W: 100,
@@ -24,7 +24,7 @@ func TestActorCollision(t *testing.T) {
 		// Expected intersection rect would be
 		//   X,Y   = 90,10
 		//   X2,Y2 = 100,99
-		render.Rect{
+		{
 			X: 90,
 			Y: 10,
 			W: 100,
@@ -32,7 +32,7 @@ func TestActorCollision(t *testing.T) {
 		},
 
 		// 2: no intersection
-		render.Rect{
+		{
 			X: 200,
 			Y: 200,
 			W: 32,
@@ -43,7 +43,7 @@ func TestActorCollision(t *testing.T) {
 		// Expected intersection rect would be
 		//   X,Y   = 240,200
 		//   X2,Y2 = 264,231
-		render.Rect{
+		{
 			X: 233,
 			Y: 200,
 			W: 32,
@@ -51,7 +51,7 @@ func TestActorCollision(t *testing.T) {
 		},
 
 		// 4: intersects with 3
-		render.Rect{
+		{
 			X: 240,
 			Y: 200,
 			W: 32,
@@ -59,19 +59,19 @@ func TestActorCollision(t *testing.T) {
 		},
 
 		// 5: completely contains 6 and intersects 7.
-		render.Rect{
+		{
 			X: 300,
 			Y: 300,
 			W: 1000,
 			H: 600,
 		},
-		render.Rect{
+		{
 			X: 450,
 			Y: 500,
 			W: 42,
 			H: 42,
 		},
-		render.Rect{
+		{
 			X: 1200,
 			Y: 350,
 			W: 512,
