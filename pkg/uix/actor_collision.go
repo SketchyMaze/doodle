@@ -31,6 +31,7 @@ func (w *Canvas) loopActorCollision() error {
 		// collision later, store each actor's original position before the move.
 		boxes             = make([]render.Rect, len(w.actors))
 		originalPositions = map[string]render.Point{}
+		originalHitboxes  = map[string]render.Rect{} // original world hitboxes
 	)
 
 	// Loop over all the actors in parallel, processing their movement and
@@ -48,6 +49,7 @@ func (w *Canvas) loopActorCollision() error {
 		func(i int, a *Actor) {
 			// defer wg.Done()
 			originalPositions[a.ID()] = a.Position()
+			originalHitboxes[a.ID()] = collision.GetBoundingRectHitbox(a, a.Hitbox())
 
 			// Advance any animations for this actor.
 			if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
@@ -130,10 +132,12 @@ func (w *Canvas) loopActorCollision() error {
 			w.loopContainActorsInsideLevel(a)
 
 			// Store this actor's bounding box after they've moved.
-			boxes[i] = collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
+			boxes[i] = collision.GetBoundingRect(a)
 		}(i, a)
 		// wg.Wait()
 	}
+
+	// log.Warn("== BEGIN BetweenBoxes")
 
 	var collidingActors = map[*Actor]*Actor{}
 	for tuple := range collision.BetweenBoxes(boxes) {
@@ -146,13 +150,16 @@ func (w *Canvas) loopActorCollision() error {
 
 		collidingActors[a] = b
 
-		// log.Error("between boxes: %+v  <%s> <%s>", tuple, a.ID(), b.ID())
+		log.Error("between boxes: %+v  A=<%s>  B=<%s>", tuple, a.ID(), b.ID())
 
 		// Call the OnCollide handler for A informing them of B's intersection.
 		if w.scripting != nil {
 			var (
-				rect        = collision.SizePlusHitbox(collision.GetBoundingRect(b), b.Hitbox())
+				rect = collision.GetBoundingRectHitbox(b, b.Hitbox())
+				// lastGoodBox = rect
 				lastGoodBox = render.Rect{
+					// Level Positions of the doodad is based on the top left
+					// of its graphical sprite, not its (possibly offset) hitbox.
 					X: originalPositions[b.ID()].X,
 					Y: originalPositions[b.ID()].Y,
 					W: boxes[tuple.B].W,
@@ -180,7 +187,7 @@ func (w *Canvas) loopActorCollision() error {
 			// only return false if it protests the movement, but not trigger
 			// any actions (such as emit messages to linked doodads) until
 			// Settled=true.
-			if origPoint, ok := originalPositions[b.ID()]; ok {
+			if origHitbox, ok := originalHitboxes[b.ID()]; ok {
 				// Trace a vector back from the actor's current position
 				// to where they originated from. If A protests B's position at
 				// ANY time, we mark didProtest=true and continue backscanning
@@ -192,15 +199,26 @@ func (w *Canvas) loopActorCollision() error {
 				// horizontal movement on the X axis.
 				// Touching the solid actor from the side is already fine.
 				var onTop = false
+				var onBottom = false // they hit the bottom instead
 
 				var (
 					lockX int
 					lockY int
 				)
 
+				// If their original hitbox is offset from their sprite corner,
+				// gather the offset now.
+				var (
+					origPosition  = originalPositions[b.ID()]
+					hitboxPadding = render.Point{
+						X: render.AbsInt(origHitbox.X - origPosition.X),
+						Y: render.AbsInt(origHitbox.Y - origPosition.Y),
+					}
+				)
+
 				for point := range render.IterLine(
-					origPoint,
-					b.Position(),
+					origHitbox.Point(),
+					b.Position(), // TODO: verify non 0,0 hitbox doodads work
 				) {
 					point := point
 					test := render.Rect{
@@ -211,45 +229,84 @@ func (w *Canvas) loopActorCollision() error {
 					}
 
 					if info, err := collision.CompareBoxes(boxes[tuple.A], test); err == nil {
+						// A and B have their drawings overlapping on the page. Get each
+						// of their declared hitboxes (if smaller) to see if their hitboxes
+						// intersect as well.
+						var (
+							aHitbox = collision.GetBoundingRectHitbox(a, a.Hitbox())
+							bHitbox = collision.GetBoundingRectHitbox(b, b.Hitbox())
+						)
+
 						// B is overlapping A's box, call its OnCollide handler
 						// with Settled=false and see if it protests the overlap.
 						err := w.scripting.To(a.ID()).Events.RunCollide(&CollideEvent{
 							Actor:    b,
 							Overlap:  info.Overlap,
-							InHitbox: info.Overlap.Intersects(a.Hitbox()),
+							InHitbox: aHitbox.Intersects(bHitbox),
 							Settled:  false,
 						})
+
+						// log.Warn("ActorCollision: CompareBoxes info was %+v", info)
 
 						// Did A protest?
 						if err == scripting.ErrReturnFalse {
 							// Are they on top?
-							aHitbox := collision.SizePlusHitbox(collision.GetBoundingRect(a), a.Hitbox())
-							if render.AbsInt(test.Y+test.H-aHitbox.Y) == 0 {
-								// log.Error("ActorCollision: onTop=true at Y=%s", test.Y)
+							var (
+								aHitbox = collision.GetBoundingRectHitbox(a, a.Hitbox())
+								bBottom = test.Y + test.H // bottom of falling actor
+								aTop    = aHitbox.Y
+								aBottom = aHitbox.Y + aHitbox.H
+								bTop    = test.Y
+							)
+
+							// Is the colliding actor on top? (B=player character)
+							if render.AbsInt(bBottom-aTop) < 4 {
+								log.Error("ActorCollision: onTop=true at Y=%d", test.Y)
 								onTop = true
-								onTopY = test.Y
+								onTopY = aHitbox.Y
+							}
+
+							// Or are they hitting from below?
+							if render.AbsInt(aBottom-bTop) < 4 {
+								log.Info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+								log.Info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+								log.Info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+								log.Error("ActorCollision: hit the bottom at Y=%d", test.Y)
+								onBottom = true
 							}
 
 							// What direction were we moving?
 							if test.Y != lastGoodBox.Y {
 								if lockY == 0 {
 									lockY = lastGoodBox.Y
+									if onBottom {
+										lockY = lastGoodBox.Y - hitboxPadding.Y
+									}
+									log.Error("### Set LockY = %d", lockY)
 								}
+
 								if onTop {
-									// log.Error("ActorCollision: setGrounded(true)", test.Y)
+									log.Error("ActorCollision: setGrounded(true) at Y=%d", test.Y)
 									b.SetGrounded(true)
 								}
 							}
 							if test.X != lastGoodBox.X {
-								if !onTop {
+								if lockX == 0 && !(onTop || onBottom) {
+									// lockY = lastGoodBox.Y - (hitboxPadding.Y / 2)
 									lockX = lastGoodBox.X
 								}
 							}
 
 							// Move them back to the last good box.
-							lastGoodBox = test
+							lastGoodBox = render.Rect{
+								X: test.X - hitboxPadding.X,
+								Y: test.Y - hitboxPadding.Y,
+								W: test.W,
+								H: test.H,
+							}
 							if lockX != 0 {
-								lastGoodBox.X = lockX
+								// lockY = lastGoodBox.Y + hitboxPadding.Y
+								lastGoodBox.X = lockX - hitboxPadding.X
 							}
 						} else {
 							if err != nil {
@@ -273,6 +330,9 @@ func (w *Canvas) loopActorCollision() error {
 				}
 
 				if !b.noclip {
+					log.Error("Move B to: %s", lastGoodBox.Point())
+
+					// The stationary doodad should move the moving one only.
 					b.MoveTo(lastGoodBox.Point())
 				}
 			} else {
@@ -312,6 +372,8 @@ func (w *Canvas) loopActorCollision() error {
 			}
 		}
 	}
+
+	log.Warn("-- END BetweenBoxes")
 
 	// Check for lacks of collisions since last frame.
 	for sourceActor, targetActor := range w.collidingActors {

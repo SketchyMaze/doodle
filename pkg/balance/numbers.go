@@ -95,7 +95,7 @@ var (
 	AutoSaveInterval = 5 * time.Minute
 
 	// Default player character doodad in Play Mode.
-	PlayerCharacterDoodad = "boy.doodad"
+	PlayerCharacterDoodad = "example-mario.doodad"
 
 	// Levelpack and level names for the title screen.
 	DemoLevelPack = "assets/levelpacks/builtin-Tutorial.levelpack"
