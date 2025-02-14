@@ -2,10 +2,10 @@ package scripting
 
 import (
 	"fmt"
-	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting/api"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/go/render"
@@ -29,14 +29,17 @@ func ProxyLog(vm *VM, fn func(string, ...interface{})) func(string, ...interface
 // NewJSProxy initializes the API structure for JavaScript binding.
 func NewJSProxy(vm *VM) JSProxy {
 
+	// jp := JSProxy{}
+	// return jp
+
 	return JSProxy{
 		// Console logging.
-		"console": map[string]interface{}{
-			"log":   ProxyLog(vm, log.Info),
-			"debug": ProxyLog(vm, log.Debug),
-			"warn":  ProxyLog(vm, log.Warn),
-			"error": ProxyLog(vm, log.Error),
-		},
+		"console": api.Console{
+			Log:   ProxyLog(vm, log.Info),
+			Debug: ProxyLog(vm, log.Debug),
+			Warn:  ProxyLog(vm, log.Warn),
+			Error: ProxyLog(vm, log.Error),
+		}.ToMap(),
 
 		// Audio API.
 		"Sound": map[string]interface{}{
@@ -53,18 +56,7 @@ func NewJSProxy(vm *VM) JSProxy {
 		"GetTick": func() uint64 {
 			return shmem.Tick
 		},
-		"time": map[string]interface{}{
-			"Now":   time.Now,
-			"Since": time.Since,
-			"Add": func(t time.Time, ms int64) time.Time {
-				return t.Add(time.Duration(ms) * time.Millisecond)
-			},
-			"Hour":        time.Hour,
-			"Minute":      time.Minute,
-			"Second":      time.Second,
-			"Millisecond": time.Millisecond,
-			"Microsecond": time.Microsecond,
-		},
+		"time": api.NewTime().ToMap(),
 
 		// Bindings into the VM.
 		"Events":        vm.Events,
