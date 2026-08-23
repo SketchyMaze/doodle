@@ -1,6 +1,6 @@
 # Changes
 
-## v0.14.1 (TBD)
+## v0.15.0 (TBD)
 
 The file format for Levels and Doodads has been optimized to store drawing data
 with Run Length Encoding (RLE) compression which nets a filesize savings upwards
@@ -28,6 +28,26 @@ Cleanup of old features and unused code:
   with the new RLE compression). Regular releases of the game have not been
   writing in the JSON format for a while as it is controlled by hard-coded
   feature flag constants.
+
+Some bug fixes in the `doodad` CLI tool:
+
+* When using `doodad convert` to turn a PNG image into a level,the palette will
+  no longer have duplicates for each distinct color of the input image.
+* The `doodad show` can inspect details and debug RLE compressed chunks:
+  * Flag `--chunk=1,2` can select a specific chunk coordinate to debug
+  * Flag `--visualize-rle` will visualize the RLE compressed chunks in their
+    2D grid form in your terminal window. It is VERY noisy for large levels!
+    Use the --chunk option to narrow it to just one chunk.
+* Fix the `--palette` flag so that it actually works when converting an image to
+  a level. See `doodad convert --help` for the details.
+
+Other fixes:
+
+* Fix actor collisions with level geometry when the actor's Hitbox is offset
+  from the 0,0 coordinate. For example, when playing as the Snake, you could
+  easily clip out of bounds on levels drawn with thinner lines. The Snake will
+  no longer clip through the level, but still overlaps weirdly against locked
+  doors.
 
 ## v0.14.0 (May 4 2024)
 

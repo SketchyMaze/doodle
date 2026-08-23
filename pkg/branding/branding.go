@@ -9,9 +9,9 @@ import (
 const (
 	AppName   = "Sketchy Maze"
 	Summary   = "A drawing-based maze game"
-	Version   = "0.14.1"
+	Version   = "0.15.0"
 	Website   = "https://www.sketchymaze.com"
-	Copyright = "2023 Noah Petherbridge"
+	Copyright = "2026 Noah Petherbridge"
 	Byline    = "a game by Noah Petherbridge."
 
 	// Update check URL
