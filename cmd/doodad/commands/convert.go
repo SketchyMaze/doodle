@@ -27,8 +27,45 @@ var Convert *cli.Command
 
 func init() {
 	Convert = &cli.Command{
-		Name:      "convert",
-		Usage:     "convert between images and Doodle drawing files",
+		Name:  "convert",
+		Usage: "convert between images and Doodle drawing files",
+		Description: `
+Palette JSON Format:
+
+   With the --palette option, you can specify the palette from JSON with its
+   colors and attributes instead of the palette being automatically generated
+   from the input image.
+
+   An example palette JSON file looks like:
+
+     [
+       {
+         "name":  "ground",
+         "color": "#c84c0c",
+         "solid": true
+       },
+       {
+         "name": "fire",
+         "color": "#ff0000",
+         "fire": true
+       },
+       {
+         "name": "water",
+         "color": "#0099ffcc",
+         "water": true
+       }
+     ]
+
+   Options you can specify for each color include:
+
+      name (string)
+      color (string): hex color code in RGB or RGBA order.
+      pattern (string): like "noise.png", optional.
+
+      solid (bool): color has solid collision
+      fire (bool): color damages the player
+      water (bool): player can swim in this color
+      slippery (bool): player has low friction on this color`,
 		ArgsUsage: "<input> <output>",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

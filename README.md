@@ -9,11 +9,13 @@ type mazes. You can draw your own levels using freehand and basic drawing tools,
 color in some fire or water, and drag in pre-made "Doodads" like buttons, keys
 and doors to add some interaction to your level.
 
-This is a _very_ early pre-release version of the game. Expect bugs and slowness
+This is an early pre-release version of the game. Expect bugs and slowness
 but get a general gist of what the game is about.
 
 This alpha release of the game comes with some example levels built-in for
 playing or editing and a handful of built-in Doodads.
+
+# Guidebook
 
 See the **Guidebook** included with this game for good user-facing
 documentation or online at https://www.sketchymaze.com/guidebook
@@ -59,6 +61,11 @@ Some to start with:
 * [Building](Building.md) the game (tl;dr. run bootstrap.py)
 * [Tour of the Code](docs/Tour%20of%20the%20Code.md)
 * [Evolution of File Formats](docs/Evolution%20of%20File%20Formats.md)
+
+For end users (players) of the game:
+
+* [The `doodad` tool](cmd/doodad/README.md) will be useful for content creators
+  when making custom doodads. ([Read it on GitHub](https://github.com/SketchyMaze/doodle/tree/master/cmd/doodad))
 
 # Keybindings
 
