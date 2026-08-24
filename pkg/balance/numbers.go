@@ -57,6 +57,9 @@ var (
 	CoyoteFrames            uint64  = 4  // Coyote time, frames after we walk off a cliff but can still jump late
 	SlopeMaxHeight                  = 8  // max pixel height for player to walk up a slope
 
+	// Collision detection threshold to consider an actor "on top" of a doodad's solid hitbox.
+	OnTopThreshold = 4
+
 	// Number of game ticks to insist the canvas follows the player at the start
 	// of a level - to overcome Anvils settling into their starting positions so
 	// they don't steal the camera focus straight away.

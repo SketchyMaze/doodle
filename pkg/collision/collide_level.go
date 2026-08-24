@@ -117,7 +117,7 @@ func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Co
 	// Adjust the actor's bounding rect by its stated Hitbox from its script.
 	// e.g.: Boy's Canvas size is 56x56 but he is a narrower character with a
 	// hitbox width smaller than its Canvas size.
-	S = SizePlusHitbox(GetBoundingRect(d), hitbox)
+	S = GetBoundingRectHitbox(d, hitbox)
 	actorHeight := P.Y + S.H
 
 	// Test if we are ALREADY colliding with level geometry and try and wiggle

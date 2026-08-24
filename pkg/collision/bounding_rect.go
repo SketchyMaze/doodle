@@ -24,7 +24,9 @@ func GetBoundingRect(a Actor) render.Rect {
 // account their self-declared collision hitbox.
 //
 // The rect returned has the X,Y coordinate set to the actor's position, plus
-// the X,Y of their hitbox, if any.
+// the X,Y of their hitbox, if any. For example, their sprite size could be 64x32
+// and their hitbox is the lower 0,32,32,32 half. This function would return the
+// world coordinate of where their bounding box begins.
 //
 // The W,H of the rect is the W,H of their declared hitbox.
 //

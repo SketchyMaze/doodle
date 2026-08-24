@@ -158,13 +158,12 @@ func (d *Doodle) DrawCollisionBox(canvas *uix.Canvas, actor *uix.Actor) {
 	}
 
 	var (
-		rect   = collision.GetBoundingRect(actor)
-		box    = collision.GetCollisionBox(rect)
-		hitbox = actor.Hitbox()
+		rect = collision.GetBoundingRect(actor)
+		box  = collision.GetCollisionBox(rect)
 	)
 
 	// Adjust the actor's bounding rect by its stated Hitbox from its script.
-	rect = collision.SizePlusHitbox(rect, hitbox)
+	rect = collision.GetBoundingRectHitbox(actor, actor.Hitbox())
 
 	box = collision.GetCollisionBox(rect)
 
