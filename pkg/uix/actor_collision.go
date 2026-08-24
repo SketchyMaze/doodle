@@ -157,35 +157,30 @@ func (w *Canvas) loopActorCollision() error {
 
 		collidingActors.Set(stable, mover)
 
-		log.Error("between boxes: %+v  A=<%s>  B=<%s>", tuple, stable.ID(), mover.ID())
+		// log.Error("between boxes: %+v  A=<%s>  B=<%s>", tuple, stable.ID(), mover.ID())
 
 		// Call the OnCollide handler for A informing them of B's intersection.
 		if w.scripting != nil {
 			var (
+				// rect is the mover's hitbox rect (world coordinates) at their
+				// position pending this actor-vs-actor collision pass.
 				rect = collision.GetBoundingRectHitbox(mover, mover.Hitbox())
-				// lastGoodBox = rect
-				lastGoodBox = render.Rect{
-					// Level Positions of the doodad is based on the top left
-					// of its graphical sprite, not its (possibly offset) hitbox.
-					X: originalPositions[mover.ID()].X,
-					Y: originalPositions[mover.ID()].Y,
-					W: boxes[tuple.B].W,
-					H: boxes[tuple.B].H,
-				}
+
+				// lastGoodBox tracks the mover's hitbox rect (world coordinates,
+				// sized to their declared Hitbox) as we trace their movement below.
+				// It starts at their pre-move hitbox and is only converted back to
+				// a sprite-corner point (what MoveTo expects) once, right before
+				// we actually move them.
+				lastGoodBox = originalHitboxes[mover.ID()]
 			)
 
-			// HACK: below, when we determine the moving actor is "onTop" of
-			// the doodad's solid hitbox, we lockY their movement so they don't
-			// fall down further; but sometimes there's an off-by-one error if
-			// the actor fell a distance before landing, and so the final
-			// Settled collision check doesn't fire (i.e. if they fell onto a
-			// Crumbly Floor which should begin shaking when walked on).
-			//
-			// When we decide they're onTop, record the Y position, and then
-			// use it for collision-check purposes but DON'T physically move
-			// the character by it (moving the character may clip them thru
-			// other solid hitboxes like the upside-down trapdoor)
-			// var onTopY int
+			// Below, when we determine the moving actor is "onTop" (or hitting
+			// the underside) of the doodad's solid hitbox, we lockY their
+			// movement flush against that edge so they don't fall down further
+			// (or rise up further). It's snapped exactly to the edge, not left
+			// wherever the collision trace happened to detect the protest, so
+			// the final Settled overlap check below reliably registers the
+			// touch (e.g. Crumbly Floor's shake trigger).
 
 			// Firstly we want to make sure B isn't able to clip through A's
 			// solid hitbox if A protests the movement. Trace a vector from
@@ -203,7 +198,8 @@ func (w *Canvas) loopActorCollision() error {
 					// Touching the solid actor from the side is already fine.
 					onTop    bool
 					onBottom bool // they hit the bottom instead
-					// onSide   bool // they hit a side, maybe allow Y movement
+					onLeft   bool // mover is to the stable's left, touching its left edge
+					onRight  bool // mover is to the stable's right, touching its right edge
 
 					// If we lock their movement coordinate.
 					lockX *int
@@ -215,8 +211,8 @@ func (w *Canvas) loopActorCollision() error {
 				var (
 					origPosition  = originalPositions[mover.ID()]
 					hitboxPadding = render.Point{
-						X: render.AbsInt(origHitbox.X - origPosition.X),
-						Y: render.AbsInt(origHitbox.Y - origPosition.Y),
+						X: origHitbox.X - origPosition.X,
+						Y: origHitbox.Y - origPosition.Y,
 					}
 				)
 
@@ -227,9 +223,26 @@ func (w *Canvas) loopActorCollision() error {
 				// B's new position.
 				for point := range render.IterLine(
 					origHitbox.Point(),
-					mover.Position(), // TODO: verify non 0,0 hitbox doodads work
+					rect.Point(),
 				) {
 					point := point
+
+					// Once an axis has been locked (the mover is resting flush
+					// against a solid edge), don't keep probing points further
+					// along that axis. Otherwise we keep re-invoking the stable
+					// doodad's OnCollide with points deeper than where the mover
+					// will actually end up, which can corrupt doodads that keep
+					// state across calls: e.g. Trapdoor's "opened" flag could
+					// flip true from a spurious deep-overlap probe fired after
+					// the correct landing point was already found, causing it
+					// to silently stop being solid on the very next tick.
+					if lockY != nil {
+						point.Y = *lockY
+					}
+					if lockX != nil {
+						point.X = *lockX
+					}
+
 					test := render.Rect{
 						X: point.X,
 						Y: point.Y,
@@ -270,7 +283,6 @@ func (w *Canvas) loopActorCollision() error {
 							// Is the colliding actor on top? (e.g. mover=player character)
 							if render.AbsInt(moverBottom-stableTop) < balance.OnTopThreshold {
 								onTop = true
-								// onTopY = stableHitbox.Y
 							}
 
 							// Or are they hitting from below?
@@ -278,9 +290,24 @@ func (w *Canvas) loopActorCollision() error {
 								onBottom = true
 							}
 
-							if onTop || onBottom {
-								log.Error("onTop=%+v onBottom=%+v", onTop, onBottom)
+							// Same idea, but for the horizontal axis: is the mover
+							// touching our left or right edge?
+							var (
+								stableLeft  = stableHitbox.X
+								stableRight = stableHitbox.X + stableHitbox.W
+								moverLeft   = test.X
+								moverRight  = test.X + test.W
+							)
+							if render.AbsInt(moverRight-stableLeft) < balance.OnTopThreshold {
+								onLeft = true
 							}
+							if render.AbsInt(stableRight-moverLeft) < balance.OnTopThreshold {
+								onRight = true
+							}
+
+							// if onTop || onBottom {
+							// 	log.Error("onTop=%+v onBottom=%+v", onTop, onBottom)
+							// }
 
 							// What direction were we moving?
 							if test.Y != lastGoodBox.Y {
@@ -288,12 +315,21 @@ func (w *Canvas) loopActorCollision() error {
 								// If we are hitting the top or bottom, lock our Y coordinate here.
 								if onTop || onBottom {
 
-									// First Y coordinate before the protested collision.
+									// Lock the Y coordinate flush against the stable hitbox's
+									// edge (rather than "one step back" from the protested
+									// point) so the mover's hitbox exactly touches it. Leaving
+									// so much as a 1px gap fails the final Settled overlap
+									// check below and e.g. Crumbly Floor's shake trigger would
+									// intermittently not fire.
 									if lockY == nil {
 										lockY = new(int)
-										*lockY = lastGoodBox.Y
-										if onBottom {
-											*lockY -= hitboxPadding.Y
+										switch {
+										case onTop:
+											*lockY = stableTop - test.H
+										case onBottom:
+											*lockY = stableBottom
+										default:
+											*lockY = lastGoodBox.Y
 										}
 									}
 
@@ -306,20 +342,31 @@ func (w *Canvas) loopActorCollision() error {
 							}
 							if test.X != lastGoodBox.X {
 								if lockX == nil && !(onTop || onBottom) {
+									// Lock the X coordinate flush against the stable
+									// hitbox's edge for the same reason as the Y lock
+									// above: doors like Trapdoor Left/Right need the
+									// mover's hitbox to exactly touch theirs for the
+									// final Settled overlap check to reliably register
+									// the contact.
 									lockX = new(int)
-									*lockX = lastGoodBox.X
+									switch {
+									case onLeft:
+										*lockX = stableLeft - test.W
+									case onRight:
+										*lockX = stableRight
+									default:
+										*lockX = lastGoodBox.X
+									}
 								}
 							}
 
-							// Move them back to the last good box.
+							// Move them back to the last good box (world coordinates of
+							// their hitbox rect).
 							lastGoodBox = render.Rect{
-								X: test.X, // - hitboxPadding.X, // note: this is in World Coordinates
-								Y: test.Y, // - hitboxPadding.Y,
+								X: test.X,
+								Y: test.Y,
 								W: test.W,
 								H: test.H,
-							}
-							if lockX != nil {
-								lastGoodBox.X = *lockX - hitboxPadding.X
 							}
 						} else {
 							if err != nil {
@@ -343,10 +390,18 @@ func (w *Canvas) loopActorCollision() error {
 				}
 
 				if !mover.noclip {
-					log.Error("Move B to: %s", lastGoodBox.Point())
+					// lastGoodBox has been tracked in the mover's hitbox coordinate
+					// frame (world coordinates of their declared Hitbox); convert it
+					// back to their sprite's top-left corner, which is what MoveTo
+					// positions them by.
+					moveTo := render.Point{
+						X: lastGoodBox.X - hitboxPadding.X,
+						Y: lastGoodBox.Y - hitboxPadding.Y,
+					}
+					// log.Error("Move B to: %s", moveTo)
 
 					// The stationary doodad should move the moving one only.
-					mover.MoveTo(lastGoodBox.Point())
+					mover.MoveTo(moveTo)
 				}
 			} else {
 				log.Error(
@@ -355,11 +410,6 @@ func (w *Canvas) loopActorCollision() error {
 					stable.Doodad().Title, mover.Doodad().Title, mover.Doodad().Title,
 				)
 			}
-
-			// TODO: onTopY != nil
-			// if onTopY != 0 && lastGoodBox.Y-onTopY <= 1 {
-			// lastGoodBox.Y = onTopY
-			// }
 
 			// Movement has been settled. Check if B's point is still invading
 			// A's box and call its OnCollide handler one last time in
@@ -387,7 +437,7 @@ func (w *Canvas) loopActorCollision() error {
 		}
 	}
 
-	log.Warn("-- END BetweenBoxes")
+	// log.Warn("-- END BetweenBoxes")
 
 	// Check for lacks of collisions since last frame.
 	// Note: w.collidingActors is "last frame's" map of colliding actor boxes.
