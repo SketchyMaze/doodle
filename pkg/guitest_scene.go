@@ -16,9 +16,10 @@ type GUITestScene struct {
 	Supervisor *ui.Supervisor
 
 	// Private widgets.
-	Frame  *ui.Frame
-	Window *ui.Frame
-	body   *ui.Frame
+	Frame     *ui.Frame
+	Window    *ui.Frame
+	body      *ui.Frame
+	titleText *ui.Label // lazy init, reused every Draw call below
 }
 
 // Name of the scene.
@@ -262,21 +263,23 @@ func (s *GUITestScene) Draw(d *Doodle) error {
 	// Clear the canvas and fill it with white.
 	d.Engine.Clear(render.White)
 
-	label := ui.NewLabel(ui.Label{
-		Text: fmt.Sprintf("GUITest %s v%s", branding.AppName, branding.Version),
-		Font: render.Text{
-			Size:   26,
-			Color:  render.Pink,
-			Stroke: render.SkyBlue,
-			Shadow: render.Black,
-		},
-	})
-	label.Compute(d.Engine)
-	label.MoveTo(render.Point{
-		X: (d.width / 2) - (label.Size().W / 2),
+	if s.titleText == nil {
+		s.titleText = ui.NewLabel(ui.Label{
+			Text: fmt.Sprintf("GUITest %s v%s", branding.AppName, branding.Version),
+			Font: render.Text{
+				Size:   26,
+				Color:  render.Pink,
+				Stroke: render.SkyBlue,
+				Shadow: render.Black,
+			},
+		})
+	}
+	s.titleText.Compute(d.Engine)
+	s.titleText.MoveTo(render.Point{
+		X: (d.width / 2) - (s.titleText.Size().W / 2),
 		Y: 40,
 	})
-	label.Present(d.Engine, label.Point())
+	s.titleText.Present(d.Engine, s.titleText.Point())
 
 	s.Window.Compute(d.Engine)
 	s.Window.MoveTo(render.Point{

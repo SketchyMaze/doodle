@@ -68,6 +68,9 @@ func FromFile(filename string, embeddable filesystem.Embeddable) (*Wallpaper, er
 	}
 
 	// WASM: no support yet for wallpapers.
+	// TODO:
+	// - Wallpapers sorta draw on WASM but don't tile correctly on the top/left edges.
+	// - When enabling WASM, the os.Open() method is bound to fail.
 	if runtime.GOOS == "js" {
 		return defaultWP, nil
 	}

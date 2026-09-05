@@ -88,6 +88,10 @@ func main() {
 			Aliases: []string{"d"},
 			Usage:   "enable debug level logging",
 		},
+		&cli.BoolFlag{
+			Name:  "debug-overlay",
+			Usage: "enable in F3 debug overlay by default",
+		},
 		&cli.StringFlag{
 			Name:    "log",
 			Aliases: []string{"o"},
@@ -139,6 +143,11 @@ func main() {
 		// Set the log level now if debugging is enabled.
 		if c.Bool("debug") {
 			log.Logger.Config.Level = golog.DebugLevel
+		}
+
+		// Start with the F3 debug overlay active?
+		if c.Bool("debug-overlay") {
+			doodle.DebugOverlay = true
 		}
 
 		// Write the game's log to disk.

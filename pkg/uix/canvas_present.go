@@ -223,16 +223,25 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	w.presentCursor(e)
 
 	// Custom label in the canvas corner? (e.g. for Inventory item counts)
+	//
+	// The label widget is created once and reused every Present (only its
+	// .Text is updated): a fresh Label built here every frame would always
+	// miss the widget's texture cache, and since nothing would ever call
+	// Destroy() on a throwaway instance like that, its texture would never
+	// be freed.
 	if w.CornerLabel != "" {
-		label := ui.NewLabel(ui.Label{
-			Text: w.CornerLabel,
-			Font: render.Text{
-				FontFilename: balance.ShellFontFilename,
-				Size:         balance.ShellFontSizeSmall,
-				Color:        render.White,
-			},
-		})
-		label.SetBackground(render.RGBA(0, 0, 50, 150))
+		if w.cornerLabelWidget == nil {
+			w.cornerLabelWidget = ui.NewLabel(ui.Label{
+				Font: render.Text{
+					FontFilename: balance.ShellFontFilename,
+					Size:         balance.ShellFontSizeSmall,
+					Color:        render.White,
+				},
+			})
+			w.cornerLabelWidget.SetBackground(render.RGBA(0, 0, 50, 150))
+		}
+		label := w.cornerLabelWidget
+		label.Text = w.CornerLabel
 		label.Compute(e)
 		label.Present(e, render.Point{
 			X: p.X + S.W - label.Size().W - w.BoxThickness(1),
@@ -267,15 +276,18 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 			)
 		}
 
-		label := ui.NewLabel(ui.Label{
-			Text: strings.Join(rows, "\n"),
-			Font: render.Text{
-				FontFilename: balance.ShellFontFilename,
-				Size:         balance.ShellFontSizeSmall,
-				Color:        render.White,
-			},
-		})
-		label.SetBackground(render.RGBA(0, 0, 50, 150))
+		if w.debugLabelWidget == nil {
+			w.debugLabelWidget = ui.NewLabel(ui.Label{
+				Font: render.Text{
+					FontFilename: balance.ShellFontFilename,
+					Size:         balance.ShellFontSizeSmall,
+					Color:        render.White,
+				},
+			})
+			w.debugLabelWidget.SetBackground(render.RGBA(0, 0, 50, 150))
+		}
+		label := w.debugLabelWidget
+		label.Text = strings.Join(rows, "\n")
 		label.Compute(e)
 		label.Present(e, render.Point{
 			X: p.X + S.W - label.Size().W - w.BoxThickness(1),

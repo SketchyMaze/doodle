@@ -46,6 +46,16 @@ var (
 
 	// Custom labels for individual Scenes to add debug info.
 	customDebugLabels []debugLabel
+
+	// The debug overlay's key/value Labels are created once and reused
+	// every frame (only their .Text is updated) instead of being
+	// reconstructed on every call to DrawDebugOverlay. A widget's cached
+	// appearance texture is only useful across frames if the same widget
+	// instance keeps being Presented; a fresh Label built every frame is
+	// always a cache miss and, since nothing ever calls Destroy() on a
+	// throwaway instance like that, its texture would never be freed.
+	debugKeyLabel   *ui.Label
+	debugValueLabel *ui.Label
 )
 
 type debugLabel struct {
@@ -117,33 +127,37 @@ func (d *Doodle) DrawDebugOverlay() {
 		}
 	}
 
-	key := ui.NewLabel(ui.Label{
-		Text: strings.Join(keys, "\n"),
-		Font: render.Text{
-			Size:         balance.DebugFontSize,
-			FontFilename: balance.ShellFontFilename,
-			Color:        balance.DebugLabelColor,
-			Stroke:       balance.DebugLabelColor.Darken(darken),
-		},
-	})
-	key.Compute(d.Engine)
-	key.Present(d.Engine, render.NewPoint(
+	if debugKeyLabel == nil {
+		debugKeyLabel = ui.NewLabel(ui.Label{
+			Font: render.Text{
+				Size:         balance.DebugFontSize,
+				FontFilename: balance.ShellFontFilename,
+				Color:        balance.DebugLabelColor,
+				Stroke:       balance.DebugLabelColor.Darken(darken),
+			},
+		})
+	}
+	debugKeyLabel.Text = strings.Join(keys, "\n")
+	debugKeyLabel.Compute(d.Engine)
+	debugKeyLabel.Present(d.Engine, render.NewPoint(
 		DebugTextPadding+Xoffset,
 		DebugTextPadding+Yoffset,
 	))
 
-	value := ui.NewLabel(ui.Label{
-		Text: strings.Join(values, "\n"),
-		Font: render.Text{
-			Size:         balance.DebugFontSize,
-			FontFilename: balance.DebugFontFilename,
-			Color:        balance.DebugValueColor,
-			Stroke:       balance.DebugValueColor.Darken(darken),
-		},
-	})
-	value.Compute(d.Engine)
-	value.Present(d.Engine, render.NewPoint(
-		DebugTextPadding+Xoffset+key.Size().W+DebugTextPadding,
+	if debugValueLabel == nil {
+		debugValueLabel = ui.NewLabel(ui.Label{
+			Font: render.Text{
+				Size:         balance.DebugFontSize,
+				FontFilename: balance.DebugFontFilename,
+				Color:        balance.DebugValueColor,
+				Stroke:       balance.DebugValueColor.Darken(darken),
+			},
+		})
+	}
+	debugValueLabel.Text = strings.Join(values, "\n")
+	debugValueLabel.Compute(d.Engine)
+	debugValueLabel.Present(d.Engine, render.NewPoint(
+		DebugTextPadding+Xoffset+debugKeyLabel.Size().W+DebugTextPadding,
 		DebugTextPadding+Yoffset, // padding to not overlay menu bar
 	))
 }

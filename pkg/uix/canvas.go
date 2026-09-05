@@ -50,7 +50,9 @@ type Canvas struct {
 
 	// Custom label to place in the lower-right corner of the canvas.
 	// Used for e.g. the quantity badge on Inventory items.
-	CornerLabel string
+	CornerLabel       string
+	cornerLabelWidget *ui.Label // lazy init, reused every Present (see canvas_present.go)
+	debugLabelWidget  *ui.Label // lazy init, reused every Present (see canvas_present.go)
 
 	// Selected draw tool/mode, default Pencil, for editable canvases.
 	Tool      drawtool.Tool
