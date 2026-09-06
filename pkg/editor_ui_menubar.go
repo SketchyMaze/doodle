@@ -230,7 +230,7 @@ func (u *EditorUI) SetupMenuBar(d *Doodle) *ui.MenuBar {
 		}
 	})
 	toolMenu.AddItemAccel("Command shell", "`", func() {
-		d.shell.Open = true
+		d.shell.Open()
 	})
 	toolMenu.AddSeparator()
 	toolMenu.AddItem("Edit Palette", func() {

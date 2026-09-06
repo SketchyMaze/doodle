@@ -35,7 +35,7 @@ func (d *Doodle) FlashError(template string, v ...interface{}) {
 func (d *Doodle) Prompt(question string, callback func(string)) {
 	d.shell.Prompt = question
 	d.shell.callback = callback
-	d.shell.open()
+	d.shell.Open()
 }
 
 // PromptPre prompts with a pre-filled value.
@@ -43,7 +43,7 @@ func (d *Doodle) PromptPre(question string, prefilled string, callback func(stri
 	d.shell.Text = prefilled
 	d.shell.Prompt = question
 	d.shell.callback = callback
-	d.shell.open()
+	d.shell.Open()
 }
 
 // FindLikelySupervisor will locate a most likely ui.Supervisor depending on the current Scene,
@@ -64,7 +64,7 @@ func (d *Doodle) FindLikelySupervisor() (*ui.Supervisor, error) {
 type Shell struct {
 	parent *Doodle
 
-	Open     bool
+	open     bool
 	Prompt   string
 	Repl     bool
 	callback func(string) // for prompt answers only
@@ -143,18 +143,18 @@ func NewShell(d *Doodle) Shell {
 	return s
 }
 
-// open the shell (or a Prompt/PromptPre answer box, which reuses it),
+// Open the shell (or a Prompt/PromptPre answer box, which reuses it),
 // requesting the on-screen keyboard for touch devices -- a no-op on
 // desktop/WASM, see pkg/native/keyboard*.go.
-func (s *Shell) open() {
-	s.Open = true
+func (s *Shell) Open() {
+	s.open = true
 	native.ShowKeyboard()
 }
 
 // Close the shell, resetting its internal state.
 func (s *Shell) Close() {
 	log.Debug("Shell: closing shell")
-	s.Open = false
+	s.open = false
 	s.Repl = false
 	s.Prompt = ">"
 	s.callback = nil
@@ -278,7 +278,7 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 	lineHeight := balance.ShellFontSize + int(balance.ShellPadding)
 
 	// If the console is open, draw the console.
-	if s.Open {
+	if s.open {
 		// How tall is the box? (needed below too, for the tap-to-show-
 		// keyboard check, so compute it before anything that might
 		// early-return)

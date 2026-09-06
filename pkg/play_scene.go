@@ -787,12 +787,12 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 // *does* still call Loop() -- with a sanitized, non-interactive
 // event.State -- when a window resize needs to reach the scene's own
 // layout code while the shell is up (see Run()'s handling of
-// d.shell.Open). That resize handling happens to return early above
+// d.shell.open). That resize handling happens to return early above
 // before reaching the simulation block this guards, but that's
 // incidental to where the early return is today, not something the
 // simulation block should depend on.
 func (s *PlayScene) Paused() bool {
-	return s.d.shell.Open
+	return s.d.shell.open
 }
 
 // Loop the editor scene.

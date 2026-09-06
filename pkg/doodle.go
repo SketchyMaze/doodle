@@ -154,7 +154,7 @@ func (d *Doodle) Run() error {
 		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 
 		// Command line shell.
-		if d.shell.Open {
+		if d.shell.open {
 			// The shell intentionally doesn't forward input to the scene
 			// here (so typing in the console doesn't also move the player,
 			// click buttons, etc. in the background) -- but that also meant
@@ -185,7 +185,7 @@ func (d *Doodle) Run() error {
 			}
 		} else if keybind.ShellKey(ev) {
 			log.Debug("Shell: opening shell")
-			d.shell.open()
+			d.shell.Open()
 		} else {
 			if keybind.Help(ev) {
 				// Launch the local guidebook
