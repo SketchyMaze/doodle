@@ -10,6 +10,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/keybind"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/modal/loadscreen"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
@@ -34,7 +35,7 @@ func (d *Doodle) FlashError(template string, v ...interface{}) {
 func (d *Doodle) Prompt(question string, callback func(string)) {
 	d.shell.Prompt = question
 	d.shell.callback = callback
-	d.shell.Open = true
+	d.shell.open()
 }
 
 // PromptPre prompts with a pre-filled value.
@@ -42,7 +43,7 @@ func (d *Doodle) PromptPre(question string, prefilled string, callback func(stri
 	d.shell.Text = prefilled
 	d.shell.Prompt = question
 	d.shell.callback = callback
-	d.shell.Open = true
+	d.shell.open()
 }
 
 // FindLikelySupervisor will locate a most likely ui.Supervisor depending on the current Scene,
@@ -80,6 +81,11 @@ type Shell struct {
 	// Paging through history variables.
 	historyPaging bool
 	historyIndex  int
+
+	// Tracks Button1's state as of the previous Draw() call, to
+	// edge-detect a fresh tap on the console (see Draw()'s tap-to-show-
+	// keyboard check) rather than re-triggering every frame of a hold.
+	wasClicked bool
 
 	// JavaScript shell interpreter.
 	js *goja.Runtime
@@ -137,6 +143,14 @@ func NewShell(d *Doodle) Shell {
 	return s
 }
 
+// open the shell (or a Prompt/PromptPre answer box, which reuses it),
+// requesting the on-screen keyboard for touch devices -- a no-op on
+// desktop/WASM, see pkg/native/keyboard*.go.
+func (s *Shell) open() {
+	s.Open = true
+	native.ShowKeyboard()
+}
+
 // Close the shell, resetting its internal state.
 func (s *Shell) Close() {
 	log.Debug("Shell: closing shell")
@@ -147,6 +161,7 @@ func (s *Shell) Close() {
 	s.Text = ""
 	s.historyPaging = false
 	s.historyIndex = 0
+	native.HideKeyboard()
 }
 
 // Execute a command in the shell.
@@ -264,6 +279,23 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 
 	// If the console is open, draw the console.
 	if s.Open {
+		// How tall is the box? (needed below too, for the tap-to-show-
+		// keyboard check, so compute it before anything that might
+		// early-return)
+		boxHeight := (lineHeight * (balance.ShellHistoryLineCount + 1)) + balance.ShellPadding
+
+		// Tapping the console re-opens the on-screen keyboard if the user
+		// dismissed it (e.g. the system back gesture, or just tapping
+		// elsewhere) without closing the shell itself -- ShowKeyboard() is
+		// a no-op everywhere except Android. Edge-detected (only on the
+		// frame a new tap starts, via wasClicked) so a held-down touch
+		// doesn't call it every single frame.
+		tapped := ev.Button1 && !s.wasClicked && ev.CursorY >= d.height-boxHeight
+		s.wasClicked = ev.Button1
+		if tapped {
+			native.ShowKeyboard()
+		}
+
 		if ev.Escape {
 			s.Close()
 			return nil
@@ -315,8 +347,13 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 			}
 		}
 
-		// Read a character from the keyboard.
-		for _, key := range ev.KeysDown(true) {
+		// Read a character from the keyboard. KeysPressed() (not KeysDown())
+		// specifically because on-screen/IME keyboards (Android) fire a
+		// keydown immediately followed by a keyup with no real hold
+		// duration between them -- see event.State's keyPressed field doc
+		// comment for the full explanation -- so KeysDown() alone would
+		// never see them.
+		for _, key := range ev.KeysPressed(true) {
 			// Backspace?
 			if key == `\b` {
 				if len(s.Text) > 0 {
@@ -334,9 +371,6 @@ func (s *Shell) Draw(d *Doodle, ev *event.State) error {
 			// So, just reset ALL key press states to work around it:
 			ev.ResetKeyDown()
 		}
-
-		// How tall is the box?
-		boxHeight := (lineHeight * (balance.ShellHistoryLineCount + 1)) + balance.ShellPadding
 
 		// Draw the background color.
 		d.Engine.DrawBox(

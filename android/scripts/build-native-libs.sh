@@ -11,7 +11,7 @@ DOODLE_DIR="$(cd "$ANDROID_DIR/.." && pwd)"
 THIRD_PARTY_DIR="$ANDROID_DIR/third_party"
 JNI_LIBS_DIR="$ANDROID_DIR/app/src/main/jniLibs"
 
-: "${ANDROID_NDK_HOME:?Set ANDROID_NDK_HOME to your NDK install, e.g. \$ANDROID_HOME/ndk/26.3.11579264}"
+: "${ANDROID_NDK_HOME:?Set ANDROID_NDK_HOME to your NDK install, e.g. \$ANDROID_HOME/ndk/30.0.16138531}"
 : "${ANDROID_API:=21}" # Must be >= app/build.gradle's minSdkVersion.
 
 TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake"

@@ -12,7 +12,24 @@
 package main
 
 /*
+#include <jni.h>
 #include <stdlib.h>
+
+// See pkg/native/android/filepicker.go's own comment on why JNI vtable
+// calls (env->Foo(env, ...) in C) need a small static C helper each rather
+// than being called directly from Go/cgo expressions.
+static const char *get_string_utf_chars(JNIEnv *env, jstring str) {
+    if (str == NULL) {
+        return NULL;
+    }
+    return (*env)->GetStringUTFChars(env, str, NULL);
+}
+
+static void release_string_utf_chars(JNIEnv *env, jstring str, const char *chars) {
+    if (str != NULL && chars != NULL) {
+        (*env)->ReleaseStringUTFChars(env, str, chars);
+    }
+}
 */
 import "C"
 
@@ -21,6 +38,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"unsafe"
 
 	"git.kirsle.net/SketchyMaze/doodle/assets"
 	doodle "git.kirsle.net/SketchyMaze/doodle/pkg"
@@ -28,6 +46,7 @@ import (
 	"git.kirsle.net/SketchyMaze/doodle/pkg/branding"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/native"
+	androidnative "git.kirsle.net/SketchyMaze/doodle/pkg/native/android"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sound"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/sprites"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/usercfg"
@@ -124,11 +143,63 @@ func SDL_main() {
 	if err := game.Run(); err != nil {
 		log.Error("game.Run: %s", err)
 	}
+
+	// When game.Run() returns (the player quit, e.g. via the in-game File
+	// menu), returning from this exported function just hands control back
+	// to Java's SDLMain.run(), which calls Activity.finish() -- ending the
+	// *Activity*, but not necessarily the underlying Android *process*.
+	// Android often keeps a finished app's process alive in the background
+	// for a fast relaunch, and that's exactly the problem here: dlopen()
+	// (via System.loadLibrary()) doesn't re-run a shared library's init
+	// code on a second load within the same process, so a relaunched
+	// Activity in the surviving process would call this exported SDL_main
+	// a second time against a Go runtime, and SDL2 C-level global state,
+	// that already went through one full run and was never designed to be
+	// re-entered -- observed as the relaunched app immediately dying in
+	// the background (nothing in logcat past the usual startup lines)
+	// until the whole task is swiped away in Recents to force a genuinely
+	// fresh process. os.Exit() terminates the entire process outright
+	// (unlike returning, which only ends this one call), guaranteeing the
+	// next launch always starts from a real clean slate.
+	os.Exit(0)
 }
 
 // main is required for `go build -buildmode=c-shared` but is never called:
 // SDLActivity invokes the exported SDL_main function above via JNI instead.
 func main() {}
+
+// Java_com_sketchymaze_doodle_MainActivity_nativeFilePickerResult is called
+// by MainActivity.onActivityResult() (via a `private native` JNI method
+// declaration -- see MainActivity.java) once the user has picked a file (or
+// canceled) in the Storage Access Framework picker
+// pkg/native/android.PickFile() launched.
+//
+// This has to live here, in this package's own cgo block, rather than in
+// pkg/native/android alongside PickFile(): only a Go "package main" built
+// with -buildmode=c-shared can //export a C symbol for the JVM to call by
+// name, and cgo types like C.jstring aren't interchangeable across
+// separate packages' own "C" pseudo-packages -- so the jstring gets
+// converted to a plain Go string here, and only that plain string crosses
+// the package boundary into androidnative.DeliverResult().
+//
+// The exported symbol name follows the standard JNI native-method naming
+// convention (Java_<package_with_underscores>_<Class>_<method>), matching
+// package com.sketchymaze.doodle's MainActivity.
+//
+//export Java_com_sketchymaze_doodle_MainActivity_nativeFilePickerResult
+func Java_com_sketchymaze_doodle_MainActivity_nativeFilePickerResult(env *C.JNIEnv, thiz C.jobject, jPath C.jstring, jOk C.jboolean) {
+	var path string
+	// C.jstring doesn't support a direct `== nil` comparison under cgo
+	// (see the same issue, worked around the same way, in
+	// pkg/native/android/filepicker.go's launchPicker()).
+	if unsafe.Pointer(jPath) != nil {
+		cPath := C.get_string_utf_chars(env, jPath)
+		path = C.GoString(cPath)
+		C.release_string_utf_chars(env, jPath, cPath)
+	}
+
+	androidnative.DeliverResult(path, jOk != 0)
+}
 
 // setupUserdir repoints pkg/userdir's exported directory/file path vars at
 // real, writable locations under this app's private internal storage,

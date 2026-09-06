@@ -1,12 +1,23 @@
 package com.sketchymaze.doodle;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.system.Os;
 import android.util.Log;
 
 import org.libsdl.app.SDLActivity;
 import org.libsdl.app.SDLSurface;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Thin activity around SDL2's own SDLActivity. All of the real app logic is
@@ -106,4 +117,127 @@ public class MainActivity extends SDLActivity {
 
         super.loadLibraries();
     }
+
+    // ------------------------------------------------------------------
+    // Native file dialogs (pkg/native's OpenFile/SaveFile on Android).
+    // See pkg/native/android/filepicker.go for the Go/JNI side that calls
+    // into showFilePicker() below and blocks waiting for
+    // nativeFilePickerResult() to be called back.
+    // ------------------------------------------------------------------
+
+    private static final int REQUEST_CODE_FILE_PICKER = 1001;
+    private boolean mFilePickerForSave;
+
+    /**
+     * Launches Android's Storage Access Framework document picker. Called
+     * from Go via JNI (pkg/native/android/filepicker.go's launchPicker()),
+     * never directly from other Java code.
+     */
+    public void showFilePicker(boolean forSave, String suggestedName) {
+        mFilePickerForSave = forSave;
+
+        Intent intent = new Intent(forSave ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // SAF filters by MIME type, and this game's own extensions
+        // (.level, .doodad) have no registered MIME type to filter by, so
+        // show every file type rather than trying to translate pkg/native's
+        // "*.ext *.ext2"-style filter string into one (see PickFile's own
+        // doc comment on the Go side).
+        intent.setType("*/*");
+        if (forSave && suggestedName != null && !suggestedName.isEmpty()) {
+            intent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+        }
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_FILE_PICKER);
+        } catch (Exception e) {
+            Log.e("SDL", "showFilePicker: couldn't launch picker intent", e);
+            nativeFilePickerResult(null, false);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode != REQUEST_CODE_FILE_PICKER) {
+            return;
+        }
+
+        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) {
+            nativeFilePickerResult(null, false); // user canceled
+            return;
+        }
+
+        Uri uri = data.getData();
+        if (mFilePickerForSave) {
+            // Not reachable today -- pkg/native/file_dialog_android.go's
+            // SaveFile() returns an error before ever calling PickFile(),
+            // since actually writing the caller's bytes back out to this
+            // content:// URI isn't wired up yet. Report failure here too
+            // rather than a local path that wouldn't correspond to
+            // anywhere real, in case that ever changes without this branch
+            // being revisited.
+            Log.w("SDL", "showFilePicker: ACTION_CREATE_DOCUMENT result isn't handled yet");
+            nativeFilePickerResult(null, false);
+            return;
+        }
+
+        String localPath = copyUriToCache(uri);
+        nativeFilePickerResult(localPath, localPath != null);
+    }
+
+    /**
+     * Copies a content:// URI's bytes into a real file under this app's
+     * cache directory, named after the picked file's own display name
+     * where available. Native Go code can't read a content:// URI
+     * directly the way it can a real filesystem path via os.Open(), so
+     * this is what makes the picked file actually usable on the Go side.
+     * Returns the local absolute path, or null on failure.
+     */
+    private String copyUriToCache(Uri uri) {
+        String displayName = queryDisplayName(uri);
+        if (displayName == null || displayName.isEmpty()) {
+            displayName = "picked-" + System.currentTimeMillis();
+        }
+
+        File outFile = new File(getCacheDir(), displayName);
+        try (InputStream in = getContentResolver().openInputStream(uri);
+             OutputStream out = new FileOutputStream(outFile)) {
+            if (in == null) {
+                return null;
+            }
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            return outFile.getAbsolutePath();
+        } catch (IOException e) {
+            Log.e("SDL", "copyUriToCache: failed to copy " + uri, e);
+            return null;
+        }
+    }
+
+    private String queryDisplayName(Uri uri) {
+        try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) {
+                    return cursor.getString(idx);
+                }
+            }
+        } catch (Exception e) {
+            Log.w("SDL", "queryDisplayName: couldn't query " + uri, e);
+        }
+        return null;
+    }
+
+    /**
+     * Implemented in cmd/doodle-android/main_android.go (exported as
+     * Java_com_sketchymaze_doodle_MainActivity_nativeFilePickerResult):
+     * delivers showFilePicker()'s result back to the Go side, unblocking
+     * pkg/native/android's PickFile().
+     */
+    private native void nativeFilePickerResult(String path, boolean ok);
 }

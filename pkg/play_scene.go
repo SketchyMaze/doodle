@@ -780,6 +780,21 @@ func (s *PlayScene) ShowEndLevelModal(success bool, title, message string) {
 	s.running = false
 }
 
+// Paused reports whether gameplay simulation should be suspended this
+// tick: currently, whenever the developer shell is open. Checked
+// explicitly (rather than relying on the fact that Doodle.Run() mostly
+// doesn't call Scene.Loop() at all while the shell is open) because it
+// *does* still call Loop() -- with a sanitized, non-interactive
+// event.State -- when a window resize needs to reach the scene's own
+// layout code while the shell is up (see Run()'s handling of
+// d.shell.Open). That resize handling happens to return early above
+// before reaching the simulation block this guards, but that's
+// incidental to where the early return is today, not something the
+// simulation block should depend on.
+func (s *PlayScene) Paused() bool {
+	return s.d.shell.Open
+}
+
 // Loop the editor scene.
 func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	// Skip if still loading.
@@ -817,7 +832,7 @@ func (s *PlayScene) Loop(d *Doodle, ev *event.State) error {
 	}
 
 	// Is the simulation still running?
-	if s.running {
+	if s.running && !s.Paused() {
 		// Loop the script supervisor so timeouts/intervals can fire in scripts.
 		if err := s.scripting.Loop(); err != nil {
 			log.Error("PlayScene.Loop: scripting.Loop: %s", err)

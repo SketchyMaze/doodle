@@ -149,9 +149,15 @@ or if you'd rather not use it.
 
 - **Android Studio** (easiest way to get the SDK, an emulator, and a working
   `local.properties`), or just the command-line `Android SDK` + `cmdline-tools`.
-- **Android NDK**, r26 or newer. Install it via Android Studio's
-  SDK Manager (SDK Tools tab -> NDK (Side by side)), or set
-  `ANDROID_NDK_HOME` at whatever path you already have one.
+- **Android NDK**, r27 or newer -- not just "any recent NDK": r27 is where
+  the linker started defaulting to 16 KB page-aligned native libraries,
+  which newer Android versions/devices require (see the
+  [Troubleshooting](#troubleshooting) entry on this if you're curious why
+  that's a hard minimum and not just a suggestion). Install it via Android
+  Studio's SDK Manager (SDK Tools tab -> NDK (Side by side)), or set
+  `ANDROID_NDK_HOME` at whatever path you already have one -- this project
+  is pinned to (and tested against) 30.0.16138531, set as `ndkVersion` in
+  `app/build.gradle`.
 - **CMake** and **Ninja** (Android Studio's SDK Manager can install CMake
   too; Ninja can come from your distro package manager, e.g.
   `sudo pacman -S ninja` / `apt install ninja-build`).
@@ -207,7 +213,7 @@ Then build the native libraries for each ABI and cross-compile the Go code
 against them:
 
 ```sh
-export ANDROID_NDK_HOME=/path/to/your/Sdk/ndk/26.3.11579264
+export ANDROID_NDK_HOME=/path/to/your/Sdk/ndk/30.0.16138531
 ./scripts/build-native-libs.sh
 ```
 
@@ -494,21 +500,111 @@ This scaffold gets the game compiling and running as a real Android APK,
 but a few things that made sense for a desktop app haven't been adapted
 for a phone/tablet yet:
 
-- **Native file dialogs.** `pkg/native/file_dialog_native.go` uses
-  `github.com/gen2brain/dlgs`, which has no Android backend -- it falls back
-  to a stub that returns `ErrUnsupported` (this doesn't break the build,
-  `dlgs` compiles fine, it's just a no-op at runtime). Anywhere the game
-  opens a native "choose a file" dialog (e.g. loading/saving a level from
-  the editor) will need an Android-specific implementation, most likely
-  using the Storage Access Framework from Java, or reusing the same
-  in-game GUI file browser fallback the WASM build already has (see
-  `pkg/native/file_dialog_fallback.go`).
-- **"Open web browser" links** (`pkg/native/browser.go`, used for e.g. the
-  in-game guidebook) shell out to `xdg-open`/`open`/`cmd`, none of which
-  exist on Android. This fails gracefully (returns an error, doesn't
-  crash) but won't actually open anything; wiring it to an Android
-  `Intent.ACTION_VIEW` would need a small JNI call or a build-tagged
-  `browser_android.go`.
+- **Native file dialogs -- reading works, saving doesn't yet.**
+  `pkg/native/file_dialog_android.go`'s `OpenFile()` launches Android's
+  Storage Access Framework picker (`ACTION_OPEN_DOCUMENT`, via JNI --
+  `pkg/native/android/filepicker.go` on the Go side,
+  `MainActivity.showFilePicker()`/`onActivityResult()` on the Java side)
+  and copies the picked `content://` URI to a local cache file, since Go's
+  `os.Open()` can't read those directly. `SaveFile()` returns an explicit
+  "not supported" error instead of pretending to work: nothing in this
+  codebase actually calls `native.SaveFile` today, and a real
+  `ACTION_CREATE_DOCUMENT` implementation would need to copy the caller's
+  bytes back out to the picked URI *after* they're written, which has no
+  natural hook to attach to without a real caller to design it against.
+- **"Open web browser" links** (`pkg/native/browser_android.go`) call
+  `SDL_OpenURL()` directly via cgo (go-sdl2 doesn't wrap it, despite SDL's
+  own `TODO.md` claiming otherwise) to fire an `Intent.ACTION_VIEW`. The
+  in-game guidebook link (`OpenLocalURL(balance.GuidebookPath)`) redirects
+  to the hosted copy (`branding.GuidebookURL`) instead, since the
+  guidebook isn't bundled into the Android build the way `rtp/`'s audio
+  is (see "Assets and save data" above) and a local `file://` URL
+  couldn't usefully open in an external browser anyway. Other
+  `OpenLocalURL` callers (the screenshots directory, an exported doodad's
+  HTML docs) have no online equivalent to redirect to, so those just log
+  a "not supported" warning instead.
+- **On-screen keyboard.** `pkg/native.ShowKeyboard()`/`HideKeyboard()`
+  (no-ops everywhere except Android, see `pkg/native/keyboard_android.go`)
+  wrap `SDL_StartTextInput()`/`StopTextInput()`, which already trigger
+  Android's soft keyboard on their own -- SDL's Android video backend
+  wires that up internally, no JNI needed here at all. Wired into the dev
+  shell (`pkg/shell.go`'s `Shell.open()`/`Close()`) and
+  `Doodle.Prompt()`/`PromptPre()`. Two more things this needed once tested
+  on a real device:
+  - Typed characters weren't reaching the game at all. SDL's Android IME
+    layer does synthesize a proper `SDL_KEYDOWN`+`SDL_KEYUP` pair per
+    character (via `SDL_SendKeyboardUnicodeKey()`, called from
+    `SDLInputConnection.commitText()` on the Java side) rather than only
+    firing `SDL_TEXTINPUT` -- but with no real hold duration between the
+    down and up, both landing in the same `Poll()` batch. `KeysDown()`
+    (used by `Shell.Draw()`) only reflects keys *currently* held, so the
+    key had already gone back up before the shell ever checked. Fixed at
+    the `git.kirsle.net/go/render/event` level (`deps/render/` in this
+    repo): a new `KeysPressed()`/`ResetKeysPressed()` pair tracks "had a
+    keydown since the last `Poll()`" separately from `KeysDown()`'s
+    continuous-hold state, reset once per `Poll()`
+    (`deps/render/sdl/events.go`, `deps/render/canvas/events.go`) rather
+    than accumulating forever. `Shell.Draw()` now reads from
+    `KeysPressed()`. This is a real SDL2/Android behavior, not Android-
+    specific to this game, so it's fixed at the shared render-engine
+    level rather than worked around in `pkg/`.
+  - The keyboard popped up **over** the game instead of the window
+    resizing to make room, so the shell (drawn at the bottom of the
+    screen) ended up hidden behind it.
+    `android:windowSoftInputMode="adjustResize"` -- the normal fix for
+    this -- doesn't reliably apply to a fullscreen/immersive activity like
+    this one (see `SDLActivity.setWindowStyle()`'s `SYSTEM_UI_FLAG_*`
+    flags), so `ScaledSDLSurface` now detects the keyboard manually (the
+    classic `getWindowVisibleDisplayFrame()` height-comparison technique,
+    portable back to this app's `minSdkVersion` unlike the newer
+    `WindowInsets.Type.ime()` API) and resizes its own `LayoutParams`
+    height to leave room for it -- which chains into the existing
+    `onSizeChanged()`/`requestScaledBufferSize()` pipeline for free.
+    Relatedly: `Doodle.Run()`'s main loop skips `Scene.Loop()` entirely
+    while the shell is open (so typing doesn't also drive player
+    movement/clicks in the background), which also meant a resize
+    mid-shell never reached the current scene's own layout code (`Draw()`
+    still ran every frame, but only re-rendering stale widget positions).
+    Fixed by forwarding a sanitized `event.State` -- only `WindowResized`
+    and the cursor position set, nothing interactive -- to `Scene.Loop()`
+    specifically when `ev.WindowResized` is true while the shell is open.
+    Since `PlayScene.Loop()` is now the only one of these that could
+    actually advance gameplay simulation, and it happened to already
+    return early on `WindowResized` before reaching that code, this
+    couldn't have progressed gameplay in practice -- but relying on that
+    incidentally was fragile, so `PlayScene.Paused()` (checked explicitly
+    at the top of the simulation block) now makes it deliberate.
+  - The Enter key didn't submit the prompt. Same root cause as the typed-
+    character bug above, different field: `ev.Enter` is a raw "currently
+    held" boolean (unrelated to the `KeysDown()`/`KeysPressed()` machinery)
+    that a synthesized keydown+keyup pair in the same batch cleared before
+    `keybind.Enter()` -- which already treated it as edge-triggered
+    (consume-and-clear on read) -- ever saw it true. Fixed the same way:
+    `Poll()` now resets `s.Enter = false` every tick, and the event
+    handler only sets it true on keydown, never clears it on keyup.
+  - If the user dismissed the keyboard (e.g. the system back gesture)
+    without closing the shell, there was no way to bring it back short of
+    closing and reopening the shell itself. `Shell.Draw()` now calls
+    `ShowKeyboard()` again on a fresh tap (edge-detected, not every frame
+    of a hold) within the console's own drawn area.
+- **App relaunch after an in-game quit.** Using the in-game quit (e.g. the
+  Level Editor's File menu) would leave the app crashing silently in the
+  background on the next launch -- it'd show the usual debug-build splash
+  and then just die, with nothing informative in `adb logcat`, until the
+  whole task was swiped away in Recents to force a truly fresh process.
+  Root cause: returning from `cmd/doodle-android/main_android.go`'s
+  `SDL_main()` only ends the JNI call -- Java's `SDLMain.run()` then calls
+  `Activity.finish()`, which ends the *Activity* but not necessarily the
+  underlying Android *process*, which Android often keeps alive
+  in the background for a fast relaunch. Since `dlopen()` (what
+  `System.loadLibrary()` does under the hood) doesn't re-run a shared
+  library's init code on a second load within the same process, a
+  relaunched Activity in that surviving process would call the *same*
+  exported `SDL_main` a second time against a Go runtime and SDL2 C-level
+  global state that already went through one full run and was never
+  designed to be re-entered. Fixed with an explicit `os.Exit(0)` right
+  after `game.Run()` returns, guaranteeing the process actually ends and
+  the next launch always starts from a real clean slate.
 - **Screen size / editor UX.** The level editor's toolbox and menus were
   designed for a mouse and a desktop-sized window; nothing has been tuned
   yet for small touchscreens beyond the existing touch-vs-mouse cursor
@@ -522,6 +618,43 @@ for a phone/tablet yet:
 
 ## Troubleshooting
 
+- **"App may not work properly" 16 KB page size warning** (Android Studio's
+  install dialog, or `adb install`'s own compatibility check) -- newer
+  Android versions/devices are migrating to a 16 KB memory page size for
+  performance, and starting around late 2025 Google Play requires apps
+  with native code to support it; devices that already use 16 KB pages
+  will show this warning (or in stricter cases, fail to load the library)
+  if any bundled `.so` isn't built for it. This was actually happening
+  here, confirmed with `llvm-readelf -l some.so | grep LOAD` (look at the
+  `Align` column: `0x1000` is 4 KB, `0x4000` is the 16 KB alignment that's
+  needed) -- two separate things had to be fixed:
+  1. **NDK version.** NDK r27+ defaults its linker to 16 KB-aligned ELF
+     segments (older NDKs don't, with no extra flag needed to opt in --
+     this project used to pin `26.3.11579264`, discovered to be
+     insufficient this way). `app/build.gradle`'s `ndkVersion` and
+     whatever `ANDROID_NDK_HOME` points at when you run
+     `build-native-libs.sh` need to agree, and both need to be r27+.
+     `bootstrap.py` always picks the newest installed NDK automatically,
+     so this is normally only something to think about if you're setting
+     `ANDROID_NDK_HOME` by hand.
+  2. **APK packaging.** 16 KB ELF alignment only matters if the OS can
+     `mmap()` the library directly out of the APK in the first place,
+     which requires it to be stored *uncompressed* there --
+     `app/build.gradle`'s `packagingOptions { jniLibs { useLegacyPackaging
+     ... } }` controls that, and this project had it backwards for a
+     while (`true`, under the mistaken impression that meant "don't
+     compress" -- it's the opposite: "legacy" packaging is the old
+     pre-API-23 compressed/extract-at-install-time behavior). It's
+     `false` now, matching AGP's own default; if you ever "fix" it back
+     the wrong way, this whole class of problem returns, silently, even
+     with a new-enough NDK -- worth verifying directly rather than
+     trusting the setting, with the SDK's own `zipalign` (in
+     `$ANDROID_HOME/build-tools/<version>/`) in check mode:
+     ```sh
+     zipalign -c -v -P 16 4 app/build/outputs/apk/debug/app-debug.apk
+     ```
+     Every `.so` should report `(OK)`, ending in `Verification succesful`
+     (its own typo, not ours).
 - **`Compatibility with CMake < 3.5 has been removed`** while configuring
   SDL_ttf/SDL_mixer's vendored dependencies (e.g. `external/freetype`) --
   those third-party `CMakeLists.txt` files declare an old

@@ -3,7 +3,14 @@ apply plugin: 'com.android.application'
 android {
     namespace 'com.sketchymaze.doodle'
     compileSdk 34
-    ndkVersion "26.3.11579264"
+    // NDK r27+ defaults its linker to 16 KB page-aligned ELF segments,
+    // which recent Android versions/devices require for native libraries.
+    // Older NDKs (this project used 26.3.11579264 until this was caught)
+    // produce libraries that fail that check -- see the "16 KB page size"
+    // entry in the README's Troubleshooting section for how this was
+    // diagnosed. build-native-libs.sh uses whatever $ANDROID_NDK_HOME
+    // points at, so keep that in sync with this if you change it.
+    ndkVersion "30.0.16138531"
 
     defaultConfig {
         applicationId "com.sketchymaze.doodle"
@@ -45,9 +52,18 @@ android {
     }
 
     packagingOptions {
-        // Don't let Gradle try to strip/compress our prebuilt Go .so files.
+        // false (confusingly, since AGP's default is *already* false --
+        // this makes it explicit) stores native libraries uncompressed in
+        // the APK, which is what lets the OS mmap() them directly at
+        // runtime instead of extracting them to disk at install time --
+        // "legacy" packaging (true) means the old pre-API-23 compressed/
+        // extract-at-install behavior. This originally said `true` here
+        // under the mistaken assumption that it meant "don't compress";
+        // it's the opposite. Also a prerequisite for 16 KB page alignment
+        // to mean anything at all: a compressed .so's on-disk position
+        // inside the APK zip isn't meaningful to align in the first place.
         jniLibs {
-            useLegacyPackaging = true
+            useLegacyPackaging = false
         }
     }
 }

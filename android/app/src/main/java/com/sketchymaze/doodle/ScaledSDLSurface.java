@@ -6,6 +6,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import org.libsdl.app.SDLSurface;
 
@@ -61,13 +62,62 @@ import org.libsdl.app.SDLSurface;
  * measured size just changed" signal (independent of surfaceChanged's
  * timing), so re-verifying there too catches a late correction the first
  * surfaceChanged() call missed.
+ *
+ * One more: making room for the on-screen keyboard. AndroidManifest.xml's
+ * android:windowSoftInputMode="adjustResize" is the "normal" way to ask
+ * Android to shrink your window for the keyboard, but it's unreliable for
+ * a fullscreen/immersive app like this one (see setWindowStyle() in
+ * SDLActivity.java, which sets SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN et al) --
+ * the OS doesn't consistently apply adjustResize to activities in that
+ * mode. So this does it manually: getWindowVisibleDisplayFrame() is the
+ * classic technique for detecting the keyboard's height (comparing the
+ * visible frame against the real screen height), and works uniformly back
+ * to this app's minSdkVersion, unlike the newer WindowInsets.Type.ime()
+ * API which needs API 30+. checkKeyboardVisibility() below resizes this
+ * View's own LayoutParams height (not just its render buffer) to leave
+ * room for it -- that alone is enough, since it triggers a real Android
+ * layout pass, which calls onSizeChanged() above, which already computes
+ * and applies the correspondingly-smaller render buffer.
  */
 public class ScaledSDLSurface extends SDLSurface {
+
+    private final Rect mVisibleFrame = new Rect();
+    private int mKeyboardHeightPx = 0;
 
     public ScaledSDLSurface(Context context) {
         super(context);
         setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        getViewTreeObserver().addOnGlobalLayoutListener(this::checkKeyboardVisibility);
+    }
+
+    private void checkKeyboardVisibility() {
+        getWindowVisibleDisplayFrame(mVisibleFrame);
+        int screenHeight = getRootView().getHeight();
+        if (screenHeight <= 0) {
+            return; // Not laid out yet.
+        }
+        int heightDiff = screenHeight - mVisibleFrame.height();
+
+        // Heuristic: only treat a *substantial* height difference as the
+        // keyboard, not e.g. minor inset changes from the status/nav bar.
+        int newKeyboardHeight = heightDiff > screenHeight * 0.15 ? heightDiff : 0;
+        if (newKeyboardHeight == mKeyboardHeightPx) {
+            return;
+        }
+        mKeyboardHeightPx = newKeyboardHeight;
+
+        ViewGroup.LayoutParams params = getLayoutParams();
+        int targetHeight = mKeyboardHeightPx > 0
+                ? screenHeight - mKeyboardHeightPx
+                : ViewGroup.LayoutParams.MATCH_PARENT;
+        if (params.height != targetHeight) {
+            Log.v("SDL", "ScaledSDLSurface: keyboard height changed to " + mKeyboardHeightPx +
+                    "px, resizing view to leave room for it");
+            params.height = targetHeight;
+            setLayoutParams(params);
+        }
     }
 
     /**
