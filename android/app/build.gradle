@@ -1,0 +1,56 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.sketchymaze.doodle'
+    compileSdk 34
+    ndkVersion "26.3.11579264"
+
+    defaultConfig {
+        applicationId "com.sketchymaze.doodle"
+        minSdkVersion 21
+        targetSdkVersion 34
+
+        // Keep in sync with pkg/branding/branding.go's Version constant.
+        versionCode 1
+        versionName "0.15.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // Without a signingConfig, assembleRelease produces an
+            // app-release-unsigned.apk that Android refuses to install at
+            // all (even for local sideloading, not just the Play Store).
+            // `signingConfigs.debug` is predefined by the Android Gradle
+            // Plugin itself (it points at the auto-generated
+            // ~/.android/debug.keystore), so this makes `make build`/
+            // `make install` produce an installable app-release.apk for
+            // local testing with zero setup. Replace this with a real
+            // signingConfig (see README.md's "Signing a release build")
+            // before distributing a release build anywhere.
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    // The Go+cgo build (see ../scripts/build-native-libs.sh) drops its shared
+    // libraries straight into src/main/jniLibs/<abi>/*.so -- Gradle just needs
+    // to package whatever it finds there. There is no C/C++ source for Gradle
+    // itself to compile, so no externalNativeBuild/CMake block is needed.
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+
+    packagingOptions {
+        // Don't let Gradle try to strip/compress our prebuilt Go .so files.
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+dependencies {
+}

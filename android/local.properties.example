@@ -1,0 +1,4 @@
+# Copy this file to local.properties (which is gitignored) and point it at
+# your Android SDK checkout. Android Studio will normally generate/maintain
+# this file for you the first time you open the project.
+sdk.dir=/home/YOUR_USER/Android/Sdk
