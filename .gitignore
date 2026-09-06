@@ -19,3 +19,18 @@ docker/fedora
 screenshot-*.png
 map-*.json
 pkg/wallpaper/*.png
+__pycache__
+
+# Android build outputs / local machine config (see android/README.md)
+android/third_party/
+android/local.properties
+android/.env
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/app/src/main/jniLibs/*/*.so
+android/app/src/main/java/org/libsdl/app/
+android/*.keystore
+android/*.jks
+

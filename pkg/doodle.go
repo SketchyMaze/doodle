@@ -154,10 +154,38 @@ func (d *Doodle) Run() error {
 		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
 
 		// Command line shell.
-		if d.shell.Open {
+		if d.shell.open {
+			// The shell intentionally doesn't forward input to the scene
+			// here (so typing in the console doesn't also move the player,
+			// click buttons, etc. in the background) -- but that also meant
+			// a window resize while the shell was open never reached the
+			// scene's own layout code: Scene.Loop() is what recomputes
+			// widget positions for the new size (Draw() below still runs
+			// every frame regardless of shell state, but it only
+			// re-renders whatever positions were last computed, which
+			// don't change on their own). This matters especially on
+			// Android, where opening the shell also requests the on-screen
+			// keyboard (see pkg/native/keyboard_android.go), which resizes
+			// the window to make room for it.
+			//
+			// Give the scene a chance to relayout without also processing
+			// input meant for the shell: forward a fresh, mostly-empty
+			// event.State with only WindowResized (and the cursor
+			// position, in case layout code depends on it) set, rather
+			// than the real `ev`, which may carry clicks/keys the shell
+			// itself is handling this frame.
+			if ev.WindowResized {
+				resizeOnly := event.NewState()
+				resizeOnly.WindowResized = true
+				resizeOnly.CursorX = ev.CursorX
+				resizeOnly.CursorY = ev.CursorY
+				if err := d.Scene.Loop(d, resizeOnly); err != nil {
+					return err
+				}
+			}
 		} else if keybind.ShellKey(ev) {
 			log.Debug("Shell: opening shell")
-			d.shell.Open = true
+			d.shell.Open()
 		} else {
 			if keybind.Help(ev) {
 				// Launch the local guidebook
