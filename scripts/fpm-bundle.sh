@@ -7,7 +7,7 @@
 export PATH="$PATH:$HOME/.local/share/gem/ruby/3.0.0/bin"
 
 INSTALL_ROOT="/opt/sketchy-maze"
-LAUNCHER_FILENAME="etc/linux/net.kirsle.ProjectDoodle.desktop"
+LAUNCHER_FILENAME="etc/linux/com.sketchymaze.doodle.desktop"
 LAUNCHER_ROOT="/usr/share/applications" # Where the .desktop file goes.
 ICON_ROOT="/usr/share/icons/hicolor/"
 
