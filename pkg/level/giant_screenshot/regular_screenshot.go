@@ -52,7 +52,7 @@ func CroppedScreenshot(lvl *level.Level, viewport render.Rect) (image.Image, err
 
 	// Render the chunks.
 	log.Debug("CroppedScreenshot: Render level chunks...")
-	for coord := range lvl.Chunker.IterViewportChunks(viewport) {
+	for _, coord := range lvl.Chunker.IterViewportChunks(viewport) {
 		if chunk, ok := lvl.Chunker.GetChunk(coord); ok {
 
 			// Get this chunk's rendered bitmap.

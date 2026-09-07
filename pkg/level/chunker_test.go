@@ -197,10 +197,7 @@ func TestViewportChunks(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		chunks := []render.Point{}
-		for chunk := range c.IterViewportChunks(test.Viewport) {
-			chunks = append(chunks, chunk)
-		}
+		chunks := c.IterViewportChunks(test.Viewport)
 
 		if len(chunks) != len(test.Expect) {
 			t.Errorf("%s: chunk count mismatch: expected %d, got %d",

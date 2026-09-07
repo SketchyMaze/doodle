@@ -105,6 +105,20 @@ type PlayScene struct {
 	playerIsIdle  bool // LoopTouchable watches for inactivity on input controls.
 	idleLastStart time.Time
 	idleHelpAlpha int // fade in UI hints
+
+	// Touchscreen idle hint labels (see DrawTouchable in play_scene_touch.go).
+	// Created once and reused every frame: constructing fresh ui.Label
+	// widgets each frame would always miss their internal texture cache,
+	// forcing a font rasterize + GPU texture upload per label every single
+	// frame the hints are shown -- and since nothing would ever call
+	// Destroy() on a throwaway instance like that, its texture would leak.
+	touchHintLabels *touchHintLabels
+}
+
+// touchHintLabels holds the persistent widgets for DrawTouchable's idle
+// touchscreen control hints.
+type touchHintLabels struct {
+	use, moveLeft, moveRight, jump, keybinds *ui.Label
 }
 
 // Name of the scene.

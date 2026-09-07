@@ -126,6 +126,12 @@ func (s *PlayScene) DrawTouchable() {
 		return
 	}
 
+	// If the player is idle for a while, start showing them a hint UI about
+	// the touch screen controls.
+	if !s.playerIsIdle {
+		return
+	}
+
 	var (
 		middle     = s.touchGetMiddleBox()
 		background = render.RGBA(200, 200, 200, uint8(s.idleHelpAlpha))
@@ -134,69 +140,80 @@ func (s *PlayScene) DrawTouchable() {
 	font.Color.Alpha = uint8(s.idleHelpAlpha)
 	font.Shadow.Alpha = uint8(s.idleHelpAlpha)
 
-	// If the player is idle for a while, start showing them a hint UI about
-	// the touch screen controls.
-	if s.playerIsIdle {
-		// Draw the "Use" button over the middle box.
-		useBtn := ui.NewLabel(ui.Label{
-			Text: "Touch here\nto 'use'\nobjects",
-			Font: font,
-		})
-		useBtn.SetBackground(background)
-		useBtn.Resize(middle)
-		useBtn.Compute(s.d.Engine)
-		useBtn.Present(s.d.Engine, middle.Point())
-
-		// Move Left and Move Right hints.
-		moveLeft := ui.NewLabel(ui.Label{
-			Text: "Touch here to\nmove left",
-			Font: font,
-		})
-		moveLeft.SetBackground(background)
-		moveLeft.Compute(s.d.Engine)
-		moveLeft.Present(s.d.Engine, render.Point{
-			X: (middle.X / 2) - (moveLeft.Size().W / 2),
-			Y: (s.d.height / 2) - (moveLeft.Size().H / 2),
-		})
-
-		// Move Left and Move Right hints.
-		moveRight := ui.NewLabel(ui.Label{
-			Text: "Touch here to\nmove right",
-			Font: font,
-		})
-		moveRight.SetBackground(background)
-		moveRight.Compute(s.d.Engine)
-		moveRight.Present(s.d.Engine, render.Point{
-			X: (middle.X+middle.W+s.d.width)/2 - (moveRight.Size().W / 2),
-			Y: (s.d.height / 2) - (moveRight.Size().H / 2),
-		})
-
-		// Jump hints.
-		moveUp := ui.NewLabel(ui.Label{
-			Text: "Touch anywhere above the middle of\nthe screen to jump up in the air",
-			Font: font,
-		})
-		moveUp.SetBackground(background)
-		moveUp.Compute(s.d.Engine)
-		moveUp.Present(s.d.Engine, render.Point{
-			X: (s.d.width / 2) - (moveUp.Size().W / 2),
-			Y: (middle.Y / 2) - (moveUp.Size().H / 2),
-		})
-
-		// Keybind hints.
-		keyHints := ui.NewLabel(ui.Label{
-			Text: "Keyboard controls:\n" +
-				"WASD or arrow keys for movement\n" +
-				"Space key to 'use' objects.",
-			Font: font,
-		})
-		keyHints.SetBackground(background)
-		keyHints.Compute(s.d.Engine)
-		keyHints.Present(s.d.Engine, render.Point{
-			X: (s.d.width / 2) - (keyHints.Size().W / 2),
-			Y: (middle.Y+middle.H+s.d.height)/2 - (keyHints.Size().H / 2),
-		})
+	// Lazily build the hint labels once and reuse them every frame: each
+	// widget keeps its own rendered-text texture cache internally (see
+	// ui.BaseWidget.DrawText), which only pays the font-rasterize + GPU
+	// upload cost again when its text/color/size actually changes (e.g.
+	// while idleHelpAlpha is still fading in). Rebuilding fresh Label
+	// widgets from scratch every frame, as this used to do, defeated that
+	// cache entirely -- every one of the 5 labels was rerendered from
+	// scratch and re-uploaded to the GPU every single frame the hints were
+	// visible, animating or not.
+	labels := s.touchHintLabels
+	if labels == nil {
+		labels = &touchHintLabels{
+			use: ui.NewLabel(ui.Label{
+				Text: "Touch here\nto 'use'\nobjects",
+			}),
+			moveLeft: ui.NewLabel(ui.Label{
+				Text: "Touch here to\nmove left",
+			}),
+			moveRight: ui.NewLabel(ui.Label{
+				Text: "Touch here to\nmove right",
+			}),
+			jump: ui.NewLabel(ui.Label{
+				Text: "Touch anywhere above the middle of\nthe screen to jump up in the air",
+			}),
+			keybinds: ui.NewLabel(ui.Label{
+				Text: "Keyboard controls:\n" +
+					"WASD or arrow keys for movement\n" +
+					"Space key to 'use' objects.",
+			}),
+		}
+		s.touchHintLabels = labels
 	}
+
+	// Draw the "Use" button over the middle box.
+	labels.use.Font = font
+	labels.use.SetBackground(background)
+	labels.use.Resize(middle)
+	labels.use.Compute(s.d.Engine)
+	labels.use.Present(s.d.Engine, middle.Point())
+
+	// Move Left and Move Right hints.
+	labels.moveLeft.Font = font
+	labels.moveLeft.SetBackground(background)
+	labels.moveLeft.Compute(s.d.Engine)
+	labels.moveLeft.Present(s.d.Engine, render.Point{
+		X: (middle.X / 2) - (labels.moveLeft.Size().W / 2),
+		Y: (s.d.height / 2) - (labels.moveLeft.Size().H / 2),
+	})
+
+	labels.moveRight.Font = font
+	labels.moveRight.SetBackground(background)
+	labels.moveRight.Compute(s.d.Engine)
+	labels.moveRight.Present(s.d.Engine, render.Point{
+		X: (middle.X+middle.W+s.d.width)/2 - (labels.moveRight.Size().W / 2),
+		Y: (s.d.height / 2) - (labels.moveRight.Size().H / 2),
+	})
+
+	// Jump hints.
+	labels.jump.Font = font
+	labels.jump.SetBackground(background)
+	labels.jump.Compute(s.d.Engine)
+	labels.jump.Present(s.d.Engine, render.Point{
+		X: (s.d.width / 2) - (labels.jump.Size().W / 2),
+		Y: (middle.Y / 2) - (labels.jump.Size().H / 2),
+	})
+
+	// Keybind hints.
+	labels.keybinds.Font = font
+	labels.keybinds.SetBackground(background)
+	labels.keybinds.Compute(s.d.Engine)
+	labels.keybinds.Present(s.d.Engine, render.Point{
+		X: (s.d.width / 2) - (labels.keybinds.Size().W / 2),
+		Y: (middle.Y+middle.H+s.d.height)/2 - (labels.keybinds.Size().H / 2),
+	})
 }
 
 // Get the middle box of the screen and return it.

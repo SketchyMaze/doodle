@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"runtime/pprof"
 	"sort"
 	"strconv"
+	"syscall"
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/assets"
@@ -288,6 +290,19 @@ func main() {
 		// Log some basic environment details.
 		w, h := engine.WindowSize()
 		log.Info("Window size: %dx%d", w, h)
+
+		// Let SIGINT/SIGTERM (e.g. `kill` from a shell driving the game
+		// headlessly for profiling) stop the main loop gracefully instead of
+		// killing the process outright -- a bare kill would skip the
+		// deferred pprof.StopCPUProfile() above and leave a truncated/empty
+		// profile on disk.
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-sigCh
+			log.Info("Received interrupt, shutting down...")
+			game.Shutdown()
+		}()
 
 		game.Run()
 		return nil

@@ -46,8 +46,38 @@ type Chunker struct {
 	ctfMu                 sync.Mutex                   // lock for chunksToFree
 	requestMu             sync.Mutex
 
+	// Cache of the chunk coordinates found in the Zipfile, keyed by the
+	// Zipfile pointer it was computed from. ChunksInZipfile scans every
+	// filename in the zip's central directory with a regexp match, which
+	// is expensive to repeat every time IterChunks() is called (multiple
+	// times per second during gameplay for chunk load/unload bookkeeping).
+	// The Zipfile is a read-only snapshot for the lifetime of a loaded
+	// level/doodad, so the result only needs to be computed once per
+	// distinct *zip.Reader.
+	zipChunksCache    []render.Point
+	zipChunksCacheFor *zip.Reader
+	zipChunksMu       sync.Mutex
+
 	// The palette reference from first call to Inflate()
 	pal *Palette
+}
+
+// zipChunkPoints returns (and caches) the chunk coordinates present in this
+// Chunker's Zipfile for its Layer. See zipChunksCache for why this is cached.
+func (c *Chunker) zipChunkPoints() []render.Point {
+	c.zipChunksMu.Lock()
+	defer c.zipChunksMu.Unlock()
+
+	if c.Zipfile == nil {
+		return nil
+	}
+
+	if c.zipChunksCacheFor != c.Zipfile {
+		c.zipChunksCache = ChunksInZipfile(c.Zipfile, c.Layer)
+		c.zipChunksCacheFor = c.Zipfile
+	}
+
+	return c.zipChunksCache
 }
 
 // NewChunker creates a new chunk manager with a given chunk size.
@@ -133,7 +163,7 @@ func (c *Chunker) IterChunks() <-chan render.Point {
 		// If we have a zipfile, send any remaining chunks that are
 		// in colder storage.
 		if c.Zipfile != nil {
-			for _, point := range ChunksInZipfile(c.Zipfile, c.Layer) {
+			for _, point := range c.zipChunkPoints() {
 				if _, ok := sent[point]; ok {
 					continue // Already sent from active memory
 				}
@@ -181,50 +211,62 @@ func (c *Chunker) IterCachedChunks() <-chan *Chunk {
 	return pipe
 }
 
-// IterViewportChunks returns a channel to iterate over the Chunk objects that
-// appear within the viewport rect, instead of the pixels in each chunk.
-func (c *Chunker) IterViewportChunks(viewport render.Rect) <-chan render.Point {
-	pipe := make(chan render.Point)
-	go func() {
-		var (
-			sent = make(map[render.Point]interface{})
-			size = int(c.Size)
-		)
+// IterViewportChunks returns the coordinates of the Chunks that appear within
+// the viewport rect, instead of the pixels in each chunk.
+//
+// This runs synchronously (no goroutine/channel) because it is called every
+// frame for every visible Canvas (the level itself, plus one per on-screen
+// Actor/doodad) -- the per-call cost of spinning up a goroutine and pumping
+// results through an unbuffered channel dwarfed the actual work for the
+// common case of a handful of chunks, especially on lower-powered devices.
+func (c *Chunker) IterViewportChunks(viewport render.Rect) []render.Point {
+	var (
+		size = int(c.Size)
 
-		for x := viewport.X; x < viewport.W+size; x += (size / 4) {
-			for y := viewport.Y; y < viewport.H+size; y += (size / 4) {
+		// Estimate how many chunks the viewport can span so `result` doesn't
+		// need to grow (reallocate+copy) as it's appended to below. Add 1 in
+		// each dimension to cover partial chunks at the edges. This is only
+		// a capacity hint: an odd viewport/chunk-size combination underestimating
+		// it is not a correctness issue, append() will just grow the slice.
+		estChunksX = (viewport.W-viewport.X)/size + 1
+		estChunksY = (viewport.H-viewport.Y)/size + 1
 
-				// Constrain this chunksize step to a point within the bounds
-				// of the viewport. This can yield partial chunks on the edges
-				// of the viewport.
-				point := render.NewPoint(x, y)
-				if point.X < viewport.X {
-					point.X = viewport.X
-				} else if point.X > viewport.X+viewport.W {
-					point.X = viewport.X + viewport.W
-				}
-				if point.Y < viewport.Y {
-					point.Y = viewport.Y
-				} else if point.Y > viewport.Y+viewport.H {
-					point.Y = viewport.Y + viewport.H
-				}
+		result = make([]render.Point, 0, max(1, estChunksX*estChunksY))
+		sent   = make(map[render.Point]interface{})
+	)
 
-				// Translate to a chunk coordinate, dedupe and send it.
-				coord := c.ChunkCoordinate(render.NewPoint(x, y))
-				if _, ok := sent[coord]; ok {
-					continue
-				}
-				sent[coord] = nil
+	for x := viewport.X; x < viewport.W+size; x += (size / 4) {
+		for y := viewport.Y; y < viewport.H+size; y += (size / 4) {
 
-				if _, ok := c.GetChunk(coord); ok {
-					pipe <- coord
-				}
+			// Constrain this chunksize step to a point within the bounds
+			// of the viewport. This can yield partial chunks on the edges
+			// of the viewport.
+			point := render.NewPoint(x, y)
+			if point.X < viewport.X {
+				point.X = viewport.X
+			} else if point.X > viewport.X+viewport.W {
+				point.X = viewport.X + viewport.W
+			}
+			if point.Y < viewport.Y {
+				point.Y = viewport.Y
+			} else if point.Y > viewport.Y+viewport.H {
+				point.Y = viewport.Y + viewport.H
+			}
+
+			// Translate to a chunk coordinate, dedupe and collect it.
+			coord := c.ChunkCoordinate(render.NewPoint(x, y))
+			if _, ok := sent[coord]; ok {
+				continue
+			}
+			sent[coord] = nil
+
+			if _, ok := c.GetChunk(coord); ok {
+				result = append(result, coord)
 			}
 		}
+	}
 
-		close(pipe)
-	}()
-	return pipe
+	return result
 }
 
 // IterPixels returns a channel to iterate over every pixel in the entire

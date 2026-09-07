@@ -94,6 +94,15 @@ type Canvas struct {
 	// Collision memory for the actors.
 	collidingActors ActorCollisionMap // mapping their IDs to each other
 
+	// Scratch buffers for loopActorCollision, reused (cleared, not
+	// reallocated) every tick to avoid allocating two fresh maps and a
+	// fresh slice per tick for every actor in the level -- pure GC
+	// pressure that scales with actor count and runs every single tick
+	// regardless of whether any actors are on screen or even moving.
+	collisionBoxesBuf      []render.Rect
+	collisionOrigPosBuf    map[string]render.Point
+	collisionOrigHitboxBuf map[string]render.Rect
+
 	// Doodad scripting engine supervisor.
 	// NOTE: initialized and managed by the play_scene.
 	scripting *scripting.Supervisor

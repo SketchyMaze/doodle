@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/doodads"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/plus/dpp"
@@ -59,6 +60,13 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 			}
 		}
 
+		// Pre-render every layer's chunk bitmaps and GPU textures for this
+		// actor's doodad now, up front, rather than lazily the first time
+		// this particular actor happens to switch to that layer (e.g. an
+		// idle animation frame, or a directional sprite first faced
+		// mid-game, or an on/off state block flipping for the first time).
+		warmDoodadTextures(doodad)
+
 		// Create the "live" Actor to exist in the world, and set its world
 		// position to the Point defined in the level data.
 		liveActor := NewActor(id, actor, doodad)
@@ -73,6 +81,23 @@ func (w *Canvas) InstallActors(actors level.ActorMap) error {
 		return errors.New(strings.Join(errs, "\n"))
 	}
 	return nil
+}
+
+// warmDoodadTextures pre-renders every chunk, on every layer, of a doodad --
+// its full set of animation frames and directional sprites -- into the
+// bitmap cache on level load, the same way loadscreen.PreloadAllChunkBitmaps
+// does for the level's own chunks. Doodads are small (their JSON format
+// loads all chunks eagerly already, unlike zipfile-backed levels), so this
+// is cheap: it just moves the cost of a handful of small image renders from
+// "whenever gameplay first happens to need this frame" to "once, up front."
+func warmDoodadTextures(d *doodads.Doodad) {
+	for _, layer := range d.Layers {
+		for coord := range layer.Chunker.IterChunks() {
+			if chunk, ok := layer.Chunker.GetChunk(coord); ok {
+				chunk.CachedBitmap(render.Invisible)
+			}
+		}
+	}
 }
 
 // Actors returns the list of actors currently in the Canvas.

@@ -21,18 +21,37 @@ func (w *Canvas) loopActorCollision() error {
 		return errors.New("Canvas.loopActorCollision: scripting engine not attached to Canvas")
 	}
 
+	// As we iterate over all actors below to process their movement, track
+	// their bounding rectangles so we can later see if any pair of actors
+	// intersect each other. Also, in case of actor scripts protesting a
+	// collision later, store each actor's original position before the move.
+	//
+	// These are scratch buffers owned by the Canvas and reused (not
+	// reallocated) every tick -- see their declaration for why.
+	if cap(w.collisionBoxesBuf) < len(w.actors) {
+		w.collisionBoxesBuf = make([]render.Rect, len(w.actors))
+	}
 	var (
 		// Current time of this tick so we can advance animations.
 		now = time.Now()
 
-		// As we iterate over all actors below to process their movement, track
-		// their bounding rectangles so we can later see if any pair of actors
-		// intersect each other. Also, in case of actor scripts protesting a
-		// collision later, store each actor's original position before the move.
-		boxes             = make([]render.Rect, len(w.actors))
-		originalPositions = map[string]render.Point{}
-		originalHitboxes  = map[string]render.Rect{} // original world hitboxes
+		boxes             = w.collisionBoxesBuf[:len(w.actors)]
+		originalPositions = w.collisionOrigPosBuf
+		originalHitboxes  = w.collisionOrigHitboxBuf
 	)
+	clear(boxes)
+	if originalPositions == nil {
+		originalPositions = map[string]render.Point{}
+		w.collisionOrigPosBuf = originalPositions
+	} else {
+		clear(originalPositions)
+	}
+	if originalHitboxes == nil {
+		originalHitboxes = map[string]render.Rect{}
+		w.collisionOrigHitboxBuf = originalHitboxes
+	} else {
+		clear(originalHitboxes)
+	}
 
 	// Loop over all the actors in parallel, processing their movement and
 	// checking collision data against the level geometry.

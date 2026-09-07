@@ -317,33 +317,82 @@ func (c *Collide) IsColliding() bool {
 
 // ScanBoundingBox scans all of the pixels in a bounding box on the grid and
 // returns if any of them intersect with level geometry.
+//
+// The four edges are scanned in parallel, one goroutine each, same as
+// before -- but each goroutine now writes into its own private Collide
+// (partials, below) instead of directly into the shared receiver `c`, and
+// the results are merged into `c` afterward on this goroutine. The earlier
+// version had the 4 goroutines write straight into `c`, which was a genuine
+// data race (unsynchronized concurrent writes to c.Top, c.InFire, etc.); a
+// first fix made the scan fully sequential to close the race and cut
+// desktop CPU-profile time, but that regressed real-device FPS (Android)
+// significantly, because it traded away the wall-clock parallelism this
+// hot path actually relies on: BoxCollidesWithGrid below calls
+// ScanBoundingBox once per *pixel* of movement along an actor's path every
+// tick, so a fast or falling actor does this several times per tick, and
+// serializing 4 small scans onto one (comparatively slow, mobile) core cost
+// more wall-clock time than the desktop-only goroutine/scheduling overhead
+// was worth. Keeping the parallelism -- correctly synchronized -- is the
+// version that's actually fast on both desktop and mobile.
 func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 	col := GetCollisionBox(box)
 
-	// Check all four edges of the box in parallel on different CPU cores.
 	type jobSide struct {
 		p1   render.Point // p2 is perpendicular to p1 along a straight edge
 		p2   render.Point // of the collision box.
 		side Side
 	}
-	jobs := []jobSide{ // We'll scan each side of the bounding box in parallel
+	jobs := [4]jobSide{
 		{col.Top[0], col.Top[1], Top},
 		{col.Bottom[0], col.Bottom[1], Bottom},
 		{col.Left[0], col.Left[1], Left},
 		{col.Right[0], col.Right[1], Right},
 	}
 
-	var wg sync.WaitGroup
-	for _, job := range jobs {
+	var (
+		partials [4]Collide
+		wg       sync.WaitGroup
+	)
+	for i, job := range jobs {
 		wg.Add(1)
-		job := job
+		i, job := i, job
 		go func() {
 			defer wg.Done()
-			c.ScanGridLine(job.p1, job.p2, grid, job.side)
+			partials[i].ScanGridLine(job.p1, job.p2, grid, job.side)
 		}()
 	}
-
 	wg.Wait()
+
+	// Merge each side's partial result into `c`. Only set a field when its
+	// partial actually found something, so a side that comes up empty on
+	// this call doesn't clobber state accumulated across earlier calls --
+	// callers like BoxCollidesWithGrid reuse the same *Collide across many
+	// ScanBoundingBox calls along a movement path without resetting between
+	// them, relying on collision flags staying "sticky" once set.
+	for _, p := range partials {
+		if p.Top {
+			c.Top, c.TopPoint, c.TopPixel = true, p.TopPoint, p.TopPixel
+		}
+		if p.Bottom {
+			c.Bottom, c.BottomPoint, c.BottomPixel = true, p.BottomPoint, p.BottomPixel
+		}
+		if p.Left {
+			c.Left, c.LeftPoint, c.LeftPixel = true, p.LeftPoint, p.LeftPixel
+		}
+		if p.Right {
+			c.Right, c.RightPoint, c.RightPixel = true, p.RightPoint, p.RightPixel
+		}
+		if p.InFire != "" {
+			c.InFire = p.InFire
+		}
+		if p.InWater {
+			c.InWater = true
+		}
+		if p.IsSlippery {
+			c.IsSlippery = true
+		}
+	}
+
 	return c.IsColliding()
 }
 

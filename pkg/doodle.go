@@ -309,6 +309,16 @@ func (d *Doodle) ConfirmExit() {
 	})
 }
 
+// Shutdown flags the main loop (Run) to exit gracefully after the current
+// frame, the same way the in-game quit keybind does in -debug mode. Exported
+// so external callers (e.g. cmd/doodle's SIGINT/SIGTERM handler) can stop the
+// loop cleanly -- notably so a -pprof CPU profile in progress still gets
+// flushed to disk via the deferred pprof.StopCPUProfile(), which a bare
+// process kill would skip entirely.
+func (d *Doodle) Shutdown() {
+	d.running = false
+}
+
 // NewMap loads a new map in Edit Mode.
 func (d *Doodle) NewMap() {
 	log.Info("Starting a new map")

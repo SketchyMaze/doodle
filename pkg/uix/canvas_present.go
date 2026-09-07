@@ -24,12 +24,16 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	)
 	// w.MoveTo(p) // TODO: when uncommented the canvas will creep down the Workspace frame in EditorMode
 	w.DrawBox(e, p)
-	e.DrawBox(w.Background(), render.Rect{
-		X: p.X + w.BoxThickness(1),
-		Y: p.Y + w.BoxThickness(1),
-		W: S.W - w.BoxThickness(2),
-		H: S.H - w.BoxThickness(2),
-	})
+
+	// Draw the background. If invisible, we save a needless draw call here.
+	if bg := w.Background(); bg.Alpha > 0 {
+		e.DrawBox(bg, render.Rect{
+			X: p.X + w.BoxThickness(1),
+			Y: p.Y + w.BoxThickness(1),
+			W: S.W - w.BoxThickness(2),
+			H: S.H - w.BoxThickness(2),
+		})
+	}
 
 	// If we are an Actor canvas as part of a Level, get the absolute position of
 	// the parent (Level) canvas so we can compare where the Actor is drawn on-screen
@@ -86,7 +90,7 @@ func (w *Canvas) Present(e render.Engine, p render.Point) {
 	// Seems resolved now?
 
 	// Get the chunks in the viewport and cache their textures.
-	for coord := range w.chunks.IterViewportChunks(Viewport) {
+	for _, coord := range w.chunks.IterViewportChunks(Viewport) {
 		if chunk, ok := w.chunks.GetChunk(coord); ok {
 			var tex render.Texturer
 			if w.MaskColor != render.Invisible {
