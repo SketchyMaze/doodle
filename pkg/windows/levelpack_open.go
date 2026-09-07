@@ -470,11 +470,12 @@ func (config LevelPack) makeDetailScreen(frame *ui.Frame, width, height int, lp 
 		// Score Frame
 		detail := ui.NewFrame("Score")
 		btnFrame.Pack(detail, ui.Pack{
-			Side: ui.NW,
+			Side:   ui.NW,
+			Expand: true,
 		})
 		if score.Completed {
 			check := ui.NewLabel(ui.Label{
-				Text: "✓ Completed",
+				Text: "✓",
 				Font: balance.MenuFont,
 			})
 			detail.Pack(check, ui.Pack{

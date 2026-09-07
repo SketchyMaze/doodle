@@ -38,6 +38,29 @@ you will need to `sudo setenforce permissive` to allow the
 Dockerfile to mount the artifacts/release folder to export its
 results.
 
+**Arch Linux notes (podman short-name resolution):** Fedora and Debian
+ship podman with a default `registries.conf` that already knows to search
+Docker Hub for unqualified image names. Arch's `containers-common`
+package does not: `/etc/containers/registries.conf` doesn't exist out of
+the box, so pulling plain names like `debian:latest` or `i386/debian:latest`
+(as this Dockerfile's `FROM` lines do) fails with:
+
+```
+Error: creating build container: short-name "i386/debian:latest" did not
+resolve to an alias and no containers-registries.conf(5) was found
+```
+
+Fix it by creating a user-level config (no root needed for rootless podman):
+
+```bash
+mkdir -p ~/.config/containers
+cat > ~/.config/containers/registries.conf <<'EOF'
+unqualified-search-registries = ["docker.io"]
+EOF
+```
+
+This only needs to be done once per machine.
+
 # Automated Release Scripts
 
 Other Dockerfiles and scripts used to release the game:

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Script to build the Docker CI to export Linux and Windows, 64- and 32-bit releases.
 
@@ -13,7 +14,7 @@ fi
 # Docker container out to the host.
 if type "getenforce" > /dev/null; then
     current=`getenforce`;
-    if [ $current -eq "Enforcing"]; then
+    if [ "$current" == "Enforcing" ]; then
         echo "Your current SELinux policy is set to: $current."
         echo "This will prevent the final built artifacts being moved from the Docker"
         echo "container into the output directory on your host."

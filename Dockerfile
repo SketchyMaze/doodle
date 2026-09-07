@@ -25,7 +25,7 @@ ENV PATH /opt/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/go/bin
 RUN apt update && apt -y install git zip tar libsdl2-dev libsdl2-ttf-dev \
     libsdl2-mixer-dev gcc-mingw-w64-x86-64 gcc make wget \
     flatpak-builder ruby-dev gcc rpm libffi-dev \
-    ruby-dev ruby-rubygems rpm libffi-dev rsync file
+    ruby-dev ruby-rubygems rpm libffi-dev rsync file libfuse2t64
 RUN gem install fpm; exit 0
 
 # Download and install modern Go.
@@ -56,8 +56,12 @@ ADD . /SketchyMaze
 # Use go-winres on the Windows exe (embed application icons)
 RUN go install github.com/tc-hib/go-winres@latest && go-winres make
 
-# Revert any local change to go.mod (replace lines)
-RUN git checkout -- go.mod
+# Revert any local change to go.mod (replace lines added for local dev),
+# but re-add a replace for dpp pointing at the locally-cloned deps/dpp
+# copy added above via `ADD . /SketchyMaze`: git.kirsle.net/SketchyMaze/dpp
+# is a private repo and can't be fetched anonymously inside the container.
+RUN git checkout -- go.mod && \
+    go mod edit -replace git.kirsle.net/SketchyMaze/dpp=./deps/dpp
 
 # Install Go dependencies and do the thing:
 # - builds the program for Linux
@@ -73,7 +77,7 @@ RUN mkdir -p artifacts && cp -rv dist/release ./artifacts/
 ###
 # 32-bit Dockerfile version of the above
 ###
-FROM i386/debian:latest AS build32
+FROM --platform=linux/386 i386/debian:latest AS build32
 
 ENV GOPATH /go
 ENV GOPROXY direct
@@ -83,7 +87,7 @@ ENV PATH /opt/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/go/bin
 RUN apt update && apt -y install git zip tar libsdl2-dev libsdl2-ttf-dev \
     libsdl2-mixer-dev gcc-mingw-w64-i686 gcc make wget \
     flatpak-builder ruby-dev gcc rpm libffi-dev \
-    ruby-dev ruby-rubygems rpm libffi-dev rsync file
+    ruby-dev ruby-rubygems rpm libffi-dev rsync file libfuse2t64
 RUN gem install fpm; exit 0
 
 # Download and install modern Go.
