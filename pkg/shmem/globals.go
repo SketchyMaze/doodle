@@ -9,7 +9,12 @@ import (
 // Shared globals for easy access throughout the app.
 // Not an ideal place to keep things but *shrug*
 var (
-	// Tick is incremented by the main game loop each frame.
+	// Tick is incremented by the main game loop at a fixed rate
+	// (balance.TargetFPS ticks/sec of simulated time), independent of the
+	// actual render frame rate. Game logic, animations and doodad script
+	// timers key off of this instead of wallclock time so that gameplay
+	// speed stays deterministic whether the game renders at 30 FPS or is
+	// uncapped to 700+ FPS.
 	Tick uint64
 
 	// Current position of the cursor relative to the window.

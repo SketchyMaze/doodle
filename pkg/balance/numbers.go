@@ -1,6 +1,7 @@
 package balance
 
 import (
+	"math"
 	"time"
 
 	"git.kirsle.net/go/render"
@@ -20,6 +21,39 @@ const (
 	TargetFPS       = 60
 	TargetClockRate = 1000 / 60 // wallclock milliseconds per tick
 )
+
+// Fixed-timestep tuning for the main loop's simulation clock (see
+// doodle.Doodle.Run). Game logic runs in discrete ticks of 1/TargetFPS of
+// simulated time, decoupled from the actual render frame rate.
+const (
+	// MaxFrameDelta caps how much real elapsed time a single render frame
+	// may contribute to the tick accumulator. Without this, a long stall
+	// (e.g. dragging the window, a debugger breakpoint, the OS suspending
+	// the process) would otherwise queue up a massive burst of catch-up
+	// ticks on the next frame.
+	MaxFrameDelta = 250 * time.Millisecond
+
+	// MaxTicksPerFrame caps how many simulation ticks may run before the
+	// next render, for the same reason as MaxFrameDelta: better to let a
+	// slow frame drop simulated time (a brief hitch) than to fall further
+	// and further behind trying to catch up.
+	MaxTicksPerFrame = 5
+)
+
+// MillisecondsToTicks converts a millisecond duration (as scripts pass to
+// e.g. AddAnimation, setTimeout and setInterval) into a number of game
+// simulation ticks (shmem.Tick units), rounded to the nearest tick. Timing
+// values are kept in ticks rather than wallclock durations so they play out
+// deterministically relative to the game's simulation speed instead of real
+// time, which can diverge from simulation speed on slow hardware or when
+// the frame rate is uncapped.
+func MillisecondsToTicks(ms int64) uint64 {
+	ticks := int64(math.Round(float64(ms) * TargetFPS / 1000))
+	if ticks < 0 {
+		return 0
+	}
+	return uint64(ticks)
+}
 
 // Numbers.
 var (

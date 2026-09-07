@@ -1,8 +1,6 @@
 package scripting
 
 import (
-	"time"
-
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"github.com/dop251/goja"
@@ -50,15 +48,12 @@ func (vm *VM) AddTimer(callback goja.Value, interval int, repeat bool) int {
 	// Get the next timer ID. The first timer has ID 1.
 	vm.timerLastID++
 
-	var (
-		id    = vm.timerLastID
-		ticks = float64(interval) * (float64(balance.TargetFPS) / 1000)
-	)
+	var id = vm.timerLastID
 
 	t := &Timer{
 		id:       id,
 		callback: callback,
-		ticks:    uint64(ticks),
+		ticks:    balance.MillisecondsToTicks(int64(interval)),
 		repeat:   repeat,
 	}
 	t.Schedule()
@@ -68,7 +63,7 @@ func (vm *VM) AddTimer(callback goja.Value, interval int, repeat bool) int {
 }
 
 // TickTimer checks if any timers are ready and calls their functions.
-func (vm *VM) TickTimer(now time.Time) {
+func (vm *VM) TickTimer() {
 	if len(vm.timers) == 0 {
 		return
 	}

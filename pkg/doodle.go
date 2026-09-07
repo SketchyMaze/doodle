@@ -123,11 +123,42 @@ func (d *Doodle) Run() error {
 	}
 
 	log.Info("Enter Main Loop")
+
+	// Fixed-timestep bookkeeping: game logic (shmem.Tick, Scene.Loop and
+	// everything keyed off ticks -- physics, animations, doodad script
+	// timers) advances at a constant balance.TargetFPS ticks/sec of
+	// simulated time, no matter how fast or slow the render loop actually
+	// spins. This is what keeps gameplay speed identical whether the frame
+	// rate is capped at 60 or uncapped to 700+ (the "unleash the beast"
+	// cheat) or struggling on slow hardware.
+	var (
+		tickDuration    = time.Second / time.Duration(balance.TargetFPS)
+		tickAccumulator time.Duration
+		lastFrameTime   = time.Now()
+	)
 	for d.running {
 		// d.Engine.Clear(render.White)
 
 		start := time.Now() // Record how long this frame took.
-		shmem.Tick++
+
+		// Figure out how many simulation ticks have elapsed in real time
+		// since the last render frame. Clamp the per-frame delta so a long
+		// stall (breakpoint, window drag, OS suspend) doesn't queue up a
+		// huge burst of catch-up ticks: a visible hitch is preferable to a
+		// "spiral of death" where processing the backlog takes longer than
+		// real time, pushing the backlog even further behind.
+		frameDt := start.Sub(lastFrameTime)
+		lastFrameTime = start
+		if frameDt > balance.MaxFrameDelta {
+			frameDt = balance.MaxFrameDelta
+		}
+		tickAccumulator += frameDt
+
+		var ticksElapsed int
+		for tickAccumulator >= tickDuration && ticksElapsed < balance.MaxTicksPerFrame {
+			tickAccumulator -= tickDuration
+			ticksElapsed++
+		}
 
 		// Poll for events.
 		ev, err := d.Engine.Poll()
@@ -152,6 +183,13 @@ func (d *Doodle) Run() error {
 
 		// Globally store the cursor position.
 		shmem.Cursor = render.NewPoint(ev.CursorX, ev.CursorY)
+
+		// Whether the scene's simulation should advance this frame. Set by
+		// whichever branch below applies, then acted on in a single unified
+		// tick loop after the branching resolves (see the loop below the
+		// branches for why this must be interleaved with the shmem.Tick
+		// increment rather than done separately).
+		var runScene bool
 
 		// Command line shell.
 		if d.shell.open {
@@ -209,13 +247,65 @@ func (d *Doodle) Run() error {
 					continue
 				}
 
-				// Run the scene's logic.
+				// Run the scene's logic below, in the unified tick loop.
+				runScene = true
+			}
+
+		}
+
+		// Advance the simulation and, if applicable, run the scene's logic
+		// -- once per elapsed simulation tick, so movement speeds,
+		// animations, physics, etc. all advance at a fixed rate of
+		// simulated time regardless of how fast or slow frames are
+		// actually being rendered. On a normal 60 FPS frame this runs
+		// exactly once, same as before; an uncapped high-FPS frame may run
+		// it zero times, and a slow frame that fell behind may run it more
+		// than once to catch back up to real time.
+		//
+		// shmem.Tick is incremented right here, interleaved with each
+		// individual Scene.Loop() call, rather than being bulk-advanced by
+		// ticksElapsed beforehand: code keyed off shmem.Tick (animation
+		// frame timing, doodad setTimeout/setInterval, jump cooldowns...)
+		// expects it to climb by exactly 1 between successive ticks. If it
+		// were bulk-advanced first, every call within a multi-tick
+		// catch-up burst would see the *same*, already fully-advanced
+		// value, quantizing all of that timing to the burst size instead
+		// of single ticks. That was a real, observed bug: on a sustained
+		// low FPS device (e.g. ~10-12 FPS on Android) every real frame
+		// hits the MaxTicksPerFrame catch-up cap, so an animation like the
+		// electric door's "close" (timed in-ticks) would finish later in
+		// real time than intended -- giving a player extra real-world time
+		// to run through a door that should have already sealed behind
+		// them, since their movement (also gated on the same shmem.Tick)
+		// no longer advanced in lockstep with the door's timer.
+		//
+		// The shmem.Tick increment happens even when runScene is false
+		// (e.g. while a modal or the dev shell is open) since some UI bits
+		// -- e.g. the shell's blinking cursor, flash message expiry -- key
+		// off shmem.Tick too and should keep ticking at a steady rate
+		// independent of render FPS.
+		//
+		// WindowResized is a special case needing at least one pass even
+		// with zero elapsed ticks: it's an edge-triggered flag that is
+		// only ever true on the single real frame the resize happened (the
+		// engine clears it on the very next Poll()), so if it landed on a
+		// frame with zero elapsed ticks -- e.g. the first frame or two
+		// after startup, if the window opens maximized, before the
+		// accumulator has filled -- it would otherwise be silently lost
+		// forever and the scene would never learn its canvas needs to
+		// resize.
+		loopCount := ticksElapsed
+		if loopCount == 0 && runScene && ev.WindowResized {
+			loopCount = 1
+		}
+		for i := 0; i < loopCount; i++ {
+			shmem.Tick++
+			if runScene {
 				err = d.Scene.Loop(d, ev)
 				if err != nil {
 					return err
 				}
 			}
-
 		}
 
 		// Draw the scene.

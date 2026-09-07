@@ -4,21 +4,22 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
 
+	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"github.com/dop251/goja"
 )
 
 // Animation holds a named animation for a doodad script.
 type Animation struct {
-	Name     string
-	Interval time.Duration
-	Layers   []int
+	Name          string
+	IntervalTicks uint64 // frame interval, in game simulation ticks
+	Layers        []int
 
 	// runtime state variables
 	activeLayer int
-	nextFrameAt time.Time
+	nextFrameAt uint64 // shmem.Tick value when the next frame should show
 }
 
 /*
@@ -26,7 +27,17 @@ TickAnimation advances an animation forward.
 
 This method is called by canvas.Loop() only when the actor is currently
 `animating` and their current animation's nextFrameAt has been reached by the
-current time.Now().
+current shmem.Tick.
+
+Animation timing is keyed off shmem.Tick (the game's simulation clock) rather
+than wallclock time, so an animation's total duration is deterministic
+relative to the game's simulation speed -- not real time, which can outpace
+simulation speed on slow hardware. See the crumbly-floor doodad, whose
+PlayAnimation callback disables collision once the crumble animation
+completes: if that timing were wallclock-based, on a slow device the floor
+could finish "crumbling" and drop its collision before the player, who is
+moving at a slower rate of simulated ticks per real second, actually made it
+across.
 
 Returns true when the animation has finished and false if there is still more
 frames left to animate.
@@ -42,7 +53,7 @@ func (a *Actor) TickAnimation(an *Animation) bool {
 	}
 
 	// Schedule the next frame of animation.
-	an.nextFrameAt = time.Now().Add(an.Interval)
+	an.nextFrameAt = shmem.Tick + an.IntervalTicks
 
 	return false
 }
@@ -93,9 +104,9 @@ func (a *Actor) AddAnimation(name string, interval int64, layers []interface{}) 
 	}
 
 	a.animations[name] = &Animation{
-		Name:     name,
-		Interval: time.Duration(interval) * time.Millisecond,
-		Layers:   indexes,
+		Name:          name,
+		IntervalTicks: balance.MillisecondsToTicks(interval),
+		Layers:        indexes,
 	}
 
 	return nil
@@ -114,7 +125,7 @@ func (a *Actor) PlayAnimation(name string, callback goja.Value) error {
 
 	// Show the first layer.
 	anim.activeLayer = 0
-	anim.nextFrameAt = time.Now().Add(anim.Interval)
+	anim.nextFrameAt = shmem.Tick + anim.IntervalTicks
 	a.ShowLayer(anim.Layers[0])
 
 	return nil

@@ -2,13 +2,13 @@ package uix
 
 import (
 	"errors"
-	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/collision"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/physics"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/scripting"
+	"git.kirsle.net/SketchyMaze/doodle/pkg/shmem"
 	"git.kirsle.net/go/render"
 	"github.com/dop251/goja"
 )
@@ -32,9 +32,6 @@ func (w *Canvas) loopActorCollision() error {
 		w.collisionBoxesBuf = make([]render.Rect, len(w.actors))
 	}
 	var (
-		// Current time of this tick so we can advance animations.
-		now = time.Now()
-
 		boxes             = w.collisionBoxesBuf[:len(w.actors)]
 		originalPositions = w.collisionOrigPosBuf
 		originalHitboxes  = w.collisionOrigHitboxBuf
@@ -70,9 +67,12 @@ func (w *Canvas) loopActorCollision() error {
 			originalPositions[a.ID()] = a.Position()
 			originalHitboxes[a.ID()] = collision.GetBoundingRectHitbox(a, a.Hitbox())
 
-			// Advance any animations for this actor.
-			// TODO: wallclock time here, should be set by FPS for consistency.
-			if a.activeAnimation != nil && a.activeAnimation.nextFrameAt.Before(now) {
+			// Advance any animations for this actor. Animation timing is
+			// keyed off shmem.Tick (game simulation ticks) rather than
+			// wallclock time, so it stays in sync with actor movement,
+			// which also advances per simulation tick -- see the comment
+			// on Animation.TickAnimation for why this matters.
+			if a.activeAnimation != nil && shmem.Tick > a.activeAnimation.nextFrameAt {
 				if done := a.TickAnimation(a.activeAnimation); done {
 					// Animation has finished, get the callback function.
 					callback := a.animationCallback

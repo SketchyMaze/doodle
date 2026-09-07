@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/log"
@@ -50,11 +49,10 @@ func (s *Supervisor) Teardown() {
 // simultaneously). Running everything in sequence here removes that
 // concurrency and makes script execution order reproducible from run to run.
 func (s *Supervisor) Loop() error {
-	now := time.Now()
 	for _, id := range s.sortedIDs() {
 		vm := s.scripts[id]
 		vm.DrainInbound()
-		vm.TickTimer(now)
+		vm.TickTimer()
 	}
 	return nil
 }
