@@ -32,4 +32,4 @@ fi
 
 mkdir -p docker-artifacts
 podman build --cap-add SYS_ADMIN --device /dev/fuse -t doodle_docker .
-podman run --rm --mount type=bind,src=$(shell pwd)/docker-artifacts,dst=/mnt/export doodle_docker
+podman run --rm --mount type=bind,src=$(pwd)/docker-artifacts,dst=/mnt/export doodle_docker

@@ -11,6 +11,12 @@ DOODLE_DIR="$(cd "$ANDROID_DIR/.." && pwd)"
 THIRD_PARTY_DIR="$ANDROID_DIR/third_party"
 JNI_LIBS_DIR="$ANDROID_DIR/app/src/main/jniLibs"
 
+# Doodle++ build tag for official builds of the game.
+BUILD_TAGS="-tags=''"
+if [ -d "${DOODLE_DIR}/deps/dpp" ]; then
+	BUILD_TAGS="-tags='dpp'"
+fi
+
 : "${ANDROID_NDK_HOME:?Set ANDROID_NDK_HOME to your NDK install, e.g. \$ANDROID_HOME/ndk/30.0.16138531}"
 : "${ANDROID_API:=21}" # Must be >= app/build.gradle's minSdkVersion.
 
@@ -131,7 +137,7 @@ for abi in "${ABIS[@]}"; do
             CC="$cc" \
             CGO_CFLAGS="-I$install_prefix/include -I$install_prefix/include/SDL2" \
             CGO_LDFLAGS="-L$install_prefix/lib -lSDL2 -lSDL2_ttf -lSDL2_mixer" \
-            go build -buildmode=c-shared -trimpath \
+            go build -buildmode=c-shared -trimpath $BUILD_TAGS \
                 -o "$JNI_LIBS_DIR/$abi/libdoodle.so" \
                 ./cmd/doodle-android
     )
