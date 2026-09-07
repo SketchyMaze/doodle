@@ -96,8 +96,8 @@ func (a *MapAccessor) Iter() <-chan Pixel {
 
 // Get a pixel from the map.
 func (a *MapAccessor) Get(p render.Point) (*Swatch, error) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
+	a.mu.RLock()
+	defer a.mu.RUnlock()
 
 	pixel, ok := a.grid[p] // <- concurrent read and write
 	if !ok {

@@ -1,7 +1,7 @@
 package collision
 
 import (
-	"sync"
+	"errors"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/balance"
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
@@ -120,10 +120,16 @@ func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Co
 	S = GetBoundingRectHitbox(d, hitbox)
 	actorHeight := P.Y + S.H
 
+	// Wrap the grid in a chunkCache for the duration of this call. See the
+	// chunkCache doc comment: this scan can query well over a hundred points
+	// against `grid`, almost all of which land in the same chunk, so this
+	// memoizes the chunk lookup across every ScanBoundingBox call below.
+	cache := newChunkCache(grid)
+
 	// Test if we are ALREADY colliding with level geometry and try and wiggle
 	// free. ScanBoundingBox scans level pixels along the four edges of the
 	// actor's hitbox in world space.
-	if ok := result.ScanBoundingBox(GetBoundingRectHitbox(d, hitbox), grid); ok {
+	if ok := result.ScanBoundingBox(GetBoundingRectHitbox(d, hitbox), cache); ok {
 		// We've already collided! Try to wiggle free.
 		if result.Bottom {
 			if !d.Grounded() {
@@ -191,7 +197,7 @@ func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Co
 	// Trace a line from where we are to where we wanna go.
 	result.Reset()
 	result.MoveTo = P
-	for point := range render.IterLine(P, target) {
+	render.WalkLine(P, target, func(point render.Point) {
 		// Before we compute their next move, if we're already capping their
 		// height make sure the new point stays capped too. This prevents them
 		// clipping thru a ceiling if they were also holding right/left too.
@@ -213,7 +219,7 @@ func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Co
 			Y: point.Y,
 			W: S.W,
 			H: S.H,
-		}, grid); has {
+		}, cache); has {
 			if result.Bottom {
 				if !hitFloor {
 					hitFloor = true
@@ -255,7 +261,7 @@ func BoxCollidesWithGrid(d Actor, grid *level.Chunker, target render.Point) (*Co
 		// So far so good, keep following the MoveTo to
 		// the last good point before a collision.
 		result.MoveTo = point
-	}
+	})
 
 	// If they hit the roof, cap them to the roof.
 	if ceiling && result.MoveTo.Y < capHeight {
@@ -315,83 +321,109 @@ func (c *Collide) IsColliding() bool {
 		c.InFire != "" || c.InWater
 }
 
+// Grid is the minimal interface ScanBoundingBox and ScanGridLine need to
+// query level pixels. *level.Chunker satisfies it directly; chunkCache
+// (below) wraps a Chunker and satisfies it too, adding memoization for the
+// hot collision-scanning path in BoxCollidesWithGrid.
+type Grid interface {
+	Get(render.Point) (*level.Swatch, error)
+}
+
+// chunkCache memoizes every chunk looked up during a scan against the level
+// grid.
+//
+// BoxCollidesWithGrid can query well over a hundred points per doodad per
+// tick: four edges of the hitbox, rescanned once per pixel of movement along
+// the path. Chunker.Get resolves the chunk for a point through three
+// separate mutex sections (the chunk map, the LRU "chopping block", and the
+// per-tick access log) before it even looks up the pixel. Since a doodad's
+// hitbox and its per-tick movement are almost always tiny next to a chunk
+// (see balance.ChunkSize, 128px), a single scan only ever touches a handful
+// of chunks -- at most about 4, for a hitbox straddling a chunk corner while
+// moving diagonally. Remembering all of them (not just the last one) means a
+// hitbox that straddles a chunk boundary and keeps crossing back and forth
+// between two chunks -- e.g. its top edge in one chunk, bottom edge in the
+// next -- still only pays Chunker.GetChunk's mutex/bookkeeping cost once per
+// chunk for the whole scan, rather than once per crossing.
+//
+// A chunkCache is only ever touched by the one goroutine running a given
+// doodad's collision check (this package never scans two doodads
+// concurrently), so it needs no locking of its own.
+type chunkCache struct {
+	grid   *level.Chunker
+	chunks map[render.Point]cachedChunk
+
+	// last* is a fast path for the common case of consecutive points
+	// landing in the same chunk as the previous one, which avoids even the
+	// map lookup below.
+	lastCoord render.Point
+	lastEntry cachedChunk
+	haveLast  bool
+}
+
+type cachedChunk struct {
+	chunk *level.Chunk
+	found bool
+}
+
+// errNoChunk is returned in place of Chunker.Get's fmt.Errorf when no chunk
+// covers a point. Most of a level is undrawn open space with no chunk ever
+// created for it, so this is the common case for a good fraction of the
+// points a collision scan tests -- not worth an allocation and a format
+// call every time it happens.
+var errNoChunk = errors.New("no chunk for point")
+
+func newChunkCache(grid *level.Chunker) *chunkCache {
+	// A doodad's hitbox scan realistically touches at most ~4 chunks (see
+	// the chunkCache doc comment), so pre-size the map for that.
+	return &chunkCache{
+		grid:   grid,
+		chunks: make(map[render.Point]cachedChunk, 4),
+	}
+}
+
+// Get behaves like Chunker.Get but reuses a chunk this cache has already
+// looked up, if the point falls within one.
+func (cc *chunkCache) Get(p render.Point) (*level.Swatch, error) {
+	coord := cc.grid.ChunkCoordinate(p)
+
+	var entry cachedChunk
+	if cc.haveLast && coord == cc.lastCoord {
+		entry = cc.lastEntry
+	} else if cached, ok := cc.chunks[coord]; ok {
+		entry = cached
+	} else {
+		chunk, found := cc.grid.GetChunk(coord)
+		entry = cachedChunk{chunk: chunk, found: found}
+		cc.chunks[coord] = entry
+	}
+
+	cc.lastCoord = coord
+	cc.lastEntry = entry
+	cc.haveLast = true
+
+	if !entry.found {
+		return nil, errNoChunk
+	}
+	return entry.chunk.Get(p)
+}
+
 // ScanBoundingBox scans all of the pixels in a bounding box on the grid and
 // returns if any of them intersect with level geometry.
-//
-// The four edges are scanned in parallel, one goroutine each, same as
-// before -- but each goroutine now writes into its own private Collide
-// (partials, below) instead of directly into the shared receiver `c`, and
-// the results are merged into `c` afterward on this goroutine. The earlier
-// version had the 4 goroutines write straight into `c`, which was a genuine
-// data race (unsynchronized concurrent writes to c.Top, c.InFire, etc.); a
-// first fix made the scan fully sequential to close the race and cut
-// desktop CPU-profile time, but that regressed real-device FPS (Android)
-// significantly, because it traded away the wall-clock parallelism this
-// hot path actually relies on: BoxCollidesWithGrid below calls
-// ScanBoundingBox once per *pixel* of movement along an actor's path every
-// tick, so a fast or falling actor does this several times per tick, and
-// serializing 4 small scans onto one (comparatively slow, mobile) core cost
-// more wall-clock time than the desktop-only goroutine/scheduling overhead
-// was worth. Keeping the parallelism -- correctly synchronized -- is the
-// version that's actually fast on both desktop and mobile.
-func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
+func (c *Collide) ScanBoundingBox(box render.Rect, grid Grid) bool {
 	col := GetCollisionBox(box)
 
-	type jobSide struct {
-		p1   render.Point // p2 is perpendicular to p1 along a straight edge
-		p2   render.Point // of the collision box.
-		side Side
-	}
-	jobs := [4]jobSide{
-		{col.Top[0], col.Top[1], Top},
-		{col.Bottom[0], col.Bottom[1], Bottom},
-		{col.Left[0], col.Left[1], Left},
-		{col.Right[0], col.Right[1], Right},
-	}
-
-	var (
-		partials [4]Collide
-		wg       sync.WaitGroup
-	)
-	for i, job := range jobs {
-		wg.Add(1)
-		i, job := i, job
-		go func() {
-			defer wg.Done()
-			partials[i].ScanGridLine(job.p1, job.p2, grid, job.side)
-		}()
-	}
-	wg.Wait()
-
-	// Merge each side's partial result into `c`. Only set a field when its
-	// partial actually found something, so a side that comes up empty on
-	// this call doesn't clobber state accumulated across earlier calls --
-	// callers like BoxCollidesWithGrid reuse the same *Collide across many
-	// ScanBoundingBox calls along a movement path without resetting between
-	// them, relying on collision flags staying "sticky" once set.
-	for _, p := range partials {
-		if p.Top {
-			c.Top, c.TopPoint, c.TopPixel = true, p.TopPoint, p.TopPixel
-		}
-		if p.Bottom {
-			c.Bottom, c.BottomPoint, c.BottomPixel = true, p.BottomPoint, p.BottomPixel
-		}
-		if p.Left {
-			c.Left, c.LeftPoint, c.LeftPixel = true, p.LeftPoint, p.LeftPixel
-		}
-		if p.Right {
-			c.Right, c.RightPoint, c.RightPixel = true, p.RightPoint, p.RightPixel
-		}
-		if p.InFire != "" {
-			c.InFire = p.InFire
-		}
-		if p.InWater {
-			c.InWater = true
-		}
-		if p.IsSlippery {
-			c.IsSlippery = true
-		}
-	}
+	// Each side only ever sets its own dedicated fields (c.Top/TopPoint/...,
+	// etc.) and never clears them, so calling these directly on `c` in a
+	// fixed order is equivalent to the old parallel-scan-then-merge and
+	// preserves the same "sticky" semantics BoxCollidesWithGrid relies on
+	// across repeated ScanBoundingBox calls along a movement path, and the
+	// same last-writer-wins order for the shared InFire/InWater/IsSlippery
+	// fields when more than one side finds them this call.
+	c.ScanGridLine(col.Top[0], col.Top[1], grid, Top)
+	c.ScanGridLine(col.Bottom[0], col.Bottom[1], grid, Bottom)
+	c.ScanGridLine(col.Left[0], col.Left[1], grid, Left)
+	c.ScanGridLine(col.Right[0], col.Right[1], grid, Right)
 
 	return c.IsColliding()
 }
@@ -399,7 +431,7 @@ func (c *Collide) ScanBoundingBox(box render.Rect, grid *level.Chunker) bool {
 // ScanGridLine scans all of the pixels between p1 and p2 on the grid and tests
 // for any pixels to be set, implying a collision between level geometry and the
 // bounding boxes of the doodad.
-func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Side) {
+func (c *Collide) ScanGridLine(p1, p2 render.Point, grid Grid, side Side) {
 	// If scanning the top or bottom line, offset the X coordinate by 1 pixel.
 	// This is because the 4 corners of the bounding box share their corner
 	// pixel with each side, so the Left and Right edges will check the
@@ -409,7 +441,7 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 		p2.X--
 	}
 
-	for point := range render.IterLine(p1, p2) {
+	render.WalkLine(p1, p2, func(point render.Point) {
 		if swatch, err := grid.Get(point); err == nil {
 			// We're intersecting a pixel! If it's a solid one we'll return it
 			// in our result. If non-solid, we'll collect attributes from it
@@ -428,13 +460,13 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 
 			// Non-solid swatches don't collide so don't pay them attention.
 			if !swatch.Solid && !swatch.SemiSolid {
-				continue
+				return
 			}
 
 			// A semisolid only has collision on the bottom (and a little on the
 			// sides, for slope walking only)
 			if swatch.SemiSolid && side == Top {
-				continue
+				return
 			}
 
 			switch side {
@@ -456,5 +488,5 @@ func (c *Collide) ScanGridLine(p1, p2 render.Point, grid *level.Chunker, side Si
 				c.RightPixel = swatch
 			}
 		}
-	}
+	})
 }
