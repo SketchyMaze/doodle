@@ -2,6 +2,18 @@
 
 ## v0.15.0 (TBD)
 
+This release focuses on performance optimizations and making the game logic more
+deterministic and predictable.
+
+Notable **new** features:
+
+* The game now has an Android port! Native integration points include having the
+  Android on-screen keyboard open as needed when the developer shell is open or
+  prompting the user for input, and the File Picker intent for e.g. browsing to
+  select a custom wallpaper image for your level. Sketchy Maze already had basic
+  touch screen controls support from its mobile Linux builds on devices such as
+  the Pinephone.
+
 The file format for Levels and Doodads has been optimized to store drawing data
 with Run Length Encoding (RLE) compression which nets a filesize savings upwards
 of 90%, especially for levels featuring large areas of solid colors.
@@ -18,8 +30,25 @@ of 90%, especially for levels featuring large areas of solid colors.
 
 Other miscellaneous changes:
 
+* The game's simulation frame rate is now decoupled from the render frame
+  rate. So when using the cheat code `unleash the beast` to uncap the render
+  FPS, the game simulation no longer runs too fast. Likewise, a slower device
+  that can't render at 60 FPS no longer sees the gameplay simulation run too
+  much slower to match.
+* Doodad scripts and animations are now deterministic and locked to the game's
+  simulation speed. The animation milliseconds and setTimeout/setInterval
+  functions no longer use wallclock time but are tied to the simulation speed,
+  so that doodad scripts don't fire at the wrong time when the game is played
+  from a weaker device that couldn't maintain the full 60 FPS frame rate.
+* Fixed a race condition in doodad scripts where having too many doodads
+  publish messages to each other could freeze the game. For example, stacking
+  Gem Totems closely together so that the player touches them simultaneously
+  to insert gems could lock up the game before. Now, doodad scripts are run
+  synchronously and ordered by their UUID.
 * Command line option `sketchymaze --new` to open the game quickly to a new
   level in the editor.
+* The `--debug-overlay` option can launch with the F3 debug overlay enabled
+  by default.
 
 Cleanup of old features and unused code:
 
@@ -45,9 +74,19 @@ Other fixes:
 
 * Fix actor collisions with level geometry when the actor's Hitbox is offset
   from the 0,0 coordinate. For example, when playing as the Snake, you could
-  easily clip out of bounds on levels drawn with thinner lines. The Snake will
-  no longer clip through the level, but still overlaps weirdly against locked
-  doors.
+  easily clip out of bounds on levels drawn with thinner lines.
+* The actor level collision algorithm has been refactored to be ~142x faster
+  (from 472,186 ns/op -> 3,331 ns/op) with allocations down from 4554/op to
+  only 5/op. This translates to a massive performance improvement across all
+  devices. On the developer's desktop, some of the slowest levels that ran at
+  significantly under 60 FPS before now run at full 60 FPS, and on the Android
+  port (tested on a Pixel 7 phone) these same levels went from 10-15 FPS to
+  a more comfortable 30-35 FPS, while most of the simpler levels now run in the
+  high 50's FPS on Android.
+* Improve UI performance by having widgets (such as buttons) cache their visual
+  appearance as a texture, saving many draw calls per frame per button.
+* Fix some areas of the game where SDL2 textures were leaking and causing a
+  memory leak and texture corruption over time.
 
 ## v0.14.0 (May 4 2024)
 
