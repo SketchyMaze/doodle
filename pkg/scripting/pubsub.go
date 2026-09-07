@@ -21,39 +21,6 @@ This adds the global methods `Message.Subscribe(name, func)` and
 `Message.Publish(name, args)` to the JavaScript VM's scope.
 */
 func RegisterPublishHooks(s *Supervisor, vm *VM) {
-	// Goroutine to watch the VM's inbound channel and invoke Subscribe handlers
-	// for any matching messages received.
-	go func() {
-		// Catch any exceptions raised by the JavaScript VM.
-		defer func() {
-			if err := recover(); err != nil {
-				exceptions.FormatAndCatch(vm.vm, "RegisterPublishHooks(%s): %s: %s", vm.Name, err)
-			}
-		}()
-
-		// Watch the Inbound channel for PubSub messages and the stop channel for Teardown.
-		for {
-			select {
-			case <-vm.stop:
-				log.Debug("JavaScript VM %s stopping PubSub goroutine", vm.Name)
-				return
-			case msg := <-vm.Inbound:
-				vm.muSubscribe.Lock()
-
-				if _, ok := vm.subscribe[msg.Name]; ok {
-					for _, callback := range vm.subscribe[msg.Name] {
-						log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
-						if function, ok := goja.AssertFunction(callback); ok {
-							function(goja.Undefined(), msg.Args...)
-						}
-					}
-				}
-
-				vm.muSubscribe.Unlock()
-			}
-		}
-	}()
-
 	// Register the Message.Subscribe and Message.Publish functions.
 	vm.vm.Set("Message", map[string]interface{}{
 		"Subscribe": func(name string, callback goja.Value) {
@@ -84,8 +51,10 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 		},
 
 		"Broadcast": func(name string, v ...goja.Value) {
-			// Send the message to all actor VMs.
-			for _, toVM := range s.scripts {
+			// Send the message to all actor VMs, in deterministic (sorted by
+			// actor ID) order.
+			for _, id := range s.sortedIDs() {
+				toVM := s.scripts[id]
 				if toVM == nil {
 					continue
 				}
@@ -103,4 +72,45 @@ func RegisterPublishHooks(s *Supervisor, vm *VM) {
 			}
 		},
 	})
+}
+
+/*
+DrainInbound synchronously processes every PubSub message currently queued on
+the VM's Inbound channel, invoking any matching Message.Subscribe handlers.
+
+This is called once per tick by the Supervisor, for each VM in turn, so that
+doodad scripts never receive or handle PubSub messages concurrently with each
+other (or with the goja.Runtime of the VM being used elsewhere on the main
+goroutine, e.g. for OnCollide/OnUse handlers). goja.Runtime is not safe for
+concurrent use, and running this on a per-VM background goroutine (the old
+approach) allowed a burst of cross-linked messages -- e.g. several doodads
+like linked totems all colliding in the same tick -- to invoke JS callbacks
+on the same VM from multiple goroutines at once, which could corrupt VM state
+or deadlock on the channel sends in Message.Publish/Broadcast.
+*/
+func (vm *VM) DrainInbound() {
+	defer func() {
+		if err := recover(); err != nil {
+			exceptions.FormatAndCatch(vm.vm, "DrainInbound(%s): %s", vm.Name, err)
+		}
+	}()
+
+	for {
+		select {
+		case msg := <-vm.Inbound:
+			vm.muSubscribe.Lock()
+			if _, ok := vm.subscribe[msg.Name]; ok {
+				for _, callback := range vm.subscribe[msg.Name] {
+					log.Debug("PubSub: %s receives from %s: %s", vm.Name, msg.SenderID, msg.Name)
+					if function, ok := goja.AssertFunction(callback); ok {
+						function(goja.Undefined(), msg.Args...)
+					}
+				}
+			}
+			vm.muSubscribe.Unlock()
+		default:
+			// No more messages queued right now.
+			return
+		}
+	}
 }

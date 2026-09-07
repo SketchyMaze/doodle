@@ -25,7 +25,6 @@ type VM struct {
 	//     messages.
 	Inbound     chan Message
 	Outbound    []chan Message
-	stop        chan bool
 	subscribe   map[string][]goja.Value // Subscribed message handlers by name.
 	muSubscribe sync.RWMutex
 	muPublish   sync.Mutex // serialize PubSub publishes
@@ -47,7 +46,6 @@ func NewVM(name string) *VM {
 		// Pub/sub structs.
 		Inbound:   make(chan Message, 100),
 		Outbound:  []chan Message{},
-		stop:      make(chan bool, 1),
 		subscribe: map[string][]goja.Value{},
 	}
 	vm.Events = NewEvents(vm)

@@ -4,6 +4,7 @@ package scripting
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"git.kirsle.net/SketchyMaze/doodle/pkg/level"
@@ -29,21 +30,44 @@ func NewSupervisor() *Supervisor {
 	}
 }
 
-// Teardown the supervisor to clean up goroutines.
+// Teardown the supervisor to release its scripts.
 func (s *Supervisor) Teardown() {
 	log.Info("scripting.Teardown(): stop all (%d) scripts", len(s.scripts))
-	for _, vm := range s.scripts {
-		vm.stop <- true
-	}
+	s.scripts = map[string]*VM{}
 }
 
-// Loop the supervisor to invoke timer events in any running scripts.
+// Loop the supervisor to process PubSub messages and invoke timer events in
+// any running scripts.
+//
+// Doodads are visited in a deterministic order (sorted by actor ID) and run
+// entirely on the calling goroutine, one at a time. This matters because
+// goja.Runtime is not safe for concurrent use: doodads that are linked
+// together (e.g. gemstone totems that Message.Publish/Subscribe with one
+// another) could previously receive and handle PubSub messages on
+// per-VM background goroutines running in parallel, which could corrupt VM
+// state or deadlock when several linked doodads triggered each other in the
+// same tick (e.g. stacking all 4 totems so the player collides with them
+// simultaneously). Running everything in sequence here removes that
+// concurrency and makes script execution order reproducible from run to run.
 func (s *Supervisor) Loop() error {
 	now := time.Now()
-	for _, vm := range s.scripts {
+	for _, id := range s.sortedIDs() {
+		vm := s.scripts[id]
+		vm.DrainInbound()
 		vm.TickTimer(now)
 	}
 	return nil
+}
+
+// sortedIDs returns the actor IDs of all registered scripts sorted
+// lexically, so callers can iterate the VMs in a deterministic order.
+func (s *Supervisor) sortedIDs() []string {
+	ids := make([]string, 0, len(s.scripts))
+	for id := range s.scripts {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
 }
 
 // InstallScripts loads scripts for all actors in the level.
