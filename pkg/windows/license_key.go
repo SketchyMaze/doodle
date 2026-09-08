@@ -135,7 +135,7 @@ func NewLicenseWindow(cfg License) *ui.Window {
 			})),
 			ButtonStyle: &balance.ButtonPrimary,
 			Func: func() {
-				filename, err := native.OpenFile("Select License File", "*.key *.txt")
+				filename, err := native.OpenFile("Select License File", "*.key")
 				if err != nil {
 					log.Error(err.Error())
 					return
