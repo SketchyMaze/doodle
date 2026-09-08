@@ -45,7 +45,6 @@ RUN cp -r SDL2-2.0.9/x86_64-w64-mingw32 /usr && \
     cp -r SDL2_ttf-2.0.15/x86_64-w64-mingw32 /usr
 RUN mkdir -p /usr/lib/golang/pkg/windows_amd64
 WORKDIR /SketchyMaze
-RUN mkdir -p bin && cp deps/vendor/DLL/*.dll bin/
 
 # Add the current working directory (breaks the docker cache every time).
 ADD . /SketchyMaze
@@ -69,7 +68,9 @@ RUN git checkout -- go.mod && \
 # - runs `make dist/` creating an uber build for both OS's
 # - runs release.sh to carve out the Linux and Windows versions and
 #   zip them all up nicely.
-RUN make setup && make from-docker64
+# `make setup` (via its `clean` dependency) wipes the bin/ folder, so the
+# Windows DLLs must be copied in afterwards, right before the actual build.
+RUN make setup && mkdir -p bin && cp deps/vendor/DLL/*.dll bin/ && make from-docker64
 
 # Collect the build artifacts.
 RUN mkdir -p artifacts && cp -rv dist/release ./artifacts/
@@ -106,10 +107,11 @@ RUN cp -r SDL2-2.0.9/i686-w64-mingw32 /usr && \
     cp -r SDL2_ttf-2.0.15/i686-w64-mingw32 /usr
 RUN mkdir -p /usr/lib/golang/pkg/windows_386
 WORKDIR /SketchyMaze
-RUN mkdir -p bin && cp deps/vendor/DLL-32bit/*.dll bin/
 
 # Do the thing.
-RUN make setup && make from-docker32
+# `make setup` (via its `clean` dependency) wipes the bin/ folder, so the
+# Windows DLLs must be copied in afterwards, right before the actual build.
+RUN make setup && mkdir -p bin && cp deps/vendor/DLL-32bit/*.dll bin/ && make from-docker32
 
 # Collect the build artifacts.
 RUN mkdir -p artifacts && cp -rv dist/release ./artifacts/
